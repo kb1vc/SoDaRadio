@@ -1,4 +1,5 @@
-AC_INIT([SoDa], [1.1])
+define([svnversion], esyscmd([sh -c "svnversion|tr -d '\n'"]))dnl
+AC_INIT([SoDa], [1.1.svnversion])
 
 
 AC_PREREQ(2.60)
