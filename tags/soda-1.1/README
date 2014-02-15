@@ -1,0 +1,21 @@
+SoDa -- A Software Defined Radio for the Ettus Research USRP
+
+Version 1.1
+
+This package builds two programs: 
+
+SoDaServer -- a multithreaded program that implements a software
+defined multimode VHF/UHF transciever.  
+
+SoDaRadio -- a GUI that offers a user interface to the controls
+for SoDaServer
+
+See the INSTALL file for instructions on configuring, building 
+and installing SoDa
+
+The doc directory contains a report on SoDa explaining its
+construction and reason for being. It is not automatically built. 
+cd to the doc directory and type "make".  If you have a reasonable
+pdflatex installation and "inkscape" (an SVG authoring tool) 
+the makefile will produce SoDa_Report.pdf
+
