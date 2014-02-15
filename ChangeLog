@@ -1,0 +1,11 @@
+2014-02-14 Matt Reilly kb1vc (kb1vc@kb1vc.org)
+	* initial release of version 1.1  
+
+2014-02-15 Matt Reilly kb1vc (kb1vc@kb1vc.org)
+	* add figures and pictures to the doc/figs and doc/pix
+	directories.  These are used in doxygen generation
+	* update Makefile.am, configure.ac, and m4 files to 
+	support choice of libuhd library and include directories
+	* release as soda-1.1.1
+
+	
