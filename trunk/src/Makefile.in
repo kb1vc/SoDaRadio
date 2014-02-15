@@ -40,7 +40,9 @@ ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_boost_asio.m4 \
 	$(top_srcdir)/m4/ax_boost_base.m4 \
 	$(top_srcdir)/m4/ax_boost_date_time.m4 \
+	$(top_srcdir)/m4/ax_boost_filesystem.m4 \
 	$(top_srcdir)/m4/ax_boost_program_options.m4 \
+	$(top_srcdir)/m4/ax_boost_serialization.m4 \
 	$(top_srcdir)/m4/ax_boost_system.m4 \
 	$(top_srcdir)/m4/ax_boost_thread.m4 \
 	$(top_srcdir)/m4/ax_fftw3.m4 $(top_srcdir)/m4/ax_fftw3f.m4 \
@@ -71,7 +73,9 @@ am_SoDaServer_OBJECTS = SoDaServer-Params.$(OBJEXT) \
 SoDaServer_OBJECTS = $(am_SoDaServer_OBJECTS)
 am__DEPENDENCIES_1 =
 am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1)
 SoDaServer_DEPENDENCIES = $(am__DEPENDENCIES_2)
 SoDaServer_LINK = $(CXXLD) $(SoDaServer_CXXFLAGS) $(CXXFLAGS) \
 	$(SoDaServer_LDFLAGS) $(LDFLAGS) -o $@
@@ -102,8 +106,10 @@ AWK = @AWK@
 BOOST_ASIO_LIB = @BOOST_ASIO_LIB@
 BOOST_CPPFLAGS = @BOOST_CPPFLAGS@
 BOOST_DATE_TIME_LIB = @BOOST_DATE_TIME_LIB@
+BOOST_FILESYSTEM_LIB = @BOOST_FILESYSTEM_LIB@
 BOOST_LDFLAGS = @BOOST_LDFLAGS@
 BOOST_PROGRAM_OPTIONS_LIB = @BOOST_PROGRAM_OPTIONS_LIB@
+BOOST_SERIALIZATION_LIB = @BOOST_SERIALIZATION_LIB@
 BOOST_SYSTEM_LIB = @BOOST_SYSTEM_LIB@
 BOOST_THREAD_LIB = @BOOST_THREAD_LIB@
 CC = @CC@
@@ -229,8 +235,8 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-AM_CPPFLAGS = -I$(top_srcdir)/src
-AM_BOOSTLIBFLAGS = ${BOOST_PROGRAM_OPTIONS_LIB} ${BOOST_THREAD_LIB} ${BOOST_DATE_TIME_LIB} ${BOOST_SYSTEM_LIB} 
+AM_CPPFLAGS = -I$(top_srcdir)/src ${BOOST_CPPFLAGS}
+AM_BOOSTLIBFLAGS = ${BOOST_LDFLAGS} ${BOOST_PROGRAM_OPTIONS_LIB} ${BOOST_THREAD_LIB} ${BOOST_DATE_TIME_LIB} ${BOOST_SYSTEM_LIB} ${BOOST_FILESYSTEM_LIB} ${BOOST_SERIALIZATION_LIB} 
 SoDaServer_SOURCES = Params.cxx  SoDaServer.cxx SoDaBase.cxx USRPCtrl.cxx USRPRX.cxx USRPTX.cxx CWTX.cxx AudioRX.cxx AudioTX.cxx UI.cxx Command.cxx OSFilter.cxx HilbertTransformer.cxx  ReSampler.cxx ReSamplers625x48.cxx Spectrogram.cxx CWGenerator.cxx TSIP.cxx GPS_TSIPmon.cxx UDSockets.cxx AudioRX.hxx AudioTX.hxx Command.hxx CWGenerator.hxx CWTX.hxx GPS_TSIPmon.hxx HilbertTransformer.hxx IPSockets.hxx  MultiMBox.hxx OSFilter.hxx Params.hxx QuadratureOscillator.hxx ReSampler.hxx ReSamplers625x48.hxx SoDaBase.hxx SoDa_filter_tables.hxx SoDa_tx_filter_tables.hxx Spectrogram.hxx TSIP.hxx UDSockets.hxx UI.hxx USRPCtrl.hxx USRPRX.hxx USRPTX.hxx AudioPA.hxx AudioPA.cxx AudioALSA.hxx AudioALSA.cxx AudioIfc.hxx MedianFilter.hxx
 SoDaServer_CPPFLAGS = $(AM_CPPFLAGS)  -g
 SoDaServer_LDADD = $(AM_BOOSTLIBFLAGS)  -lrt
