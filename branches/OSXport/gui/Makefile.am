@@ -21,5 +21,5 @@ SoDaRadio_CPPFLAGS = $(AM_CPPFLAGS) $(WX_CPPFLAGS)
 SoDaRadio_LDADD = $(AM_BOOSTLIBFLAGS) $(WX_LIBS)
 SoDaRadio_CXXFLAGS = $(WX_CXXFLAGS) 
 SoDaRadio_CFLAGS = -g
-SoDaRadio_LDFLAGS = $(WX_LIBS) -lm -lrt
+SoDaRadio_LDFLAGS = $(WX_LIBS) -lm 
 
