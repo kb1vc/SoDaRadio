@@ -1,5 +1,5 @@
 
-AC_INIT([SoDa], [1.1.1a])
+AC_INIT([SoDa], [1.1.1c])
 
 AC_PREREQ(2.60)
 AM_INIT_AUTOMAKE

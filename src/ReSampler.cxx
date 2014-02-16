@@ -179,7 +179,7 @@ void SoDa::ReSampler::CreateFilter(unsigned int filter_len)
   // http://www-users.cs.york.ac.uk/~fisher   Thanks, Prof. Fisher...
   float alpha, beta;
   float cutdown = ((float) ((iM > dN) ? iM : dN));
-  beta = 1.0 / (2.0 * cutdown); // This is the transition freq
+  beta = 1.0 / (2.2 * cutdown); // This is the transition freq -- a little shy of 0.5/cutdown
   alpha = 0.1; // this is a shape factor
 
   // create a frequency domain image of the filter.
