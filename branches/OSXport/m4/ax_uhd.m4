@@ -108,8 +108,13 @@ then
   fi
 
   AC_CHECK_FILE([${UHD_HOME}/lib/libuhd.so], [uhd_cv_libuhd=yes], [uhd_cv_libuhd=no])
+  AC_CHECK_FILE([${UHD_HOME}/lib/libuhd.dylib], [uhd_cv_mac_libuhd=yes], [uhd_cv_mac_libuhd=no])
   AC_CHECK_FILE([${UHD_HOME}/include/uhd/device.hpp], [uhd_cv_uhd_h=yes], [uhd_cv_uhd_h=no])
 
+  if test "$uhd_cv_mac_libuhd" = "yes"
+  then
+    uhd_cv_libuhd=yes
+  fi
   if test "$uhd_cv_libuhd" = "yes" && test "$uhd_cv_uhd_h" = "yes"
   then
     #
