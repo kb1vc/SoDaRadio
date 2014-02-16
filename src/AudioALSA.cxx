@@ -27,8 +27,10 @@
 */
 
 #include "AudioALSA.hxx"
-
+#if HAVE_ASOUNDLIB
 #include <alsa/asoundlib.h>
+#endif
+
 #include <boost/format.hpp>
 
 namespace SoDa {
