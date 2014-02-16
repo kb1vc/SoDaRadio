@@ -29,8 +29,14 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include "SoDaBase.hxx"
 #include "AudioIfc.hxx"
-#include <alsa/asoundlib.h>
+#if HAVE_LIBASOUND
+#  include <alsa/asoundlib.h>
+#  define ALSA_DEF
+#else
+#  define ALSA_DEF { throw SoDa::SoDaException("ALSA Sound Library is not enabled in this build version."); } 
+#endif
 #include <boost/format.hpp>
 #include <iostream>
 #include <stdexcept>
@@ -67,7 +73,10 @@ namespace SoDa {
 	      AudioIfc::DataFormat _fmt,
 	      unsigned int _sample_count_hint = 1024);
 
-    ~AudioALSA() { snd_pcm_close(pcm_out); }
+#if HAVE_LIBASOUND
+    ~AudioALSA() {
+      snd_pcm_close(pcm_out);
+    }
     
     /**
      * send -- send a buffer to the audio output
@@ -194,7 +203,7 @@ namespace SoDa {
 	else std::cerr << boost::format("%s %s %s\n") % getObjName() % exp % snd_strerror(err);
       }
     }
-
+#endif // HAVE_LIBASOUND
   };
 }
 
