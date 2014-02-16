@@ -18,6 +18,9 @@ AC_CHECK_LIB(portaudio, Pa_GetVersion)
 
 AC_CHECK_LIB(asound, snd_pcm_open)
 
+AC_CHECK_FUNCS([sincos])
+
+
 AC_PATH_PROG(svnversioncommand, svnversion)
 if test "X$svnversioncommand" = "X" || test `$svnversioncommand -n $srcdir` = "exported"; then
 AC_DEFINE_UNQUOTED(SVN_VERSION, ["`cat ${srcdir}/saved_svn_version.txt`"], [repository svn version])
