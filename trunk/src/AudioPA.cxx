@@ -30,9 +30,9 @@
 #include <boost/format.hpp>
 
 namespace SoDa {
+#if HAVE_LIBPORTAUDIO
   AudioPA::AudioPA(unsigned int _sample_rate, DataFormat _fmt, unsigned int _sample_count_hint) :
     AudioIfc(_sample_rate, _fmt, _sample_count_hint, "AudioPA Port Audio Interface") {
-
     checkStatus(pa_stat = Pa_Initialize(), "Init");
 
     checkStatus(Pa_OpenDefaultStream(&pa_instream, 1, 0, translateFormat(_fmt), sample_rate, sample_count_hint, NULL, NULL), "OpenIn");
@@ -103,4 +103,10 @@ namespace SoDa {
     return paInt16;
   }
 
+#else
+  AudioPA::AudioPA(unsigned int _sample_rate, DataFormat _fmt, unsigned int _sample_count_hint) :
+    AudioIfc(_sample_rate, _fmt, _sample_count_hint, "AudioPA Port Audio Interface") {
+    throw SoDaException("PortAudio Library is not enabled in this build version.");
+  }
+#endif // HAVE_LIBPORTAUDIO
 }

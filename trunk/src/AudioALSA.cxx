@@ -32,6 +32,7 @@
 #include <boost/format.hpp>
 
 namespace SoDa {
+#if HAVE_LIBASOUND
   AudioALSA::AudioALSA(unsigned int _sample_rate,
 		       DataFormat _fmt,
 		       unsigned int _sample_count_hint) :
@@ -203,5 +204,13 @@ namespace SoDa {
     }
     return SND_PCM_FORMAT_S16_LE; 
   }
-
+#else
+  AudioALSA::AudioALSA(unsigned int _sample_rate,
+		       DataFormat _fmt,
+		       unsigned int _sample_count_hint) :
+    AudioIfc(_sample_rate, _fmt, _sample_count_hint, "AudioALSA ALSA Interface")
+  {
+    throw SoDa::SoDaException("ALSA Sound Library is not enabled in this build version.");  
+  }
+#endif // HAVE_LIBASOUND
 }

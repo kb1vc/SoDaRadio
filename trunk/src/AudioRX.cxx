@@ -129,7 +129,7 @@ void SoDa::AudioRX::demodulateWBFM(SoDaBuf * rxbuf, SoDa::Command::ModulationTyp
   // now downsample it
   wbfm_resampler->apply(demod_out, audio_buffer);
   // do a median filter to eliminate the pops.
-  fmMedianFilter.apply(audio_buffer, audio_buffer, audio_buffer_size); 
+  // better not. fmMedianFilter.apply(audio_buffer, audio_buffer, audio_buffer_size); 
   // gain was arrived at by trial and error.  
   fm_audio_filter->apply(audio_buffer, audio_buffer, 0.001);
   // then send it to the audio port.
@@ -156,7 +156,7 @@ void SoDa::AudioRX::demodulateNBFM(std::complex<float> * dbuf, SoDa::Command::Mo
     audio_buffer[i] = demod_out[i].real(); 
   }
   // do a median filter to eliminate the pops.
-  fmMedianFilter.apply(audio_buffer, audio_buffer, audio_buffer_size); 
+  // maybe not... fmMedianFilter.apply(audio_buffer, audio_buffer, audio_buffer_size); 
 
   // then send it to the audio port.
   pendAudioBuffer(audio_buffer);
