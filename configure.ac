@@ -14,12 +14,13 @@ AC_CONFIG_FILES([Makefile src/Makefile gui/Makefile gui/adjust_GUI.sh exp/Makefi
 
 AC_CONFIG_SRCDIR(src/SoDaServer.cxx)
 
+AC_CHECK_LIB(rt, clock_gettime)
+
 AC_CHECK_LIB(portaudio, Pa_GetVersion)
 
 AC_CHECK_LIB(asound, snd_pcm_open)
 
 AC_CHECK_FUNCS([sincos])
-
 
 AC_PATH_PROG(svnversioncommand, svnversion)
 if test "X$svnversioncommand" = "X" || test `$svnversioncommand -n $srcdir` = "exported"; then
