@@ -52,8 +52,9 @@ namespace SoDa {
      * @brief step the oscillator and produce a complex double result
      * @result cos(ang), -sin(ang)
      *
-     * Note the use of sincos if we're building for linux.  This is
-     * a bit faster than separate sin and cos calls.
+     * Note the use of sincos if we're building for a platform that
+     * supports it.  This is a bit faster than separate sin and cos calls.
+     *
      *
      * The original scheme also did some near-angle approximation
      * stuff but it really didn't help that much with computation
@@ -62,7 +63,7 @@ namespace SoDa {
      */
     std::complex<double> stepOscCD() {
       double s,c;
-#if __linux__
+#if HAVE_SINCOS
       sincos(ang, &s, &c);
 #else
       s = sin(ang); c = cos(ang); 
