@@ -187,7 +187,6 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
   
   double target_rx_freq = freq;
   
-  uhd::tune_request_t trequest;
   uhd::tune_request_t tx_trequest(freq);
   if(sel == 'r') {
     // we round the target frequency to a point that puts the
@@ -198,12 +197,10 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
     // so that is the constant front-end RX frequency that we'll use.
     double stepsize;
     double freq1stLO;
-    /// We have two different tuning modes --
-    /// If the UHD library supports INTEGER mode control of the first LO,
-    /// then use it.  Otherwise, tune the LO to an even 12.5 MHz boundary
-    /// that should force the fractional portion of the tuning multiplier to 0.
-    /// This works for kb1vc's modification of the UHD library v 003.004.002. 
-#ifdef UHD_HAS_INT_MODE_TUNING
+    /// This code depends on the integer-N tuning features in libuhd 3.7
+    /// earlier libraries will revert to fractional-N tuning and might
+    /// see a rise in the noisefloor and perhaps some troublesome spurs
+    /// at multiples of the reference frequency divided by the fractional divisor.
     if(freq > 256e6) stepsize = 12.5e6;
     else stepsize = 6.25e6; 
     freq1stLO = floor(freq / stepsize) * stepsize;
@@ -213,62 +210,19 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
     target_rx_freq = 100e3 * floor(freq / 100e3);
     if((freq - target_rx_freq) < 80e3) target_rx_freq -= 100.0e3; 
 
-    trequest.dsp_freq_policy = uhd::tune_request_t::POLICY_MANUAL_INT; 
-    trequest.target_freq = target_rx_freq; 
-    trequest.rf_freq_policy = uhd::tune_request_t::POLICY_MANUAL_INT;
-    trequest.rf_freq = freq1stLO; // 143750000.0;;
-    trequest.dsp_freq = trequest.rf_freq - target_rx_freq;
-    last_rx_tune_result = usrp->set_rx_freq(trequest);
-    // Now let's check... how far away is the last_rx_tune result?
-    trequest.rf_freq = last_rx_tune_result.actual_rf_freq;
-    trequest.dsp_freq = trequest.rf_freq - target_rx_freq;
-    // now do it again. 
-    last_rx_tune_result = usrp->set_rx_freq(trequest);
-    last_rx_tune_result = checkLock(trequest, 'r', last_rx_tune_result);
-    if(debug_mode) {
-      std::cerr << "RX Tune RF = " << last_rx_tune_result.actual_rf_freq
-		<< " DSP = " << last_rx_tune_result.actual_dsp_freq
-		<< " freq = " << freq
-		<< " target_rx_freq = " << target_rx_freq
-		<< " req rf = " << trequest.rf_freq
-		<< " req dsp = " << trequest.dsp_freq
-		<< std::endl;
+    uhd::tune_request_t rx_trequest(target_rx_freq, 100.0e3);
+    rx_trequest.args = uhd::device_addr_t("mode_n=integer"); 
+    last_rx_tune_result = usrp->set_rx_freq(rx_trequest);
+    last_rx_tune_result = checkLock(rx_trequest, 'r', last_rx_tune_result);
+    if(1 || debug_mode) {
+      std::cerr << boost::format("RX Tune RF_actual %lf DDC = %lf tuned = %lf target = %lf request  rf = %lf request ddc = %lf\n")
+	% last_rx_tune_result.actual_rf_freq
+	% last_rx_tune_result.actual_dsp_freq
+	% freq
+	% target_rx_freq
+	% rx_trequest.rf_freq
+	% rx_trequest.dsp_freq;
     }
-#else
-    stepsize = 12.5e6D;
-    double adj[3] = {0.0, +1.0, -1.0};
-    int adjidx;
-    bool worked = false; 
-    for(adjidx = 0; adjidx < 3; adjidx++) {
-      double freq1stLO = (floor(freq / stepsize) + adj[adjidx]) * stepsize;
-      uhd::tune_request_t trequest;      
-
-      target_rx_freq = 100e3 * floor(freq / 100e3);
-      if((freq - target_rx_freq) < 80e3) target_rx_freq -= 100.0e3; 
-
-      trequest.dsp_freq_policy = uhd::tune_request_t::POLICY_AUTO;
-      trequest.target_freq = target_rx_freq;
-      trequest.rf_freq_policy = uhd::tune_request_t::POLICY_MANUAL;
-      trequest.rf_freq = freq1stLO;
-      trequest.dsp_freq = trequest.rf_freq - target_rx_freq;
-
-      last_rx_tune_result = usrp->set_rx_freq(trequest);
-      // Now let's check... how far away is the last_rx_tune result?
-      trequest.rf_freq = last_rx_tune_result.actual_rf_freq;
-      trequest.dsp_freq = trequest.rf_freq - target_rx_freq;
-      // now do it again. 
-      last_rx_tune_result = usrp->set_rx_freq(trequest);
-      last_rx_tune_result = checkLock(trequest, 'r', last_rx_tune_result);
-      if(freq1stLO == last_rx_tune_result.actual_rf_freq) {
-	worked = true; 
-	break;
-      }
-    }
-    if(!worked) {
-      std::cerr << boost::format("Problem in tuning to usrp_freq %f") % freq1stLO << std::endl
-	; 
-    }
-#endif
   }
   else {
     // On the transmit side, we're using a minimal IF rate and
@@ -282,7 +236,7 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
 		<< std::setprecision(10) << freq << std::endl;
     }
     
-    last_tx_tune_result = usrp->set_tx_freq(freq);  // usrp->set_tx_freq(trequest);
+    last_tx_tune_result = usrp->set_tx_freq(freq);  
     last_tx_tune_result = checkLock(tx_trequest, 't', last_tx_tune_result);
   }
 
