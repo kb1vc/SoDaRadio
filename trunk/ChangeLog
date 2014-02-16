@@ -6,6 +6,9 @@
 	directories.  These are used in doxygen generation
 	* update Makefile.am, configure.ac, and m4 files to 
 	support choice of libuhd library and include directories
+	* Hooray! Hooray!  The new version of libuhd (003.007) supports
+	Integer-N tuning for the front-end LO. Thank you to Ben and
+	company at Ettus for implementing this useful feature. 
 	* release as soda-1.1.1
-
+	
 	
