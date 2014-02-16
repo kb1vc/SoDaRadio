@@ -1202,7 +1202,6 @@ namespace SoDaRadio_GUI {
 
   void TransverterConfigDialog::OnTVActivate( wxCommandEvent & event)
   {
-    std::cerr << "Hey!  we're here in TransverterConfigDialog activate!" << std::endl; 
   }
 
 #if 0

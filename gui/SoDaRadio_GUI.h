@@ -289,10 +289,6 @@ namespace SoDaRadio_GUI
 			wxButton* mCancel;
 			
 			// Virtual event handlers, overide them in your derived class
-			virtual void OnTVActivate( wxActivateEvent& event ) { event.Skip(); }
-			virtual void OnTVActivate( wxInitDialogEvent& event ) { event.Skip(); }
-			virtual void OnTVActivate( wxPaintEvent& event ) { event.Skip(); }
-			virtual void OnTVActivate( wxUpdateUIEvent& event ) { event.Skip(); }
 			virtual void OnTVConfDone( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnTVConfCancel( wxCommandEvent& event ) { event.Skip(); }
 			
