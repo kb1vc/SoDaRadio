@@ -949,10 +949,6 @@ m_TransverterConfigDialog::m_TransverterConfigDialog( wxWindow* parent, wxWindow
 	bSizer43->Fit( this );
 	
 	// Connect Events
-	this->Connect( wxEVT_ACTIVATE, wxActivateEventHandler( m_TransverterConfigDialog::OnTVActivate ) );
-	this->Connect( wxEVT_INIT_DIALOG, wxInitDialogEventHandler( m_TransverterConfigDialog::OnTVActivate ) );
-	this->Connect( wxEVT_PAINT, wxPaintEventHandler( m_TransverterConfigDialog::OnTVActivate ) );
-	this->Connect( wxEVT_UPDATE_UI, wxUpdateUIEventHandler( m_TransverterConfigDialog::OnTVActivate ) );
 	mOK->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_TransverterConfigDialog::OnTVConfDone ), NULL, this );
 	mCancel->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_TransverterConfigDialog::OnTVConfCancel ), NULL, this );
 }
@@ -960,10 +956,6 @@ m_TransverterConfigDialog::m_TransverterConfigDialog( wxWindow* parent, wxWindow
 m_TransverterConfigDialog::~m_TransverterConfigDialog()
 {
 	// Disconnect Events
-	this->Disconnect( wxEVT_ACTIVATE, wxActivateEventHandler( m_TransverterConfigDialog::OnTVActivate ) );
-	this->Disconnect( wxEVT_INIT_DIALOG, wxInitDialogEventHandler( m_TransverterConfigDialog::OnTVActivate ) );
-	this->Disconnect( wxEVT_PAINT, wxPaintEventHandler( m_TransverterConfigDialog::OnTVActivate ) );
-	this->Disconnect( wxEVT_UPDATE_UI, wxUpdateUIEventHandler( m_TransverterConfigDialog::OnTVActivate ) );
 	mOK->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_TransverterConfigDialog::OnTVConfDone ), NULL, this );
 	mCancel->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_TransverterConfigDialog::OnTVConfCancel ), NULL, this );
 }
