@@ -154,7 +154,7 @@ namespace SoDa {
       // longest inflight list.
       int max_len = 0;
       int itercount = 0; 
-      typename std::map<int, MultiMBox<T>::Subscriber*>::iterator sl; 
+      typename std::map<int, typename MultiMBox< T >::Subscriber * >::iterator sl; 
       for(sl = subscribers.begin();
 	  sl != subscribers.end();
 	  ++sl) {

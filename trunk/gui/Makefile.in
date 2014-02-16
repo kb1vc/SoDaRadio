@@ -57,12 +57,14 @@ CONFIG_CLEAN_FILES = adjust_GUI.sh
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
+am__dirstamp = $(am__leading_dot)dirstamp
 am_SoDaRadio_OBJECTS = SoDaRadio-SoDaRadio_App.$(OBJEXT) \
 	SoDaRadio-SoDaRadio_GUI.$(OBJEXT) \
 	SoDaRadio-SoDaRadio_Top.$(OBJEXT) \
 	SoDaRadio-SoDaRadio_Top_Events.$(OBJEXT) \
 	SoDaRadio-SoDaRadio_Top_Config.$(OBJEXT) \
-	SoDaRadio-UDSockets.$(OBJEXT) SoDaRadio-Command.$(OBJEXT) \
+	../src/SoDaRadio-UDSockets.$(OBJEXT) \
+	../src/SoDaRadio-Command.$(OBJEXT) \
 	SoDaRadio-Navigation.$(OBJEXT) SoDaRadio-dem-gridlib.$(OBJEXT) \
 	SoDaRadio-xyplot.$(OBJEXT) \
 	SoDaRadio-RadioListenerThread.$(OBJEXT) \
@@ -231,6 +233,7 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+AUTOMAKE_OPTIONS = subdir-objects
 AM_CPPFLAGS = -I$(top_srcdir)/include
 AM_BOOSTLIBFLAGS = ${BOOST_PROGRAM_OPTIONS_LIB} ${BOOST_THREAD_LIB} ${BOOST_DATE_TIME_LIB} ${BOOST_SYSTEM_LIB}
 EXTRA_DIST = SoDaRadio_GUI.cpp uparrow.xpm downarrow.xpm SoDaLogo.xpm SoDaLogo_Big.xpm adjust_GUI.sh SoDaLogo_Big.png
@@ -313,17 +316,30 @@ uninstall-binPROGRAMS:
 
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
+../src/$(am__dirstamp):
+	@$(MKDIR_P) ../src
+	@: > ../src/$(am__dirstamp)
+../src/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) ../src/$(DEPDIR)
+	@: > ../src/$(DEPDIR)/$(am__dirstamp)
+../src/SoDaRadio-UDSockets.$(OBJEXT): ../src/$(am__dirstamp) \
+	../src/$(DEPDIR)/$(am__dirstamp)
+../src/SoDaRadio-Command.$(OBJEXT): ../src/$(am__dirstamp) \
+	../src/$(DEPDIR)/$(am__dirstamp)
 SoDaRadio$(EXEEXT): $(SoDaRadio_OBJECTS) $(SoDaRadio_DEPENDENCIES) $(EXTRA_SoDaRadio_DEPENDENCIES) 
 	@rm -f SoDaRadio$(EXEEXT)
 	$(SoDaRadio_LINK) $(SoDaRadio_OBJECTS) $(SoDaRadio_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
+	-rm -f ../src/SoDaRadio-Command.$(OBJEXT)
+	-rm -f ../src/SoDaRadio-UDSockets.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaRadio-Command.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/SoDaRadio-Command.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/SoDaRadio-UDSockets.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaRadio-GuiParams.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaRadio-Navigation.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaRadio-RadioListenerThread.Po@am__quote@
@@ -332,24 +348,25 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaRadio-SoDaRadio_Top.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaRadio-SoDaRadio_Top_Config.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaRadio-SoDaRadio_Top_Events.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaRadio-UDSockets.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaRadio-dem-gridlib.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaRadio-waterfall.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaRadio-xyplot.Po@am__quote@
 
 .c.o:
-@am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
+@am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
+@am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(COMPILE) -c $<
+@am__fastdepCC_FALSE@	$(COMPILE) -c -o $@ $<
 
 .c.obj:
-@am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
+@am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ `$(CYGPATH_W) '$<'` &&\
+@am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(COMPILE) -c `$(CYGPATH_W) '$<'`
+@am__fastdepCC_FALSE@	$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
 SoDaRadio-dem-gridlib.o: dem-gridlib.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaRadio_CPPFLAGS) $(CPPFLAGS) $(SoDaRadio_CFLAGS) $(CFLAGS) -MT SoDaRadio-dem-gridlib.o -MD -MP -MF $(DEPDIR)/SoDaRadio-dem-gridlib.Tpo -c -o SoDaRadio-dem-gridlib.o `test -f 'dem-gridlib.c' || echo '$(srcdir)/'`dem-gridlib.c
@@ -366,15 +383,17 @@ SoDaRadio-dem-gridlib.obj: dem-gridlib.c
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaRadio_CPPFLAGS) $(CPPFLAGS) $(SoDaRadio_CFLAGS) $(CFLAGS) -c -o SoDaRadio-dem-gridlib.obj `if test -f 'dem-gridlib.c'; then $(CYGPATH_W) 'dem-gridlib.c'; else $(CYGPATH_W) '$(srcdir)/dem-gridlib.c'; fi`
 
 .cxx.o:
-@am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@am__fastdepCXX_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
+@am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
+@am__fastdepCXX_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ $<
 
 .cxx.obj:
-@am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@am__fastdepCXX_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
+@am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ `$(CYGPATH_W) '$<'` &&\
+@am__fastdepCXX_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
@@ -449,33 +468,33 @@ SoDaRadio-SoDaRadio_Top_Config.obj: SoDaRadio_Top_Config.cxx
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaRadio_CPPFLAGS) $(CPPFLAGS) $(SoDaRadio_CXXFLAGS) $(CXXFLAGS) -c -o SoDaRadio-SoDaRadio_Top_Config.obj `if test -f 'SoDaRadio_Top_Config.cxx'; then $(CYGPATH_W) 'SoDaRadio_Top_Config.cxx'; else $(CYGPATH_W) '$(srcdir)/SoDaRadio_Top_Config.cxx'; fi`
 
-SoDaRadio-UDSockets.o: ../src/UDSockets.cxx
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaRadio_CPPFLAGS) $(CPPFLAGS) $(SoDaRadio_CXXFLAGS) $(CXXFLAGS) -MT SoDaRadio-UDSockets.o -MD -MP -MF $(DEPDIR)/SoDaRadio-UDSockets.Tpo -c -o SoDaRadio-UDSockets.o `test -f '../src/UDSockets.cxx' || echo '$(srcdir)/'`../src/UDSockets.cxx
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/SoDaRadio-UDSockets.Tpo $(DEPDIR)/SoDaRadio-UDSockets.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../src/UDSockets.cxx' object='SoDaRadio-UDSockets.o' libtool=no @AMDEPBACKSLASH@
+../src/SoDaRadio-UDSockets.o: ../src/UDSockets.cxx
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaRadio_CPPFLAGS) $(CPPFLAGS) $(SoDaRadio_CXXFLAGS) $(CXXFLAGS) -MT ../src/SoDaRadio-UDSockets.o -MD -MP -MF ../src/$(DEPDIR)/SoDaRadio-UDSockets.Tpo -c -o ../src/SoDaRadio-UDSockets.o `test -f '../src/UDSockets.cxx' || echo '$(srcdir)/'`../src/UDSockets.cxx
+@am__fastdepCXX_TRUE@	$(am__mv) ../src/$(DEPDIR)/SoDaRadio-UDSockets.Tpo ../src/$(DEPDIR)/SoDaRadio-UDSockets.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../src/UDSockets.cxx' object='../src/SoDaRadio-UDSockets.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaRadio_CPPFLAGS) $(CPPFLAGS) $(SoDaRadio_CXXFLAGS) $(CXXFLAGS) -c -o SoDaRadio-UDSockets.o `test -f '../src/UDSockets.cxx' || echo '$(srcdir)/'`../src/UDSockets.cxx
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaRadio_CPPFLAGS) $(CPPFLAGS) $(SoDaRadio_CXXFLAGS) $(CXXFLAGS) -c -o ../src/SoDaRadio-UDSockets.o `test -f '../src/UDSockets.cxx' || echo '$(srcdir)/'`../src/UDSockets.cxx
 
-SoDaRadio-UDSockets.obj: ../src/UDSockets.cxx
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaRadio_CPPFLAGS) $(CPPFLAGS) $(SoDaRadio_CXXFLAGS) $(CXXFLAGS) -MT SoDaRadio-UDSockets.obj -MD -MP -MF $(DEPDIR)/SoDaRadio-UDSockets.Tpo -c -o SoDaRadio-UDSockets.obj `if test -f '../src/UDSockets.cxx'; then $(CYGPATH_W) '../src/UDSockets.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/UDSockets.cxx'; fi`
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/SoDaRadio-UDSockets.Tpo $(DEPDIR)/SoDaRadio-UDSockets.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../src/UDSockets.cxx' object='SoDaRadio-UDSockets.obj' libtool=no @AMDEPBACKSLASH@
+../src/SoDaRadio-UDSockets.obj: ../src/UDSockets.cxx
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaRadio_CPPFLAGS) $(CPPFLAGS) $(SoDaRadio_CXXFLAGS) $(CXXFLAGS) -MT ../src/SoDaRadio-UDSockets.obj -MD -MP -MF ../src/$(DEPDIR)/SoDaRadio-UDSockets.Tpo -c -o ../src/SoDaRadio-UDSockets.obj `if test -f '../src/UDSockets.cxx'; then $(CYGPATH_W) '../src/UDSockets.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/UDSockets.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) ../src/$(DEPDIR)/SoDaRadio-UDSockets.Tpo ../src/$(DEPDIR)/SoDaRadio-UDSockets.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../src/UDSockets.cxx' object='../src/SoDaRadio-UDSockets.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaRadio_CPPFLAGS) $(CPPFLAGS) $(SoDaRadio_CXXFLAGS) $(CXXFLAGS) -c -o SoDaRadio-UDSockets.obj `if test -f '../src/UDSockets.cxx'; then $(CYGPATH_W) '../src/UDSockets.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/UDSockets.cxx'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaRadio_CPPFLAGS) $(CPPFLAGS) $(SoDaRadio_CXXFLAGS) $(CXXFLAGS) -c -o ../src/SoDaRadio-UDSockets.obj `if test -f '../src/UDSockets.cxx'; then $(CYGPATH_W) '../src/UDSockets.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/UDSockets.cxx'; fi`
 
-SoDaRadio-Command.o: ../src/Command.cxx
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaRadio_CPPFLAGS) $(CPPFLAGS) $(SoDaRadio_CXXFLAGS) $(CXXFLAGS) -MT SoDaRadio-Command.o -MD -MP -MF $(DEPDIR)/SoDaRadio-Command.Tpo -c -o SoDaRadio-Command.o `test -f '../src/Command.cxx' || echo '$(srcdir)/'`../src/Command.cxx
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/SoDaRadio-Command.Tpo $(DEPDIR)/SoDaRadio-Command.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../src/Command.cxx' object='SoDaRadio-Command.o' libtool=no @AMDEPBACKSLASH@
+../src/SoDaRadio-Command.o: ../src/Command.cxx
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaRadio_CPPFLAGS) $(CPPFLAGS) $(SoDaRadio_CXXFLAGS) $(CXXFLAGS) -MT ../src/SoDaRadio-Command.o -MD -MP -MF ../src/$(DEPDIR)/SoDaRadio-Command.Tpo -c -o ../src/SoDaRadio-Command.o `test -f '../src/Command.cxx' || echo '$(srcdir)/'`../src/Command.cxx
+@am__fastdepCXX_TRUE@	$(am__mv) ../src/$(DEPDIR)/SoDaRadio-Command.Tpo ../src/$(DEPDIR)/SoDaRadio-Command.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../src/Command.cxx' object='../src/SoDaRadio-Command.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaRadio_CPPFLAGS) $(CPPFLAGS) $(SoDaRadio_CXXFLAGS) $(CXXFLAGS) -c -o SoDaRadio-Command.o `test -f '../src/Command.cxx' || echo '$(srcdir)/'`../src/Command.cxx
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaRadio_CPPFLAGS) $(CPPFLAGS) $(SoDaRadio_CXXFLAGS) $(CXXFLAGS) -c -o ../src/SoDaRadio-Command.o `test -f '../src/Command.cxx' || echo '$(srcdir)/'`../src/Command.cxx
 
-SoDaRadio-Command.obj: ../src/Command.cxx
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaRadio_CPPFLAGS) $(CPPFLAGS) $(SoDaRadio_CXXFLAGS) $(CXXFLAGS) -MT SoDaRadio-Command.obj -MD -MP -MF $(DEPDIR)/SoDaRadio-Command.Tpo -c -o SoDaRadio-Command.obj `if test -f '../src/Command.cxx'; then $(CYGPATH_W) '../src/Command.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/Command.cxx'; fi`
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/SoDaRadio-Command.Tpo $(DEPDIR)/SoDaRadio-Command.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../src/Command.cxx' object='SoDaRadio-Command.obj' libtool=no @AMDEPBACKSLASH@
+../src/SoDaRadio-Command.obj: ../src/Command.cxx
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaRadio_CPPFLAGS) $(CPPFLAGS) $(SoDaRadio_CXXFLAGS) $(CXXFLAGS) -MT ../src/SoDaRadio-Command.obj -MD -MP -MF ../src/$(DEPDIR)/SoDaRadio-Command.Tpo -c -o ../src/SoDaRadio-Command.obj `if test -f '../src/Command.cxx'; then $(CYGPATH_W) '../src/Command.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/Command.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) ../src/$(DEPDIR)/SoDaRadio-Command.Tpo ../src/$(DEPDIR)/SoDaRadio-Command.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../src/Command.cxx' object='../src/SoDaRadio-Command.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaRadio_CPPFLAGS) $(CPPFLAGS) $(SoDaRadio_CXXFLAGS) $(CXXFLAGS) -c -o SoDaRadio-Command.obj `if test -f '../src/Command.cxx'; then $(CYGPATH_W) '../src/Command.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/Command.cxx'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaRadio_CPPFLAGS) $(CPPFLAGS) $(SoDaRadio_CXXFLAGS) $(CXXFLAGS) -c -o ../src/SoDaRadio-Command.obj `if test -f '../src/Command.cxx'; then $(CYGPATH_W) '../src/Command.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/Command.cxx'; fi`
 
 SoDaRadio-Navigation.o: Navigation.cxx
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaRadio_CPPFLAGS) $(CPPFLAGS) $(SoDaRadio_CXXFLAGS) $(CXXFLAGS) -MT SoDaRadio-Navigation.o -MD -MP -MF $(DEPDIR)/SoDaRadio-Navigation.Tpo -c -o SoDaRadio-Navigation.o `test -f 'Navigation.cxx' || echo '$(srcdir)/'`Navigation.cxx
@@ -662,6 +681,8 @@ clean-generic:
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
+	-rm -f ../src/$(DEPDIR)/$(am__dirstamp)
+	-rm -f ../src/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
@@ -671,7 +692,7 @@ clean: clean-am
 clean-am: clean-binPROGRAMS clean-generic mostlyclean-am
 
 distclean: distclean-am
-	-rm -rf ./$(DEPDIR)
+	-rm -rf ../src/$(DEPDIR) ./$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -717,7 +738,7 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-	-rm -rf ./$(DEPDIR)
+	-rm -rf ../src/$(DEPDIR) ./$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

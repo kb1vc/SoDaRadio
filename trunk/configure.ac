@@ -14,6 +14,8 @@ AC_CONFIG_FILES([Makefile src/Makefile gui/Makefile gui/adjust_GUI.sh exp/Makefi
 
 AC_CONFIG_SRCDIR(src/SoDaServer.cxx)
 
+AC_CHECK_FUNCS([sincos])
+
 AC_CHECK_LIB(portaudio, Pa_GetVersion)
 
 AC_CHECK_LIB(asound, snd_pcm_open)

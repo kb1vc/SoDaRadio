@@ -73,9 +73,10 @@ namespace SoDa {
 	      AudioIfc::DataFormat _fmt,
 	      unsigned int _sample_count_hint = 1024);
 
-#if HAVE_LIBASOUND
     ~AudioALSA() {
+#if HAVE_LIBASOUND
       snd_pcm_close(pcm_out);
+#endif      
     }
     
     /**
@@ -84,7 +85,7 @@ namespace SoDa {
      * @param len number of elements in the buffer to send
      * @return number of elements transferred to the audio output
      */
-    int send(void * buf, unsigned int len);
+    int send(void * buf, unsigned int len) ALSA_DEF ;
 
     /**
      * sendBufferReady -- is there enough space in the audio device
@@ -92,7 +93,7 @@ namespace SoDa {
      * @param len the number of samples that we wish to send
      * @return true if there is sufficient space. 
      */
-    bool sendBufferReady(unsigned int len);
+    bool sendBufferReady(unsigned int len) ALSA_DEF ;
 
     /**
      * recv -- get a buffer of data from the audio input
@@ -101,7 +102,7 @@ namespace SoDa {
      * @param block make this a blocking call --- ignored. 
      * @return number of elements transferred from the audio input
      */
-    int recv(void * buf, unsigned int len, bool block = true); 
+    int recv(void * buf, unsigned int len, bool block = true) ALSA_DEF ; 
 
     /**
      * recvBufferReady -- is there enough space in the audio device
@@ -109,19 +110,22 @@ namespace SoDa {
      * @param len the number of samples that we wish to get
      * @return true if there is sufficient space. 
      */
-    bool recvBufferReady(unsigned int len);
+    bool recvBufferReady(unsigned int len) ALSA_DEF ;
 
     /**
      * stop the output stream so that we don't encounter a buffer underflow
      * while the reciever is muted.
      */
     void sleepOut() {
+#if HAVE_LIBASOUND
       snd_pcm_drain(pcm_out);
+#endif
     }
     /**
      * start the output stream
      */
     void wakeOut() {
+#if HAVE_LIBASOUND
       int err; 
       if((err = snd_pcm_prepare(pcm_out)) < 0) {
 	throw
@@ -133,6 +137,7 @@ namespace SoDa {
 	  SoDaException((boost::format("AudioALSA::wakeOut() Failed to wake after sleepOut() -- %s")
 			 % snd_strerror(err)).str(), this);
       }
+#endif
     }
         
     /**
@@ -140,12 +145,15 @@ namespace SoDa {
      * while the transmitter is inactive.
      */
     void sleepIn() {
+#if HAVE_LIBASOUND
       snd_pcm_drop(pcm_in); 
+#endif
     }
     /**
      * start the input stream
      */
     void wakeIn() {
+#if HAVE_LIBASOUND
       int err; 
       if((err = snd_pcm_prepare(pcm_in)) < 0) {
 	throw
@@ -157,10 +165,11 @@ namespace SoDa {
 	  SoDaException((boost::format("AudioALSA::wakeIn() Failed to wake after sleepIn() -- %s")
 			 % snd_strerror(err)).str(), this);
       }
+#endif
     }
 
   protected:
-    
+#if HAVE_LIBASOUND    
     snd_pcm_t * pcm_out; ///< The playback (output) handle. 
     snd_pcm_t * pcm_in;  ///< The capture (input) handle. 
     snd_pcm_hw_params_t * hw_in_params;  ///< the input parameter list
