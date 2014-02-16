@@ -214,7 +214,7 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
     rx_trequest.args = uhd::device_addr_t("mode_n=integer"); 
     last_rx_tune_result = usrp->set_rx_freq(rx_trequest);
     last_rx_tune_result = checkLock(rx_trequest, 'r', last_rx_tune_result);
-    if(1 || debug_mode) {
+    if(debug_mode) {
       std::cerr << boost::format("RX Tune RF_actual %lf DDC = %lf tuned = %lf target = %lf request  rf = %lf request ddc = %lf\n")
 	% last_rx_tune_result.actual_rf_freq
 	% last_rx_tune_result.actual_dsp_freq
