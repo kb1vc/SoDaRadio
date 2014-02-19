@@ -119,6 +119,8 @@ namespace SoDaRadio_GUI {
     void OnPerYScaleChoice( wxCommandEvent& event );
     void OnPerCFreqStep( wxSpinEvent& event );
     void OnPerRxToCentFreq( wxCommandEvent& event );
+
+    void UpdateCenterFreq(double cfreq); 
   
     void SetPerVals(double cfreq, double reflevel, float yscale, float bspread);
 
@@ -192,6 +194,10 @@ namespace SoDaRadio_GUI {
       strncpy(SDR_version_string, buf, 64);
     }
   
+    void SaveSoDaConfig(const wxString & fname);
+    bool LoadSoDaConfig(const wxString & fname);
+    void CreateDefaultConfig(boost::property_tree::ptree * config_tree);
+    void SetConfigFileName(const wxString & fname); 
     
   private:
     char SDR_version_string[64];
@@ -224,8 +230,6 @@ namespace SoDaRadio_GUI {
     bool cw_mode;
     bool cw_upper;
     bool dead_carrier;
-    void SaveSoDaConfig(const wxString & fname);
-    bool LoadSoDaConfig(const wxString & fname);
     wxString save_config_file_name;
     float tx_rf_outpower;
 
@@ -303,6 +307,16 @@ namespace SoDaRadio_GUI {
   
   };
 
+  class NewConfigDialog : public m_NewConfigDialog {
+  public:
+  NewConfigDialog(wxWindow * parent, SoDaRadio_Top * _radio) : m_NewConfigDialog(parent) {
+      radio = _radio; 
+    }
+    void OnCreateConfigDefault( wxCommandEvent & event);
+    void OnDismissCreateConfigDefault( wxCommandEvent & event);
+    SoDaRadio_Top * radio; 
+  };
+  
   class ControlsDialog : public m_ControlsDialog {
   public:
     ControlsDialog(wxWindow * parent, SoDaRadio_Top * radio);

@@ -1672,3 +1672,64 @@ m_ControlsDialog::~m_ControlsDialog()
 	m_CWSpeed->Disconnect( wxEVT_SCROLL_CHANGED, wxScrollEventHandler( m_ControlsDialog::OnCWSpeed ), NULL, this );
 	m_CtrlDone->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_ControlsDialog::OnCtrlDone ), NULL, this );
 }
+
+m_NewConfigDialog::m_NewConfigDialog( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
+{
+	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
+	
+	wxBoxSizer* bSizer58;
+	bSizer58 = new wxBoxSizer( wxVERTICAL );
+	
+	
+	bSizer58->Add( 0, 0, 1, wxEXPAND, 5 );
+	
+	m_staticText25 = new wxStaticText( this, wxID_ANY, wxT("SoDaRadio could not find a configuration file.\nSelect \"OK\" to create a configuration file in\n${HOME}/.SoDaRadio/SoDa.soda_cfg\""), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE );
+	m_staticText25->Wrap( -1 );
+	bSizer58->Add( m_staticText25, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5 );
+	
+	
+	bSizer58->Add( 0, 0, 1, wxEXPAND, 5 );
+	
+	m_StatusInfo = new wxStaticText( this, wxID_ANY, wxT("                                                                                                         \n                                                                             "), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE );
+	m_StatusInfo->Wrap( -1 );
+	bSizer58->Add( m_StatusInfo, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+	
+	
+	bSizer58->Add( 0, 0, 1, wxEXPAND, 5 );
+	
+	wxBoxSizer* bSizer59;
+	bSizer59 = new wxBoxSizer( wxHORIZONTAL );
+	
+	
+	bSizer59->Add( 0, 0, 1, wxEXPAND, 5 );
+	
+	m_CreateConfigDefault = new wxButton( this, wxID_ANY, wxT("OK"), wxDefaultPosition, wxDefaultSize, 0 );
+	bSizer59->Add( m_CreateConfigDefault, 0, wxALL, 5 );
+	
+	
+	bSizer59->Add( 0, 0, 1, wxEXPAND, 5 );
+	
+	m_NoThanksCreateConfigDefault = new wxButton( this, wxID_ANY, wxT("No Thank You"), wxDefaultPosition, wxDefaultSize, 0 );
+	bSizer59->Add( m_NoThanksCreateConfigDefault, 0, wxALL, 5 );
+	
+	
+	bSizer59->Add( 0, 0, 1, wxEXPAND, 5 );
+	
+	bSizer58->Add( bSizer59, 1, wxEXPAND, 5 );
+	
+	this->SetSizer( bSizer58 );
+	this->Layout();
+	
+	this->Centre( wxBOTH );
+	
+	// Connect Events
+	m_CreateConfigDefault->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_NewConfigDialog::OnCreateConfigDefault ), NULL, this );
+	m_NoThanksCreateConfigDefault->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_NewConfigDialog::OnDismissCreateConfigDefault ), NULL, this );
+}
+
+m_NewConfigDialog::~m_NewConfigDialog()
+{
+	// Disconnect Events
+	m_CreateConfigDefault->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_NewConfigDialog::OnCreateConfigDefault ), NULL, this );
+	m_NoThanksCreateConfigDefault->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_NewConfigDialog::OnDismissCreateConfigDefault ), NULL, this );
+}

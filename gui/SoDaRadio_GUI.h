@@ -446,6 +446,37 @@ namespace SoDaRadio_GUI
 		
 	};
 	
+	///////////////////////////////////////////////////////////////////////////////
+	/// Class m_NewConfigDialog
+	///////////////////////////////////////////////////////////////////////////////
+	class m_NewConfigDialog : public wxDialog 
+	{
+		private:
+		
+		protected:
+			
+			wxStaticText* m_staticText25;
+			
+			wxStaticText* m_StatusInfo;
+			
+			
+			wxButton* m_CreateConfigDefault;
+			
+			wxButton* m_NoThanksCreateConfigDefault;
+			
+			
+			// Virtual event handlers, overide them in your derived class
+			virtual void OnCreateConfigDefault( wxCommandEvent& event ) { event.Skip(); }
+			virtual void OnDismissCreateConfigDefault( wxCommandEvent& event ) { event.Skip(); }
+			
+		
+		public:
+			
+			m_NewConfigDialog( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("Create a Default Configuration?"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 487,273 ), long style = wxDEFAULT_DIALOG_STYLE );
+			~m_NewConfigDialog();
+		
+	};
+	
 } // namespace SoDaRadio_GUI
 
 #endif //__SoDaRadio_GUI__
