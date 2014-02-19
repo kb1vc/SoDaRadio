@@ -1,6 +1,6 @@
 SoDa -- A Software Defined Radio for the Ettus Research USRP
 
-Version 1.1.1
+Version 1.2
 
 This package builds two programs: 
 
@@ -13,9 +13,62 @@ for SoDaServer
 See the INSTALL file for instructions on configuring, building 
 and installing SoDa
 
-The doc directory contains a report on SoDa explaining its
-construction and reason for being. It is not automatically built. 
-cd to the doc directory and type "make".  If you have a reasonable
-pdflatex installation and "inkscape" (an SVG authoring tool) 
-the makefile will produce SoDa_Report.pdf
+---- 
+
+Prerequisites: 
+
+Boost version 1.33 or later -- current builds are against boost 1.55
+wxWidgets -- current build is against version 2.6
+libuhd -- builds against version 003.007
+fftw3 -- builds against version 3.3.0
+
+----
+
+INSTALL Quick Start
+
+# unpack soda-1.2.tar.gz 
+tar xzvf soda-1.2.tar.gz
+cd soda-1.2
+mkdir build
+cd build
+../configure
+make
+make install
+
+----
+
+HOWTO 
+
+To start the radio, connect your Ettus USRP N2xx to 
+the host computer. (I'm assuming that your USRP has a
+WBX module.)  Connect an antenna to the TX/RX port.
+
+
+Then execute SoDaRadio
+
+(If you haven't installed SoDaRadio, but have built it, 
+you can start SoDaRadio from the build directory like this: 
+
+gui/SoDaRadio --server=src/SoDaRadio 
+
+)
+
+It should come up tuned to something like 162.55 or nearby. 
+
+Poke buttons.  Try things.  Don't hit the "TX" button unless
+you have something connected. 
+
+---- 
+
+PROBLEMS?
+
+If you have problems building, post a note in the forum 
+at https://sourceforge.net/p/sodaradio/discussion/general/
+
+If you find a bug, post a ticket at 
+https://sourceforge.net/p/sodaradio/tickets/
+
+If it works, post a note in the discussin forum.  
+
+73 -- es gl. 
 
