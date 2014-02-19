@@ -82,7 +82,7 @@ SoDa::AudioRX::AudioRX(Params * params,
   hilbert = new SoDa::HilbertTransformer(audio_buffer_size);
 
   // initialize the sample for the NBFM and WBFM demodulator
-  last_fm_samp = std::complex<float>(0.0, 0.0); 
+  last_phase_samp = 0.0;
 
   // setup the catchup mechanism that adjusts to differences
   // between the radio's clock frequency and the sound system's clock
@@ -105,7 +105,7 @@ SoDa::AudioRX::AudioRX(Params * params,
   catchup_rand_mask = catchup_rand_mask >> 1;
 
   // debug help
-  dbg_ctr = 0; 
+  dbg_ctr = 0;
 }
 
 void SoDa::AudioRX::demodulateWBFM(SoDaBuf * rxbuf, SoDa::Command::ModulationType mod, float af_gain)
@@ -119,12 +119,21 @@ void SoDa::AudioRX::demodulateWBFM(SoDaBuf * rxbuf, SoDa::Command::ModulationTyp
   std::complex<float> * dbuf = rxbuf->getComplexBuf();
 
   // Interestingly, arctan based demodulation (see Lyons p 486 for instance)
-  // doesn't perform nearly as well as this trick that I got from an unnamed friend.
+  // performs much better than the approximation that avoids the atan call.
+  // Texts that talk about atan generally don't talk about the problem of
+  // rollover, where the sign changes from atan(samp[n]) and atan(samp[n+1]).
+  // In this case, dphase will be much bigger than M_PI, and it should be
+  // "corrected".  We're really trying to find the angular diference between
+  // samples, so the wraparound is important. 
   for(i = 0; i < rf_buffer_size; i++) {
-    float mag = dbuf[i].real() * dbuf[i].real() + dbuf[i].imag() * dbuf[i].imag(); 
-    float diff = dbuf[i].real() * last_fm_samp.imag() - dbuf[i].imag() * last_fm_samp.real(); 
-    demod_out[i] = af_gain * (diff / mag);
-    last_fm_samp = dbuf[i]; 
+    // do the atan demod
+    // measure the phase of the incoming signal.
+    float phase = arg(dbuf[i]);
+    float dphase = phase - last_phase_samp;
+    if(dphase < -M_PI) dphase += 2.0 * M_PI;
+    if(dphase > M_PI) dphase -= 2.0 * M_PI;
+    demod_out[i] = af_gain * dphase; 
+    last_phase_samp = phase; 
   }
   // now downsample it
   wbfm_resampler->apply(demod_out, audio_buffer);
@@ -140,14 +149,25 @@ void SoDa::AudioRX::demodulateNBFM(std::complex<float> * dbuf, SoDa::Command::Mo
 {
   // now allocate a new audio buffer from the buffer ring
   float * audio_buffer = getFreeAudioBuffer(); 
-  std::complex<float> demod_out[audio_buffer_size]; 
-  // then do a differentiating baseband FM demodulation. 
+  std::complex<float> demod_out[audio_buffer_size];
+
+  // Interestingly, arctan based demodulation (see Lyons p 486 for instance)
+  // performs much better than the approximation that avoids the atan call.
+  // Texts that talk about atan generally don't talk about the problem of
+  // rollover, where the sign changes from atan(samp[n]) and atan(samp[n+1]).
+  // In this case, dphase will be much bigger than M_PI, and it should be
+  // "corrected".  We're really trying to find the angular diference between
+  // samples, so the wraparound is important. 
   int i; 
   for(i = 0; i < audio_buffer_size; i++) {
-    float mag = dbuf[i].real() * dbuf[i].real() + dbuf[i].imag() * dbuf[i].imag(); 
-    float diff = dbuf[i].real() * last_fm_samp.imag() - dbuf[i].imag() * last_fm_samp.real(); 
-    demod_out[i] = std::complex<float>(af_gain * (diff / mag), 0.0); 
-    last_fm_samp = dbuf[i]; 
+    // do the atan demod
+    // measure the phase of the incoming signal.
+    float phase = arg(dbuf[i]);
+    float dphase = phase - last_phase_samp;
+    if(dphase < -M_PI) dphase += 2.0 * M_PI;
+    if(dphase > M_PI) dphase -= 2.0 * M_PI;
+    demod_out[i] = af_gain * dphase; 
+    last_phase_samp = phase; 
   }
 
   cur_audio_filter->apply(demod_out, demod_out, 5.0);
@@ -226,6 +246,9 @@ void SoDa::AudioRX::demodulate(SoDaBuf * rxbuf)
     else if(rx_modulation != SoDa::Command::NBFM) {
       cur_audio_filter->apply(dbufi, dbufo, *cur_af_gain);
     }
+    else {
+      nbfm_pre_filter->apply(dbufi, dbufo, 1.0);
+    }
   }
  
   switch(rx_modulation) {
@@ -238,7 +261,6 @@ void SoDa::AudioRX::demodulate(SoDaBuf * rxbuf)
     demodulateSSB(dbufo, SoDa::Command::USB); 
     break;
   case SoDa::Command::NBFM:
-    filter_map[SoDa::Command::BW_PASS]->apply(dbufi, dbufo, 1.0);
     demodulateNBFM(dbufo, SoDa::Command::NBFM, *cur_af_gain);
     break; 
   case SoDa::Command::WBFM:
@@ -494,5 +516,10 @@ void SoDa::AudioRX::buildFilterMap()
 
   fm_audio_filter = new SoDa::OSFilter(50.0, 100.0, 8000.0, 9000.0, 512, 1.0, audio_sample_rate, audio_buffer_size);
   am_audio_filter = filter_map[SoDa::Command::BW_6000]; 
+
   am_pre_filter = new SoDa::OSFilter(0.0, 0.0, 8000.0, 9000.0, 512, 1.0, audio_sample_rate, audio_buffer_size);
+
+  nbfm_pre_filter = new SoDa::OSFilter(0.0, 0.0, 15000.0, 16000.0, 512, 1.0, audio_sample_rate, audio_buffer_size);
+
+
 }

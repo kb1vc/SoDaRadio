@@ -12,3 +12,15 @@
 	* release as soda-1.1.1
 	
 	
+2014-02-16 Matt Reilly kb1vc (kb1vc@kb1vc.org)
+	* Remove spurious dependence on PortAudio
+	* fixed portability problems wrt OSX, still peeling the onion
+	* fixed resampler aliasing problem near nyquist limit. 
+	* released as soda-1.1.1c
+
+2014-02-19 Matt Reilly kb1vc (kb1vc@kb1vc.org)
+	* Fixed typo in TX signal path figure
+	* Changed FM demodulators from differentiator based
+	to atan based.  Audio quality is much improved. 
+
+	
