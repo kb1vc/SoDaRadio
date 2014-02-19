@@ -476,7 +476,7 @@
      inkscape:window-width="1221"
      inkscape:window-height="995"
      inkscape:window-x="2234"
-     inkscape:window-y="64"
+     inkscape:window-y="56"
      inkscape:window-maximized="0"
      units="in"
      inkscape:snap-grids="true">
@@ -788,7 +788,7 @@
          sodipodi:role="line"
          id="tspan6043"
          x="109.85189"
-         y="777.35974">AudioRX</tspan></text>
+         y="777.35974">AudioTX</tspan></text>
     <rect
        style="fill:none;stroke:#070400;stroke-width:1;stroke-linecap:square;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:1, 1;stroke-dashoffset:0"
        id="rect6119"
