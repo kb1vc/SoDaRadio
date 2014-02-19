@@ -39,6 +39,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <string.h>
+#include <boost/format.hpp>
 
 SoDa::UD::ServerSocket::ServerSocket(const std::string & path)
 {
@@ -79,11 +80,13 @@ SoDa::UD::ServerSocket::ServerSocket(const std::string & path)
   ready = false; 
 }
 
-SoDa::UD::ClientSocket::ClientSocket(const std::string & path)
+SoDa::UD::ClientSocket::ClientSocket(const std::string & path, int startup_timeout_count)
 {
+  int retry_count;
   conn_socket = socket(AF_UNIX, SOCK_STREAM, 0);
   if(conn_socket < 0) {
-    std::cerr << "Failed to create client socket... I quit." << std::endl;
+    std::cerr << boost::format("Failed to create client socket on [%s]... I quit.\n")
+			       % path; 
     exit(-1); 
   }
 
@@ -91,7 +94,17 @@ SoDa::UD::ClientSocket::ClientSocket(const std::string & path)
   strncpy(server_address.sun_path, path.c_str(), sizeof(server_address.sun_path));
   int len = strlen(server_address.sun_path) + sizeof(server_address.sun_family); 
 
-  if(connect(conn_socket, (struct sockaddr *) &server_address, len) < 0) {
+  int stat; 
+  for(retry_count = 0; retry_count < startup_timeout_count; retry_count++) {
+    stat = connect(conn_socket, (struct sockaddr *) &server_address, len);
+    if(stat >= 0) break;
+    else {
+      // we should wait a little while before we give up.
+      sleep(1);
+    }
+  }
+
+  if(stat < 0) {
     std::cerr << "Couldn't connect to UNIX socket [" << path << "].  I quit." << std::endl;
     perror("oops.");
     exit(-1); 

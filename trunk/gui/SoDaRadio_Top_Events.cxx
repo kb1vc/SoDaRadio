@@ -36,6 +36,8 @@
 #include "../src/Command.hxx"
 #include "Navigation.hxx"
 #include <math.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 namespace SoDaRadio_GUI {
   
@@ -54,6 +56,56 @@ namespace SoDaRadio_GUI {
     }
   }
 
+  void NewConfigDialog::OnCreateConfigDefault( wxCommandEvent & event)
+  {
+    // get our home directory
+    std::string homedir = getenv("HOME");
+    std::string configdir = homedir + "/.SoDaRadio";
+    std::string configfile = configdir + "/SoDa.soda_cfg";
+
+    // does ${HOME}/.SoDaRadio exist?
+    struct stat sb; 
+    if(stat(configdir.c_str(), &sb) == 0) {
+      // The file exists. 
+      if (!S_ISDIR(sb.st_mode)) {
+	// but it is NOT a directory!
+	// Set an error.
+	std::string ermsg = configdir + " is NOT a directory.\nPlease fix this, and try again.";
+	m_StatusInfo->SetLabel(wxString(ermsg.c_str(), wxConvUTF8));
+	return; 
+      }
+    }
+    else {
+      // create the directory?
+      int stat = mkdir(configdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR);
+      if(stat < 0) {
+	std::string ermsg = "Could not create " + configdir + "\nPlease fix this, and try again.";
+	m_StatusInfo->SetLabel(wxString(ermsg.c_str(), wxConvUTF8));
+	return; 
+      }
+    }
+
+    radio->SaveSoDaConfig(wxString(configfile.c_str(), wxConvUTF8));
+
+    radio->SetConfigFileName(wxString(configfile.c_str(), wxConvUTF8));
+    
+    m_StatusInfo->SetLabel(wxString(wxT("                                  \n                                  ")));    
+    if(IsModal()) EndModal(wxID_OK);
+    else {
+      SetReturnCode(wxID_OK);
+      this->Show(false); 
+    }
+  }
+  
+  void NewConfigDialog::OnDismissCreateConfigDefault( wxCommandEvent & event)
+  {
+    if(IsModal()) EndModal(wxID_OK);
+    else {
+      SetReturnCode(wxID_OK);
+      this->Show(false); 
+    }
+  }
+  
   void SoDaRadio_Top::OnOpenConfig( wxCommandEvent& event )
   {
     wxString defaultDir = wxT("~/.SoDa");
@@ -130,17 +182,14 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnSelectPage( wxNotebookEvent& event )
   {
-    // TODO: Implement OnSelectPage
   }
 
   void SoDaRadio_Top::OnWFallFreqSel( wxMouseEvent& event )
   {
-    // TODO: Implement OnWFallFreqSel
   }
 
   void SoDaRadio_Top::OnPeriodogramFreqSel( wxMouseEvent& event )
   {
-    // TODO: Implement OnPeriodogramFreqSel
   }
 
 
@@ -776,7 +825,6 @@ namespace SoDaRadio_GUI {
 
   void LogDialog::OnLogCellChange( wxGridEvent& event)
   {
-    std::cerr << "Hooooooo!   We changed a cell" << std::endl; 
   }
 
 
@@ -953,7 +1001,6 @@ namespace SoDaRadio_GUI {
   {
     // did it go up or down?
     unsigned long new_cfreq = m_cFreqSpin->GetValue();
-    //  std::cerr << "In OnCFreqStep with new = " << new_cfreq << " and old = " << last_cfreq << std::endl; 
     if(new_cfreq != last_cfreq) {
       // take the difference and make new steps.
       unsigned long diff = new_cfreq - last_cfreq;
@@ -963,7 +1010,6 @@ namespace SoDaRadio_GUI {
       if(last_cfreq < min) last_cfreq = min;
       if(last_cfreq > max) last_cfreq = max;
       spectrum_center_freq = last_cfreq * 1e3;
-      //    std::cerr << "New center frequency = " << spectrum_center_freq << std::endl;
       UpdateAxes();
       m_cFreqSpin->SetValue(last_cfreq);
     }
@@ -1009,12 +1055,14 @@ namespace SoDaRadio_GUI {
   {
     double rxfreq = GetRXFreq();
 
+    UpdateCenterFreq(rxfreq); 
+  }
+
+  void SoDaRadio_Top::UpdateCenterFreq(double cfreq)
+  {
     // round the rxfreq to the nearest 25KHz.
     // and turn it into kHz
-    unsigned long spin_center = 25 * round(rxfreq / 25e3);
-
-    // std::cerr << boost::format("rxfreq = %12.10g spin_center = %ld")
-    //   % rxfreq % spin_center << std::endl; 
+    unsigned long spin_center = 25 * round(cfreq / 25e3);
   
     // and set the spin box.
     unsigned long spin_low, spin_high, spin_step;
@@ -1022,9 +1070,6 @@ namespace SoDaRadio_GUI {
 
     spin_low = spin_center - spread * 10;
     spin_high = spin_center + spread * 10;
-
-    // std::cerr << boost::format("rxfreq = %12.10g spin_center = %ld spin_low = %ld spin_high = %ld spread = %ld")
-    //   % rxfreq % spin_center % spin_low % spin_high % spread << std::endl; 
 
     cfreq_step = 25; 
 
@@ -1037,100 +1082,9 @@ namespace SoDaRadio_GUI {
     UpdateAxes();   
   }
 
-#if 0
-  void ConfigSpectrumDlg::OnRxToCentFreq( wxCommandEvent & event)
-  {
-    SoDaRadio_Top * parent = (SoDaRadio_Top *) this->GetParent();
-    double rxfreq = parent->GetRXFreq();
-
-    // round the rxfreq to the nearest 25KHz.
-    // and turn it into kHz
-    unsigned long spin_center = 25 * round(rxfreq / 25e3);
-  
-    // and set the spin box.
-    unsigned long spin_low, spin_high, spin_step;
-    unsigned long spread = (unsigned long) (GetSpread() / 1.0e3);
-
-    spin_low = spin_center - spread * 10;
-    spin_high = spin_center + spread * 10;
-
-    cfreq_step = 25; 
-
-    m_cFreqSpin->SetRange(spin_low, spin_high);
-    m_cFreqSpin->SetValue(spin_center);
-    last_cfreq = spin_center;
-
-    UpdateAxes();
-  
-  }
-
-  void ConfigSpectrumDlg::OnSet( wxCommandEvent & event)
-  {
-    SoDaRadio_Top * parent = (SoDaRadio_Top *) this->GetParent();
-    bool update_xyplot = false; 
-
-    // what's the new center freq? 
-    double new_cfreq = m_cFreqSpin->GetValue() * 1e3;
-    if(new_cfreq != parent->spectrum_center_freq) {
-      parent->spectrum_center_freq = new_cfreq;
-      update_xyplot = true; 
-    }
-
-    // the bandspread
-    float spread = GetSpread();
-    if(spread != parent->spectrum_bandspread) {
-      parent->spectrum_bandspread = spread; 
-      update_xyplot = true; 
-    }
-    
-    // the y reference level
-    float yref = m_RefLevel->GetValue();
-    if(yref != parent->spectrum_y_reflevel) {
-      parent->spectrum_y_reflevel = yref;
-      update_xyplot = true; 
-    }
-
-    // the y scale factor
-    float yscale = GetYScale();
-    if(yscale != parent->spectrum_y_scale) {
-      parent->spectrum_y_scale = yscale;
-      update_xyplot = true; 
-    }
-
-    if(update_xyplot) {
-      parent->UpdateAxes(); 
-    }
-  }
-
-  void ConfigSpectrumDlg::OnOK( wxCommandEvent & event)
-  {
-    // this is an implicit "set"
-    OnSet(event);
-  
-    if(IsModal() ) {
-      EndModal(wxID_OK);
-    }
-    else {
-      SetReturnCode(wxID_OK);
-      this->Show(false); 
-    }
-  }
-
-  void ConfigSpectrumDlg::OnCancel( wxCommandEvent & event)
-  {
-    if(IsModal() ) {
-      EndModal(wxID_CANCEL);
-    }
-    else {
-      SetReturnCode(wxID_CANCEL);
-      this->Show(false); 
-    }
-  }
-#endif
-
   void SoDaRadio_Top::SetPerVals(double cfreq, double reflevel, float yscale, float bspread)
   {
-  
+    
     m_cFreqSpin->SetRange(cfreq - (bspread * 0.5e-3), cfreq + (bspread * 0.5e-3));
     m_cFreqSpin->SetValue(cfreq);
 
@@ -1204,26 +1158,8 @@ namespace SoDaRadio_GUI {
   {
   }
 
-#if 0
-  void SoDaRadio_Top::OnConfigSpectrum( wxCommandEvent & event)
-  {
-
-    ConfigSpectrumDlg dialog(this);
-    // get the current values and set them.
-    dialog.SetVals(spectrum_center_freq * 1e-3, spectrum_y_reflevel, spectrum_y_scale, spectrum_bandspread); 
-    if(dialog.ShowModal() == wxID_OK) {
-      // std::cerr << "config spectrum returned ok..." << std::endl;
-      // std::cerr << "center freq choice is " << spectrum_center_freq << std::endl; 
-    }
-    else {
-      std::cerr << "config spectrum returned not ok..." << std::endl; 
-    }
-  }
-#endif
-
   void SoDaRadio_Top::OnUpdateSpectrumPlot(wxCommandEvent & event)
   {
-    // std::cerr << "Got update spectrum plot message" << std::endl;
     if(pgram_trace != NULL) {
       pgram_plot->Draw();
       if(wfall_plot != NULL) wfall_plot->DrawNew();
@@ -1239,18 +1175,6 @@ namespace SoDaRadio_GUI {
     float maxval = -1000.0;
     float maxfreq = 0.0; 
     int maxidx = 0; 
-    // for(i = 0; i < len; i++) {
-    //   if(y[i] > maxval) {
-    //     maxidx = i;
-    //     maxval = y[i];
-    //     maxfreq = x[i];
-    //   }
-    // }
-    // std::cerr << "max idx = " << maxidx << std::setprecision(10)
-    // 	    << " maxval =  " << maxval << " maxfreq =  " << maxfreq << " "
-    // 	      << xmin << " " << xmax << " " << ymin << " " << ymax
-    // 	      << std::endl; 
-
   }
 
   void SoDaRadio_Top::OnUpdateGPSLoc(wxCommandEvent & event)

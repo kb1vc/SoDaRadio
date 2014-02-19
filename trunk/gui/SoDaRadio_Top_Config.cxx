@@ -64,8 +64,6 @@ namespace SoDaRadio_GUI {
     config_tree->put("transverter.base.actual", actual_lo_base_freq);
     config_tree->put("transverter.lo.mult", lo_multiplier);
   
-    config_tree->put("disp.band_spread_choice", spectrum_bandspread);
-
     config_tree->put("station.call", from_callsign.mb_str(wxConvUTF8));
     config_tree->put("station.qth", from_grid.mb_str(wxConvUTF8));
 
@@ -79,6 +77,12 @@ namespace SoDaRadio_GUI {
     config_tree->put("spectrum.yscale", spectrum_y_scale);
     config_tree->put("spectrum.bandspread", spectrum_bandspread);
     config_tree->put("spectrum.reflevel", spectrum_y_reflevel);
+    if(SpectrumDisplay->GetSelection() == 0) {
+      config_tree->put("spectrum.display", "waterfall");
+    }
+    else {
+      config_tree->put("spectrum.display", "periodogram");
+    }
   
     config_tree->put("reference.source", tuner->getExtRefEna());
     config_tree->put("tx.tx_rx_locked", tx_rx_locked);
@@ -89,19 +93,41 @@ namespace SoDaRadio_GUI {
 
   }
 
+  void SoDaRadio_Top::CreateDefaultConfig(boost::property_tree::ptree * config_tree)
+  {
+    std::stringstream config_stream;
+
+    // write the default config file into the config stream.
+#include "Default.soda_cfg.h"
+
+    read_xml(config_stream, *config_tree, boost::property_tree::xml_parser::trim_whitespace);    
+  }
+  
+
+  void SoDaRadio_Top::SetConfigFileName(const wxString & fname) {
+    save_config_file_name = fname; 
+  }
+  
   bool SoDaRadio_Top::LoadSoDaConfig(const wxString & fname)
   {
-    // std::cerr << "Loading SoDa configuration" << std::endl; 
+    std::cerr << boost::format("Loading SoDa configuration from file [%s]\n") % fname.mb_str(wxConvUTF8);
     if(config_tree != NULL) delete config_tree;
 
+    config_tree = new boost::property_tree::ptree();
     // does the file exist?
     if(!wxFile::Exists(fname.c_str())) {
-      return false; 
+      std::cerr << "config file not found -- using default." << std::endl; 
+      // then we need to load the default config.
+      CreateDefaultConfig(config_tree);
+      // also pop up the save config dialog box.
+      NewConfigDialog * ncd = new NewConfigDialog(this, this);
+      ncd->Show();
     }
-  
-    config_tree = new boost::property_tree::ptree();
-    read_xml((const char *) fname.mb_str(wxConvUTF8), *config_tree, boost::property_tree::xml_parser::trim_whitespace);
-
+    else {
+      std::ifstream config_stream((const char *) fname.mb_str(wxConvUTF8));
+      read_xml(config_stream, *config_tree, boost::property_tree::xml_parser::trim_whitespace);
+      config_stream.close();
+    }
 
     // now call all the event updates.
     wxCommandEvent nullCE;
@@ -144,10 +170,7 @@ namespace SoDaRadio_GUI {
     controls->setTXPower(tx_rf_outpower);
 
 
-    // update the widget
-    spectrum_bandspread = config_tree->get<float>("disp.band_spread_choice");
-    OnPerBandSpread(nullCE);
-
+    
     from_callsign = wxString::FromUTF8(config_tree->get<std::string>("station.call").c_str());
     from_grid = wxString::FromUTF8(config_tree->get<std::string>("station.qth").c_str());
     to_grid = wxT("FN42bl");
@@ -168,21 +191,24 @@ namespace SoDaRadio_GUI {
   
     controls->setSTGain(config_tree->get<float>("cw.sidetone"));
 
-    spectrum_bandspread = config_tree->get<float>("spectrum.bandspread");
-    spectrum_center_freq = config_tree->get<double>("spectrum.center_freq");
-    last_cfreq = spectrum_center_freq; 
-    m_cFreqSpin->SetValue(spectrum_center_freq);
-    spectrum_y_scale = config_tree->get<float>("spectrum.yscale");
-    SetYScale(spectrum_y_scale); 
-    spectrum_y_reflevel = config_tree->get<float>("spectrum.reflevel");
-    m_RefLevel->SetValue(spectrum_y_reflevel); 
-    SetSpectrum(spectrum_bandspread);
-    UpdateAxes();
-    // tell the spectrum widget where to plot...
-    // OnPerRxToCentFreq(nullCE);
-    // UpdateAxes();
 
     tuner->setExtRefEna(config_tree->get<bool>("reference.source"));
+
+    // update the spectrum widget
+    spectrum_bandspread = config_tree->get<float>("spectrum.bandspread");
+    spectrum_center_freq = config_tree->get<float>("spectrum.center_freq");
+    
+    spectrum_y_reflevel = config_tree->get<float>("spectrum.reflevel");
+    spectrum_y_scale = config_tree->get<float>("spectrum.yscale");
+    SetPerVals(spectrum_center_freq, spectrum_y_reflevel, spectrum_y_scale, spectrum_bandspread);
+    UpdateCenterFreq(spectrum_center_freq);
+    OnPerBandSpread(nullCE);
+    if(config_tree->get<std::string>("spectrum.display") == "waterfall") {
+      SpectrumDisplay->SetSelection(0);
+    }
+    else {
+      SpectrumDisplay->SetSelection(1);
+    }
 
     try {
       tx_rx_locked = config_tree->get<bool>("tx.tx_rx_locked");

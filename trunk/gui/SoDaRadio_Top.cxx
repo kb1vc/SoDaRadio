@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2013,2014 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -27,6 +27,7 @@
 */
 extern "C" {
 #include "dem-gridlib.h"
+#include <string.h>
 }
 #include "SoDaRadio_Top.h"
 #include <wx/string.h>
@@ -35,7 +36,7 @@ extern "C" {
 #include "../src/Command.hxx"
 #include <boost/format.hpp>
 #include "SoDaLogo.xpm"
-
+#include "FindHome.hxx"
 /**
  * @file SoDaRadio_Top.cxx
  *
@@ -69,11 +70,48 @@ namespace SoDaRadio_GUI {
     wxIcon logo((char **) &SoDaLogo);
     this->SetIcon(logo);
 
-    debug_mode = false; 
+    debug_mode = false;
+
+    // Did we find a soda configuration file?  
+
+    // Startup the server process -- it should be in the same directory as
+    // this program, unless an alternate server image was specified. 
+    std::string myhome = findHome();
+
+    // Now start the server
+    std::string server = params.getServerName();
+    std::string server_commandline_string; 
+    if(server == "SoDaServer") {
+      // find it in our home directory
+      server_commandline_string = myhome + "/SoDaServer";
+    }
+    else {
+      server_commandline_string = server; 
+    }
+
     // setup the comm channel.
     std::string sock_basename = params.getServerSocketBasename(); 
-    soda_radio = new SoDa::UD::ClientSocket(sock_basename + "_cmd");
-    soda_fft = new SoDa::UD::ClientSocket(sock_basename + "_wfall");
+
+    // fix a problem with UBUNTU menu proxy... .
+    char mproxyfix[] = "UBUNTU_MENUPROXY=";
+    putenv(mproxyfix);
+    if(server != "None") {
+      if(fork()) {
+	int stat;
+	stat = execl(server_commandline_string.c_str(), server.c_str(), "--uds_name",
+	      sock_basename.c_str(), (char*) 0);
+	if(stat < 0) {
+	  std::cerr << boost::format("Couldn't start SoDaServer. Got error [%s]. Is \"%s\" missing?\n")
+	    % strerror(errno)
+	    % server_commandline_string;
+	  exit(stat);
+	}
+      }
+    }
+
+    // setup the client socket trying once every second for 10 seconds before we give up
+    soda_radio = new SoDa::UD::ClientSocket(sock_basename + "_cmd", 5);
+    soda_fft = new SoDa::UD::ClientSocket(sock_basename + "_wfall", 5);
 
     // create the listener thread
     if(debug_mode) {
@@ -158,7 +196,13 @@ namespace SoDaRadio_GUI {
     }
     // load the configuration from a default file,
     // if available.
-    std::string cfn = params.getConfigFileName(); 
+    std::string cfn = params.getConfigFileName();
+    std::cerr << boost::format("Got config filename = [%s]\n") % cfn; 
+    if(cfn == "") {
+      std::string home_dir(getenv("HOME"));
+      cfn = home_dir + "/.SoDaRadio/SoDa.soda_cfg";
+    }
+    std::cerr << boost::format("About to open config file [%s]\n") % cfn;
     wxString config_filename(cfn.c_str(), wxConvUTF8);
     LoadSoDaConfig(config_filename);
 

@@ -85,7 +85,7 @@ namespace SoDa {
 
     class ClientSocket : public NetSocket {
     public:
-      ClientSocket(const std::string & path);
+      ClientSocket(const std::string & path, int startup_timeout_count = 1);
       ~ClientSocket() { close(conn_socket); }
     private:
       struct hostent * server; 

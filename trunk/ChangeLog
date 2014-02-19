@@ -23,4 +23,21 @@
 	* Changed FM demodulators from differentiator based
 	to atan based.  Audio quality is much improved. 
 
+	* Added The SoDaRadio GUI now automatically starts
+	the server.  If the server is not installed, you can
+	tell SoDaRadio where to find the server with the --server
+	command line switch: 
+
+	gui/SoDaRadio --server=src/SoDaServer
+
+	for instance, if you're running out of the build area. 
+
+	* Added a default configuration that brings the radio
+	up tuned to a national weather service station.  Config
+	can now be saved to ${HOME}/.SoDaRadio and that's where
+	we look first, unless the user supplies the --config
+	command line switch to SoDaRadio.
+
+	* released (soon) as soda-1.2
+
 	
