@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<af>
+	<gain>27</gain>
+	<bw>2</bw>
+</af>
+<rx>
+	<mode>NBFM</mode>
+	<freq>162550000.0</freq>
+	<prev_freq>162450000.0</prev_freq>
+</rx>
+<tx>
+	<freq>146520000.0</freq>
+	<prev_freq>0</prev_freq>
+	<rf_outpower>0.0</rf_outpower>
+	<tx_rx_locked>false</tx_rx_locked>
+</tx>
+<transverter>
+	<base>
+		<nominal>0</nominal>
+		<actual>0</actual>
+	</base>
+	<lo>
+		<mult>0</mult>
+	</lo>
+</transverter>
+<station>
+	<call/>
+	<qth/>
+</station>
+<cw>
+	<speed>10</speed>
+	<sidetone>20</sidetone>
+</cw>
+<spectrum>
+	<center_freq>162555000</center_freq>
+	<yscale>10</yscale>
+	<bandspread>200000</bandspread>
+	<reflevel>0</reflevel>
+	<display>waterfall</display>
+</spectrum>
+<reference>
+	<source>true</source>
+</reference>
