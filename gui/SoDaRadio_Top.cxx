@@ -186,7 +186,7 @@ namespace SoDaRadio_GUI {
     controls->setTXPower(tx_rf_outpower); 
 
     // setup the transverter offset dialog
-    transconf = new TransverterConfigDialog(this, this);
+    bandconf = new BandConfigDialog(this, this);
 
     // setup the Log dialog
     logdialog = new LogDialog(this, this); 
@@ -351,8 +351,9 @@ namespace SoDaRadio_GUI {
   }
 
 
-  void TransverterConfigDialog::UpdateSettings()
+  void BandConfigDialog::UpdateSettings()
   {
+#if 0
     if(radio_top->GetLOMult() != 0) {
       TransverterModeEna->SetValue(true);
       wxString loval;
@@ -362,12 +363,12 @@ namespace SoDaRadio_GUI {
     else {
       TransverterModeEna->SetValue(false);    
     }
-
-  
+#endif  
   }
 
-  void TransverterConfigDialog::ReadSettings()
+  void BandConfigDialog::ReadSettings()
   {
+#if 0
     if(TransverterModeEna->IsChecked()) {
       double v;
       v = (double) TransverterLOMult->GetValue();
@@ -379,6 +380,7 @@ namespace SoDaRadio_GUI {
     else {
       radio_top->SetLOMult(0); 
     }
+#endif
   }
 
 
