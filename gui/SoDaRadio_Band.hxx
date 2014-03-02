@@ -45,9 +45,15 @@ public:
     std::cerr << boost::format("got band name [%s]\n") % band_name; 
     upper_band_edge = banditem->get<double>("upper_band_edge");
     lower_band_edge = banditem->get<double>("lower_band_edge");
+
+    last_tx_freq = banditem->get<double>("last_tx_freq");
+    last_rx_freq = banditem->get<double>("last_rx_freq");
+
     rx_antenna_choice = banditem->get<std::string>("rx_antenna_choice");
     default_mode = banditem->get<std::string>("default_mode");
+
     enable_transmit = banditem->get<bool>("enable_transmit");
+
     band_id = banditem->get<unsigned char>("band_id");
 
     transverter_mode = banditem->get<bool>("transverter_mode");
@@ -67,7 +73,7 @@ public:
 		 std::string rx_ant,
 		 unsigned char _band_id, 
 		 bool tx_ena) {
-    setupBand(name, lower, upper, mode, rx_ant, _band_id, tx_ena); 
+    setupBand(name, lower, upper, mode, rx_ant, _band_id, tx_ena);
   }
 
   void setupBand(std::string name, double lower, double upper,
@@ -83,6 +89,8 @@ public:
     default_mode = mode;
     enable_transmit = tx_ena;
     band_id = _band_id; 
+    last_tx_freq = lower;
+    last_rx_freq = lower; 
   }
 
   void setupTransverter(double lo_freq, double mult, bool low_side) {
@@ -118,9 +126,6 @@ public:
     }
 
     config_tree->add_child("SoDaRadio.bands.band", band);
-  }
-
-  void load(boost::property_tree::ptree * config_bandspec) {
   }
   
   bool inBand(double freq) {
@@ -195,6 +200,17 @@ public:
     return NULL; 
   }
 
+  SoDaRadio_Band * getByIndex(int idx) {
+    int i = 0; 
+    for(std::list< SoDaRadio_Band * >::iterator bi = band_list.begin();
+	bi != band_list.end();
+	++bi, i++) {
+      SoDaRadio_Band * r = *bi;
+      if(i == idx) return r; 
+    }
+    return NULL; 
+  }
+  
   SoDaRadio_Band * getByFreq(double freq) {
     SoDaRadio_Band * ret = NULL;
     double smallest_range = 1e12; // find the best match.

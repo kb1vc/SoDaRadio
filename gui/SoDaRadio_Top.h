@@ -155,6 +155,8 @@ namespace SoDaRadio_GUI {
     double GetLONominalBase() { return nominal_lo_base_freq; }
     void SetLONominalBase(double v) { nominal_lo_base_freq = v; }
 
+    void SetCurrentBand(SoDaRadio_Band * band); 
+
     wxString getModeString() { return m_ModeBox->GetStringSelection(); }
 
     // message types. 
@@ -205,7 +207,7 @@ namespace SoDaRadio_GUI {
     
   private:
     char SDR_version_string[64];
-  
+
     wxString GPS_Lat_Str; // (wxT("XXX"));
     wxString GPS_Lon_Str; // (wxT("XXX"));
     wxString GPS_Grid_Str; //(wxT("XXX"));
@@ -245,6 +247,9 @@ namespace SoDaRadio_GUI {
 
     // the band list.
     SoDaRadio_BandSet * bandset; 
+    SoDaRadio_Band * current_band; ///< the band that we're currently in (or NULL)
+  
+
     
     double applyRXTVOffset(double fr) {
       return fr - rx_transverter_offset; 
