@@ -828,12 +828,17 @@ namespace SoDaRadio_GUI {
   }
 
 
-
-  void SoDaRadio_Top::OnSetTransverterOffset( wxCommandEvent& event)
+  void SoDaRadio_Top::OnBandSelect( wxCommandEvent& event)
   {
-    // set the new stuff.
-    transconf->UpdateSettings(); 
-    transconf->Show(); 
+    std::cerr << "Here!  in onbandselect" << std::endl; 
+  }
+
+  void SoDaRadio_Top::OnConfigBand( wxCommandEvent& event)
+  {
+    // init the list of configured bands in the bandconf dialog
+    bandconf->initBandList(bandset);
+    bandconf->clearTextBoxes(); 
+    bandconf->Show();
   }
 
   void TuningDialog::OnTransvLOCal( wxCommandEvent & event)
@@ -1125,36 +1130,212 @@ namespace SoDaRadio_GUI {
     tuner->Show();
   }
 
+  
   void SoDaRadio_Top::OnCtrlPopup( wxCommandEvent & event)
   {
     // popup a modal tuning dialog.
     controls->Show();
   }
 
-  void TransverterConfigDialog::OnTVConfDone( wxCommandEvent & event)
+  void BandConfigDialog::setChoiceBox(wxChoice * box, std::string & sel)
   {
+    // roll through choices looking for one that matches sel.
+    int i;
+    wxString wsel = wxString(sel.c_str(), wxConvUTF8);
+    
+    for(i = 0; i < box->GetCount(); i++) {
+      if(wsel == box->GetString(i)) {
+	box->SetSelection(i);
+	return; 
+      }
+    }
+  }
+  
+  void BandConfigDialog::initBandList(SoDaRadio_BandSet * bandset)
+  {
+    std::string nm;
+    m_BandChoiceBox->Clear();
+    for(nm = bandset->getFirstName(); nm != ""; nm = bandset->getNextName()) {
+      m_BandChoiceBox->Append(wxString(nm.c_str(), wxConvUTF8));
+    }
+    m_BandChoiceBox->Append(wxString(wxT("Create New Band"))); 
+    m_BandChoiceBox->SetStringSelection(wxString(wxT("Create New Band")));
+
+    bands = bandset;
+
+    radio_top->setupBandSelect(bandset); 
+  }
+
+  void BandConfigDialog::OnConfigChoice(wxCommandEvent & event)
+  {
+    // what band did we choose?
+    // if we already know the band, fill in the blanks.
+    std::string bcb = std::string(m_BandChoiceBox->GetStringSelection().mb_str());
+    if(bcb != "Create New Band") {
+      // find the band choice.
+      SoDaRadio_Band * choice = bands->getByName(bcb);
+
+      if(choice != NULL) {
+	// set the band name
+	m_BandName->SetValue(wxString(bcb.c_str(), wxConvUTF8));
+	// set the low and high edges
+	m_low_edge->SetValue(wxString((boost::format("%f") % choice->lower_band_edge).str().c_str(), wxConvUTF8));
+	m_high_edge->SetValue(wxString((boost::format("%f") % choice->upper_band_edge).str().c_str(), wxConvUTF8));
+	// set the RX ant choice
+	setChoiceBox(m_RXAntChoice, choice->rx_antenna_choice);
+	// set the modulation choice
+	setChoiceBox(m_ModChoice, choice->default_mode);
+	// can we TX on this band?
+	m_TXEna->SetValue(choice->enable_transmit);
+	// set the band ID
+	m_BandID->SetValue(choice->band_id);
+	// is this a transverter band?
+	m_TransverterMode->SetValue(choice->transverter_mode);
+	OnTransverterModeSel(event); 
+	if (choice->transverter_mode) {
+	  // set the injection side
+	  m_InjectionSel->SetSelection(choice->low_side_injection ? 0 : 1);
+	  // set the lo freq
+	  m_TransFreqEntry->SetValue(wxString((boost::format("%f") % choice->transverter_lo_freq).str().c_str(), wxConvUTF8));	  
+	  // set the multiplier
+	  m_TransMultEntry->SetValue(wxString((boost::format("%f") % choice->transverter_multiplier).str().c_str(), wxConvUTF8));
+	}
+      }
+    }
+  }
+  
+  void BandConfigDialog::OnProblem(std::string const & probstring ) {
+    BandConfigProblem * bcp = new BandConfigProblem(this, probstring.c_str()); 
+    bcp->Show(); 
+  }
+
+  void BandConfigProblem::OnBandErrorOK( wxCommandEvent & event)
+  {
+    if(IsModal()) EndModal(wxID_OK);
+    else {
+      SetReturnCode(wxID_OK);
+      this->Show(false); 
+    }
+  }
+  
+  void BandConfigDialog::OnBandOK( wxCommandEvent & event)
+  {
+    std::string bcb = std::string(m_BandChoiceBox->GetStringSelection().mb_str());
+    std::cerr << "selected [" << bcb << "]" << std::endl;
+
+    bool found_problem = false;
+    std::string problem_string = "";
+    
+    std::string bandname; 
+    if(bcb == "Create New Band") {
+      std::cerr << "got create new band, looking at the box..." << std::cerr; 
+      bandname = std::string(m_BandName->GetValue().mb_str());
+      std::cerr << "box had [" << bandname << "]" << std::endl; 
+      if(bandname == "") {
+	// need to pop something up.
+	problem_string = "No Band Name supplied.";
+	found_problem = true; 
+      }
+    }
+    else {
+      bandname = bcb; 
+    }
+
+    std::cerr << "bandname = [" << bandname << "]" << std::endl; 
+    // now find the band entry.
+    SoDaRadio_Band * newband = bands->getByName(bandname);
+    if(newband == NULL) newband = new SoDaRadio_Band();
+
+    double le, ue;
+    m_low_edge->GetValue().ToDouble(&le);
+    if(le == 0.0) {
+      found_problem = true;
+      problem_string = problem_string + "\nPlease specify lower band edge (non zero).";
+    }
+    m_high_edge->GetValue().ToDouble(&ue);
+    if(ue == 0.0) {
+      found_problem = true;
+      problem_string = problem_string + "\nPlease specify upper band edge (non zero).";
+    }
+
+    bool lsi; ///< low side injection.
+    double tr_lo; ///< transverter local osc freq.
+    double tr_mult; ///< transverter multiplier
+    // now check the transverter stuff.
+    if (m_TransverterMode->IsChecked()) {
+      m_TransFreqEntry->GetValue().ToDouble(&tr_lo);
+      m_TransMultEntry->GetValue().ToDouble(&tr_mult);
+
+      if(tr_lo <= 0.0) {
+	found_problem = true;
+	problem_string = problem_string + "\nPlease specify transverter local osc. frequency (non zero).";
+      }
+      if(tr_mult <= 0.0) {
+	found_problem = true;
+	problem_string = problem_string + "\nPlease specify transverter local osc. multiplier (non zero).";
+      }
+
+      lsi = (m_InjectionSel->GetSelection() == wxString(wxT("Low Side")));
+    }
+    
+    std::cerr << boost::format("le = [%lg]  u3 = [%lg]\n") % le % ue; 
+    std::string mode = std::string(m_ModChoice->GetStringSelection().mb_str());
+    std::string ant = std::string(m_RXAntChoice->GetStringSelection().mb_str());
+    bool ena = m_TXEna->IsChecked();
+    unsigned char bid = (unsigned char) (m_BandID->GetValue() & 0xff);
+
+    if(!found_problem) {
+      newband->setupBand(bandname, le, ue, mode, ant, bid, ena);
+      if(m_TransverterMode->IsChecked()) {
+	newband->setupTransverter(tr_lo, tr_mult, lsi); 
+      }
+      
+      bands->add(newband); 
+
+      m_BandName->Clear();
+    
+      if(IsModal()) {
+	EndModal(wxID_OK); 
+      }
+      else {
+	ReadSettings(); 
+	SetReturnCode(wxID_OK);
+	this->Show(false); 
+      }
+    }
+    else {
+      // there was a problem of some sort.  popup the dialog and return.
+      OnProblem(problem_string); 
+    }
+  }
+
+  void BandConfigDialog::OnBandCancel( wxCommandEvent & event)
+  {
+    std::cerr << "got to OnBandCancel" << std::endl; 
     if(IsModal()) {
       EndModal(wxID_OK); 
     }
     else {
-      ReadSettings(); 
       SetReturnCode(wxID_OK);
       this->Show(false); 
     }
   }
 
-  void TransverterConfigDialog::OnTVConfCancel( wxCommandEvent & event)
+  void BandConfigDialog::OnTransverterModeSel( wxCommandEvent & event)
   {
-    if(IsModal()) {
-      EndModal(wxID_OK); 
-    }
-    else {
-      SetReturnCode(wxID_OK);
-      this->Show(false); 
-    }
-  }
+    // enable the other fields.
+    bool ena = m_TransverterMode->IsChecked();
+    m_InjectionSel->Enable(ena);
 
-  void TransverterConfigDialog::OnTVActivate( wxCommandEvent & event)
+    m_TransFreqLabel->Enable(ena); 
+    m_TransFreqLabel2->Enable(ena); 
+    m_TransFreqEntry->Enable(ena); 
+
+    m_TransMultLabel->Enable(ena); 
+    m_TransMultEntry->Enable(ena); 
+  }
+    
+  void BandConfigDialog::OnBandActivate( wxCommandEvent & event)
   {
   }
 

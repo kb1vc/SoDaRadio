@@ -47,13 +47,13 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 	SetMyGrid = new wxMenuItem( ConfigMenu, wxID_ANY, wxString( wxT("Set Current Grid...") ) , wxEmptyString, wxITEM_NORMAL );
 	ConfigMenu->Append( SetMyGrid );
 	
-	wxMenuItem* SetTransverterOffset;
-	SetTransverterOffset = new wxMenuItem( ConfigMenu, wxID_ANY, wxString( wxT("Set Transverter Offset...") ) , wxEmptyString, wxITEM_NORMAL );
-	ConfigMenu->Append( SetTransverterOffset );
-	
 	wxMenuItem* GPSOn;
 	GPSOn = new wxMenuItem( ConfigMenu, wxID_ANY, wxString( wxT("GPS On") ) , wxEmptyString, wxITEM_CHECK );
 	ConfigMenu->Append( GPSOn );
+	
+	wxMenuItem* m_configureBand;
+	m_configureBand = new wxMenuItem( ConfigMenu, wxID_ANY, wxString( wxT("Configure Band") ) , wxEmptyString, wxITEM_NORMAL );
+	ConfigMenu->Append( m_configureBand );
 	
 	m_menubar1->Append( ConfigMenu, wxT("Configure") );
 	
@@ -79,6 +79,9 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 	m_QSOMenu->Append( m_ToggleTX );
 	
 	m_menubar1->Append( m_QSOMenu, wxT("QSO Actions") );
+	
+	m_bandSelect = new wxMenu();
+	m_menubar1->Append( m_bandSelect, wxT("Select Band") );
 	
 	HelpMenu = new wxMenu();
 	wxMenuItem* Aboutitem;
@@ -507,8 +510,8 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 	this->Connect( Quit->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnQuit ) );
 	this->Connect( SetMyCallsign->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnSetFromCall ) );
 	this->Connect( SetMyGrid->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnSetFromGrid ) );
-	this->Connect( SetTransverterOffset->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnSetTransverterOffset ) );
 	this->Connect( GPSOn->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnGPSOnSel ) );
+	this->Connect( m_configureBand->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnConfigBand ) );
 	this->Connect( m_SetToCall->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnQSOMenuSet ) );
 	this->Connect( m_SetToGrid->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnQSOMenuSet ) );
 	this->Connect( m_GoToComment->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnQSOMenuSet ) );
@@ -580,8 +583,8 @@ SoDaRadioFrame::~SoDaRadioFrame()
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnQuit ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnSetFromCall ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnSetFromGrid ) );
-	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnSetTransverterOffset ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnGPSOnSel ) );
+	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnConfigBand ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnQSOMenuSet ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnQSOMenuSet ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnQSOMenuSet ) );
@@ -744,7 +747,6 @@ m_AboutDialog::m_AboutDialog( wxWindow* parent, wxWindowID id, const wxString& t
 	
 	this->SetSizer( bSizer57 );
 	this->Layout();
-	bSizer57->Fit( this );
 	
 	// Connect Events
 	m_AboutOK->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_AboutDialog::OnAboutOK ), NULL, this );
@@ -894,70 +896,6 @@ m_ConfigSpectrum::~m_ConfigSpectrum()
 	m_SaveSpecSettings->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_ConfigSpectrum::OnSet ), NULL, this );
 	m_OK->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_ConfigSpectrum::OnOK ), NULL, this );
 	m_CancelSpecSettings->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_ConfigSpectrum::OnCancel ), NULL, this );
-}
-
-m_TransverterConfigDialog::m_TransverterConfigDialog( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
-{
-	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
-	
-	wxBoxSizer* bSizer43;
-	bSizer43 = new wxBoxSizer( wxVERTICAL );
-	
-	TransverterModeEna = new wxCheckBox( this, wxID_ANY, wxT("Enable Transverter Mode"), wxDefaultPosition, wxDefaultSize, 0 );
-	bSizer43->Add( TransverterModeEna, 0, wxALL, 5 );
-	
-	wxStaticBoxSizer* sbSizer30;
-	sbSizer30 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("LO Base Frequency") ), wxHORIZONTAL );
-	
-	TransverterLOFreq = new wxTextCtrl( this, wxID_ANY, wxT("1136.000"), wxDefaultPosition, wxSize( 150,-1 ), 0 );
-	TransverterLOFreq->SetMaxLength( 12 ); 
-	sbSizer30->Add( TransverterLOFreq, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
-	
-	m_staticText19 = new wxStaticText( this, wxID_ANY, wxT("MHz"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT );
-	m_staticText19->Wrap( -1 );
-	sbSizer30->Add( m_staticText19, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
-	
-	bSizer43->Add( sbSizer30, 1, wxEXPAND, 5 );
-	
-	wxStaticBoxSizer* sbSizer31;
-	sbSizer31 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("LO Multiplier") ), wxHORIZONTAL );
-	
-	
-	sbSizer31->Add( 0, 0, 1, wxEXPAND, 5 );
-	
-	TransverterLOMult = new wxSpinCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 25, 9 );
-	sbSizer31->Add( TransverterLOMult, 0, wxALL, 5 );
-	
-	bSizer43->Add( sbSizer31, 1, wxEXPAND, 5 );
-	
-	wxBoxSizer* bSizer52;
-	bSizer52 = new wxBoxSizer( wxHORIZONTAL );
-	
-	mOK = new wxButton( this, wxID_ANY, wxT("OK"), wxDefaultPosition, wxDefaultSize, 0 );
-	bSizer52->Add( mOK, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
-	
-	
-	bSizer52->Add( 0, 0, 1, wxEXPAND, 5 );
-	
-	mCancel = new wxButton( this, wxID_ANY, wxT("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
-	bSizer52->Add( mCancel, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
-	
-	bSizer43->Add( bSizer52, 1, wxALIGN_CENTER_VERTICAL|wxEXPAND, 5 );
-	
-	this->SetSizer( bSizer43 );
-	this->Layout();
-	bSizer43->Fit( this );
-	
-	// Connect Events
-	mOK->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_TransverterConfigDialog::OnTVConfDone ), NULL, this );
-	mCancel->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_TransverterConfigDialog::OnTVConfCancel ), NULL, this );
-}
-
-m_TransverterConfigDialog::~m_TransverterConfigDialog()
-{
-	// Disconnect Events
-	mOK->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_TransverterConfigDialog::OnTVConfDone ), NULL, this );
-	mCancel->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_TransverterConfigDialog::OnTVConfCancel ), NULL, this );
 }
 
 m_TuningDialog::m_TuningDialog( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
@@ -1690,7 +1628,7 @@ m_NewConfigDialog::m_NewConfigDialog( wxWindow* parent, wxWindowID id, const wxS
 	
 	bSizer58->Add( 0, 0, 1, wxEXPAND, 5 );
 	
-	m_StatusInfo = new wxStaticText( this, wxID_ANY, wxT("                                                                                                         \n                                                                             "), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE );
+	m_StatusInfo = new wxStaticText( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE );
 	m_StatusInfo->Wrap( -1 );
 	bSizer58->Add( m_StatusInfo, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 	
@@ -1732,4 +1670,254 @@ m_NewConfigDialog::~m_NewConfigDialog()
 	// Disconnect Events
 	m_CreateConfigDefault->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_NewConfigDialog::OnCreateConfigDefault ), NULL, this );
 	m_NoThanksCreateConfigDefault->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_NewConfigDialog::OnDismissCreateConfigDefault ), NULL, this );
+}
+
+m_BandConfigDialog::m_BandConfigDialog( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
+{
+	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
+	
+	wxBoxSizer* bSizer60;
+	bSizer60 = new wxBoxSizer( wxVERTICAL );
+	
+	wxBoxSizer* bSizer72;
+	bSizer72 = new wxBoxSizer( wxHORIZONTAL );
+	
+	m_staticText36 = new wxStaticText( this, wxID_ANY, wxT("Band Name"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText36->Wrap( -1 );
+	bSizer72->Add( m_staticText36, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+	
+	wxString m_BandChoiceBoxChoices[] = { wxT("Create New Band") };
+	int m_BandChoiceBoxNChoices = sizeof( m_BandChoiceBoxChoices ) / sizeof( wxString );
+	m_BandChoiceBox = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_BandChoiceBoxNChoices, m_BandChoiceBoxChoices, 0 );
+	m_BandChoiceBox->SetSelection( 0 );
+	m_BandChoiceBox->SetMinSize( wxSize( 200,-1 ) );
+	
+	bSizer72->Add( m_BandChoiceBox, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+	
+	m_BandName = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+	m_BandName->SetMaxLength( 16 ); 
+	m_BandName->SetMinSize( wxSize( 200,-1 ) );
+	
+	bSizer72->Add( m_BandName, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+	
+	bSizer60->Add( bSizer72, 1, wxEXPAND, 5 );
+	
+	wxBoxSizer* bSizer67;
+	bSizer67 = new wxBoxSizer( wxHORIZONTAL );
+	
+	wxBoxSizer* AntFreqRange;
+	AntFreqRange = new wxBoxSizer( wxVERTICAL );
+	
+	wxBoxSizer* bSizer62;
+	bSizer62 = new wxBoxSizer( wxHORIZONTAL );
+	
+	m_staticText27 = new wxStaticText( this, wxID_ANY, wxT("RX Antenna"), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT );
+	m_staticText27->Wrap( -1 );
+	bSizer62->Add( m_staticText27, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+	
+	wxString m_RXAntChoiceChoices[] = { wxT("TX/RX"), wxT("RX2") };
+	int m_RXAntChoiceNChoices = sizeof( m_RXAntChoiceChoices ) / sizeof( wxString );
+	m_RXAntChoice = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_RXAntChoiceNChoices, m_RXAntChoiceChoices, 0 );
+	m_RXAntChoice->SetSelection( 0 );
+	bSizer62->Add( m_RXAntChoice, 0, wxALL, 5 );
+	
+	AntFreqRange->Add( bSizer62, 1, wxEXPAND, 5 );
+	
+	wxBoxSizer* bSizer70;
+	bSizer70 = new wxBoxSizer( wxHORIZONTAL );
+	
+	m_staticText31 = new wxStaticText( this, wxID_ANY, wxT("Lower Band Edge"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText31->Wrap( -1 );
+	bSizer70->Add( m_staticText31, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+	
+	m_low_edge = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+	bSizer70->Add( m_low_edge, 0, wxALL, 5 );
+	
+	m_staticText34 = new wxStaticText( this, wxID_ANY, wxT("MHz"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText34->Wrap( -1 );
+	bSizer70->Add( m_staticText34, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+	
+	AntFreqRange->Add( bSizer70, 1, wxEXPAND, 5 );
+	
+	wxBoxSizer* bSizer71;
+	bSizer71 = new wxBoxSizer( wxHORIZONTAL );
+	
+	m_staticText32 = new wxStaticText( this, wxID_ANY, wxT("Upper Band Edge"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText32->Wrap( -1 );
+	bSizer71->Add( m_staticText32, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+	
+	m_high_edge = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+	bSizer71->Add( m_high_edge, 0, wxALL, 5 );
+	
+	m_staticText33 = new wxStaticText( this, wxID_ANY, wxT("MHz"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText33->Wrap( -1 );
+	bSizer71->Add( m_staticText33, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+	
+	AntFreqRange->Add( bSizer71, 1, wxEXPAND, 5 );
+	
+	wxBoxSizer* bSizer76;
+	bSizer76 = new wxBoxSizer( wxHORIZONTAL );
+	
+	m_staticText39 = new wxStaticText( this, wxID_ANY, wxT("Default Modulation Mode"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText39->Wrap( -1 );
+	bSizer76->Add( m_staticText39, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+	
+	wxString m_ModChoiceChoices[] = { wxT("CW_U"), wxT("CW_L"), wxT("USB"), wxT("LSB"), wxT("AM"), wxT("NBFM"), wxT("WBFM") };
+	int m_ModChoiceNChoices = sizeof( m_ModChoiceChoices ) / sizeof( wxString );
+	m_ModChoice = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_ModChoiceNChoices, m_ModChoiceChoices, 0 );
+	m_ModChoice->SetSelection( 0 );
+	bSizer76->Add( m_ModChoice, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+	
+	AntFreqRange->Add( bSizer76, 1, wxEXPAND, 5 );
+	
+	wxBoxSizer* bSizer77;
+	bSizer77 = new wxBoxSizer( wxHORIZONTAL );
+	
+	m_TXEna = new wxCheckBox( this, wxID_ANY, wxT("Enable Transmit"), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT );
+	bSizer77->Add( m_TXEna, 0, wxALL, 5 );
+	
+	AntFreqRange->Add( bSizer77, 1, wxEXPAND, 5 );
+	
+	bSizer67->Add( AntFreqRange, 1, wxEXPAND, 5 );
+	
+	wxBoxSizer* TransverterSetup;
+	TransverterSetup = new wxBoxSizer( wxVERTICAL );
+	
+	wxBoxSizer* bSizer78;
+	bSizer78 = new wxBoxSizer( wxHORIZONTAL );
+	
+	m_staticText41 = new wxStaticText( this, wxID_ANY, wxT("Band ID Number"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText41->Wrap( -1 );
+	bSizer78->Add( m_staticText41, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
+	
+	m_BandID = new wxSpinCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 255, 0 );
+	bSizer78->Add( m_BandID, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
+	
+	TransverterSetup->Add( bSizer78, 1, wxEXPAND, 5 );
+	
+	m_TransverterMode = new wxCheckBox( this, wxID_ANY, wxT("Transverter Mode"), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT );
+	TransverterSetup->Add( m_TransverterMode, 0, wxALL, 5 );
+	
+	wxString m_InjectionSelChoices[] = { wxT("Low Side"), wxT("High Side") };
+	int m_InjectionSelNChoices = sizeof( m_InjectionSelChoices ) / sizeof( wxString );
+	m_InjectionSel = new wxRadioBox( this, wxID_ANY, wxT("Injection"), wxDefaultPosition, wxDefaultSize, m_InjectionSelNChoices, m_InjectionSelChoices, 1, wxRA_SPECIFY_ROWS );
+	m_InjectionSel->SetSelection( 0 );
+	m_InjectionSel->Enable( false );
+	
+	TransverterSetup->Add( m_InjectionSel, 0, wxALL, 5 );
+	
+	wxBoxSizer* bSizer63;
+	bSizer63 = new wxBoxSizer( wxHORIZONTAL );
+	
+	m_TransFreqLabel = new wxStaticText( this, wxID_ANY, wxT("Transverter LO Frequency"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_TransFreqLabel->Wrap( -1 );
+	m_TransFreqLabel->Enable( false );
+	
+	bSizer63->Add( m_TransFreqLabel, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+	
+	m_TransFreqEntry = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+	m_TransFreqEntry->Enable( false );
+	
+	bSizer63->Add( m_TransFreqEntry, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+	
+	m_TransFreqLabel2 = new wxStaticText( this, wxID_ANY, wxT("MHz"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_TransFreqLabel2->Wrap( -1 );
+	m_TransFreqLabel2->Enable( false );
+	
+	bSizer63->Add( m_TransFreqLabel2, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+	
+	TransverterSetup->Add( bSizer63, 1, wxEXPAND, 5 );
+	
+	wxBoxSizer* bSizer631;
+	bSizer631 = new wxBoxSizer( wxHORIZONTAL );
+	
+	m_TransMultLabel = new wxStaticText( this, wxID_ANY, wxT("Transverter Multiplier"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_TransMultLabel->Wrap( -1 );
+	m_TransMultLabel->Enable( false );
+	
+	bSizer631->Add( m_TransMultLabel, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+	
+	m_TransMultEntry = new wxTextCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+	m_TransMultEntry->Enable( false );
+	
+	bSizer631->Add( m_TransMultEntry, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+	
+	TransverterSetup->Add( bSizer631, 1, wxEXPAND, 5 );
+	
+	bSizer67->Add( TransverterSetup, 1, wxEXPAND, 5 );
+	
+	bSizer60->Add( bSizer67, 3, wxEXPAND, 5 );
+	
+	m_staticline6 = new wxStaticLine( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL );
+	bSizer60->Add( m_staticline6, 0, wxEXPAND | wxALL, 5 );
+	
+	wxBoxSizer* bSizer61;
+	bSizer61 = new wxBoxSizer( wxHORIZONTAL );
+	
+	
+	bSizer61->Add( 0, 0, 1, wxEXPAND, 5 );
+	
+	m_BandCancel = new wxButton( this, wxID_ANY, wxT("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
+	bSizer61->Add( m_BandCancel, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+	
+	
+	bSizer61->Add( 0, 0, 1, wxEXPAND, 5 );
+	
+	m_BandOK = new wxButton( this, wxID_ANY, wxT("OK"), wxDefaultPosition, wxDefaultSize, 0 );
+	bSizer61->Add( m_BandOK, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+	
+	
+	bSizer61->Add( 0, 0, 1, wxEXPAND, 5 );
+	
+	bSizer60->Add( bSizer61, 1, wxEXPAND, 5 );
+	
+	this->SetSizer( bSizer60 );
+	this->Layout();
+	bSizer60->Fit( this );
+	
+	// Connect Events
+	m_BandChoiceBox->Connect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( m_BandConfigDialog::OnConfigChoice ), NULL, this );
+	m_TransverterMode->Connect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( m_BandConfigDialog::OnTransverterModeSel ), NULL, this );
+	m_BandCancel->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_BandConfigDialog::OnBandCancel ), NULL, this );
+	m_BandOK->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_BandConfigDialog::OnBandOK ), NULL, this );
+}
+
+m_BandConfigDialog::~m_BandConfigDialog()
+{
+	// Disconnect Events
+	m_BandChoiceBox->Disconnect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( m_BandConfigDialog::OnConfigChoice ), NULL, this );
+	m_TransverterMode->Disconnect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( m_BandConfigDialog::OnTransverterModeSel ), NULL, this );
+	m_BandCancel->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_BandConfigDialog::OnBandCancel ), NULL, this );
+	m_BandOK->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_BandConfigDialog::OnBandOK ), NULL, this );
+}
+
+m_BandConfigProblem::m_BandConfigProblem( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
+{
+	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
+	
+	wxBoxSizer* bSizer79;
+	bSizer79 = new wxBoxSizer( wxVERTICAL );
+	
+	m_BrokenBandForm = new wxStaticText( this, wxID_ANY, wxT("There was a problem in defining the new band.\nPlease correct the form and try again."), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE );
+	m_BrokenBandForm->Wrap( -1 );
+	bSizer79->Add( m_BrokenBandForm, 1, wxALIGN_CENTER_HORIZONTAL|wxALL, 5 );
+	
+	m_BandConfigReason = new wxStaticText( this, wxID_ANY, wxT("MyLabel"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE );
+	m_BandConfigReason->Wrap( -1 );
+	bSizer79->Add( m_BandConfigReason, 2, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+	
+	m_button38 = new wxButton( this, wxID_ANY, wxT("OK"), wxDefaultPosition, wxDefaultSize, 0 );
+	bSizer79->Add( m_button38, 1, wxALIGN_CENTER_HORIZONTAL|wxALL, 5 );
+	
+	this->SetSizer( bSizer79 );
+	this->Layout();
+	
+	// Connect Events
+	m_button38->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_BandConfigProblem::OnBandErrorOK ), NULL, this );
+}
+
+m_BandConfigProblem::~m_BandConfigProblem()
+{
+	// Disconnect Events
+	m_button38->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_BandConfigProblem::OnBandErrorOK ), NULL, this );
 }
