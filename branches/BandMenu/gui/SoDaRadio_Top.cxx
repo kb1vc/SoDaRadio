@@ -72,6 +72,9 @@ namespace SoDaRadio_GUI {
 
     debug_mode = false;
 
+    // we don't have a "current band" yet.
+    current_band = NULL;
+    
     // Did we find a soda configuration file?  
 
     // Startup the server process -- it should be in the same directory as

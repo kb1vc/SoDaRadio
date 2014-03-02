@@ -59,10 +59,6 @@ namespace SoDaRadio_GUI {
     config_tree->put("SoDaRadio.tx.freq", tx_frequency);
     config_tree->put("SoDaRadio.tx.prev_freq", last_tx_frequency);
     config_tree->put("SoDaRadio.tx.rf_outpower", tx_rf_outpower);
-
-    config_tree->put("SoDaRadio.transverter.base.nominal", nominal_lo_base_freq);
-    config_tree->put("SoDaRadio.transverter.base.actual", actual_lo_base_freq);
-    config_tree->put("SoDaRadio.transverter.lo.mult", lo_multiplier);
   
     config_tree->put("SoDaRadio.station.call", from_callsign.mb_str(wxConvUTF8));
     config_tree->put("SoDaRadio.station.qth", from_grid.mb_str(wxConvUTF8));
@@ -151,14 +147,6 @@ namespace SoDaRadio_GUI {
     m_ModeBox->SetStringSelection(wxString::FromUTF8(config_tree->get<std::string>("rx.mode").c_str()));
     OnModeChoice(nullCE);
   
-
-    nominal_lo_base_freq = config_tree->get<double>("transverter.base.nominal");
-    actual_lo_base_freq = config_tree->get<double>("transverter.base.actual");
-    lo_multiplier = config_tree->get<double>("transverter.lo.mult");
-  
-    tx_transverter_offset = actual_lo_base_freq * lo_multiplier; 
-    rx_transverter_offset = actual_lo_base_freq * lo_multiplier;
-  
     rx_frequency = config_tree->get<double>("rx.freq");
     last_rx_frequency = config_tree->get<double>("rx.prev_freq");
     UpdateRXFreq(rx_frequency);
@@ -241,12 +229,18 @@ namespace SoDaRadio_GUI {
       m_bandSelect->Delete(mitem);
     }
 
+    int band_list_idx = 5000; 
     BOOST_FOREACH(SoDaRadio_Band * v, bandset->band_list) {
-      wxMenuItem * newItem = new wxMenuItem( m_bandSelect, wxID_ANY, wxString(v->getName().c_str(), wxConvUTF8),
+      wxMenuItem * newItem = new wxMenuItem( m_bandSelect, band_list_idx, wxString(v->getName().c_str(), wxConvUTF8),
 					     wxEmptyString, wxITEM_NORMAL); 
       m_bandSelect->Append(newItem);
-      this->Connect(newItem->GetId(), wxEVT_COMMAND_MENU_SELECTED,
+      int id = newItem->GetId();
+      std::cerr << boost::format("got item for band button [%s] id = %d\n") %
+	v->getName() % id; 
+      this->Connect(id, wxEVT_COMMAND_MENU_SELECTED,
 		    wxCommandEventHandler(SoDaRadio_Top::OnBandSelect ));
+
+      band_list_idx++; 
     }
   }
 }

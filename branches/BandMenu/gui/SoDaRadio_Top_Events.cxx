@@ -827,10 +827,65 @@ namespace SoDaRadio_GUI {
   {
   }
 
+  void SoDaRadio_Top::SetCurrentBand(SoDaRadio_Band * band)
+  {
+    // save the old band's last tx/rx
+    if(current_band != NULL) {
+      current_band->last_rx_freq = rx_frequency;
+      current_band->last_tx_freq = tx_frequency;
+    }
+    
+    // now we have a band pointer -- save it
+    current_band = band;
 
+    if(band->transverter_mode) {
+      actual_lo_base_freq = nominal_lo_base_freq = band->transverter_lo_freq; 
+      lo_multiplier = band->transverter_multiplier;
+    }
+    else {
+      actual_lo_base_freq = nominal_lo_base_freq = 0.0;
+      lo_multiplier = 0.0;
+    }
+  
+    tx_transverter_offset = actual_lo_base_freq * lo_multiplier; 
+    rx_transverter_offset = actual_lo_base_freq * lo_multiplier;
+
+    m_PTT->Enable(band->enable_transmit);
+    m_CWsendEx->Enable(band->enable_transmit);
+    m_CWsendInfo->Enable(band->enable_transmit);    
+    m_CWsendCall->Enable(band->enable_transmit);    
+    m_CWsendGrid->Enable(band->enable_transmit);    
+    m_CWsendQSL->Enable(band->enable_transmit);    
+    m_CWsendBK->Enable(band->enable_transmit);    
+    m_CWsend73->Enable(band->enable_transmit);    
+    m_CWsendV->Enable(band->enable_transmit);    
+    m_CWsendCarrier->Enable(band->enable_transmit);
+
+    // now -- set the last tx/rx/freq
+    UpdateRXFreq(band->last_rx_freq);
+    UpdateTXFreq(band->last_tx_freq);
+    tuner->newRXFreq();
+    tuner->newTXFreq();
+  }
+  
   void SoDaRadio_Top::OnBandSelect( wxCommandEvent& event)
   {
-    std::cerr << "Here!  in onbandselect" << std::endl; 
+    std::cerr << "Here!  in onbandselect" << std::endl;
+    // find out which choice we made.
+    wxObject * m = event.GetEventObject();
+    // OK... the event has the band that we selected... bumped up by 5000. 
+    // This is a crappy hack, but I couldn't figure out which button got pressed otherwise.
+    // look it up in the bandset.
+    SoDaRadio_Band * newband = bandset->getByIndex(event.GetId() - 5000); 
+    std::cerr << boost::format("Got event GetId() = %d\n") % event.GetId(); 
+    
+    std::string band_name = newband->getName(); 
+    std::cerr << boost::format("Got menuitem label [%s]\n") % band_name;
+    
+    std::cerr << boost::format("Got newband pointer %p\n") % newband; 
+    // set the new band
+    SetCurrentBand(newband);
+    std::cerr << "Set the current band" << std::endl; 
   }
 
   void SoDaRadio_Top::OnConfigBand( wxCommandEvent& event)
