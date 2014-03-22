@@ -19,6 +19,10 @@
      id="defs4">
     <inkscape:path-effect
        effect="spiro"
+       id="path-effect3956"
+       is_visible="true" />
+    <inkscape:path-effect
+       effect="spiro"
        id="path-effect9112"
        is_visible="true" />
     <inkscape:path-effect
@@ -475,8 +479,8 @@
      showgrid="true"
      inkscape:window-width="1221"
      inkscape:window-height="995"
-     inkscape:window-x="2234"
-     inkscape:window-y="56"
+     inkscape:window-x="2530"
+     inkscape:window-y="40"
      inkscape:window-maximized="0"
      units="in"
      inkscape:snap-grids="true">
@@ -524,68 +528,60 @@
          x="39.454689"
          y="287.35974"
          id="tspan5571">625 kSamp/sec</tspan></text>
-    <g
-       transform="matrix(-1,0,0,1,725.72744,140.08112)"
-       id="g4352">
-      <rect
-         y="652.27869"
-         x="376.19775"
-         height="40"
-         width="45"
-         id="rect4354"
-         style="fill:none;stroke:#070400;stroke-width:1.60000002;stroke-linecap:square;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
-      <path
-         sodipodi:nodetypes="ccsacssc"
-         inkscape:connector-curvature="0"
-         inkscape:original-d="m 380.80224,657.44075 c 4.60158,20.30521 8.12842,0.10375 12.19776,-0.081 4,0 7,0 11,0 0.94281,0 1.57836,1.15673 2,2 1.05409,2.10819 1,7 1,7 0,0 0,0 2,9 0.20452,0.92036 1.05719,2 2,2 5,0 5,0 5,0"
-         inkscape:path-effect="#path-effect4257"
-         id="path4356"
-         d="m 380.80224,657.44075 c 4.0655,-0.0675 8.1317,-0.081 12.19776,-0.081 l 11,0 c 0.26976,0 0.5431,0.006 0.80224,0.0811 0.25915,0.0749 0.49911,0.21821 0.68192,0.41659 0.1828,0.19837 0.30633,0.44633 0.38148,0.70541 0.0752,0.25908 0.10473,0.52882 0.13436,0.79695 0.25892,2.34316 0.59248,4.67807 1,7 l 2,9 c 0.0575,0.2585 0.11277,0.51813 0.19628,0.76943 0.0835,0.2513 0.19921,0.49513 0.36996,0.69753 0.17075,0.20241 0.39716,0.35759 0.6485,0.44098 0.25133,0.0834 0.52045,0.0921 0.78526,0.0921 l 5,0"
-         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
-      <text
-         xml:space="preserve"
-         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Century Schoolbook L;-inkscape-font-specification:Century Schoolbook L Medium"
-         x="-398.98782"
-         y="688.35974"
-         id="text4358"
-         sodipodi:linespacing="125%"
-         transform="scale(-1,1)"><tspan
-           sodipodi:role="line"
-           id="tspan4360"
-           x="-398.98782"
-           y="688.35974">Interp</tspan></text>
-    </g>
-    <g
-       id="g4400"
-       transform="matrix(-1,0,0,1,725.72744,330.08112)">
-      <rect
-         style="fill:none;stroke:#070400;stroke-width:1.60000002;stroke-linecap:square;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-         id="rect4402"
-         width="45"
-         height="40"
-         x="376.19775"
-         y="652.27869" />
-      <path
-         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         d="m 380.80224,657.44075 c 4.0655,-0.0675 8.1317,-0.081 12.19776,-0.081 l 11,0 c 0.26976,0 0.5431,0.006 0.80224,0.0811 0.25915,0.0749 0.49911,0.21821 0.68192,0.41659 0.1828,0.19837 0.30633,0.44633 0.38148,0.70541 0.0752,0.25908 0.10473,0.52882 0.13436,0.79695 0.25892,2.34316 0.59248,4.67807 1,7 l 2,9 c 0.0575,0.2585 0.11277,0.51813 0.19628,0.76943 0.0835,0.2513 0.19921,0.49513 0.36996,0.69753 0.17075,0.20241 0.39716,0.35759 0.6485,0.44098 0.25133,0.0834 0.52045,0.0921 0.78526,0.0921 l 5,0"
-         id="path4404"
-         inkscape:path-effect="#path-effect4257"
-         inkscape:original-d="m 380.80224,657.44075 c 4.60158,20.30521 8.12842,0.10375 12.19776,-0.081 4,0 7,0 11,0 0.94281,0 1.57836,1.15673 2,2 1.05409,2.10819 1,7 1,7 0,0 0,0 2,9 0.20452,0.92036 1.05719,2 2,2 5,0 5,0 5,0"
-         inkscape:connector-curvature="0"
-         sodipodi:nodetypes="ccsacssc" />
-      <text
-         sodipodi:linespacing="125%"
-         id="text4406"
-         y="688.35974"
-         x="-398.98782"
-         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Century Schoolbook L;-inkscape-font-specification:Century Schoolbook L Medium"
-         xml:space="preserve"
-         transform="scale(-1,1)"><tspan
-           y="688.35974"
-           x="-398.98782"
-           id="tspan4408"
-           sodipodi:role="line">Interp</tspan></text>
-    </g>
+    <rect
+       style="fill:none;stroke:#070400;stroke-width:1.60000002;stroke-linecap:square;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="rect4354"
+       width="45"
+       height="40"
+       x="-349.52969"
+       y="792.3598"
+       transform="scale(-1,1)" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 309.72744,797.52187 c 4.0655,-0.0675 8.1317,-0.081 12.19776,-0.081 l 11,0 c 0.26976,0 0.5431,0.006 0.80224,0.0811 0.25915,0.0749 0.49911,0.21821 0.68192,0.41659 0.1828,0.19837 0.30633,0.44633 0.38148,0.70541 0.0752,0.25908 0.10473,0.52882 0.13436,0.79695 0.25892,2.34316 0.59248,4.67807 1,7 l 2,9 c 0.0574,0.2585 0.11277,0.51813 0.19628,0.76943 0.0835,0.2513 0.19921,0.49513 0.36996,0.69753 0.17075,0.20241 0.39716,0.35759 0.6485,0.44098 0.25133,0.0834 0.52045,0.0921 0.78526,0.0921 l 5,0"
+       id="path4356"
+       inkscape:path-effect="#path-effect3956"
+       inkscape:original-d="m 309.72744,797.52187 c 4.60158,20.30521 8.12842,0.10375 12.19776,-0.081 4,0 7,0 11,0 0.94281,0 1.57836,1.15673 2,2 1.05409,2.10819 1,7 1,7 0,0 0,0 2,9 0.20452,0.92036 1.05719,2 2,2 5,0 5,0 5,0"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccsacssc" />
+    <text
+       sodipodi:linespacing="125%"
+       id="text4358"
+       y="828.44086"
+       x="326.73962"
+       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Century Schoolbook L;-inkscape-font-specification:Century Schoolbook L Medium"
+       xml:space="preserve"><tspan
+         y="828.44086"
+         x="326.73962"
+         id="tspan4360"
+         sodipodi:role="line">Interp</tspan></text>
+    <rect
+       y="982.3598"
+       x="-349.52969"
+       height="40"
+       width="45"
+       id="rect4402"
+       style="fill:none;stroke:#070400;stroke-width:1.60000002;stroke-linecap:square;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       transform="scale(-1,1)" />
+    <path
+       sodipodi:nodetypes="ccsacssc"
+       inkscape:connector-curvature="0"
+       inkscape:original-d="m 309.72744,987.52187 c 4.60158,20.30523 8.12842,0.10375 12.19776,-0.081 4,0 7,0 11,0 0.94281,0 1.57836,1.15673 2,2 1.05409,2.10819 1,7 1,7 0,0 0,0 2,9.00003 0.20452,0.9203 1.05719,2 2,2 5,0 5,0 5,0"
+       inkscape:path-effect="#path-effect4257"
+       id="path4404"
+       d="m 309.72744,987.52187 c 4.0655,-0.0675 8.1317,-0.081 12.19776,-0.081 l 11,0 c 0.26976,0 0.5431,0.006 0.80224,0.0811 0.25915,0.0749 0.49911,0.21821 0.68192,0.41659 0.1828,0.19837 0.30633,0.44633 0.38148,0.70541 0.0752,0.25908 0.10473,0.52882 0.13436,0.79695 0.25892,2.34316 0.59248,4.67807 1,7 l 2,9.00003 c 0.0574,0.2585 0.11277,0.5181 0.19628,0.7694 0.0835,0.2513 0.19921,0.4952 0.36996,0.6976 0.17075,0.2024 0.39716,0.3575 0.6485,0.4409 0.25133,0.083 0.52045,0.092 0.78526,0.092 l 5,0"
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    <text
+       xml:space="preserve"
+       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Century Schoolbook L;-inkscape-font-specification:Century Schoolbook L Medium"
+       x="326.73962"
+       y="1018.4409"
+       id="text4406"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4408"
+         x="326.73962"
+         y="1018.4409">Interp</tspan></text>
     <text
        sodipodi:linespacing="125%"
        id="text4420"
