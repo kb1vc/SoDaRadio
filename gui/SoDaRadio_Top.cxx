@@ -72,6 +72,9 @@ namespace SoDaRadio_GUI {
 
     debug_mode = false;
 
+    // we don't have a "current band" yet.
+    current_band = NULL;
+    
     // Did we find a soda configuration file?  
 
     // Startup the server process -- it should be in the same directory as
@@ -186,7 +189,7 @@ namespace SoDaRadio_GUI {
     controls->setTXPower(tx_rf_outpower); 
 
     // setup the transverter offset dialog
-    transconf = new TransverterConfigDialog(this, this);
+    bandconf = new BandConfigDialog(this, this);
 
     // setup the Log dialog
     logdialog = new LogDialog(this, this); 
@@ -197,12 +200,12 @@ namespace SoDaRadio_GUI {
     // load the configuration from a default file,
     // if available.
     std::string cfn = params.getConfigFileName();
-    std::cerr << boost::format("Got config filename = [%s]\n") % cfn; 
+
     if(cfn == "") {
       std::string home_dir(getenv("HOME"));
       cfn = home_dir + "/.SoDaRadio/SoDa.soda_cfg";
     }
-    std::cerr << boost::format("About to open config file [%s]\n") % cfn;
+
     wxString config_filename(cfn.c_str(), wxConvUTF8);
     LoadSoDaConfig(config_filename);
 
@@ -304,10 +307,17 @@ namespace SoDaRadio_GUI {
 
     // and update the radio
     SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::TX_RETUNE_FREQ,
-		       applyRXTVOffset(tx_frequency));
+		       applyTXTVOffset(tx_frequency));
     sendMsg(&ncmd);
   }
 
+  void SoDaRadio_Top::setRXAnt(std::string rx_ant_sel)
+  {
+    SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::RX_ANT,
+		       rx_ant_sel);
+    sendMsg(&ncmd);
+  }
+  
   void SoDaRadio_Top::setGPSLoc(double lat, double lon)
   {
     std::string slat = (boost::format("%6.3f") % lat).str();
@@ -349,39 +359,6 @@ namespace SoDaRadio_GUI {
     AddPendingEvent(event); 
   
   }
-
-
-  void TransverterConfigDialog::UpdateSettings()
-  {
-    if(radio_top->GetLOMult() != 0) {
-      TransverterModeEna->SetValue(true);
-      wxString loval;
-      loval.Printf(wxT("%f"), radio_top->GetLONominalBase() * 1e-6);
-      TransverterLOFreq->SetValue(loval);
-    }
-    else {
-      TransverterModeEna->SetValue(false);    
-    }
-
-  
-  }
-
-  void TransverterConfigDialog::ReadSettings()
-  {
-    if(TransverterModeEna->IsChecked()) {
-      double v;
-      v = (double) TransverterLOMult->GetValue();
-      radio_top->SetLOMult(v);
-      if(TransverterLOFreq->GetValue().ToDouble(&v)) {
-	radio_top->SetLONominalBase(v * 1e6); 
-      }
-    }
-    else {
-      radio_top->SetLOMult(0); 
-    }
-  }
-
-
 
   TuningDialog::TuningDialog(wxWindow * parent, SoDaRadio_Top * radio) :
     m_TuningDialog(parent)
