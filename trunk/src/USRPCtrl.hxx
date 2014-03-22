@@ -120,7 +120,12 @@ namespace SoDa {
     // USRP stuff.
     uhd::usrp::multi_usrp::sptr usrp; ///< to which USRP unit is this connected?
     uhd::usrp::dboard_iface::sptr dboard;  ///< the daughterboard we're controlling
+    // need this for TX/RX enable.
+    uhd::property_tree::sptr tx_fe_subtree; ///< property tree from daughtercard module
 
+    // Capability Flags --
+    bool supports_tx_gpio; ///< does this unit support GPIO signals?  (B2xx does not as of 3.7.0)
+    
     // parallel IO to turn on RX ena and TX ena
     // specific to WBX right now.
 
@@ -167,8 +172,6 @@ namespace SoDa {
     double tx_samp_rate; ///< sample rate to USRP TX chain. 
     std::string tx_ant;  ///< TX antenna choice (usually has to be TX or TX/RX1?
 
-    // need this for TX/RX enable.
-    uhd::property_tree::sptr tx_fe_subtree; ///< property tree from daughtercard module
 
     // enables verbose messages
     bool debug_mode; ///< print stuff when we are in debug mode
