@@ -40,9 +40,7 @@ class SoDaRadio_Band {
 public:
   SoDaRadio_Band(boost::property_tree::ptree * banditem) {
     
-    std::cerr << "About to read bandname." << std::endl; 
     band_name = banditem->get<std::string>("name");
-    std::cerr << boost::format("got band name [%s]\n") % band_name; 
     upper_band_edge = banditem->get<double>("upper_band_edge");
     lower_band_edge = banditem->get<double>("lower_band_edge");
 
@@ -139,8 +137,6 @@ public:
   void save(boost::property_tree::ptree * config_tree) {
 
     boost::property_tree::ptree band;
-    std::cerr << boost::format("Saving band [%s] ube = %g lbe = %g\n")
-      % band_name % upper_band_edge % lower_band_edge; 
     band.put("name", band_name);
     band.put("upper_band_edge", upper_band_edge);
     band.put("lower_band_edge", lower_band_edge);
@@ -177,7 +173,7 @@ public:
     
   bool getTXEnable() { return enable_transmit; }
 
-  bool isNamed(std::string & name) { return band_name == name; }
+  bool isNamed(const std::string & name) { return band_name == name; }
 
   std::string & getName() { return band_name; }
 
@@ -223,14 +219,11 @@ public:
 class SoDaRadio_BandSet {
 public:
   SoDaRadio_BandSet(boost::property_tree::ptree * config_tree) {
-    std::cerr << boost::format("in bandset create:\n");
     if(!config_tree->get_child_optional("bands")) {
-      std::cerr << boost::format("in bandset create no children found.\n");      
       return;
     }
 
     BOOST_FOREACH(boost::property_tree::ptree::value_type & v, config_tree->get_child("bands") ) {
-      std::cerr << boost::format("in bandset create with v.first = %s\n") % v.first;
       if(v.first == "band") {
 	SoDaRadio_Band * nb = new SoDaRadio_Band(&(v.second));
 	add(nb);
@@ -242,18 +235,15 @@ public:
     for(std::list< SoDaRadio_Band * >::iterator bi = band_list.begin();
 	bi != band_list.end();
 	++bi) {
-      std::cerr << boost::format("Saving band [%s]\n") % (*bi)->getName();
       (*bi)->save(config_tree); 
     }    
   }
 
   void add(SoDaRadio_Band * band) {
-    std::cerr << boost::format("Adding band [%s] freq range [%lg %lg]\n")
-      % band->getName() % band->lower_band_edge % band->upper_band_edge; 
     band_list.push_back(band); 
   }
 
-  SoDaRadio_Band * getByName(std::string & name) {
+  SoDaRadio_Band * getByName(const std::string & name) {
     for(std::list< SoDaRadio_Band * >::iterator bi = band_list.begin();
 	bi != band_list.end();
 	++bi) {

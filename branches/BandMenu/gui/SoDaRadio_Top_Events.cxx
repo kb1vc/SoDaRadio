@@ -850,23 +850,15 @@ namespace SoDaRadio_GUI {
     current_band = band;
 
     if(band->transverter_mode) {
-      actual_lo_base_freq = nominal_lo_base_freq = band->transverter_lo_freq; 
+      actual_lo_base_freq = nominal_lo_base_freq = band->transverter_lo_freq * 1e6; 
       lo_multiplier = band->transverter_multiplier;
+      setLOOffset(0.0);
     }
     else {
       actual_lo_base_freq = nominal_lo_base_freq = 0.0;
       lo_multiplier = 0.0;
+      setLOOffset(0.0);
     }
-
-    char te = band->enable_transmit ? 'T' : 'F';
-    std::cerr << boost::format("Band: [%f:%f] last rx/tx %f/%f TransEn: %c  RX ant %s id = %d\n")
-      % band->lower_band_edge % band->upper_band_edge
-      % band->last_rx_freq % band->last_tx_freq
-      % te % band->rx_antenna_choice % band->band_id;
-    
-
-    tx_transverter_offset = actual_lo_base_freq * lo_multiplier; 
-    rx_transverter_offset = actual_lo_base_freq * lo_multiplier;
 
     m_PTT->Enable(band->enable_transmit);
     m_CWsendEx->Enable(band->enable_transmit);
@@ -915,22 +907,16 @@ namespace SoDaRadio_GUI {
   
   void SoDaRadio_Top::OnBandSelect( wxCommandEvent& event)
   {
-    std::cerr << "Here!  in onbandselect" << std::endl;
     // find out which choice we made.
     wxObject * m = event.GetEventObject();
     // OK... the event has the band that we selected... bumped up by 5000. 
     // This is a crappy hack, but I couldn't figure out which button got pressed otherwise.
     // look it up in the bandset.
     SoDaRadio_Band * newband = bandset->getByIndex(event.GetId() - 5000); 
-    std::cerr << boost::format("Got event GetId() = %d\n") % event.GetId(); 
-    
     std::string band_name = newband->getName(); 
-    std::cerr << boost::format("Got menuitem label [%s]\n") % band_name;
     
-    std::cerr << boost::format("Got newband pointer %p\n") % newband; 
     // set the new band
     SetCurrentBand(newband);
-    std::cerr << "Set the current band" << std::endl; 
   }
 
   void SoDaRadio_Top::OnConfigBand( wxCommandEvent& event)
@@ -1321,16 +1307,13 @@ namespace SoDaRadio_GUI {
   void BandConfigDialog::OnBandOK( wxCommandEvent & event)
   {
     std::string bcb = std::string(m_BandChoiceBox->GetStringSelection().mb_str());
-    std::cerr << "selected [" << bcb << "]" << std::endl;
 
     bool found_problem = false;
     std::string problem_string = "";
     
     std::string bandname; 
     if(bcb == "Create New Band") {
-      std::cerr << "got create new band, looking at the box..." << std::cerr; 
       bandname = std::string(m_BandName->GetValue().mb_str());
-      std::cerr << "box had [" << bandname << "]" << std::endl; 
       if(bandname == "") {
 	// need to pop something up.
 	problem_string = "No Band Name supplied.";
@@ -1341,11 +1324,9 @@ namespace SoDaRadio_GUI {
       bandname = bcb; 
     }
 
-    std::cerr << "bandname = [" << bandname << "]" << std::endl; 
     // now find the band entry.
     SoDaRadio_Band * newband = bands->getByName(bandname);
     if(newband == NULL) {
-      std::cerr << "in OnBandOK creating new band" << std::endl; 
       newband = new SoDaRadio_Band();
     }
 
@@ -1381,7 +1362,6 @@ namespace SoDaRadio_GUI {
       lsi = (m_InjectionSel->GetSelection() == wxString(wxT("Low Side")));
     }
     
-    std::cerr << boost::format("le = [%lg]  u3 = [%lg]\n") % le % ue; 
     std::string mode = std::string(m_ModChoice->GetStringSelection().mb_str());
     std::string ant = std::string(m_RXAntChoice->GetStringSelection().mb_str());
     bool ena = m_TXEna->IsChecked();
@@ -1401,7 +1381,6 @@ namespace SoDaRadio_GUI {
 	EndModal(wxID_OK); 
       }
       else {
-	ReadSettings(); 
 	SetReturnCode(wxID_OK);
 	this->Show(false); 
       }
@@ -1415,7 +1394,6 @@ namespace SoDaRadio_GUI {
 
   void BandConfigDialog::OnBandCancel( wxCommandEvent & event)
   {
-    std::cerr << "got to OnBandCancel" << std::endl; 
     if(IsModal()) {
       EndModal(wxID_OK); 
     }

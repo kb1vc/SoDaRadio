@@ -200,12 +200,12 @@ namespace SoDaRadio_GUI {
     // load the configuration from a default file,
     // if available.
     std::string cfn = params.getConfigFileName();
-    std::cerr << boost::format("Got config filename = [%s]\n") % cfn; 
+
     if(cfn == "") {
       std::string home_dir(getenv("HOME"));
       cfn = home_dir + "/.SoDaRadio/SoDa.soda_cfg";
     }
-    std::cerr << boost::format("About to open config file [%s]\n") % cfn;
+
     wxString config_filename(cfn.c_str(), wxConvUTF8);
     LoadSoDaConfig(config_filename);
 
@@ -278,8 +278,6 @@ namespace SoDaRadio_GUI {
     // update the rx frequency field and all display markers.
     rx_frequency = freq;
 
-    std::cerr << boost::format("In UpdateRXFreq with new freq = %f\n") % freq;
-
     // update the tuner
     tuner->newRXFreq();
   
@@ -309,7 +307,7 @@ namespace SoDaRadio_GUI {
 
     // and update the radio
     SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::TX_RETUNE_FREQ,
-		       applyRXTVOffset(tx_frequency));
+		       applyTXTVOffset(tx_frequency));
     sendMsg(&ncmd);
   }
 
@@ -361,41 +359,6 @@ namespace SoDaRadio_GUI {
     AddPendingEvent(event); 
   
   }
-
-
-  void BandConfigDialog::UpdateSettings()
-  {
-#if 0
-    if(radio_top->GetLOMult() != 0) {
-      TransverterModeEna->SetValue(true);
-      wxString loval;
-      loval.Printf(wxT("%f"), radio_top->GetLONominalBase() * 1e-6);
-      TransverterLOFreq->SetValue(loval);
-    }
-    else {
-      TransverterModeEna->SetValue(false);    
-    }
-#endif  
-  }
-
-  void BandConfigDialog::ReadSettings()
-  {
-#if 0
-    if(TransverterModeEna->IsChecked()) {
-      double v;
-      v = (double) TransverterLOMult->GetValue();
-      radio_top->SetLOMult(v);
-      if(TransverterLOFreq->GetValue().ToDouble(&v)) {
-	radio_top->SetLONominalBase(v * 1e6); 
-      }
-    }
-    else {
-      radio_top->SetLOMult(0); 
-    }
-#endif
-  }
-
-
 
   TuningDialog::TuningDialog(wxWindow * parent, SoDaRadio_Top * radio) :
     m_TuningDialog(parent)
