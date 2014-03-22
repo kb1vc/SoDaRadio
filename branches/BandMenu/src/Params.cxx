@@ -61,7 +61,7 @@ void SoDa::Params::readConfigFile(std::string & cf_name)
   clock_source = "internal";
   rx_rate = 625000.0; // 100.0e6/256.;
   tx_rate = 625000.0 / 2.0 ; //100.0e6/2048.;
-  rx_ant = "TX/RX"; // "RX2";
+  rx_ant = "RX2";
   tx_ant = "TX/RX";
 }
 

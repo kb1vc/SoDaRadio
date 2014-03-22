@@ -43,10 +43,8 @@ namespace SoDaRadio_GUI {
   
   void SoDaRadio_Top::SaveSoDaConfig(const wxString & fname)
   {
-    // std::cerr << "In save soda config with config_tree == " << config_tree << std::endl;
-    //    if(config_tree == NULL) {
-      config_tree = new boost::property_tree::ptree();
-      //    }
+
+    config_tree = new boost::property_tree::ptree();
 
     config_tree->put("SoDaRadio.af.gain", 3.0);
     //std::cerr << "completed get tree put" << std::endl; 
@@ -85,6 +83,7 @@ namespace SoDaRadio_GUI {
     boost::property_tree::xml_writer_settings<char> wset('\t',1);
 
     // save the band configurations to the tree.
+    SaveCurrentBand();
     bandset->save(config_tree);
     
     // std::cerr << "Got char tab set." << std::endl; 
@@ -108,13 +107,12 @@ namespace SoDaRadio_GUI {
   
   bool SoDaRadio_Top::LoadSoDaConfig(const wxString & fname)
   {
-    std::cerr << boost::format("Loading SoDa configuration from file [%s]\n") % fname.mb_str(wxConvUTF8);
+
     if(config_tree != NULL) delete config_tree;
 
     config_tree = new boost::property_tree::ptree();
     // does the file exist?
     if(!wxFile::Exists(fname.c_str())) {
-      std::cerr << "config file not found -- using default." << std::endl; 
       // then we need to load the default config.
       CreateDefaultConfig(config_tree);
       // also pop up the save config dialog box.
@@ -181,10 +179,9 @@ namespace SoDaRadio_GUI {
 
     // these are the gain controls.
     m_AFGain->SetValue(config_tree->get<float>("af.gain"));
-    OnAFBWChoice(nullCE);
-  
     m_AFBWChoice->SetSelection(config_tree->get<int>("af.bw"));
-    OnAFGainScroll(nullSE);
+    OnAFGainScroll(nullSE);  
+    OnAFBWChoice(nullCE);
   
 
     controls->setCWSpeed(config_tree->get<float>("cw.speed"));

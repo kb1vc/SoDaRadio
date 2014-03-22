@@ -155,6 +155,7 @@ namespace SoDaRadio_GUI {
     double GetLONominalBase() { return nominal_lo_base_freq; }
     void SetLONominalBase(double v) { nominal_lo_base_freq = v; }
 
+    void SaveCurrentBand();
     void SetCurrentBand(SoDaRadio_Band * band); 
 
     wxString getModeString() { return m_ModeBox->GetStringSelection(); }
@@ -203,7 +204,8 @@ namespace SoDaRadio_GUI {
     void CreateDefaultConfig(boost::property_tree::ptree * config_tree);
     void SetConfigFileName(const wxString & fname); 
 
-    void setupBandSelect(SoDaRadio_BandSet * bandset); 
+    void setupBandSelect(SoDaRadio_BandSet * bandset);
+    
     
   private:
     char SDR_version_string[64];
@@ -238,6 +240,9 @@ namespace SoDaRadio_GUI {
     bool dead_carrier;
     wxString save_config_file_name;
     float tx_rf_outpower;
+
+    // the antenna choice
+    void setRXAnt(std::string rx_ant_sel); 
 
     double tx_transverter_offset, rx_transverter_offset;
 

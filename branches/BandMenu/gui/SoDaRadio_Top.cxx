@@ -278,6 +278,8 @@ namespace SoDaRadio_GUI {
     // update the rx frequency field and all display markers.
     rx_frequency = freq;
 
+    std::cerr << boost::format("In UpdateRXFreq with new freq = %f\n") % freq;
+
     // update the tuner
     tuner->newRXFreq();
   
@@ -311,6 +313,13 @@ namespace SoDaRadio_GUI {
     sendMsg(&ncmd);
   }
 
+  void SoDaRadio_Top::setRXAnt(std::string rx_ant_sel)
+  {
+    SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::RX_ANT,
+		       rx_ant_sel);
+    sendMsg(&ncmd);
+  }
+  
   void SoDaRadio_Top::setGPSLoc(double lat, double lon)
   {
     std::string slat = (boost::format("%6.3f") % lat).str();

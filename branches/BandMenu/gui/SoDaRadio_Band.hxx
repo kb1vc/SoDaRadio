@@ -57,11 +57,39 @@ public:
     band_id = banditem->get<unsigned char>("band_id");
 
     transverter_mode = banditem->get<bool>("transverter_mode");
+
     if(transverter_mode) {
       transverter_lo_freq = banditem->get<double>("transverter_lo_freq");
       transverter_multiplier = banditem->get<double>("transverter_multiplier");
       low_side_injection = banditem->get<bool>("low_side_injection"); 
     }
+
+    try {
+      tx_rx_locked = banditem->get<bool>("tx.rx_locked");
+    } catch (boost::exception const & ex) {
+      tx_rx_locked = true;
+    }
+    try {
+      tx_rf_outpower = banditem->get<float>("tx.outpower");
+    } catch (boost::exception const & ex) {
+      tx_rf_outpower = 0.0;
+    }
+    try {
+      af_gain = banditem->get<float>("af.gain");
+    } catch (boost::exception const & ex) {
+      af_gain = 0.0;
+    }
+    try {
+      af_bw = banditem->get<int>("af.bw");
+    } catch (boost::exception const & ex) {
+      af_bw = 2;
+    }
+    try {
+      rf_gain = banditem->get<float>("rf.gain");
+    } catch (boost::exception const & ex) {
+      rf_gain = 0.0;
+    }
+    
   }
 
   SoDaRadio_Band() {
@@ -91,6 +119,13 @@ public:
     band_id = _band_id; 
     last_tx_freq = lower;
     last_rx_freq = lower; 
+
+    af_gain = 0.0;
+    rf_gain = 0.0;
+    af_bw = 2; 
+
+    tx_rf_outpower = 0.0;
+    tx_rx_locked = true;
   }
 
   void setupTransverter(double lo_freq, double mult, bool low_side) {
@@ -100,6 +135,7 @@ public:
     low_side_injection = low_side; 
   }
 
+  
   void save(boost::property_tree::ptree * config_tree) {
 
     boost::property_tree::ptree band;
@@ -114,6 +150,13 @@ public:
     band.put("enable_transmit", enable_transmit); 
     band.put("default_mode", default_mode);
     band.put("band_id", band_id);
+
+    band.put("af.gain", af_gain);
+    band.put("rf.gain", rf_gain);
+    band.put("af.bw", af_bw);
+
+    band.put("tx.outpower", tx_rf_outpower);
+    band.put("tx.rx_locked", tx_rx_locked);
 
     if(transverter_mode) {
       band.put("transverter_mode", true);
@@ -137,7 +180,17 @@ public:
   bool isNamed(std::string & name) { return band_name == name; }
 
   std::string & getName() { return band_name; }
-  
+
+  void setRXControls(float af, float rf, int bw) {
+    af_gain = af;
+    rf_gain = rf;
+    af_bw = bw; 
+  }
+
+  void setTXControls(float power, bool r_t_l) {
+    tx_rf_outpower = power;
+    tx_rx_locked = r_t_l;
+  }
 public:
 
   std::string band_name; ///< The name of this band (10GHz, or Air VHF)
@@ -151,9 +204,19 @@ public:
   bool transverter_mode; ///< if true, we use a transverter for this band.
   double transverter_lo_freq; ///< this is the LO freq that we'll measure for calibration purposes.
   double transverter_multiplier; ///< actual freq = tuned_freq + lo_freq * mult
-  bool low_side_injection; 
+  bool low_side_injection;
 
-  std::string rx_antenna_choice;
+  // transmitter settings
+  float tx_rf_outpower; ///< transmitter power setting
+  bool tx_rx_locked; ///< lock transmit and receive frequencies
+  
+  // receiver gain settings
+  float af_gain; ///< receiver AF gain
+  float rf_gain; ///< receiver RF gain
+  int af_bw; ///< receiver AF bandwidth -- select filter
+
+  std::string rx_antenna_choice; ///< choose one port or the other for RX -- tx is always TX/RX port.
+  
   unsigned char band_id; ///< an 8 bit specifier to select the band on an external bandswitch.
 }; 
 
