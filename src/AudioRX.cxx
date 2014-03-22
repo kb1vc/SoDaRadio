@@ -236,20 +236,24 @@ void SoDa::AudioRX::demodulate(SoDaBuf * rxbuf)
   
   unsigned int reslen;
 
-  if(rx_modulation != SoDa::Command::WBFM) {
+  if((rx_modulation != SoDa::Command::WBFM) && (rx_modulation != SoDa::Command::NBFM)) {
     rf_resampler->apply(rxbuf->getComplexBuf(), dbufi);
     
     // now do the low pass filter
     if(rx_modulation == SoDa::Command::AM) {
       am_pre_filter->apply(dbufi, dbufo, *cur_af_gain); 
     }
-    else if(rx_modulation != SoDa::Command::NBFM) {
+    else {
       cur_audio_filter->apply(dbufi, dbufo, *cur_af_gain);
     }
-    else {
-      nbfm_pre_filter->apply(dbufi, dbufo, 1.0);
-    }
   }
+  else if(rx_modulation == SoDa::Command::NBFM) {
+    // first, bandpass the RF down to about 25 kHz wide...
+    std::complex<float> * rfbuf = rxbuf->getComplexBuf();
+    nbfm_pre_filter->apply(rfbuf, rfbuf, 1.0);
+    rf_resampler->apply(rfbuf, dbufo);
+  }
+
  
   switch(rx_modulation) {
   case SoDa::Command::LSB:
@@ -519,7 +523,7 @@ void SoDa::AudioRX::buildFilterMap()
 
   am_pre_filter = new SoDa::OSFilter(0.0, 0.0, 8000.0, 9000.0, 512, 1.0, audio_sample_rate, audio_buffer_size);
 
-  nbfm_pre_filter = new SoDa::OSFilter(0.0, 0.0, 15000.0, 16000.0, 512, 1.0, audio_sample_rate, audio_buffer_size);
+  nbfm_pre_filter = new SoDa::OSFilter(0.0, 0.0, 25000.0, 32000.0, 512, 1.0, rf_sample_rate, rf_buffer_size);
 
 
 }

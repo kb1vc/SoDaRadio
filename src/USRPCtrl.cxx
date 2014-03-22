@@ -68,13 +68,26 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
   // remove the whole number of seconds -- paranoia
   first_gettime = floor(tmp); 
 
-  // get the tx front end subtree
+
   uhd::property_tree::sptr tree = usrp->get_device()->get_tree();
   const std::string mbname = tree->list("/mboards").at(0);
-  uhd::fs_path tx_fe_root = "/mboards/" + mbname + "/dboards/A/tx_frontends/0";
-  tx_fe_subtree = tree->subtree(tx_fe_root); 
+
+  // find out what kind of device we have.
+  std::string mboard_name = tree->access<std::string>("/mboards/" + mbname + "/name").get();
+  
+  // get the tx front end subtree
+  uhd::fs_path tx_fe_root_0 = "/mboards/" + mbname + "/dboards/A/tx_frontends/0";
+  uhd::fs_path tx_fe_root_A = "/mboards/" + mbname + "/dboards/A/tx_frontends/A";
+  if(tree->exists(tx_fe_root_A)) {
+    tx_fe_subtree = tree->subtree(tx_fe_root_A);
+  }
+  else if (tree->exists(tx_fe_root_0)) {
+    tx_fe_subtree = tree->subtree(tx_fe_root_0);
+  }
+
   
   // setup the control IO pins (for TX/RX external relay)
+  // Note that there are no GPIOs available for the B2xx right now.
   initControlGPIO();
 
   // turn off the transmitter
@@ -377,15 +390,19 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
       if(debug_mode) {
 	std::cerr << "Enabling TX" << std::endl;
 	std::cerr << "Current TXENA " << tx_fe_subtree->access<bool>("enabled").get() << std::endl;
-	std::cerr << boost::format("Current GPIO = %x ") %
-	  dboard->get_gpio_out(uhd::usrp::dboard_iface::UNIT_TX) << std::endl;
+	if(supports_tx_gpio) {
+	  std::cerr << boost::format("Current GPIO = %x ") %
+	    dboard->get_gpio_out(uhd::usrp::dboard_iface::UNIT_TX) << std::endl;
+	}
       }
       setTXEna(true);
       if(debug_mode) {
 	std::cerr << "New TXENA "
 		  << tx_fe_subtree->access<bool>("enabled").get() << std::endl;
-	std::cerr << boost::format("New GPIO = %x ")
-	  % dboard->get_gpio_out(uhd::usrp::dboard_iface::UNIT_TX) << std::endl;
+	if(supports_tx_gpio) {
+	  std::cerr << boost::format("New GPIO = %x ")
+	    % dboard->get_gpio_out(uhd::usrp::dboard_iface::UNIT_TX) << std::endl;
+	}
       }
       // and tell the TX unit to turn on the TX
       cmd_stream->put(new Command(Command::SET, Command::TX_STATE, 
@@ -408,8 +425,10 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
       if(debug_mode) {
 	std::cerr << "Disabling TX" << std::endl;
 	std::cerr << "Got TXENA " << tx_fe_subtree->access<bool>("enabled").get() << std::endl;
-	std::cerr << boost::format("Got GPIO = %x ") %
-	  dboard->get_gpio_out(uhd::usrp::dboard_iface::UNIT_TX) << std::endl;
+	if(supports_tx_gpio) {
+	  std::cerr << boost::format("Got GPIO = %x ") %
+	    dboard->get_gpio_out(uhd::usrp::dboard_iface::UNIT_TX) << std::endl;
+	}
       }
     }
     break; 
@@ -501,39 +520,53 @@ void SoDa::USRPCtrl::execRepCommand(Command * cmd)
 
 void SoDa::USRPCtrl::initControlGPIO()
 {
-  // first, find the daughtercard
-  dboard = usrp->get_tx_dboard_iface(); 
-
-  // now get the old version of the GPIO enable mask.
-  unsigned short dir = dboard->get_gpio_ddr(uhd::usrp::dboard_iface::UNIT_TX); 
-  unsigned short ctl = dboard->get_pin_ctrl(uhd::usrp::dboard_iface::UNIT_TX);
-  unsigned short out = dboard->get_gpio_out(uhd::usrp::dboard_iface::UNIT_TX);
+  supports_tx_gpio = false;
   
-  // and print it.
-  if(debug_mode) {
-    std::cerr << boost::format("TX GPIO direction = %04x  control = %04x  output = %04x  ctlmask = %04x  monmask = %04x") % dir % ctl % out % TX_RELAY_CTL % TX_RELAY_MON << std::endl;
+  std::vector<std::string> vs = usrp->get_gpio_banks(0);
+  BOOST_FOREACH(std::string svs, vs) {
+    if(svs == "TXA") supports_tx_gpio = true; 
   }
 
-  // now set the direction to OUT for the CTL bit
-  dboard->set_gpio_ddr(uhd::usrp::dboard_iface::UNIT_TX,
-		    TX_RELAY_CTL, TX_RELAY_CTL);
-  
-  // and control it from the GPIO write
-  dboard->set_pin_ctrl(uhd::usrp::dboard_iface::UNIT_TX,
-		    0, TX_RELAY_CTL);
-  
-  // and make sure the txena is OFF
-  dboard->set_gpio_out(uhd::usrp::dboard_iface::UNIT_TX,
-		    0, TX_RELAY_CTL); 
+  if(supports_tx_gpio) {
+    // now, find the daughtercard
+    dboard = usrp->get_tx_dboard_iface(); 
 
+    // now get the old version of the GPIO enable mask.
+    unsigned short dir = dboard->get_gpio_ddr(uhd::usrp::dboard_iface::UNIT_TX); 
+    unsigned short ctl = dboard->get_pin_ctrl(uhd::usrp::dboard_iface::UNIT_TX);
+    unsigned short out = dboard->get_gpio_out(uhd::usrp::dboard_iface::UNIT_TX);
+  
+    // and print it.
+    if(debug_mode) {
+      std::cerr << boost::format("TX GPIO direction = %04x  control = %04x  output = %04x  ctlmask = %04x  monmask = %04x") % dir % ctl % out % TX_RELAY_CTL % TX_RELAY_MON << std::endl;
+    }
+
+    // now set the direction to OUT for the CTL bit
+    dboard->set_gpio_ddr(uhd::usrp::dboard_iface::UNIT_TX,
+			 TX_RELAY_CTL, TX_RELAY_CTL);
+  
+    // and control it from the GPIO write
+    dboard->set_pin_ctrl(uhd::usrp::dboard_iface::UNIT_TX,
+			 0, TX_RELAY_CTL);
+  
+    // and make sure the txena is OFF
+    dboard->set_gpio_out(uhd::usrp::dboard_iface::UNIT_TX,
+			 0, TX_RELAY_CTL);
+  }
+  else {
+    std::cerr << "GPIO control of TX relay is disabled.\n"
+	      << "This is normal if this radio is a B2xx.\n";
+  }
 }
 
 void SoDa::USRPCtrl::setTXEna(bool val)
 {
-  unsigned short enabits = val ? TX_RELAY_CTL : 0; 
-  dboard->set_gpio_out(uhd::usrp::dboard_iface::UNIT_TX,
-		       enabits, TX_RELAY_CTL);
-
+  unsigned short enabits = val ? TX_RELAY_CTL : 0;
+  if(supports_tx_gpio) {
+    dboard->set_gpio_out(uhd::usrp::dboard_iface::UNIT_TX,
+			 enabits, TX_RELAY_CTL);
+  }
+  
   // enable the transmitter (or disable it)
   tx_fe_subtree->access<bool>("enabled").set(val);
   if(debug_mode) {
@@ -557,8 +590,10 @@ void SoDa::USRPCtrl::setTXEna(bool val)
 
 bool SoDa::USRPCtrl::getTXEna()
 {
-  unsigned int enabits; 
-  enabits = dboard->get_gpio_out(uhd::usrp::dboard_iface::UNIT_TX);
+  unsigned int enabits = 0; 
+  if(supports_tx_gpio) {
+    enabits = dboard->get_gpio_out(uhd::usrp::dboard_iface::UNIT_TX);
+  }
 
   return ((enabits & TX_RELAY_CTL) != 0); 
 }
@@ -566,8 +601,10 @@ bool SoDa::USRPCtrl::getTXEna()
 
 bool SoDa::USRPCtrl::getTXRelayOn()
 {
-  unsigned int enabits; 
-  enabits = dboard->read_gpio(uhd::usrp::dboard_iface::UNIT_TX);
+  unsigned int enabits = 0; 
+  if(supports_tx_gpio) {
+    enabits = dboard->read_gpio(uhd::usrp::dboard_iface::UNIT_TX);
+  }
 
   return ((enabits & TX_RELAY_MON) != 0); 
 }
