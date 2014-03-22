@@ -43,12 +43,12 @@ namespace SoDaRadio_GUI {
   
   void SoDaRadio_Top::SaveSoDaConfig(const wxString & fname)
   {
-    // std::cerr << "In save soda config with config_tree == " << config_tree << std::endl;
+
     if(config_tree == NULL) {
       config_tree = new boost::property_tree::ptree();
-      //std::cerr << "got new config tree" << std::endl; 
+
       config_tree->put("af.gain", 3.0);
-      //std::cerr << "completed get tree put" << std::endl; 
+
     }
 
     // query all the relevant widgets and record their values
@@ -87,7 +87,7 @@ namespace SoDaRadio_GUI {
     config_tree->put("reference.source", tuner->getExtRefEna());
     config_tree->put("tx.tx_rx_locked", tx_rx_locked);
     boost::property_tree::xml_writer_settings<char> wset('\t',1);
-    // std::cerr << "Got char tab set." << std::endl; 
+
     write_xml((const char*) fname.mb_str(wxConvUTF8), *config_tree, std::locale(), wset);
 
 
@@ -110,13 +110,12 @@ namespace SoDaRadio_GUI {
   
   bool SoDaRadio_Top::LoadSoDaConfig(const wxString & fname)
   {
-    std::cerr << boost::format("Loading SoDa configuration from file [%s]\n") % fname.mb_str(wxConvUTF8);
+
     if(config_tree != NULL) delete config_tree;
 
     config_tree = new boost::property_tree::ptree();
     // does the file exist?
     if(!wxFile::Exists(fname.c_str())) {
-      std::cerr << "config file not found -- using default." << std::endl; 
       // then we need to load the default config.
       CreateDefaultConfig(config_tree);
       // also pop up the save config dialog box.

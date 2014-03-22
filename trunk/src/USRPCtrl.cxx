@@ -58,6 +58,10 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
   
   // make the device.
   usrp = uhd::usrp::multi_usrp::make(params->getUHDArgs());
+
+  if(usrp == NULL) {
+    throw SoDaException((boost::format("Unable to allocate USRP unit with arguments = [%]\n") % params->getUHDArgs()).str(), this);
+  }
   
   first_gettime = 0.0;
   double tmp = getTime();
