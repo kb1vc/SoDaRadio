@@ -83,10 +83,11 @@ namespace SoDaRadio_GUI {
     boost::property_tree::xml_writer_settings<char> wset('\t',1);
 
     // save the band configurations to the tree.
+    config_tree->put("SoDaRadio.current_band", current_band->getName());
+    
     SaveCurrentBand();
     bandset->save(config_tree);
     
-    // std::cerr << "Got char tab set." << std::endl; 
     write_xml((const char*) fname.mb_str(wxConvUTF8), *config_tree, std::locale(), wset);
   }
 
@@ -136,9 +137,7 @@ namespace SoDaRadio_GUI {
     wxSpinEvent nullSPE;
 
     // load the band information
-    std::cerr << "About to load bandset." << std::endl; 
     bandset = new SoDaRadio_BandSet(config_tree);
-    std::cerr << "Loaded bandset." << std::endl; 
     setupBandSelect(bandset); 
     
     // now go through each widget and read its value, and update it.
@@ -154,6 +153,7 @@ namespace SoDaRadio_GUI {
     last_tx_frequency = config_tree->get<double>("tx.prev_freq");
     // tuner->newTXFreq();
     UpdateTXFreq(tx_frequency);
+
   
     // frequency updates
     SoDa::Command rncmd(SoDa::Command::SET, SoDa::Command::RX_RETUNE_FREQ,
@@ -213,12 +213,21 @@ namespace SoDaRadio_GUI {
       tx_rx_locked = true;
     }
     OnTXRXLock(nullCE); 
+
+    // now set the current band.
+    SoDaRadio_Band * defband;
+    try {
+      defband = bandset->getByName(config_tree->get<std::string>("current_band"));
+    } catch (boost::exception const & ex) {
+      defband = bandset->getByIndex(0);
+    }
+    SetCurrentBand(defband);
+
     return true; 
   }
 
   void SoDaRadio_Top::setupBandSelect(SoDaRadio_BandSet * bandset)
   {
-    std::cerr << "Got to setupBandSelect" << std::endl;
     int i, ct;
     ct = m_bandSelect->GetMenuItemCount();
     for(i = ct-1; i >= 0; i--) {
@@ -232,8 +241,6 @@ namespace SoDaRadio_GUI {
 					     wxEmptyString, wxITEM_NORMAL); 
       m_bandSelect->Append(newItem);
       int id = newItem->GetId();
-      std::cerr << boost::format("got item for band button [%s] id = %d\n") %
-	v->getName() % id; 
       this->Connect(id, wxEVT_COMMAND_MENU_SELECTED,
 		    wxCommandEventHandler(SoDaRadio_Top::OnBandSelect ));
 

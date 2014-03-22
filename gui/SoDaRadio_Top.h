@@ -184,7 +184,9 @@ namespace SoDaRadio_GUI {
     void setLOOffset(double v);
   
     double getTXOffset() { return tx_transverter_offset; }
-    double getRXOffset() { return rx_transverter_offset; }
+    double getRXOffset() {
+      return rx_transverter_offset;
+    }
 
     void setGPSLoc(double lat, double lon);
 
@@ -506,9 +508,6 @@ namespace SoDaRadio_GUI {
 
     void OnProblem(std::string const & probstring); 
 
-    /// get the current state of the transverter offset/enable
-    /// and reflect it in the widget states. 
-    void UpdateSettings();
 
     /// load the configuration list with the bands we know about.
     void initBandList(SoDaRadio_BandSet * bandset);
@@ -522,7 +521,6 @@ namespace SoDaRadio_GUI {
     void setChoiceBox(wxChoice * box, std::string & sel);
     
   private:
-    void ReadSettings();
     SoDaRadio_Top * radio_top;
     SoDaRadio_BandSet * bands;
   }; 
