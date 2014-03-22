@@ -827,13 +827,24 @@ namespace SoDaRadio_GUI {
   {
   }
 
+  void SoDaRadio_Top::SaveCurrentBand() {
+    if(current_band != NULL) {
+      current_band->last_rx_freq = rx_frequency * 1e-6;
+      current_band->last_tx_freq = tx_frequency * 1e-6;
+
+      current_band->af_gain = m_AFGain->GetValue();
+      current_band->rf_gain = m_RFGain->GetValue();
+      current_band->af_bw = m_AFBWChoice->GetSelection();
+
+      current_band->tx_rf_outpower = tx_rf_outpower;
+      current_band->tx_rx_locked = tx_rx_locked;
+    }
+  }
+  
   void SoDaRadio_Top::SetCurrentBand(SoDaRadio_Band * band)
   {
-    // save the old band's last tx/rx
-    if(current_band != NULL) {
-      current_band->last_rx_freq = rx_frequency;
-      current_band->last_tx_freq = tx_frequency;
-    }
+    // save the old band's last tx/rx and other settings
+    SaveCurrentBand();
     
     // now we have a band pointer -- save it
     current_band = band;
@@ -846,7 +857,14 @@ namespace SoDaRadio_GUI {
       actual_lo_base_freq = nominal_lo_base_freq = 0.0;
       lo_multiplier = 0.0;
     }
-  
+
+    char te = band->enable_transmit ? 'T' : 'F';
+    std::cerr << boost::format("Band: [%f:%f] last rx/tx %f/%f TransEn: %c  RX ant %s id = %d\n")
+      % band->lower_band_edge % band->upper_band_edge
+      % band->last_rx_freq % band->last_tx_freq
+      % te % band->rx_antenna_choice % band->band_id;
+    
+
     tx_transverter_offset = actual_lo_base_freq * lo_multiplier; 
     rx_transverter_offset = actual_lo_base_freq * lo_multiplier;
 
@@ -861,11 +879,38 @@ namespace SoDaRadio_GUI {
     m_CWsendV->Enable(band->enable_transmit);    
     m_CWsendCarrier->Enable(band->enable_transmit);
 
+    // set the mode select
+    wxCommandEvent nullCE;
+    wxScrollEvent nullSE;
+    m_ModeBox->SetStringSelection(wxString::FromUTF8(band->default_mode.c_str()));
+    OnModeChoice(nullCE);
+
+    // update the spectrum freq.
+    UpdateCenterFreq(band->last_rx_freq * 1e6);
+    OnPerBandSpread(nullCE);
+
+    // the the antenna
+    setRXAnt(band->rx_antenna_choice);
+
+    // set the transmit parameters
+    controls->setTXPower(band->tx_rf_outpower);
+    tx_rx_locked = band->tx_rx_locked;
+    OnTXRXLock(nullCE);
+    
+    // now the af gain params
+    // these are the gain controls.
+    m_AFGain->SetValue(band->af_gain);
+    m_AFBWChoice->SetSelection(band->af_bw);
+    OnAFGainScroll(nullSE);
+    OnAFBWChoice(nullCE);
+
+    // set the RF gain
+    m_RFGain->SetValue(band->rf_gain);
+    OnRFGainScroll(nullSE);
+    
     // now -- set the last tx/rx/freq
-    UpdateRXFreq(band->last_rx_freq);
-    UpdateTXFreq(band->last_tx_freq);
-    tuner->newRXFreq();
-    tuner->newTXFreq();
+    UpdateRXFreq(band->last_rx_freq * 1e6);
+    UpdateTXFreq(band->last_tx_freq * 1e6);
   }
   
   void SoDaRadio_Top::OnBandSelect( wxCommandEvent& event)
@@ -1299,7 +1344,10 @@ namespace SoDaRadio_GUI {
     std::cerr << "bandname = [" << bandname << "]" << std::endl; 
     // now find the band entry.
     SoDaRadio_Band * newband = bands->getByName(bandname);
-    if(newband == NULL) newband = new SoDaRadio_Band();
+    if(newband == NULL) {
+      std::cerr << "in OnBandOK creating new band" << std::endl; 
+      newband = new SoDaRadio_Band();
+    }
 
     double le, ue;
     m_low_edge->GetValue().ToDouble(&le);
@@ -1357,6 +1405,7 @@ namespace SoDaRadio_GUI {
 	SetReturnCode(wxID_OK);
 	this->Show(false); 
       }
+      radio_top->setupBandSelect(bands);
     }
     else {
       // there was a problem of some sort.  popup the dialog and return.
