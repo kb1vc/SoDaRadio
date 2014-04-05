@@ -113,7 +113,7 @@ namespace SoDaTest {
 	bool flag = false; 
 	for(i = 0; i < sub_count; i++) {
 	  // check to see if there is a message on the mailbox.
-	  if(msg = mboxes[i]->get(subscriptions[i])) {
+	  if((msg = mboxes[i]->get(subscriptions[i]))) {
 	    execute(msg, i);
 	    mboxes[i]->free(msg);
 	    flag = true; 

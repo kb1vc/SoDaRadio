@@ -29,6 +29,8 @@
 #include "UDSockets.hxx"
 
 #include <iostream>
+#include <stdexcept>
+
 #include <unistd.h>
 #include <netdb.h>
 #include <sys/select.h>
@@ -39,6 +41,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <string.h>
+#include <boost/format.hpp>
 
 SoDa::UD::ServerSocket::ServerSocket(const std::string & path)
 {
@@ -47,8 +50,7 @@ SoDa::UD::ServerSocket::ServerSocket(const std::string & path)
   server_socket = socket(AF_UNIX, SOCK_STREAM, 0);
     
   if(server_socket < 0) {
-    std::cerr << "Failed to create server socket... I quit." << std::endl;
-    exit(-1); 
+    throw std::runtime_error("Failed to create server socket.\n");
   }
 
   int x = fcntl(server_socket, F_GETFL, 0);
@@ -63,38 +65,45 @@ SoDa::UD::ServerSocket::ServerSocket(const std::string & path)
 
 
   // now bind it
-  if (bind(server_socket, (struct sockaddr *) &server_address, len) < 0) {
-    std::cerr << "Couldn't bind Unix domain socket at path " << path << " I quit." << std::endl;
-    exit(-1); 
+  //  if (bind(server_socket, (struct sockaddr *) &server_address, len) < 0) {
+  if (bind(server_socket, (struct sockaddr *) &server_address, SUN_LEN(&server_address)) < 0) {
+    throw std::runtime_error((boost::format("Couldn't bind Unix domain socket at path [%s] I quit.\n") % path).str());
   }
 
   // now let the world know that we're ready for one and only one connection.
   stat = listen(server_socket, 1);
   if(stat < 0) {
-    std::cerr << "Couldn't listen on Unix socket  " << path << " got " << errno << " I quit." << std::endl; 
-    exit(-1); 
+    throw std::runtime_error((boost::format("Couldn't listen on Unix socket  [%s]. Got error number %d. I quit.\n") % path % errno).str());
   }
 
   // mark the socket as "not ready" for input -- it needs to accept first. 
   ready = false; 
 }
 
-SoDa::UD::ClientSocket::ClientSocket(const std::string & path)
+SoDa::UD::ClientSocket::ClientSocket(const std::string & path, int startup_timeout_count)
 {
+  int retry_count;
   conn_socket = socket(AF_UNIX, SOCK_STREAM, 0);
   if(conn_socket < 0) {
-    std::cerr << "Failed to create client socket... I quit." << std::endl;
-    exit(-1); 
+    throw std::runtime_error((boost::format("Failed to create client socket on [%s]... I quit.\n") % path).str());
   }
 
   server_address.sun_family = AF_UNIX;
   strncpy(server_address.sun_path, path.c_str(), sizeof(server_address.sun_path));
   int len = strlen(server_address.sun_path) + sizeof(server_address.sun_family); 
 
-  if(connect(conn_socket, (struct sockaddr *) &server_address, len) < 0) {
-    std::cerr << "Couldn't connect to UNIX socket [" << path << "].  I quit." << std::endl;
-    perror("oops.");
-    exit(-1); 
+  int stat; 
+  for(retry_count = 0; retry_count < startup_timeout_count; retry_count++) {
+    stat = connect(conn_socket, (struct sockaddr *) &server_address, len);
+    if(stat >= 0) break;
+    else {
+      // we should wait a little while before we give up.
+      sleep(1);
+    }
+  }
+
+  if(stat < 0) {
+    throw std::runtime_error((boost::format("Couldn't connect to Unix domain socket at path [%s] I quit.\n") % path).str());
   }
 
   int x = fcntl(conn_socket, F_GETFL, 0);
@@ -143,6 +152,8 @@ int SoDa::UD::NetSocket::loopWrite(int fd, const void * ptr, unsigned int nbytes
       bptr += stat; 
     }
   }
+
+  return 0;
 }
 int SoDa::UD::NetSocket::put(const void * ptr, unsigned int size)
 {

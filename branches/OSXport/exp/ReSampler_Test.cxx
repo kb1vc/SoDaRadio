@@ -44,7 +44,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sys/time.h>
 
-// test program to compare the cost of various FFT vector sizes. 
+ // test program to checkout the antialiasing capability of the
+ // resamplers. 
 
 using namespace std; 
 
@@ -154,6 +155,53 @@ void test48x625()
 {
 }
 
+void aliasingPlot()
+{
+  // create a downsampler from 30K samples to 2304
+  SoDa::ReSample625to48 rsf(30000);
+  std::complex<float> cin[30000], cout[2304];
+  
+  ofstream to("ReSampler625to48_Test.dat");
+
+  // pretend that our input sample rate was 625KS/sec.
+  float samp_freq = 625000.0;
+  float test_freq;
+  float angle = 0.0; 
+  for(test_freq = -312500.0; test_freq < 312500.0; ) {
+    int i;
+    float phase_advance_per_tic = 2.0 * M_PI * test_freq / samp_freq;
+    float energy = 0.0; 
+    for(i = 0; i < 100; i++) {
+      int j;
+      for(j = 0; j < 30000; j++) {
+	cin[j] = std::complex<float>(cos(angle), sin(angle));
+	angle += phase_advance_per_tic;
+	if(angle > M_PI) angle -= (2.0 * M_PI);
+	if(angle < -M_PI) angle += (2.0 * M_PI);
+      }
+      rsf.apply(cin, cout);
+      if(i != 0) {
+	for(j = 0; j < 2304; j++) {
+	  float ip = cout[j].real();
+	  float qu = cout[j].imag(); 
+	  energy += ip * ip + qu * qu;
+	}
+      }
+    }
+    to << boost::format("%f %f\n") % test_freq % (10.0 * log10(energy));
+    std::cout << boost::format("%f %f\n") % test_freq % (10.0 * log10(energy));
+    if(test_freq < 0.0) {
+      if(test_freq > -10.0) test_freq = 10.0;
+      else test_freq *= (1.0 / 1.05); 
+    }
+    else {
+      test_freq *= 1.05; 
+    }
+  }
+  
+  to.close();
+}
+
 int main(int argc, char * argv[])
 {
   // create various ReSampler ratios, especially the ones I care
@@ -170,17 +218,20 @@ int main(int argc, char * argv[])
   std::complex<float> outvec[30000]; 
   std::complex<float> out2vec[30000]; 
 
+  aliasingPlot(); 
+  
+  exit(0);
+
   test625x48();
   test48x625();
 
-  exit(-1);
   int i, j;
   // fill the input vector
   float ang = 0.0;
   float ang_inc = 2.0 * M_PI * 315.26 / 6000.0;
   ang = loadVector(ang, ang_inc, invec, 6000); 
 
-
+  
   SoDa::ReSampler * rs;
   for(j = 0; j < 2; j++) {
     for(i = 0; resampler_ratio[i][0] > 0; i++) {

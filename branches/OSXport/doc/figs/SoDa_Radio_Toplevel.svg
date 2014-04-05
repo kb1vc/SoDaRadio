@@ -878,7 +878,7 @@
          sodipodi:role="line"
          x="427.76999"
          y="1018.4647"
-         id="tspan11378">UDP Socket</tspan></text>
+         id="tspan11378">Unix Domain Socket</tspan></text>
     <path
        inkscape:connector-curvature="0"
        inkscape:original-d="m 80,1002.3598 25,0"

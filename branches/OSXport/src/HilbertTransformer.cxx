@@ -68,7 +68,8 @@ SoDa::HilbertTransformer::HilbertTransformer(unsigned int inout_buffer_length,
 
 
   float flen = (float) filter_length;
-  std::complex<float> htu[N], htl[N]; 
+  std::complex<float> * htu = new std::complex<float>[N];
+  std::complex<float> * htl = new std::complex<float>[N];
 
   // create the impulse response images
   // There is probably a simpler way, but the obvious real/imag swap
@@ -200,6 +201,9 @@ SoDa::HilbertTransformer::HilbertTransformer(unsigned int inout_buffer_length,
   //  H_transform_gain = 2.0 / (M_PI * 0.966 * ((float) N)); // 0.966 is a fudge factor
   H_transform_gain = 2.0 / (M_PI * ((float) N)); 
   passthrough_gain = H_transform_gain;
+
+  delete [] htu;
+  delete [] htl;
 }
 
 unsigned int SoDa::HilbertTransformer::apply(std::complex<float> * inbuf,
@@ -245,8 +249,10 @@ unsigned int SoDa::HilbertTransformer::apply(std::complex<float> * inbuf,
   // quadrature sampler is just not quite right for
   for(i = 0, j = Q-1; i < M; i++, j++) {
     // seems like it worked once... but apparent shift is same for either sideband
-    outbuf[i].real() = ifft_I_output[j].real() * passthrough_gain * gain;
-    outbuf[i].imag() = ifft_Q_output[j].real() * H_transform_gain * gain;
+    float re, im;
+    re = ifft_I_output[j].real() * passthrough_gain * gain;
+    im = ifft_Q_output[j].real() * H_transform_gain * gain;
+    outbuf[i] = std::complex<float>(re, im);
   }
 
   dbgctr++;
@@ -265,7 +271,7 @@ unsigned int SoDa::HilbertTransformer::apply(float * inbuf,
 
   // Note we're using overlap-and-save  see the OSFilter implementation
   // or Lyons pages 719ff
-  std::complex<float> cinbuf[M];
+  std::complex<float> * cinbuf = new std::complex<float>[M];
 
 
   // copy the I channel to the tail of the input buffer.
@@ -273,11 +279,11 @@ unsigned int SoDa::HilbertTransformer::apply(float * inbuf,
     cinbuf[i] = std::complex<float>(inbuf[i], 0.0); 
   }
 
-  // call the complex HT
-  return apply(cinbuf, outbuf, pos_sided, gain); 
-
   
-  return M; 
+  // call the complex HT
+  unsigned int ret = apply(cinbuf, outbuf, pos_sided, gain);
+  delete [] cinbuf;
+  return ret;
 }
 
 
@@ -323,8 +329,10 @@ unsigned int SoDa::HilbertTransformer::applyIQ(std::complex<float> * inbuf,
   // Note that we're shifting the normal sampling window.  This is because the
   // quadrature sampler is just not quite right for
   for(i = 0, j = Q-1; i < M; i++, j++) {
-    outbuf[i].real() = ifft_I_output[j].real() * passthrough_gain * gain;
-    outbuf[i].imag() = ifft_Q_output[j].real() * H_transform_gain * gain;
+    float re, im; 
+    re = ifft_I_output[j].real() * passthrough_gain * gain;
+    im = ifft_Q_output[j].real() * H_transform_gain * gain;
+    outbuf[i] = std::complex<float>(re, im);
   }
 
   dbgctr++;

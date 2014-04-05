@@ -81,10 +81,10 @@ bin_PROGRAMS = FFT_Test$(EXEEXT) Sockets_Test$(EXEEXT) \
 	MultiMBox_Test$(EXEEXT) SoDa_ThreadTest$(EXEEXT) \
 	OSFilter_Test$(EXEEXT) TestServer$(EXEEXT) \
 	ReSampler_Test$(EXEEXT) TSIP_Test$(EXEEXT) Audio_test$(EXEEXT) \
-	Hilbert_Test$(EXEEXT)
+	Hilbert_Test$(EXEEXT) FindHome_Test$(EXEEXT)
 subdir = exp
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
-	$(top_srcdir)/depcomp
+	$(top_srcdir)/mkinstalldirs $(top_srcdir)/depcomp
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_boost_asio.m4 \
 	$(top_srcdir)/m4/ax_boost_base.m4 \
@@ -96,11 +96,12 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/ax_boost_asio.m4 \
 	$(top_srcdir)/m4/ax_boost_system.m4 \
 	$(top_srcdir)/m4/ax_boost_thread.m4 \
 	$(top_srcdir)/m4/ax_fftw3.m4 $(top_srcdir)/m4/ax_fftw3f.m4 \
-	$(top_srcdir)/m4/ax_prog_doxygen.m4 $(top_srcdir)/m4/ax_uhd.m4 \
+	$(top_srcdir)/m4/ax_prog_doxygen.m4 \
+	$(top_srcdir)/m4/my_ax_uhd.m4 $(top_srcdir)/m4/wxwin.m4 \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
-mkinstalldirs = $(install_sh) -d
+mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
@@ -120,6 +121,12 @@ FFT_Test_OBJECTS = $(am_FFT_Test_OBJECTS)
 FFT_Test_DEPENDENCIES = $(am__DEPENDENCIES_2)
 FFT_Test_LINK = $(CXXLD) $(FFT_Test_CXXFLAGS) $(CXXFLAGS) \
 	$(FFT_Test_LDFLAGS) $(LDFLAGS) -o $@
+am_FindHome_Test_OBJECTS = FindHome_Test-FindHome_Test.$(OBJEXT) \
+	../gui/FindHome_Test-FindHome.$(OBJEXT)
+FindHome_Test_OBJECTS = $(am_FindHome_Test_OBJECTS)
+FindHome_Test_DEPENDENCIES = $(am__DEPENDENCIES_2)
+FindHome_Test_LINK = $(CXXLD) $(FindHome_Test_CXXFLAGS) $(CXXFLAGS) \
+	$(FindHome_Test_LDFLAGS) $(LDFLAGS) -o $@
 am_Hilbert_Test_OBJECTS = Hilbert_Test-Hilbert_Test.$(OBJEXT) \
 	../src/Hilbert_Test-HilbertTransformer.$(OBJEXT) \
 	../src/Hilbert_Test-SoDaBase.$(OBJEXT)
@@ -214,15 +221,17 @@ am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
 SOURCES = $(Audio_test_SOURCES) $(FFT_Test_SOURCES) \
-	$(Hilbert_Test_SOURCES) $(MultiMBox_Test_SOURCES) \
-	$(OSFilter_Test_SOURCES) $(ReSampler_Test_SOURCES) \
-	$(SoDa_ThreadTest_SOURCES) $(Sockets_Test_SOURCES) \
-	$(TSIP_Test_SOURCES) $(TestServer_SOURCES)
+	$(FindHome_Test_SOURCES) $(Hilbert_Test_SOURCES) \
+	$(MultiMBox_Test_SOURCES) $(OSFilter_Test_SOURCES) \
+	$(ReSampler_Test_SOURCES) $(SoDa_ThreadTest_SOURCES) \
+	$(Sockets_Test_SOURCES) $(TSIP_Test_SOURCES) \
+	$(TestServer_SOURCES)
 DIST_SOURCES = $(Audio_test_SOURCES) $(FFT_Test_SOURCES) \
-	$(Hilbert_Test_SOURCES) $(MultiMBox_Test_SOURCES) \
-	$(OSFilter_Test_SOURCES) $(ReSampler_Test_SOURCES) \
-	$(SoDa_ThreadTest_SOURCES) $(Sockets_Test_SOURCES) \
-	$(TSIP_Test_SOURCES) $(TestServer_SOURCES)
+	$(FindHome_Test_SOURCES) $(Hilbert_Test_SOURCES) \
+	$(MultiMBox_Test_SOURCES) $(OSFilter_Test_SOURCES) \
+	$(ReSampler_Test_SOURCES) $(SoDa_ThreadTest_SOURCES) \
+	$(Sockets_Test_SOURCES) $(TSIP_Test_SOURCES) \
+	$(TestServer_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -429,6 +438,11 @@ ReSampler_Test_CPPFLAGS = $(AM_CPPFLAGS) -g -O3 -ffast-math
 ReSampler_Test_LDADD = $(AM_BOOSTLIBFLAGS) 
 ReSampler_Test_CXXFLAGS = -g -O3 -ffast-math
 ReSampler_Test_LDFLAGS = -g -O3 
+FindHome_Test_SOURCES = FindHome_Test.cxx  ../gui/FindHome.cxx ../gui/FindHome.hxx
+FindHome_Test_CPPFLAGS = $(AM_CPPFLAGS) -g -O1 
+FindHome_Test_LDADD = $(AM_BOOSTLIBFLAGS) 
+FindHome_Test_CXXFLAGS = -g -O1
+FindHome_Test_LDFLAGS = -g -O1
 all: all-am
 
 .SUFFIXES:
@@ -525,6 +539,18 @@ Audio_test$(EXEEXT): $(Audio_test_OBJECTS) $(Audio_test_DEPENDENCIES) $(EXTRA_Au
 FFT_Test$(EXEEXT): $(FFT_Test_OBJECTS) $(FFT_Test_DEPENDENCIES) $(EXTRA_FFT_Test_DEPENDENCIES) 
 	@rm -f FFT_Test$(EXEEXT)
 	$(AM_V_CXXLD)$(FFT_Test_LINK) $(FFT_Test_OBJECTS) $(FFT_Test_LDADD) $(LIBS)
+../gui/$(am__dirstamp):
+	@$(MKDIR_P) ../gui
+	@: > ../gui/$(am__dirstamp)
+../gui/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) ../gui/$(DEPDIR)
+	@: > ../gui/$(DEPDIR)/$(am__dirstamp)
+../gui/FindHome_Test-FindHome.$(OBJEXT): ../gui/$(am__dirstamp) \
+	../gui/$(DEPDIR)/$(am__dirstamp)
+
+FindHome_Test$(EXEEXT): $(FindHome_Test_OBJECTS) $(FindHome_Test_DEPENDENCIES) $(EXTRA_FindHome_Test_DEPENDENCIES) 
+	@rm -f FindHome_Test$(EXEEXT)
+	$(AM_V_CXXLD)$(FindHome_Test_LINK) $(FindHome_Test_OBJECTS) $(FindHome_Test_LDADD) $(LIBS)
 ../src/Hilbert_Test-HilbertTransformer.$(OBJEXT):  \
 	../src/$(am__dirstamp) ../src/$(DEPDIR)/$(am__dirstamp)
 ../src/Hilbert_Test-SoDaBase.$(OBJEXT): ../src/$(am__dirstamp) \
@@ -594,11 +620,13 @@ TestServer$(EXEEXT): $(TestServer_OBJECTS) $(TestServer_DEPENDENCIES) $(EXTRA_Te
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
+	-rm -f ../gui/*.$(OBJEXT)
 	-rm -f ../src/*.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@../gui/$(DEPDIR)/FindHome_Test-FindHome.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/Audio_test-AudioALSA.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/Audio_test-AudioPA.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/Audio_test-SoDaBase.Po@am__quote@
@@ -621,6 +649,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/TestServer-UI.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Audio_test-Audio_test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FFT_Test-FFT_Test.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FindHome_Test-FindHome_Test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Hilbert_Test-Hilbert_Test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/MultiMBox_Test-MultiMBox_Test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OSFilter_Test-OSFilter_Test.Po@am__quote@
@@ -715,6 +744,34 @@ FFT_Test-FFT_Test.obj: FFT_Test.cxx
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='FFT_Test.cxx' object='FFT_Test-FFT_Test.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(FFT_Test_CPPFLAGS) $(CPPFLAGS) $(FFT_Test_CXXFLAGS) $(CXXFLAGS) -c -o FFT_Test-FFT_Test.obj `if test -f 'FFT_Test.cxx'; then $(CYGPATH_W) 'FFT_Test.cxx'; else $(CYGPATH_W) '$(srcdir)/FFT_Test.cxx'; fi`
+
+FindHome_Test-FindHome_Test.o: FindHome_Test.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(FindHome_Test_CPPFLAGS) $(CPPFLAGS) $(FindHome_Test_CXXFLAGS) $(CXXFLAGS) -MT FindHome_Test-FindHome_Test.o -MD -MP -MF $(DEPDIR)/FindHome_Test-FindHome_Test.Tpo -c -o FindHome_Test-FindHome_Test.o `test -f 'FindHome_Test.cxx' || echo '$(srcdir)/'`FindHome_Test.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/FindHome_Test-FindHome_Test.Tpo $(DEPDIR)/FindHome_Test-FindHome_Test.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='FindHome_Test.cxx' object='FindHome_Test-FindHome_Test.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(FindHome_Test_CPPFLAGS) $(CPPFLAGS) $(FindHome_Test_CXXFLAGS) $(CXXFLAGS) -c -o FindHome_Test-FindHome_Test.o `test -f 'FindHome_Test.cxx' || echo '$(srcdir)/'`FindHome_Test.cxx
+
+FindHome_Test-FindHome_Test.obj: FindHome_Test.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(FindHome_Test_CPPFLAGS) $(CPPFLAGS) $(FindHome_Test_CXXFLAGS) $(CXXFLAGS) -MT FindHome_Test-FindHome_Test.obj -MD -MP -MF $(DEPDIR)/FindHome_Test-FindHome_Test.Tpo -c -o FindHome_Test-FindHome_Test.obj `if test -f 'FindHome_Test.cxx'; then $(CYGPATH_W) 'FindHome_Test.cxx'; else $(CYGPATH_W) '$(srcdir)/FindHome_Test.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/FindHome_Test-FindHome_Test.Tpo $(DEPDIR)/FindHome_Test-FindHome_Test.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='FindHome_Test.cxx' object='FindHome_Test-FindHome_Test.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(FindHome_Test_CPPFLAGS) $(CPPFLAGS) $(FindHome_Test_CXXFLAGS) $(CXXFLAGS) -c -o FindHome_Test-FindHome_Test.obj `if test -f 'FindHome_Test.cxx'; then $(CYGPATH_W) 'FindHome_Test.cxx'; else $(CYGPATH_W) '$(srcdir)/FindHome_Test.cxx'; fi`
+
+../gui/FindHome_Test-FindHome.o: ../gui/FindHome.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(FindHome_Test_CPPFLAGS) $(CPPFLAGS) $(FindHome_Test_CXXFLAGS) $(CXXFLAGS) -MT ../gui/FindHome_Test-FindHome.o -MD -MP -MF ../gui/$(DEPDIR)/FindHome_Test-FindHome.Tpo -c -o ../gui/FindHome_Test-FindHome.o `test -f '../gui/FindHome.cxx' || echo '$(srcdir)/'`../gui/FindHome.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) ../gui/$(DEPDIR)/FindHome_Test-FindHome.Tpo ../gui/$(DEPDIR)/FindHome_Test-FindHome.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='../gui/FindHome.cxx' object='../gui/FindHome_Test-FindHome.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(FindHome_Test_CPPFLAGS) $(CPPFLAGS) $(FindHome_Test_CXXFLAGS) $(CXXFLAGS) -c -o ../gui/FindHome_Test-FindHome.o `test -f '../gui/FindHome.cxx' || echo '$(srcdir)/'`../gui/FindHome.cxx
+
+../gui/FindHome_Test-FindHome.obj: ../gui/FindHome.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(FindHome_Test_CPPFLAGS) $(CPPFLAGS) $(FindHome_Test_CXXFLAGS) $(CXXFLAGS) -MT ../gui/FindHome_Test-FindHome.obj -MD -MP -MF ../gui/$(DEPDIR)/FindHome_Test-FindHome.Tpo -c -o ../gui/FindHome_Test-FindHome.obj `if test -f '../gui/FindHome.cxx'; then $(CYGPATH_W) '../gui/FindHome.cxx'; else $(CYGPATH_W) '$(srcdir)/../gui/FindHome.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) ../gui/$(DEPDIR)/FindHome_Test-FindHome.Tpo ../gui/$(DEPDIR)/FindHome_Test-FindHome.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='../gui/FindHome.cxx' object='../gui/FindHome_Test-FindHome.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(FindHome_Test_CPPFLAGS) $(CPPFLAGS) $(FindHome_Test_CXXFLAGS) $(CXXFLAGS) -c -o ../gui/FindHome_Test-FindHome.obj `if test -f '../gui/FindHome.cxx'; then $(CYGPATH_W) '../gui/FindHome.cxx'; else $(CYGPATH_W) '$(srcdir)/../gui/FindHome.cxx'; fi`
 
 Hilbert_Test-Hilbert_Test.o: Hilbert_Test.cxx
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(Hilbert_Test_CPPFLAGS) $(CPPFLAGS) $(Hilbert_Test_CXXFLAGS) $(CXXFLAGS) -MT Hilbert_Test-Hilbert_Test.o -MD -MP -MF $(DEPDIR)/Hilbert_Test-Hilbert_Test.Tpo -c -o Hilbert_Test-Hilbert_Test.o `test -f 'Hilbert_Test.cxx' || echo '$(srcdir)/'`Hilbert_Test.cxx
@@ -1181,6 +1238,8 @@ clean-generic:
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
+	-rm -f ../gui/$(DEPDIR)/$(am__dirstamp)
+	-rm -f ../gui/$(am__dirstamp)
 	-rm -f ../src/$(DEPDIR)/$(am__dirstamp)
 	-rm -f ../src/$(am__dirstamp)
 
@@ -1192,7 +1251,7 @@ clean: clean-am
 clean-am: clean-binPROGRAMS clean-generic mostlyclean-am
 
 distclean: distclean-am
-	-rm -rf ../src/$(DEPDIR) ./$(DEPDIR)
+	-rm -rf ../gui/$(DEPDIR) ../src/$(DEPDIR) ./$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -1238,7 +1297,7 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-	-rm -rf ../src/$(DEPDIR) ./$(DEPDIR)
+	-rm -rf ../gui/$(DEPDIR) ../src/$(DEPDIR) ./$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

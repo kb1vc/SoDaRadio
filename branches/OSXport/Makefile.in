@@ -108,8 +108,9 @@ POST_UNINSTALL = :
 build_triplet = @build@
 DIST_COMMON = $(top_srcdir)/doxygen_aminclude.am INSTALL NEWS README \
 	AUTHORS ChangeLog $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
-	$(top_srcdir)/configure $(am__configure_deps) COPYING compile \
-	config.guess config.sub depcomp install-sh missing
+	$(top_srcdir)/configure $(am__configure_deps) mkinstalldirs \
+	COPYING compile config.guess config.sub depcomp install-sh \
+	missing
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_boost_asio.m4 \
@@ -122,13 +123,14 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/ax_boost_asio.m4 \
 	$(top_srcdir)/m4/ax_boost_system.m4 \
 	$(top_srcdir)/m4/ax_boost_thread.m4 \
 	$(top_srcdir)/m4/ax_fftw3.m4 $(top_srcdir)/m4/ax_fftw3f.m4 \
-	$(top_srcdir)/m4/ax_prog_doxygen.m4 $(top_srcdir)/m4/ax_uhd.m4 \
+	$(top_srcdir)/m4/ax_prog_doxygen.m4 \
+	$(top_srcdir)/m4/my_ax_uhd.m4 $(top_srcdir)/m4/wxwin.m4 \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
-mkinstalldirs = $(install_sh) -d
+mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 AM_V_P = $(am__v_P_@AM_V@)
@@ -393,7 +395,6 @@ AUTOMAKE_OPTIONS = subdir-objects
 @DX_COND_doc_TRUE@    $(DX_CLEAN_PS) \
 @DX_COND_doc_TRUE@    $(DX_CLEAN_PDF) \
 @DX_COND_doc_TRUE@    $(DX_CLEAN_LATEX)
-
 
 # Doxygen support
 EXTRA_DIST = Doxyfile saved_svn_version.txt  \

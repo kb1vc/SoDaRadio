@@ -149,9 +149,8 @@ int dumpTest(int argc, char * argv[])
       }
       for(j = 0; j < num_freqs; j++) {
 	inbuf[i] += gain * sin(angles[j]);
-	cinbuf[i].real() += gain * sin(angles[j]);
-	checkbuf[i].real() = checkbuf[i].real() + gain * sin(angles[j]);
-	checkbuf[i].imag() = checkbuf[i].imag() - gain * cos(angles[j]);
+	cinbuf[i] += std::complex<float>(gain * sin(angles[j]), 0.0);
+	checkbuf[i] += std::complex<float>(gain * sin(angles[j]), gain * cos(angles[j]));
 	angles[j] += ang_incs[j];
 	if(angles[j] > M_PI) angles[j] -= (2.0 * M_PI);
       }
@@ -188,10 +187,8 @@ int dumpTest(int argc, char * argv[])
 	gain = 1.0; 
       }
       for(j = 0; j < num_freqs; j++) {
-	cinbuf[i].real() += gain * sin(angles[j]);
-	cinbuf[i].imag() += gain * cos(angles[j]);
-	checkbuf[i].real() = checkbuf[i].real() + gain * sin(angles[j]);
-	checkbuf[i].imag() = checkbuf[i].imag() - gain * cos(angles[j]);
+	cinbuf[i] += gain * std::complex<float>(sin(angles[j]), cos(angles[j]));
+	checkbuf[i] += gain * std::complex<float>(sin(angles[j]), cos(angles[j]));
 	angles[j] += ang_incs[j];
 	if(angles[j] > M_PI) angles[j] -= (2.0 * M_PI);
       }
@@ -236,10 +233,10 @@ int doSSBTest(int argc, char * argv[])
   // create a test input buffer
   float inbuf[buflen];
   // output buffers
-  std::complex<float> analytic_U_inbuf[buflen];
-  std::complex<float> analytic_L_inbuf[buflen];
-  std::complex<float> usb_outbuf[buflen];
-  std::complex<float> lsb_outbuf[buflen];
+  std::complex<float> * analytic_U_inbuf = new std::complex<float>[buflen];
+  std::complex<float> * analytic_L_inbuf = new std::complex<float>[buflen];
+  std::complex<float> * usb_outbuf = new std::complex<float>[buflen];
+  std::complex<float> * lsb_outbuf = new std::complex<float>[buflen];
 
   // now setup an input test signal parameters.
   // We're going to use a signal made up of eight
@@ -302,18 +299,13 @@ int doSSBTest(int argc, char * argv[])
 
 	usb_sum_err.record(usb_sum / norm); 
 	lsb_diff_err.record(lsb_diff / norm);
-#if 0
-	std::cerr << boost::format("%d %f %f %f %f %f %f %f %f %f %f\n") %
-	  (j + k * buflen) %
-	  usb_sum % lsb_diff %
-	  usb_outbuf[j].real() % usb_outbuf[j].imag() % 
-	  lsb_outbuf[j].real() % lsb_outbuf[j].imag() %
-	  analytic_U_inbuf[j].real() % analytic_U_inbuf[j].imag() %
-	  analytic_L_inbuf[j].real() % analytic_L_inbuf[j].imag()
-	  ;
-#endif
       }
     }
+
+    delete [] analytic_U_inbuf;
+    delete [] analytic_L_inbuf;
+    delete [] usb_outbuf;
+    delete [] lsb_outbuf;
   }
 
   std::cout << boost::format("# Dumps histograms of USB and LSB normalized error\n# -- all should be clustered around 0.0 -- normalized to mean squared amplitude.\n"); 
@@ -342,7 +334,7 @@ int doPMTest(int argc, char * argv[])
   float rf_inbuf[buflen]; 
 
   // output buffers
-  std::complex<float> transform_buf[buflen];
+  std::complex<float> * transform_buf = new std::complex<float>[buflen];
 
   // now setup an input test signal parameters.
   // We're going to use a signal made up of eight
@@ -427,7 +419,8 @@ int doPMTest(int argc, char * argv[])
     }
   }
 
-  return 1; 
+  return 1;
+  delete [] transform_buf;
 }
 
 int main(int argc, char * argv[])

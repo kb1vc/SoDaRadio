@@ -65,6 +65,7 @@ namespace SoDa {
       else {
 	reader_count--;
       }
+      return true;
     }
 
     // these are to detect "free" actions on the wrong mailbox. 
