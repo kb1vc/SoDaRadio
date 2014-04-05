@@ -136,8 +136,8 @@ namespace SoDaRadio_GUI {
 
     static const int HEATMAP_SIZE = 256; 
     wxColour heatmap[HEATMAP_SIZE]; /// 256 shades of color seems reasonable.
-    static const float heat_range = 30.0;
-    static const float heat_floor = -5.0; 
+    static const float heat_range;
+    static const float heat_floor;
     wxBitmap * bitmap;
     wxMemoryDC bitmapDC; 
     wxPanel * m_parent;
