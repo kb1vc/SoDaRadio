@@ -36,6 +36,8 @@
 #include "../src/Command.hxx"
 #include "Navigation.hxx"
 #include <math.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 namespace SoDaRadio_GUI {
   
@@ -54,6 +56,56 @@ namespace SoDaRadio_GUI {
     }
   }
 
+  void NewConfigDialog::OnCreateConfigDefault( wxCommandEvent & event)
+  {
+    // get our home directory
+    std::string homedir = getenv("HOME");
+    std::string configdir = homedir + "/.SoDaRadio";
+    std::string configfile = configdir + "/SoDa.soda_cfg";
+
+    // does ${HOME}/.SoDaRadio exist?
+    struct stat sb; 
+    if(stat(configdir.c_str(), &sb) == 0) {
+      // The file exists. 
+      if (!S_ISDIR(sb.st_mode)) {
+	// but it is NOT a directory!
+	// Set an error.
+	std::string ermsg = configdir + " is NOT a directory.\nPlease fix this, and try again.";
+	m_StatusInfo->SetLabel(wxString(ermsg.c_str(), wxConvUTF8));
+	return; 
+      }
+    }
+    else {
+      // create the directory?
+      int stat = mkdir(configdir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR);
+      if(stat < 0) {
+	std::string ermsg = "Could not create " + configdir + "\nPlease fix this, and try again.";
+	m_StatusInfo->SetLabel(wxString(ermsg.c_str(), wxConvUTF8));
+	return; 
+      }
+    }
+
+    radio->SaveSoDaConfig(wxString(configfile.c_str(), wxConvUTF8));
+
+    radio->SetConfigFileName(wxString(configfile.c_str(), wxConvUTF8));
+    
+    m_StatusInfo->SetLabel(wxString(wxT("                                  \n                                  ")));    
+    if(IsModal()) EndModal(wxID_OK);
+    else {
+      SetReturnCode(wxID_OK);
+      this->Show(false); 
+    }
+  }
+  
+  void NewConfigDialog::OnDismissCreateConfigDefault( wxCommandEvent & event)
+  {
+    if(IsModal()) EndModal(wxID_OK);
+    else {
+      SetReturnCode(wxID_OK);
+      this->Show(false); 
+    }
+  }
+  
   void SoDaRadio_Top::OnOpenConfig( wxCommandEvent& event )
   {
     wxString defaultDir = wxT("~/.SoDa");
@@ -130,17 +182,14 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnSelectPage( wxNotebookEvent& event )
   {
-    // TODO: Implement OnSelectPage
   }
 
   void SoDaRadio_Top::OnWFallFreqSel( wxMouseEvent& event )
   {
-    // TODO: Implement OnWFallFreqSel
   }
 
   void SoDaRadio_Top::OnPeriodogramFreqSel( wxMouseEvent& event )
   {
-    // TODO: Implement OnPeriodogramFreqSel
   }
 
 
@@ -776,16 +825,106 @@ namespace SoDaRadio_GUI {
 
   void LogDialog::OnLogCellChange( wxGridEvent& event)
   {
-    std::cerr << "Hooooooo!   We changed a cell" << std::endl; 
   }
 
+  void SoDaRadio_Top::SaveCurrentBand() {
+    if(current_band != NULL) {
+      current_band->last_rx_freq = rx_frequency * 1e-6;
+      current_band->last_tx_freq = tx_frequency * 1e-6;
 
+      current_band->af_gain = m_AFGain->GetValue();
+      current_band->rf_gain = m_RFGain->GetValue();
+      current_band->af_bw = m_AFBWChoice->GetSelection();
 
-  void SoDaRadio_Top::OnSetTransverterOffset( wxCommandEvent& event)
+      current_band->tx_rf_outpower = tx_rf_outpower;
+      current_band->tx_rx_locked = tx_rx_locked;
+    }
+  }
+  
+  void SoDaRadio_Top::SetCurrentBand(SoDaRadio_Band * band)
   {
-    // set the new stuff.
-    transconf->UpdateSettings(); 
-    transconf->Show(); 
+    // save the old band's last tx/rx and other settings
+    SaveCurrentBand();
+    
+    // now we have a band pointer -- save it
+    current_band = band;
+
+    if(band->transverter_mode) {
+      actual_lo_base_freq = nominal_lo_base_freq = band->transverter_lo_freq * 1e6; 
+      lo_multiplier = band->transverter_multiplier;
+      setLOOffset(0.0);
+    }
+    else {
+      actual_lo_base_freq = nominal_lo_base_freq = 0.0;
+      lo_multiplier = 0.0;
+      setLOOffset(0.0);
+    }
+
+    m_PTT->Enable(band->enable_transmit);
+    m_CWsendEx->Enable(band->enable_transmit);
+    m_CWsendInfo->Enable(band->enable_transmit);    
+    m_CWsendCall->Enable(band->enable_transmit);    
+    m_CWsendGrid->Enable(band->enable_transmit);    
+    m_CWsendQSL->Enable(band->enable_transmit);    
+    m_CWsendBK->Enable(band->enable_transmit);    
+    m_CWsend73->Enable(band->enable_transmit);    
+    m_CWsendV->Enable(band->enable_transmit);    
+    m_CWsendCarrier->Enable(band->enable_transmit);
+
+    // set the mode select
+    wxCommandEvent nullCE;
+    wxScrollEvent nullSE;
+    m_ModeBox->SetStringSelection(wxString::FromUTF8(band->default_mode.c_str()));
+    OnModeChoice(nullCE);
+
+    // update the spectrum freq.
+    UpdateCenterFreq(band->last_rx_freq * 1e6);
+    OnPerBandSpread(nullCE);
+
+    // the the antenna
+    setRXAnt(band->rx_antenna_choice);
+
+    // set the transmit parameters
+    controls->setTXPower(band->tx_rf_outpower);
+    tx_rx_locked = band->tx_rx_locked;
+    OnTXRXLock(nullCE);
+    
+    // now the af gain params
+    // these are the gain controls.
+    m_AFGain->SetValue(band->af_gain);
+    m_AFBWChoice->SetSelection(band->af_bw);
+    OnAFGainScroll(nullSE);
+    OnAFBWChoice(nullCE);
+
+    // set the RF gain
+    m_RFGain->SetValue(band->rf_gain);
+    OnRFGainScroll(nullSE);
+    
+    // now -- set the last tx/rx/freq
+    UpdateRXFreq(band->last_rx_freq * 1e6);
+    UpdateTXFreq(band->last_tx_freq * 1e6);
+  }
+  
+  void SoDaRadio_Top::OnBandSelect( wxCommandEvent& event)
+  {
+    // find out which choice we made.
+    wxObject * m = event.GetEventObject();
+    // OK... the event has the band that we selected... bumped up by 5000. 
+    // This is a crappy hack, but I couldn't figure out which button got pressed otherwise.
+    // look it up in the bandset.
+    SoDaRadio_Band * newband = bandset->getByIndex(event.GetId() - 5000); 
+    std::string band_name = newband->getName(); 
+    
+    // set the new band
+    SetCurrentBand(newband);
+  }
+
+  void SoDaRadio_Top::OnConfigBand( wxCommandEvent& event)
+  {
+    // init the list of configured bands in the bandconf dialog
+    bandconf->initBandList(bandset);
+    bandconf->clearTextBoxes(); 
+    bandconf->Show();
   }
 
   void TuningDialog::OnTransvLOCal( wxCommandEvent & event)
@@ -953,7 +1092,6 @@ namespace SoDaRadio_GUI {
   {
     // did it go up or down?
     unsigned long new_cfreq = m_cFreqSpin->GetValue();
-    //  std::cerr << "In OnCFreqStep with new = " << new_cfreq << " and old = " << last_cfreq << std::endl; 
     if(new_cfreq != last_cfreq) {
       // take the difference and make new steps.
       unsigned long diff = new_cfreq - last_cfreq;
@@ -963,7 +1101,6 @@ namespace SoDaRadio_GUI {
       if(last_cfreq < min) last_cfreq = min;
       if(last_cfreq > max) last_cfreq = max;
       spectrum_center_freq = last_cfreq * 1e3;
-      //    std::cerr << "New center frequency = " << spectrum_center_freq << std::endl;
       UpdateAxes();
       m_cFreqSpin->SetValue(last_cfreq);
     }
@@ -1009,12 +1146,14 @@ namespace SoDaRadio_GUI {
   {
     double rxfreq = GetRXFreq();
 
+    UpdateCenterFreq(rxfreq); 
+  }
+
+  void SoDaRadio_Top::UpdateCenterFreq(double cfreq)
+  {
     // round the rxfreq to the nearest 25KHz.
     // and turn it into kHz
-    unsigned long spin_center = 25 * round(rxfreq / 25e3);
-
-    // std::cerr << boost::format("rxfreq = %12.10g spin_center = %ld")
-    //   % rxfreq % spin_center << std::endl; 
+    unsigned long spin_center = 25 * round(cfreq / 25e3);
   
     // and set the spin box.
     unsigned long spin_low, spin_high, spin_step;
@@ -1022,9 +1161,6 @@ namespace SoDaRadio_GUI {
 
     spin_low = spin_center - spread * 10;
     spin_high = spin_center + spread * 10;
-
-    // std::cerr << boost::format("rxfreq = %12.10g spin_center = %ld spin_low = %ld spin_high = %ld spread = %ld")
-    //   % rxfreq % spin_center % spin_low % spin_high % spread << std::endl; 
 
     cfreq_step = 25; 
 
@@ -1037,100 +1173,9 @@ namespace SoDaRadio_GUI {
     UpdateAxes();   
   }
 
-#if 0
-  void ConfigSpectrumDlg::OnRxToCentFreq( wxCommandEvent & event)
-  {
-    SoDaRadio_Top * parent = (SoDaRadio_Top *) this->GetParent();
-    double rxfreq = parent->GetRXFreq();
-
-    // round the rxfreq to the nearest 25KHz.
-    // and turn it into kHz
-    unsigned long spin_center = 25 * round(rxfreq / 25e3);
-  
-    // and set the spin box.
-    unsigned long spin_low, spin_high, spin_step;
-    unsigned long spread = (unsigned long) (GetSpread() / 1.0e3);
-
-    spin_low = spin_center - spread * 10;
-    spin_high = spin_center + spread * 10;
-
-    cfreq_step = 25; 
-
-    m_cFreqSpin->SetRange(spin_low, spin_high);
-    m_cFreqSpin->SetValue(spin_center);
-    last_cfreq = spin_center;
-
-    UpdateAxes();
-  
-  }
-
-  void ConfigSpectrumDlg::OnSet( wxCommandEvent & event)
-  {
-    SoDaRadio_Top * parent = (SoDaRadio_Top *) this->GetParent();
-    bool update_xyplot = false; 
-
-    // what's the new center freq? 
-    double new_cfreq = m_cFreqSpin->GetValue() * 1e3;
-    if(new_cfreq != parent->spectrum_center_freq) {
-      parent->spectrum_center_freq = new_cfreq;
-      update_xyplot = true; 
-    }
-
-    // the bandspread
-    float spread = GetSpread();
-    if(spread != parent->spectrum_bandspread) {
-      parent->spectrum_bandspread = spread; 
-      update_xyplot = true; 
-    }
-    
-    // the y reference level
-    float yref = m_RefLevel->GetValue();
-    if(yref != parent->spectrum_y_reflevel) {
-      parent->spectrum_y_reflevel = yref;
-      update_xyplot = true; 
-    }
-
-    // the y scale factor
-    float yscale = GetYScale();
-    if(yscale != parent->spectrum_y_scale) {
-      parent->spectrum_y_scale = yscale;
-      update_xyplot = true; 
-    }
-
-    if(update_xyplot) {
-      parent->UpdateAxes(); 
-    }
-  }
-
-  void ConfigSpectrumDlg::OnOK( wxCommandEvent & event)
-  {
-    // this is an implicit "set"
-    OnSet(event);
-  
-    if(IsModal() ) {
-      EndModal(wxID_OK);
-    }
-    else {
-      SetReturnCode(wxID_OK);
-      this->Show(false); 
-    }
-  }
-
-  void ConfigSpectrumDlg::OnCancel( wxCommandEvent & event)
-  {
-    if(IsModal() ) {
-      EndModal(wxID_CANCEL);
-    }
-    else {
-      SetReturnCode(wxID_CANCEL);
-      this->Show(false); 
-    }
-  }
-#endif
-
   void SoDaRadio_Top::SetPerVals(double cfreq, double reflevel, float yscale, float bspread)
   {
-  
+    
     m_cFreqSpin->SetRange(cfreq - (bspread * 0.5e-3), cfreq + (bspread * 0.5e-3));
     m_cFreqSpin->SetValue(cfreq);
 
@@ -1171,59 +1216,213 @@ namespace SoDaRadio_GUI {
     tuner->Show();
   }
 
+  
   void SoDaRadio_Top::OnCtrlPopup( wxCommandEvent & event)
   {
     // popup a modal tuning dialog.
     controls->Show();
   }
 
-  void TransverterConfigDialog::OnTVConfDone( wxCommandEvent & event)
+  void BandConfigDialog::setChoiceBox(wxChoice * box, std::string & sel)
+  {
+    // roll through choices looking for one that matches sel.
+    int i;
+    wxString wsel = wxString(sel.c_str(), wxConvUTF8);
+    
+    for(i = 0; i < box->GetCount(); i++) {
+      if(wsel == box->GetString(i)) {
+	box->SetSelection(i);
+	return; 
+      }
+    }
+  }
+  
+  void BandConfigDialog::initBandList(SoDaRadio_BandSet * bandset)
+  {
+    std::string nm;
+    m_BandChoiceBox->Clear();
+    for(nm = bandset->getFirstName(); nm != ""; nm = bandset->getNextName()) {
+      m_BandChoiceBox->Append(wxString(nm.c_str(), wxConvUTF8));
+    }
+    m_BandChoiceBox->Append(wxString(wxT("Create New Band"))); 
+    m_BandChoiceBox->SetStringSelection(wxString(wxT("Create New Band")));
+
+    bands = bandset;
+
+    radio_top->setupBandSelect(bandset); 
+  }
+
+  void BandConfigDialog::OnConfigChoice(wxCommandEvent & event)
+  {
+    // what band did we choose?
+    // if we already know the band, fill in the blanks.
+    std::string bcb = std::string(m_BandChoiceBox->GetStringSelection().mb_str());
+    if(bcb != "Create New Band") {
+      // find the band choice.
+      SoDaRadio_Band * choice = bands->getByName(bcb);
+
+      if(choice != NULL) {
+	// set the band name
+	m_BandName->SetValue(wxString(bcb.c_str(), wxConvUTF8));
+	// set the low and high edges
+	m_low_edge->SetValue(wxString((boost::format("%f") % choice->lower_band_edge).str().c_str(), wxConvUTF8));
+	m_high_edge->SetValue(wxString((boost::format("%f") % choice->upper_band_edge).str().c_str(), wxConvUTF8));
+	// set the RX ant choice
+	setChoiceBox(m_RXAntChoice, choice->rx_antenna_choice);
+	// set the modulation choice
+	setChoiceBox(m_ModChoice, choice->default_mode);
+	// can we TX on this band?
+	m_TXEna->SetValue(choice->enable_transmit);
+	// set the band ID
+	m_BandID->SetValue(choice->band_id);
+	// is this a transverter band?
+	m_TransverterMode->SetValue(choice->transverter_mode);
+	OnTransverterModeSel(event); 
+	if (choice->transverter_mode) {
+	  // set the injection side
+	  m_InjectionSel->SetSelection(choice->low_side_injection ? 0 : 1);
+	  // set the lo freq
+	  m_TransFreqEntry->SetValue(wxString((boost::format("%f") % choice->transverter_lo_freq).str().c_str(), wxConvUTF8));	  
+	  // set the multiplier
+	  m_TransMultEntry->SetValue(wxString((boost::format("%f") % choice->transverter_multiplier).str().c_str(), wxConvUTF8));
+	}
+      }
+    }
+  }
+  
+  void BandConfigDialog::OnProblem(std::string const & probstring ) {
+    BandConfigProblem * bcp = new BandConfigProblem(this, probstring.c_str()); 
+    bcp->Show(); 
+  }
+
+  void BandConfigProblem::OnBandErrorOK( wxCommandEvent & event)
+  {
+    if(IsModal()) EndModal(wxID_OK);
+    else {
+      SetReturnCode(wxID_OK);
+      this->Show(false); 
+    }
+  }
+  
+  void BandConfigDialog::OnBandOK( wxCommandEvent & event)
+  {
+    std::string bcb = std::string(m_BandChoiceBox->GetStringSelection().mb_str());
+
+    bool found_problem = false;
+    std::string problem_string = "";
+    
+    std::string bandname; 
+    if(bcb == "Create New Band") {
+      bandname = std::string(m_BandName->GetValue().mb_str());
+      if(bandname == "") {
+	// need to pop something up.
+	problem_string = "No Band Name supplied.";
+	found_problem = true; 
+      }
+    }
+    else {
+      bandname = bcb; 
+    }
+
+    // now find the band entry.
+    SoDaRadio_Band * newband = bands->getByName(bandname);
+    if(newband == NULL) {
+      newband = new SoDaRadio_Band();
+    }
+
+    double le, ue;
+    m_low_edge->GetValue().ToDouble(&le);
+    if(le == 0.0) {
+      found_problem = true;
+      problem_string = problem_string + "\nPlease specify lower band edge (non zero).";
+    }
+    m_high_edge->GetValue().ToDouble(&ue);
+    if(ue == 0.0) {
+      found_problem = true;
+      problem_string = problem_string + "\nPlease specify upper band edge (non zero).";
+    }
+
+    bool lsi; ///< low side injection.
+    double tr_lo; ///< transverter local osc freq.
+    double tr_mult; ///< transverter multiplier
+    // now check the transverter stuff.
+    if (m_TransverterMode->IsChecked()) {
+      m_TransFreqEntry->GetValue().ToDouble(&tr_lo);
+      m_TransMultEntry->GetValue().ToDouble(&tr_mult);
+
+      if(tr_lo <= 0.0) {
+	found_problem = true;
+	problem_string = problem_string + "\nPlease specify transverter local osc. frequency (non zero).";
+      }
+      if(tr_mult <= 0.0) {
+	found_problem = true;
+	problem_string = problem_string + "\nPlease specify transverter local osc. multiplier (non zero).";
+      }
+
+      lsi = (m_InjectionSel->GetSelection() == wxString(wxT("Low Side")));
+    }
+    
+    std::string mode = std::string(m_ModChoice->GetStringSelection().mb_str());
+    std::string ant = std::string(m_RXAntChoice->GetStringSelection().mb_str());
+    bool ena = m_TXEna->IsChecked();
+    unsigned char bid = (unsigned char) (m_BandID->GetValue() & 0xff);
+
+    if(!found_problem) {
+      newband->setupBand(bandname, le, ue, mode, ant, bid, ena);
+      if(m_TransverterMode->IsChecked()) {
+	newband->setupTransverter(tr_lo, tr_mult, lsi); 
+      }
+      
+      bands->add(newband); 
+
+      m_BandName->Clear();
+    
+      if(IsModal()) {
+	EndModal(wxID_OK); 
+      }
+      else {
+	SetReturnCode(wxID_OK);
+	this->Show(false); 
+      }
+      radio_top->setupBandSelect(bands);
+    }
+    else {
+      // there was a problem of some sort.  popup the dialog and return.
+      OnProblem(problem_string); 
+    }
+  }
+
+  void BandConfigDialog::OnBandCancel( wxCommandEvent & event)
   {
     if(IsModal()) {
       EndModal(wxID_OK); 
     }
     else {
-      ReadSettings(); 
       SetReturnCode(wxID_OK);
       this->Show(false); 
     }
   }
 
-  void TransverterConfigDialog::OnTVConfCancel( wxCommandEvent & event)
+  void BandConfigDialog::OnTransverterModeSel( wxCommandEvent & event)
   {
-    if(IsModal()) {
-      EndModal(wxID_OK); 
-    }
-    else {
-      SetReturnCode(wxID_OK);
-      this->Show(false); 
-    }
-  }
+    // enable the other fields.
+    bool ena = m_TransverterMode->IsChecked();
+    m_InjectionSel->Enable(ena);
 
-  void TransverterConfigDialog::OnTVActivate( wxCommandEvent & event)
+    m_TransFreqLabel->Enable(ena); 
+    m_TransFreqLabel2->Enable(ena); 
+    m_TransFreqEntry->Enable(ena); 
+
+    m_TransMultLabel->Enable(ena); 
+    m_TransMultEntry->Enable(ena); 
+  }
+    
+  void BandConfigDialog::OnBandActivate( wxCommandEvent & event)
   {
   }
-
-#if 0
-  void SoDaRadio_Top::OnConfigSpectrum( wxCommandEvent & event)
-  {
-
-    ConfigSpectrumDlg dialog(this);
-    // get the current values and set them.
-    dialog.SetVals(spectrum_center_freq * 1e-3, spectrum_y_reflevel, spectrum_y_scale, spectrum_bandspread); 
-    if(dialog.ShowModal() == wxID_OK) {
-      // std::cerr << "config spectrum returned ok..." << std::endl;
-      // std::cerr << "center freq choice is " << spectrum_center_freq << std::endl; 
-    }
-    else {
-      std::cerr << "config spectrum returned not ok..." << std::endl; 
-    }
-  }
-#endif
 
   void SoDaRadio_Top::OnUpdateSpectrumPlot(wxCommandEvent & event)
   {
-    // std::cerr << "Got update spectrum plot message" << std::endl;
     if(pgram_trace != NULL) {
       pgram_plot->Draw();
       if(wfall_plot != NULL) wfall_plot->DrawNew();
@@ -1239,18 +1438,6 @@ namespace SoDaRadio_GUI {
     float maxval = -1000.0;
     float maxfreq = 0.0; 
     int maxidx = 0; 
-    // for(i = 0; i < len; i++) {
-    //   if(y[i] > maxval) {
-    //     maxidx = i;
-    //     maxval = y[i];
-    //     maxfreq = x[i];
-    //   }
-    // }
-    // std::cerr << "max idx = " << maxidx << std::setprecision(10)
-    // 	    << " maxval =  " << maxval << " maxfreq =  " << maxfreq << " "
-    // 	      << xmin << " " << xmax << " " << ymin << " " << ymax
-    // 	      << std::endl; 
-
   }
 
   void SoDaRadio_Top::OnUpdateGPSLoc(wxCommandEvent & event)

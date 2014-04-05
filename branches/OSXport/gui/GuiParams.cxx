@@ -35,10 +35,12 @@ SoDa::GuiParams::GuiParams(int argc, wxChar ** wxargv)
   po::options_description desc("Allowed options");
   desc.add_options()
     ("help", "help message")
+    ("server", po::value<std::string>(&server_name)->default_value("SoDaServer"),
+     "Name/path to SoDaServer program. Normally found in the directory containing SoDaRadio")
     ("uds_name", po::value<std::string>(&server_sock_basename)->default_value("/tmp/SoDa_"),
      "unix domain socket name for server to UI client message channels")
-    ("config", po::value<std::string>(&config_filename)->default_value("SoDa.soda_cfg"),
-     "Configuration file with initial settings."
+    ("config", po::value<std::string>(&config_filename)->default_value(""),
+     "Configuration file with initial settings. Otherwise SoDaRadio will look in ${HOME}/.SoDaRadio/SoDa.soda_cfg"
      )
     ("log", po::value<std::string>(&log_filename)->default_value("SoDa.soda_log"),
      "Log filename")

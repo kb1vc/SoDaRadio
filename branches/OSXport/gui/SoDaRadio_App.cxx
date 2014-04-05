@@ -44,9 +44,15 @@ bool SoDaRadio_App::OnInit()
 {
   // get the args and argvs
   SoDa::GuiParams  p(argc, argv);
+  std::cerr << "got params." << std::endl;
   SoDaRadio_GUI::SoDaRadio_Top * top = new SoDaRadio_GUI::SoDaRadio_Top(p, (wxWindow*) NULL);
+
+  std::cerr << "created top." << std::endl; 
   top->Show();
+  std::cerr << "showed top." << std::endl; 
   SetTopWindow(top);
+  std::cerr << "set top." << std::endl; 
   wxInitAllImageHandlers();
+  std::cerr << "inited headers." << std::endl;
   return true; 
 }

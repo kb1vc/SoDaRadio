@@ -36,6 +36,7 @@
 #include <wx/statbmp.h>
 #include <wx/statline.h>
 #include <wx/bmpbuttn.h>
+#include <wx/radiobox.h>
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -64,6 +65,7 @@ namespace SoDaRadio_GUI
 			wxMenu* FileMenu;
 			wxMenu* ConfigMenu;
 			wxMenu* m_QSOMenu;
+			wxMenu* m_bandSelect;
 			wxMenu* HelpMenu;
 			wxStatusBar* m_ClueBar;
 			wxNotebook* SpectrumDisplay;
@@ -122,8 +124,8 @@ namespace SoDaRadio_GUI
 			virtual void OnQuit( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnSetFromCall( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnSetFromGrid( wxCommandEvent& event ) { event.Skip(); }
-			virtual void OnSetTransverterOffset( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnGPSOnSel( wxCommandEvent& event ) { event.Skip(); }
+			virtual void OnConfigBand( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnQSOMenuSet( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnAbout( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnUserGuide( wxCommandEvent& event ) { event.Skip(); }
@@ -207,7 +209,7 @@ namespace SoDaRadio_GUI
 		
 		public:
 			
-			m_AboutDialog( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxEmptyString, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxDEFAULT_DIALOG_STYLE );
+			m_AboutDialog( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxEmptyString, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 626,768 ), long style = wxDEFAULT_DIALOG_STYLE );
 			~m_AboutDialog();
 		
 	};
@@ -268,35 +270,6 @@ namespace SoDaRadio_GUI
 			
 			m_ConfigSpectrum( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("Configure Spectrum Displays"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 423,200 ), long style = wxCLOSE_BOX|wxDEFAULT_DIALOG_STYLE );
 			~m_ConfigSpectrum();
-		
-	};
-	
-	///////////////////////////////////////////////////////////////////////////////
-	/// Class m_TransverterConfigDialog
-	///////////////////////////////////////////////////////////////////////////////
-	class m_TransverterConfigDialog : public wxDialog 
-	{
-		private:
-		
-		protected:
-			wxCheckBox* TransverterModeEna;
-			wxTextCtrl* TransverterLOFreq;
-			wxStaticText* m_staticText19;
-			
-			wxSpinCtrl* TransverterLOMult;
-			wxButton* mOK;
-			
-			wxButton* mCancel;
-			
-			// Virtual event handlers, overide them in your derived class
-			virtual void OnTVConfDone( wxCommandEvent& event ) { event.Skip(); }
-			virtual void OnTVConfCancel( wxCommandEvent& event ) { event.Skip(); }
-			
-		
-		public:
-			
-			m_TransverterConfigDialog( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("Transverter Configuration"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxDEFAULT_DIALOG_STYLE );
-			~m_TransverterConfigDialog();
 		
 	};
 	
@@ -443,6 +416,112 @@ namespace SoDaRadio_GUI
 			
 			m_ControlsDialog( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("Controls"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxDEFAULT_DIALOG_STYLE );
 			~m_ControlsDialog();
+		
+	};
+	
+	///////////////////////////////////////////////////////////////////////////////
+	/// Class m_NewConfigDialog
+	///////////////////////////////////////////////////////////////////////////////
+	class m_NewConfigDialog : public wxDialog 
+	{
+		private:
+		
+		protected:
+			
+			wxStaticText* m_staticText25;
+			
+			wxStaticText* m_StatusInfo;
+			
+			
+			wxButton* m_CreateConfigDefault;
+			
+			wxButton* m_NoThanksCreateConfigDefault;
+			
+			
+			// Virtual event handlers, overide them in your derived class
+			virtual void OnCreateConfigDefault( wxCommandEvent& event ) { event.Skip(); }
+			virtual void OnDismissCreateConfigDefault( wxCommandEvent& event ) { event.Skip(); }
+			
+		
+		public:
+			
+			m_NewConfigDialog( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("Create a Default Configuration?"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 487,273 ), long style = wxDEFAULT_DIALOG_STYLE );
+			~m_NewConfigDialog();
+		
+	};
+	
+	///////////////////////////////////////////////////////////////////////////////
+	/// Class m_BandConfigDialog
+	///////////////////////////////////////////////////////////////////////////////
+	class m_BandConfigDialog : public wxDialog 
+	{
+		private:
+		
+		protected:
+			wxStaticText* m_staticText36;
+			wxChoice* m_BandChoiceBox;
+			wxTextCtrl* m_BandName;
+			wxStaticText* m_staticText27;
+			wxChoice* m_RXAntChoice;
+			wxStaticText* m_staticText31;
+			wxTextCtrl* m_low_edge;
+			wxStaticText* m_staticText34;
+			wxStaticText* m_staticText32;
+			wxTextCtrl* m_high_edge;
+			wxStaticText* m_staticText33;
+			wxStaticText* m_staticText39;
+			wxChoice* m_ModChoice;
+			wxCheckBox* m_TXEna;
+			wxStaticText* m_staticText41;
+			wxSpinCtrl* m_BandID;
+			wxCheckBox* m_TransverterMode;
+			wxRadioBox* m_InjectionSel;
+			wxStaticText* m_TransFreqLabel;
+			wxTextCtrl* m_TransFreqEntry;
+			wxStaticText* m_TransFreqLabel2;
+			wxStaticText* m_TransMultLabel;
+			wxTextCtrl* m_TransMultEntry;
+			wxStaticLine* m_staticline6;
+			
+			wxButton* m_BandCancel;
+			
+			wxButton* m_BandOK;
+			
+			
+			// Virtual event handlers, overide them in your derived class
+			virtual void OnConfigChoice( wxCommandEvent& event ) { event.Skip(); }
+			virtual void OnTransverterModeSel( wxCommandEvent& event ) { event.Skip(); }
+			virtual void OnBandCancel( wxCommandEvent& event ) { event.Skip(); }
+			virtual void OnBandOK( wxCommandEvent& event ) { event.Skip(); }
+			
+		
+		public:
+			
+			m_BandConfigDialog( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("Band Configuration"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxDEFAULT_DIALOG_STYLE );
+			~m_BandConfigDialog();
+		
+	};
+	
+	///////////////////////////////////////////////////////////////////////////////
+	/// Class m_BandConfigProblem
+	///////////////////////////////////////////////////////////////////////////////
+	class m_BandConfigProblem : public wxDialog 
+	{
+		private:
+		
+		protected:
+			wxStaticText* m_BrokenBandForm;
+			wxStaticText* m_BandConfigReason;
+			wxButton* m_button38;
+			
+			// Virtual event handlers, overide them in your derived class
+			virtual void OnBandErrorOK( wxCommandEvent& event ) { event.Skip(); }
+			
+		
+		public:
+			
+			m_BandConfigProblem( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("Error in Band Configuration Request"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 563,198 ), long style = wxDEFAULT_DIALOG_STYLE );
+			~m_BandConfigProblem();
 		
 	};
 	

@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012, 2013, 2014, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2014, Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -26,18 +26,20 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef NAVIGATION_HDR
-#define NAVIGATION_HDR
+#ifndef FIND_HOME_HDR
+#define FIND_HOME_HDR
 
-// no classes.. just some niced up interfaces to the
-// ancient dem-gridlib routines from 20 years ago. 
 #include <string>
 
-// report distance and bearing in km and degrees true
-// return 0 on success, some error indication otherwise. 
-int GetBearingDistance(const std::string & from, const std::string & to,
-		       float & bearing, float & rbearing, float & distance); 
+/**
+ * Find the directory in which the calling program resides.
+ *
+ * Note this feature relies on the existance of the procfs.
+ * It works under Linux. I'm not sure what I'll do for other
+ * operating systems.  
+ *
+ * @return string pointing to the program's directory. 
+ */
+std::string findHome(); 
 
-// returns 0 if the string is a maidenhead specifier...
-int CheckGridSquare(const std::string & grid); 
-#endif
+#endif // FIND_HOME_HDR
