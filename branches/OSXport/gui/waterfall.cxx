@@ -49,6 +49,9 @@ namespace SoDaRadio_GUI {
 #define XM_BOXTIC(n) ((int) (((double) (n * graph_width)) * 0.02))
 #define YM_BOXTIC(n) ((int) (((double) (n * graph_height)) * 0.02))
 
+  const float Waterfall::heat_range = 30.0;
+  const float Waterfall::heat_floor = -5.0; 
+
 
   Waterfall::Waterfall(wxPanel * parent, SoDaRadio_Top * _radio, int id,
 		       const wxPoint & pos,

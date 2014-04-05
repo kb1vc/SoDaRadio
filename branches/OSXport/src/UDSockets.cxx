@@ -46,9 +46,8 @@
 SoDa::UD::ServerSocket::ServerSocket(const std::string & path)
 {
   int stat; 
-  // create the socket. 
+  // create the socket.
   server_socket = socket(AF_UNIX, SOCK_STREAM, 0);
-    
   if(server_socket < 0) {
     throw std::runtime_error("Failed to create server socket.\n");
   }
@@ -78,6 +77,7 @@ SoDa::UD::ServerSocket::ServerSocket(const std::string & path)
 
   // mark the socket as "not ready" for input -- it needs to accept first. 
   ready = false; 
+
 }
 
 SoDa::UD::ClientSocket::ClientSocket(const std::string & path, int startup_timeout_count)
@@ -94,7 +94,7 @@ SoDa::UD::ClientSocket::ClientSocket(const std::string & path, int startup_timeo
 
   int stat; 
   for(retry_count = 0; retry_count < startup_timeout_count; retry_count++) {
-    stat = connect(conn_socket, (struct sockaddr *) &server_address, len);
+    stat = connect(conn_socket, (struct sockaddr *) &server_address, SUN_LEN(&server_address));
     if(stat >= 0) break;
     else {
       // we should wait a little while before we give up.
@@ -102,6 +102,7 @@ SoDa::UD::ClientSocket::ClientSocket(const std::string & path, int startup_timeo
     }
   }
 
+  
   if(stat < 0) {
     throw std::runtime_error((boost::format("Couldn't connect to Unix domain socket at path [%s] I quit.\n") % path).str());
   }
@@ -140,7 +141,7 @@ int SoDa::UD::NetSocket::loopWrite(int fd, const void * ptr, unsigned int nbytes
   while(left > 0) {
     stat = write(fd, bptr, left);
     if(stat < 0) {
-      if((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
+      if((errno == EWOULDBLOCK) || (errno == EAGAIN) || (errno == ETIMEDOUT)) {
 	continue; 
       }
       else {
@@ -175,8 +176,7 @@ int SoDa::UD::NetSocket::get(void * ptr, unsigned int size)
 
   stat = read(conn_socket, &rsize, sizeof(unsigned int));
   if(stat <= 0) {
-    if((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
-      //      std::cerr << ">>>" << std::endl; 
+    if((errno == EWOULDBLOCK) || (errno == EAGAIN) || (errno == ETIMEDOUT)) {
       return 0; 
     }
     else {
@@ -191,7 +191,7 @@ int SoDa::UD::NetSocket::get(void * ptr, unsigned int size)
   while(left > 0) {
     int ls = read(conn_socket, bptr, left);
     if(ls < 0) {
-      if((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
+      if((errno == EWOULDBLOCK) || (errno == EAGAIN) || (errno == ETIMEDOUT)) {
 	continue; 
       }
       else {
@@ -212,7 +212,7 @@ int SoDa::UD::NetSocket::get(void * ptr, unsigned int size)
       int ls; 
       ls = read(conn_socket, dmy, (left > 100) ? 100 : left);
       if(ls < 0) {
-	if((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
+	if((errno == EWOULDBLOCK) || (errno == EAGAIN) || (errno == ETIMEDOUT)) {
 	  continue; 
 	}
 	else {

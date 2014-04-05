@@ -121,6 +121,7 @@ namespace SoDaRadio_GUI {
       std::cerr << "Creating listener thread." << std::endl;
     }
     listener = new RadioListenerThread(this);
+
     // now launch it.
     if(debug_mode) {
       std::cerr << "Launching listener thread." << std::endl;
@@ -129,7 +130,6 @@ namespace SoDaRadio_GUI {
       wxLogError(wxT("Couldn't create radio listener thread...")); 
     }
 
-  
     // what is the default button background color? 
     default_button_bg_color = m_PTT->GetBackgroundColour();
   
