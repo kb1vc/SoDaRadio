@@ -80,7 +80,8 @@ build_triplet = @build@
 bin_PROGRAMS = SoDaRadio$(EXEEXT)
 subdir = gui
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
-	$(srcdir)/adjust_GUI.sh.in $(top_srcdir)/depcomp
+	$(top_srcdir)/mkinstalldirs $(srcdir)/adjust_GUI.sh.in \
+	$(top_srcdir)/depcomp
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_boost_asio.m4 \
 	$(top_srcdir)/m4/ax_boost_base.m4 \
@@ -92,11 +93,12 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/ax_boost_asio.m4 \
 	$(top_srcdir)/m4/ax_boost_system.m4 \
 	$(top_srcdir)/m4/ax_boost_thread.m4 \
 	$(top_srcdir)/m4/ax_fftw3.m4 $(top_srcdir)/m4/ax_fftw3f.m4 \
-	$(top_srcdir)/m4/ax_prog_doxygen.m4 $(top_srcdir)/m4/ax_uhd.m4 \
+	$(top_srcdir)/m4/ax_prog_doxygen.m4 \
+	$(top_srcdir)/m4/my_ax_uhd.m4 $(top_srcdir)/m4/wxwin.m4 \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
-mkinstalldirs = $(install_sh) -d
+mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_CLEAN_FILES = adjust_GUI.sh
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
@@ -112,7 +114,8 @@ am_SoDaRadio_OBJECTS = SoDaRadio-SoDaRadio_App.$(OBJEXT) \
 	SoDaRadio-Navigation.$(OBJEXT) SoDaRadio-dem-gridlib.$(OBJEXT) \
 	SoDaRadio-xyplot.$(OBJEXT) \
 	SoDaRadio-RadioListenerThread.$(OBJEXT) \
-	SoDaRadio-GuiParams.$(OBJEXT) SoDaRadio-waterfall.$(OBJEXT)
+	SoDaRadio-GuiParams.$(OBJEXT) SoDaRadio-waterfall.$(OBJEXT) \
+	SoDaRadio-FindHome.$(OBJEXT)
 SoDaRadio_OBJECTS = $(am_SoDaRadio_OBJECTS)
 am__DEPENDENCIES_1 =
 am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
@@ -335,8 +338,8 @@ top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = subdir-objects
 AM_CPPFLAGS = -I$(top_srcdir)/include
 AM_BOOSTLIBFLAGS = ${BOOST_PROGRAM_OPTIONS_LIB} ${BOOST_THREAD_LIB} ${BOOST_DATE_TIME_LIB} ${BOOST_SYSTEM_LIB}
-EXTRA_DIST = SoDaRadio_GUI.cpp uparrow.xpm downarrow.xpm SoDaLogo.xpm SoDaLogo_Big.xpm adjust_GUI.sh SoDaLogo_Big.png
-SoDaRadio_SOURCES = SoDaRadio_App.cxx SoDaRadio_GUI.cxx  SoDaRadio_Top.cxx SoDaRadio_Top_Events.cxx SoDaRadio_Top_Config.cxx ../src/UDSockets.cxx ../src/Command.cxx Navigation.cxx dem-gridlib.c xyplot.cxx RadioListenerThread.cxx GuiParams.cxx waterfall.cxx dem-gridlib.h GuiParams.hxx Navigation.hxx RadioListenerThread.hxx SoDaRadio_App.hxx SoDaRadio_GUI.h SoDaRadio_Top.h TunerDigit.hxx waterfall.hxx xyplot.hxx 
+EXTRA_DIST = SoDaRadio_GUI.cpp uparrow.xpm downarrow.xpm SoDaLogo.xpm SoDaLogo_Big.xpm adjust_GUI.sh SoDaLogo_Big.png 
+SoDaRadio_SOURCES = SoDaRadio_App.cxx SoDaRadio_GUI.cxx  SoDaRadio_Top.cxx SoDaRadio_Top_Events.cxx SoDaRadio_Top_Config.cxx ../src/UDSockets.cxx ../src/Command.cxx Navigation.cxx dem-gridlib.c xyplot.cxx RadioListenerThread.cxx GuiParams.cxx waterfall.cxx dem-gridlib.h GuiParams.hxx Navigation.hxx RadioListenerThread.hxx SoDaRadio_App.hxx SoDaRadio_GUI.h SoDaRadio_Top.h TunerDigit.hxx waterfall.hxx xyplot.hxx FindHome.hxx FindHome.cxx Default.soda_cfg.h SoDaRadio_Band.hxx
 SoDaRadio_CPPFLAGS = $(AM_CPPFLAGS) $(WX_CPPFLAGS) 
 SoDaRadio_LDADD = $(AM_BOOSTLIBFLAGS) $(WX_LIBS)
 SoDaRadio_CXXFLAGS = $(WX_CXXFLAGS) 
@@ -444,6 +447,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/SoDaRadio-Command.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/SoDaRadio-UDSockets.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaRadio-FindHome.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaRadio-GuiParams.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaRadio-Navigation.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaRadio-RadioListenerThread.Po@am__quote@
@@ -669,6 +673,20 @@ SoDaRadio-waterfall.obj: waterfall.cxx
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='waterfall.cxx' object='SoDaRadio-waterfall.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaRadio_CPPFLAGS) $(CPPFLAGS) $(SoDaRadio_CXXFLAGS) $(CXXFLAGS) -c -o SoDaRadio-waterfall.obj `if test -f 'waterfall.cxx'; then $(CYGPATH_W) 'waterfall.cxx'; else $(CYGPATH_W) '$(srcdir)/waterfall.cxx'; fi`
+
+SoDaRadio-FindHome.o: FindHome.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaRadio_CPPFLAGS) $(CPPFLAGS) $(SoDaRadio_CXXFLAGS) $(CXXFLAGS) -MT SoDaRadio-FindHome.o -MD -MP -MF $(DEPDIR)/SoDaRadio-FindHome.Tpo -c -o SoDaRadio-FindHome.o `test -f 'FindHome.cxx' || echo '$(srcdir)/'`FindHome.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/SoDaRadio-FindHome.Tpo $(DEPDIR)/SoDaRadio-FindHome.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='FindHome.cxx' object='SoDaRadio-FindHome.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaRadio_CPPFLAGS) $(CPPFLAGS) $(SoDaRadio_CXXFLAGS) $(CXXFLAGS) -c -o SoDaRadio-FindHome.o `test -f 'FindHome.cxx' || echo '$(srcdir)/'`FindHome.cxx
+
+SoDaRadio-FindHome.obj: FindHome.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaRadio_CPPFLAGS) $(CPPFLAGS) $(SoDaRadio_CXXFLAGS) $(CXXFLAGS) -MT SoDaRadio-FindHome.obj -MD -MP -MF $(DEPDIR)/SoDaRadio-FindHome.Tpo -c -o SoDaRadio-FindHome.obj `if test -f 'FindHome.cxx'; then $(CYGPATH_W) 'FindHome.cxx'; else $(CYGPATH_W) '$(srcdir)/FindHome.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/SoDaRadio-FindHome.Tpo $(DEPDIR)/SoDaRadio-FindHome.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='FindHome.cxx' object='SoDaRadio-FindHome.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaRadio_CPPFLAGS) $(CPPFLAGS) $(SoDaRadio_CXXFLAGS) $(CXXFLAGS) -c -o SoDaRadio-FindHome.obj `if test -f 'FindHome.cxx'; then $(CYGPATH_W) 'FindHome.cxx'; else $(CYGPATH_W) '$(srcdir)/FindHome.cxx'; fi`
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique

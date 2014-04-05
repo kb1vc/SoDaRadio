@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012, 2013, 2014, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2014, Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -26,18 +26,38 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef NAVIGATION_HDR
-#define NAVIGATION_HDR
+#include "FindHome.hxx"
+extern "C" {
+#include <libgen.h>
+#include <unistd.h>
+#ifdef __linux__
+#include <linux/limits.h>
+#endif  
+}
 
-// no classes.. just some niced up interfaces to the
-// ancient dem-gridlib routines from 20 years ago. 
-#include <string>
+#include <iostream>
 
-// report distance and bearing in km and degrees true
-// return 0 on success, some error indication otherwise. 
-int GetBearingDistance(const std::string & from, const std::string & to,
-		       float & bearing, float & rbearing, float & distance); 
-
-// returns 0 if the string is a maidenhead specifier...
-int CheckGridSquare(const std::string & grid); 
+/**
+ * Find the directory in which the calling program resides.
+ *
+ * Note this feature relies on the existance of the procfs.
+ * It works under Linux. I'm not sure what I'll do for other
+ * operating systems.  
+ *
+ * @return string pointing to the program's directory. 
+ */
+std::string findHome()
+{
+#ifdef __linux__
+  // This solution was suggested by an answer in
+  // http://stackoverflow.com/questions/7051844/how-to-find-the-full-path-of-the-c-linux-program-from-within
+  char execution_path[PATH_MAX + 1] = {0}; 
+  readlink("/proc/self/exe", execution_path, PATH_MAX);
+  // now trim the end of the path off, we just want the directory
+  char * mydir = dirname(execution_path);
+  return std::string(mydir); 
+#elif __OSX__
+  // This code has not been tested. 
 #endif
+}
+

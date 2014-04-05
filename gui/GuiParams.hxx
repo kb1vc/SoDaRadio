@@ -39,6 +39,7 @@ namespace SoDa {
     GuiParams(int argc, wxChar ** argv);
 
     std::string getServerSocketBasename() { return server_sock_basename; }
+    std::string getServerName() { return server_name; }
     std::string getLogFileName() { return log_filename; }
     std::string getConfigFileName() { return config_filename; }
   private:
@@ -46,6 +47,8 @@ namespace SoDa {
     char ** convertWXargs2Cargs(int argc, wxChar ** argv);
     
     boost::program_options::variables_map pmap;
+
+    std::string server_name;     ///< Where do we find the server?
     // message socket params
     std::string server_sock_basename; 
     std::string config_filename; 

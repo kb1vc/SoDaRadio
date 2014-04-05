@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2013,2014 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -27,6 +27,7 @@
 */
 extern "C" {
 #include "dem-gridlib.h"
+#include <string.h>
 }
 #include "SoDaRadio_Top.h"
 #include <wx/string.h>
@@ -35,7 +36,7 @@ extern "C" {
 #include "../src/Command.hxx"
 #include <boost/format.hpp>
 #include "SoDaLogo.xpm"
-
+#include "FindHome.hxx"
 /**
  * @file SoDaRadio_Top.cxx
  *
@@ -69,11 +70,51 @@ namespace SoDaRadio_GUI {
     wxIcon logo((char **) &SoDaLogo);
     this->SetIcon(logo);
 
-    debug_mode = false; 
+    debug_mode = false;
+
+    // we don't have a "current band" yet.
+    current_band = NULL;
+    
+    // Did we find a soda configuration file?  
+
+    // Startup the server process -- it should be in the same directory as
+    // this program, unless an alternate server image was specified. 
+    std::string myhome = findHome();
+
+    // Now start the server
+    std::string server = params.getServerName();
+    std::string server_commandline_string; 
+    if(server == "SoDaServer") {
+      // find it in our home directory
+      server_commandline_string = myhome + "/SoDaServer";
+    }
+    else {
+      server_commandline_string = server; 
+    }
+
     // setup the comm channel.
     std::string sock_basename = params.getServerSocketBasename(); 
-    soda_radio = new SoDa::UD::ClientSocket(sock_basename + "_cmd");
-    soda_fft = new SoDa::UD::ClientSocket(sock_basename + "_wfall");
+
+    // fix a problem with UBUNTU menu proxy... .
+    char mproxyfix[] = "UBUNTU_MENUPROXY=";
+    putenv(mproxyfix);
+    if(server != "None") {
+      if(fork()) {
+	int stat;
+	stat = execl(server_commandline_string.c_str(), server.c_str(), "--uds_name",
+	      sock_basename.c_str(), (char*) 0);
+	if(stat < 0) {
+	  std::cerr << boost::format("Couldn't start SoDaServer. Got error [%s]. Is \"%s\" missing?\n")
+	    % strerror(errno)
+	    % server_commandline_string;
+	  exit(stat);
+	}
+      }
+    }
+
+    // setup the client socket trying once every second for 10 seconds before we give up
+    soda_radio = new SoDa::UD::ClientSocket(sock_basename + "_cmd", 5);
+    soda_fft = new SoDa::UD::ClientSocket(sock_basename + "_wfall", 5);
 
     // create the listener thread
     if(debug_mode) {
@@ -148,7 +189,7 @@ namespace SoDaRadio_GUI {
     controls->setTXPower(tx_rf_outpower); 
 
     // setup the transverter offset dialog
-    transconf = new TransverterConfigDialog(this, this);
+    bandconf = new BandConfigDialog(this, this);
 
     // setup the Log dialog
     logdialog = new LogDialog(this, this); 
@@ -158,7 +199,13 @@ namespace SoDaRadio_GUI {
     }
     // load the configuration from a default file,
     // if available.
-    std::string cfn = params.getConfigFileName(); 
+    std::string cfn = params.getConfigFileName();
+
+    if(cfn == "") {
+      std::string home_dir(getenv("HOME"));
+      cfn = home_dir + "/.SoDaRadio/SoDa.soda_cfg";
+    }
+
     wxString config_filename(cfn.c_str(), wxConvUTF8);
     LoadSoDaConfig(config_filename);
 
@@ -260,10 +307,17 @@ namespace SoDaRadio_GUI {
 
     // and update the radio
     SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::TX_RETUNE_FREQ,
-		       applyRXTVOffset(tx_frequency));
+		       applyTXTVOffset(tx_frequency));
     sendMsg(&ncmd);
   }
 
+  void SoDaRadio_Top::setRXAnt(std::string rx_ant_sel)
+  {
+    SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::RX_ANT,
+		       rx_ant_sel);
+    sendMsg(&ncmd);
+  }
+  
   void SoDaRadio_Top::setGPSLoc(double lat, double lon)
   {
     std::string slat = (boost::format("%6.3f") % lat).str();
@@ -305,39 +359,6 @@ namespace SoDaRadio_GUI {
     AddPendingEvent(event); 
   
   }
-
-
-  void TransverterConfigDialog::UpdateSettings()
-  {
-    if(radio_top->GetLOMult() != 0) {
-      TransverterModeEna->SetValue(true);
-      wxString loval;
-      loval.Printf(wxT("%f"), radio_top->GetLONominalBase() * 1e-6);
-      TransverterLOFreq->SetValue(loval);
-    }
-    else {
-      TransverterModeEna->SetValue(false);    
-    }
-
-  
-  }
-
-  void TransverterConfigDialog::ReadSettings()
-  {
-    if(TransverterModeEna->IsChecked()) {
-      double v;
-      v = (double) TransverterLOMult->GetValue();
-      radio_top->SetLOMult(v);
-      if(TransverterLOFreq->GetValue().ToDouble(&v)) {
-	radio_top->SetLONominalBase(v * 1e6); 
-      }
-    }
-    else {
-      radio_top->SetLOMult(0); 
-    }
-  }
-
-
 
   TuningDialog::TuningDialog(wxWindow * parent, SoDaRadio_Top * radio) :
     m_TuningDialog(parent)
