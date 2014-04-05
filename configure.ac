@@ -1,5 +1,4 @@
-
-AC_INIT([SoDa], [1.1.1a])
+AC_INIT([SoDa], [2.0])
 
 AC_PREREQ(2.60)
 AM_INIT_AUTOMAKE
@@ -14,7 +13,7 @@ AC_CONFIG_FILES([Makefile src/Makefile gui/Makefile gui/adjust_GUI.sh exp/Makefi
 
 AC_CONFIG_SRCDIR(src/SoDaServer.cxx)
 
-AC_CHECK_LIB(rt, clock_gettime)
+AC_CHECK_FUNCS([sincos])
 
 AC_CHECK_LIB(portaudio, Pa_GetVersion)
 

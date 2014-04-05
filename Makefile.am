@@ -1,5 +1,4 @@
 AUTOMAKE_OPTIONS = subdir-objects
-
 # Doxygen support
 include $(top_srcdir)/doxygen_aminclude.am
 

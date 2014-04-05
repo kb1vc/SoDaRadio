@@ -1,10 +1,9 @@
 AUTOMAKE_OPTIONS = subdir-objects
-
 AM_CPPFLAGS = -I$(top_srcdir)/src
 AM_BOOSTLIBFLAGS = ${BOOST_PROGRAM_OPTIONS_LIB} ${BOOST_THREAD_LIB} ${BOOST_DATE_TIME_LIB} ${BOOST_SYSTEM_LIB} 
 
 
-bin_PROGRAMS = FFT_Test Sockets_Test MultiMBox_Test SoDa_ThreadTest OSFilter_Test  TestServer ReSampler_Test TSIP_Test Audio_test Hilbert_Test
+bin_PROGRAMS = FFT_Test Sockets_Test MultiMBox_Test SoDa_ThreadTest OSFilter_Test  TestServer ReSampler_Test TSIP_Test Audio_test Hilbert_Test FindHome_Test
 
 
 Sockets_Test_SOURCES = Sockets_Test.cxx  ../src/IPSockets.cxx ../src/UDSockets.cxx ../src/IPSockets.hxx ../src/UDSockets.hxx
@@ -64,3 +63,10 @@ ReSampler_Test_CPPFLAGS = $(AM_CPPFLAGS) -g -O3 -ffast-math
 ReSampler_Test_LDADD = $(AM_BOOSTLIBFLAGS) 
 ReSampler_Test_CXXFLAGS = -g -O3 -ffast-math
 ReSampler_Test_LDFLAGS = -g -O3 
+
+
+FindHome_Test_SOURCES = FindHome_Test.cxx  ../gui/FindHome.cxx ../gui/FindHome.hxx
+FindHome_Test_CPPFLAGS = $(AM_CPPFLAGS) -g -O1 
+FindHome_Test_LDADD = $(AM_BOOSTLIBFLAGS) 
+FindHome_Test_CXXFLAGS = -g -O1
+FindHome_Test_LDFLAGS = -g -O1

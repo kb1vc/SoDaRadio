@@ -2062,180 +2062,168 @@
          x="680"
          y="617.32709"
          id="tspan4916">1 Gbit/s Ethernet</tspan></text>
-    <g
-       id="g7303"
-       transform="translate(1e-5,5.00003)">
-      <g
-         transform="matrix(-1,0,0,1,646.19775,130.0833)"
-         id="g4338-0">
-        <rect
-           y="652.27869"
-           x="376.19775"
-           height="40"
-           width="45"
-           id="rect4253-8"
-           style="fill:none;stroke:#070400;stroke-width:1.60000002;stroke-linecap:square;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
-        <path
-           sodipodi:nodetypes="ccsacssc"
-           inkscape:connector-curvature="0"
-           inkscape:original-d="m 379.99999,663.35969 c 4.60158,20.30521 8.12842,0.10375 12.19776,-0.081 4,0 7,0 11,0 0.94281,0 1.57836,1.15673 2,2 1.05409,2.10819 1,7 1,7 0,0 0,0 2,9 0.20452,0.92036 1.05719,2 2,2 5,0 5,0 5,0"
-           inkscape:path-effect="#path-effect5347-2"
-           id="path4255-6"
-           d="m 379.99999,663.35969 c 4.0655,-0.0675 8.1317,-0.081 12.19776,-0.081 l 11,0 c 0.26976,0 0.5431,0.006 0.80224,0.0811 0.25915,0.0749 0.49911,0.21821 0.68192,0.41659 0.1828,0.19837 0.30633,0.44633 0.38148,0.70541 0.0752,0.25908 0.10473,0.52882 0.13436,0.79695 0.25892,2.34316 0.59248,4.67807 1,7 l 2,9 c 0.0575,0.2585 0.11277,0.51813 0.19628,0.76943 0.0835,0.2513 0.19921,0.49513 0.36996,0.69753 0.17075,0.20241 0.39716,0.35759 0.6485,0.44098 0.25133,0.0834 0.52045,0.0921 0.78526,0.0921 l 5,0"
-           style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
-        <text
-           transform="scale(-1,1)"
-           xml:space="preserve"
-           style="font-size:10px;font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Century Schoolbook L;-inkscape-font-specification:Century Schoolbook L Medium"
-           x="-396.10776"
-           y="702.27869"
-           id="text4334-5"
-           sodipodi:linespacing="125%"><tspan
-             sodipodi:role="line"
-             id="tspan4336-9"
-             x="-396.10776"
-             y="702.27869">Interpolate</tspan></text>
-        <text
-           transform="scale(-1,1)"
-           sodipodi:linespacing="125%"
-           id="text5351-7"
-           y="892.27869"
-           x="-396.10776"
-           style="font-size:10px;font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Century Schoolbook L;-inkscape-font-specification:Century Schoolbook L Medium"
-           xml:space="preserve"><tspan
-             y="892.27869"
-             x="-396.10776"
-             id="tspan5353-9"
-             sodipodi:role="line">Interpolate</tspan></text>
-      </g>
-      <g
-         id="g4390-2"
-         transform="matrix(-1,0,0,1,646.19775,320.08331)">
-        <rect
-           style="fill:none;stroke:#070400;stroke-width:1.60000002;stroke-linecap:square;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-           id="rect4392-7"
-           width="45"
-           height="40"
-           x="376.19775"
-           y="652.27869" />
-        <path
-           style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-           d="m 379.99999,663.35969 c 4.0655,-0.0675 8.1317,-0.081 12.19776,-0.081 l 11,0 c 0.26976,0 0.5431,0.006 0.80224,0.0811 0.25915,0.0749 0.49911,0.21821 0.68192,0.41659 0.1828,0.19837 0.30633,0.44633 0.38148,0.70541 0.0752,0.25908 0.10473,0.52882 0.13436,0.79695 0.25892,2.34316 0.59248,4.67807 1,7 l 2,9 c 0.0575,0.2585 0.11277,0.51813 0.19628,0.76943 0.0835,0.2513 0.19921,0.49513 0.36996,0.69753 0.17075,0.20241 0.39716,0.35759 0.6485,0.44098 0.25133,0.0834 0.52045,0.0921 0.78526,0.0921 l 5,0"
-           id="path4394-8"
-           inkscape:path-effect="#path-effect5349-8"
-           inkscape:original-d="m 379.99999,663.35969 c 4.60158,20.30521 8.12842,0.10375 12.19776,-0.081 4,0 7,0 11,0 0.94281,0 1.57836,1.15673 2,2 1.05409,2.10819 1,7 1,7 0,0 0,0 2,9 0.20452,0.92036 1.05719,2 2,2 5,0 5,0 5,0"
-           inkscape:connector-curvature="0"
-           sodipodi:nodetypes="ccsacssc" />
-      </g>
-      <text
-         sodipodi:linespacing="125%"
-         id="text5573-2"
-         y="805.30206"
-         x="140.45377"
-         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Century Schoolbook L;-inkscape-font-specification:Century Schoolbook L Medium"
-         xml:space="preserve"><tspan
-           y="805.30206"
-           x="140.45377"
-           id="tspan5575-2"
-           sodipodi:role="line">I_TX_IF2</tspan></text>
-      <text
-         sodipodi:linespacing="125%"
-         id="text5577-4"
-         y="995.10193"
-         x="138.5983"
-         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Century Schoolbook L;-inkscape-font-specification:Century Schoolbook L Medium"
-         xml:space="preserve"><tspan
-           y="995.10193"
-           x="138.5983"
-           id="tspan5579-3"
-           sodipodi:role="line">Q_TX_IF2</tspan></text>
-      <path
-         sodipodi:nodetypes="cc"
-         inkscape:connector-curvature="0"
-         inkscape:original-d="m 224.99999,802.36199 -60,0"
-         inkscape:path-effect="#path-effect5583-2"
-         id="path5581-9"
-         d="m 224.99999,802.36199 -60,0"
-         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-start:url(#Arrow1Mstart);marker-end:none" />
-      <path
-         sodipodi:nodetypes="cc"
-         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-start:url(#Arrow1Mstart);marker-end:none"
-         d="m 224.99999,992.36197 -60,0"
-         id="path5771-6"
-         inkscape:path-effect="#path-effect5773-3"
-         inkscape:original-d="m 224.99999,992.36197 -60,0"
-         inkscape:connector-curvature="0" />
-      <path
-         sodipodi:nodetypes="cc"
-         style="fill:none;stroke:#000000;stroke-width:0.80000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:0.8, 0.8;stroke-dashoffset:0;marker-end:url(#Arrow1Mend)"
-         d="m 153.99999,923.64839 36,68.71358"
-         id="path5969-7"
-         inkscape:path-effect="#path-effect5973-8"
-         inkscape:original-d="m 153.99999,923.64839 36,68.71358"
-         inkscape:connector-curvature="0" />
-      <path
-         sodipodi:nodetypes="cc"
-         style="fill:none;stroke:#000000;stroke-width:0.80000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:0.8, 0.8;stroke-dashoffset:0;marker-end:url(#Arrow1Mend)"
-         d="m 153.91079,867.92228 36.0892,-65.56029"
-         id="path5971-7"
-         inkscape:path-effect="#path-effect5975-5"
-         inkscape:original-d="m 153.91079,867.92228 36.0892,-65.56029"
-         inkscape:connector-curvature="0" />
-      <text
-         xml:space="preserve"
-         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Century Schoolbook L;-inkscape-font-specification:Century Schoolbook L Medium"
-         x="153.2739"
-         y="880.47729"
-         id="text4453"
-         sodipodi:linespacing="125%"><tspan
-           sodipodi:role="line"
-           id="tspan4455"
-           x="153.2739"
-           y="880.47729">2nd IF</tspan><tspan
-           sodipodi:role="line"
-           x="153.2739"
-           y="892.97729"
-           id="tspan4457">Up to</tspan><tspan
-           id="tspan6899"
-           sodipodi:role="line"
-           x="153.2739"
-           y="905.47729">25 MS/sec</tspan><tspan
-           id="tspan6180"
-           sodipodi:role="line"
-           x="153.2739"
-           y="917.97729">I/Q 16 bit data</tspan><tspan
-           sodipodi:role="line"
-           x="153.2739"
-           y="930.47729"
-           id="tspan4459" /></text>
-      <path
-         sodipodi:nodetypes="csacaac"
-         inkscape:connector-curvature="0"
-         inkscape:original-d="m 110.84596,1001.4872 c 0,0 -2.64298,-0.286 -5,-4.99997 -5,-10 3.00519,-43.54275 0,-64.99999 -1.68293,-12.01624 -9.999996,-35 -9.999996,-35 0,0 8.317066,-22.98376 9.999996,-35 3.00519,-21.45725 -8.291476,-44.98261 0,-65 0.90199,-2.17761 5,-5 5,-5"
-         inkscape:path-effect="#path-effect4880-8"
-         id="path4878-2"
-         d="m 110.84596,1001.4872 c -1.87913,-1.4344 -3.5656,-3.12085 -5,-4.99997 -3.38349,-4.43252 -5.30316,-9.86844 -6.06387,-15.39263 -0.760709,-5.52418 -0.406559,-11.15179 0.42503,-16.66574 1.66317,-11.02792 5.22698,-21.7966 5.63884,-32.94162 0.45559,-12.32842 -3.10005,-24.77317 -9.999996,-35 6.899936,-10.22684 10.455576,-22.67158 9.999996,-35 -0.41185,-11.14502 -3.97565,-21.9137 -5.63881,-32.94162 -0.831587,-5.51395 -1.185736,-11.14156 -0.425032,-16.66574 0.760702,-5.52419 2.680362,-10.96011 6.063842,-15.39264 1.4344,-1.87913 3.12087,-3.5656 5,-5"
-         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
-      <text
-         sodipodi:linespacing="125%"
-         id="text4906-9"
-         y="888.55731"
-         x="10.25581"
-         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Century Schoolbook L;-inkscape-font-specification:Century Schoolbook L Medium"
-         xml:space="preserve"><tspan
-           y="888.55731"
-           x="10.25581"
-           id="tspan4908-7"
-           sodipodi:role="line">From Host </tspan><tspan
-           id="tspan4912-2"
-           y="901.05731"
-           x="10.25581"
-           sodipodi:role="line">Computer via</tspan><tspan
-           id="tspan4916-7"
-           y="913.55731"
-           x="10.25581"
-           sodipodi:role="line">1 Gbit/s Ethernet</tspan></text>
-    </g>
+    <rect
+       y="787.362"
+       x="-270"
+       height="40"
+       width="45"
+       id="rect4253-8"
+       style="fill:none;stroke:#070400;stroke-width:1.60000002;stroke-linecap:square;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       transform="scale(-1,1)" />
+    <path
+       sodipodi:nodetypes="ccsacssc"
+       inkscape:connector-curvature="0"
+       inkscape:original-d="m 231.00001,798.44302 c 4.60158,20.30521 8.12842,0.10375 12.19776,-0.081 4,0 7,0 11,0 0.94281,0 1.57836,1.15673 2,2 1.05409,2.10819 1,7 1,7 0,0 0,0 2,9 0.20452,0.92036 1.05719,2 2,2 5,0 5,0 5,0"
+       inkscape:path-effect="#path-effect5347-2"
+       id="path4255-6"
+       d="m 231.00001,798.44302 c 4.0655,-0.0675 8.1317,-0.081 12.19776,-0.081 l 11,0 c 0.26976,0 0.5431,0.006 0.80224,0.0811 0.25915,0.0749 0.49911,0.21821 0.68192,0.41659 0.1828,0.19837 0.30633,0.44633 0.38148,0.70541 0.0752,0.25908 0.10473,0.52882 0.13436,0.79695 0.25892,2.34316 0.59248,4.67807 1,7 l 2,9 c 0.0575,0.2585 0.11277,0.51813 0.19628,0.76943 0.0835,0.2513 0.19921,0.49513 0.36996,0.69753 0.17075,0.20241 0.39716,0.35759 0.6485,0.44098 0.25133,0.0834 0.52045,0.0921 0.78526,0.0921 l 5,0"
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    <text
+       xml:space="preserve"
+       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Century Schoolbook L;-inkscape-font-specification:Century Schoolbook L Medium"
+       x="250.09"
+       y="837.362"
+       id="text4334-5"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4336-9"
+         x="250.09"
+         y="837.362">Interpolate</tspan></text>
+    <text
+       sodipodi:linespacing="125%"
+       id="text5351-7"
+       y="1027.3621"
+       x="250.09"
+       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Century Schoolbook L;-inkscape-font-specification:Century Schoolbook L Medium"
+       xml:space="preserve"><tspan
+         y="1027.3621"
+         x="250.09"
+         id="tspan5353-9"
+         sodipodi:role="line">Interpolate</tspan></text>
+    <rect
+       style="fill:none;stroke:#070400;stroke-width:1.60000002;stroke-linecap:square;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="rect4392-7"
+       width="45"
+       height="40"
+       x="-270"
+       y="977.362"
+       transform="scale(-1,1)" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 231.00001,988.44303 c 4.0655,-0.0675 8.1317,-0.081 12.19776,-0.081 l 11,0 c 0.26976,0 0.5431,0.006 0.80224,0.0811 0.25915,0.0749 0.49911,0.21821 0.68192,0.41659 0.1828,0.19837 0.30633,0.44633 0.38148,0.70541 0.0752,0.25908 0.10473,0.52882 0.13436,0.79695 0.25892,2.34316 0.59248,4.67807 1,7 l 2,8.99997 c 0.0575,0.2585 0.11277,0.5181 0.19628,0.7694 0.0835,0.2513 0.19921,0.4952 0.36996,0.6976 0.17075,0.2024 0.39716,0.3575 0.6485,0.4409 0.25133,0.083 0.52045,0.092 0.78526,0.092 l 5,0"
+       id="path4394-8"
+       inkscape:path-effect="#path-effect5349-8"
+       inkscape:original-d="m 231.00001,988.44303 c 4.60158,20.30517 8.12842,0.10375 12.19776,-0.081 4,0 7,0 11,0 0.94281,0 1.57836,1.15673 2,2 1.05409,2.10819 1,7 1,7 0,0 0,0 2,8.99997 0.20452,0.9204 1.05719,2 2,2 5,0 5,0 5,0"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccsacssc" />
+    <text
+       xml:space="preserve"
+       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Century Schoolbook L;-inkscape-font-specification:Century Schoolbook L Medium"
+       x="140.45378"
+       y="810.30206"
+       id="text5573-2"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan5575-2"
+         x="140.45378"
+         y="810.30206">I_TX_IF2</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Century Schoolbook L;-inkscape-font-specification:Century Schoolbook L Medium"
+       x="138.59831"
+       y="1000.1019"
+       id="text5577-4"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan5579-3"
+         x="138.59831"
+         y="1000.1019">Q_TX_IF2</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-start:url(#Arrow1Mstart);marker-end:none"
+       d="m 225,807.36202 -60,0"
+       id="path5581-9"
+       inkscape:path-effect="#path-effect5583-2"
+       inkscape:original-d="m 225,807.36202 -60,0"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
+    <path
+       inkscape:connector-curvature="0"
+       inkscape:original-d="m 225,997.362 -60,0"
+       inkscape:path-effect="#path-effect5773-3"
+       id="path5771-6"
+       d="m 225,997.362 -60,0"
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-start:url(#Arrow1Mstart);marker-end:none"
+       sodipodi:nodetypes="cc" />
+    <path
+       inkscape:connector-curvature="0"
+       inkscape:original-d="M 154,928.64842 190,997.362"
+       inkscape:path-effect="#path-effect5973-8"
+       id="path5969-7"
+       d="M 154,928.64842 190,997.362"
+       style="fill:none;stroke:#000000;stroke-width:0.80000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:0.8, 0.8;stroke-dashoffset:0;marker-end:url(#Arrow1Mend)"
+       sodipodi:nodetypes="cc" />
+    <path
+       inkscape:connector-curvature="0"
+       inkscape:original-d="M 153.9108,872.92231 190,807.36202"
+       inkscape:path-effect="#path-effect5975-5"
+       id="path5971-7"
+       d="M 153.9108,872.92231 190,807.36202"
+       style="fill:none;stroke:#000000;stroke-width:0.80000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:0.8, 0.8;stroke-dashoffset:0;marker-end:url(#Arrow1Mend)"
+       sodipodi:nodetypes="cc" />
+    <text
+       sodipodi:linespacing="125%"
+       id="text4453"
+       y="885.47729"
+       x="153.27391"
+       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Century Schoolbook L;-inkscape-font-specification:Century Schoolbook L Medium"
+       xml:space="preserve"><tspan
+         y="885.47729"
+         x="153.27391"
+         id="tspan4455"
+         sodipodi:role="line">2nd IF</tspan><tspan
+         id="tspan4457"
+         y="897.97729"
+         x="153.27391"
+         sodipodi:role="line">Up to</tspan><tspan
+         y="910.47729"
+         x="153.27391"
+         sodipodi:role="line"
+         id="tspan6899">25 MS/sec</tspan><tspan
+         y="922.97729"
+         x="153.27391"
+         sodipodi:role="line"
+         id="tspan6180">I/Q 16 bit data</tspan><tspan
+         id="tspan4459"
+         y="935.47729"
+         x="153.27391"
+         sodipodi:role="line" /></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 110.84597,1006.4872 c -1.87913,-1.4344 -3.5656,-3.1208 -5,-4.9999 -3.38352,-4.43251 -5.30322,-9.86843 -6.06394,-15.39262 -0.760721,-5.52418 -0.40657,-11.1518 0.42502,-16.66576 1.66319,-11.02793 5.22704,-21.79662 5.63892,-32.94165 0.45561,-12.32842 -3.10003,-24.77318 -9.999996,-35 6.899936,-10.22684 10.455576,-22.67158 9.999996,-35 -0.41185,-11.14502 -3.97565,-21.9137 -5.63881,-32.94162 -0.831587,-5.51395 -1.185736,-11.14156 -0.425032,-16.66574 0.760702,-5.52419 2.680362,-10.96011 6.063842,-15.39264 1.4344,-1.87913 3.12087,-3.5656 5,-5"
+       id="path4878-2"
+       inkscape:path-effect="#path-effect4880-8"
+       inkscape:original-d="m 110.84597,1006.4872 c 0,0 -2.64298,-0.286 -5,-4.9999 -5,-10.00004 3.00519,-43.54279 0,-65.00003 -1.68293,-12.01624 -9.999996,-35 -9.999996,-35 0,0 8.317066,-22.98376 9.999996,-35 3.00519,-21.45725 -8.291476,-44.98261 0,-65 0.90199,-2.17761 5,-5 5,-5"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="csacaac" />
+    <text
+       xml:space="preserve"
+       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Century Schoolbook L;-inkscape-font-specification:Century Schoolbook L Medium"
+       x="10.255819"
+       y="893.55731"
+       id="text4906-9"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4908-7"
+         x="10.255819"
+         y="893.55731">From Host </tspan><tspan
+         sodipodi:role="line"
+         x="10.255819"
+         y="906.05731"
+         id="tspan4912-2">Computer via</tspan><tspan
+         sodipodi:role="line"
+         x="10.255819"
+         y="918.55731"
+         id="tspan4916-7">1 Gbit/s Ethernet</tspan></text>
     <g
        transform="matrix(-1,0,0,1,461.10377,134.79487)"
        id="g4700">

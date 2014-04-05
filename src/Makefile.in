@@ -80,7 +80,7 @@ build_triplet = @build@
 bin_PROGRAMS = SoDaServer$(EXEEXT)
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
-	$(top_srcdir)/depcomp
+	$(top_srcdir)/mkinstalldirs $(top_srcdir)/depcomp
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_boost_asio.m4 \
 	$(top_srcdir)/m4/ax_boost_base.m4 \
@@ -92,11 +92,12 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/ax_boost_asio.m4 \
 	$(top_srcdir)/m4/ax_boost_system.m4 \
 	$(top_srcdir)/m4/ax_boost_thread.m4 \
 	$(top_srcdir)/m4/ax_fftw3.m4 $(top_srcdir)/m4/ax_fftw3f.m4 \
-	$(top_srcdir)/m4/ax_prog_doxygen.m4 $(top_srcdir)/m4/ax_uhd.m4 \
+	$(top_srcdir)/m4/ax_prog_doxygen.m4 \
+	$(top_srcdir)/m4/my_ax_uhd.m4 $(top_srcdir)/m4/wxwin.m4 \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
-mkinstalldirs = $(install_sh) -d
+mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"

@@ -241,7 +241,10 @@ namespace SoDa {
     SoDa::OSFilter * cur_audio_filter; ///< currently selected audio filter
     SoDa::OSFilter * fm_audio_filter; ///< audio filter for FM (wider passband)
     SoDa::OSFilter * am_pre_filter; ///< Before AM demod, we do some (6KHz) prefilter
+    SoDa::OSFilter * nbfm_pre_filter; ///< Before NBFM demod, we do some (15KHz) prefilter -- rf rate
     SoDa::OSFilter * am_audio_filter; ///< After AM demod, we do a second filter
+
+    
     
     std::map<SoDa::Command::AudioFilterBW, SoDa::OSFilter *> filter_map; ///< map filter selectors to the filter objects
 
@@ -254,13 +257,14 @@ namespace SoDa {
     float *cur_af_gain; ///< pointer to the gain setting for this mode
 
     // support for NBFM/WBFM demodulator
-    std::complex<float> last_fm_samp; ///< history valud used in the FM discriminators
+    float last_phase_samp; ///< history value used to calculate dPhase/dt in FM atan based discriminator.
 
     // median filter for FM demods
     MedianFilter3<float> fmMedianFilter; ///< simple 3 point median filter for FM units
     
     // debug helper
     unsigned int dbg_ctr; ///< debug counter, used to support one-time or infrequent bulletins
+    std::ofstream dbg_out;
   };
 }
 

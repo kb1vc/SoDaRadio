@@ -77,14 +77,15 @@ SoDa::USRPRX::USRPRX(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
 
 static void doFFTandDump(int fd, std::complex<float> * in, int len)
 {
-  std::complex<float> out[len];
+  std::complex<float> * out = new std::complex<float>[len];
   // create plan
   fftwf_plan tplan = fftwf_plan_dft_1d(len, (fftwf_complex*) in, (fftwf_complex*) out,
 				       FFTW_FORWARD, FFTW_ESTIMATE | FFTW_UNALIGNED);
 
   fftwf_execute(tplan);
   write(fd, out, sizeof(std::complex<float>) * len); 
-  fftwf_destroy_plan(tplan); 
+  fftwf_destroy_plan(tplan);
+  delete [] out;
 }
 
 void SoDa::USRPRX::run()
