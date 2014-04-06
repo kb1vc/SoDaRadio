@@ -37,6 +37,9 @@ extern "C" {
 
 #include <iostream>
 
+#ifdef __APPLE__
+#include <mach-o/dyld.h>
+#endif
 /**
  * Find the directory in which the calling program resides.
  *
@@ -48,16 +51,24 @@ extern "C" {
  */
 std::string findHome()
 {
+  char execution_path[PATH_MAX + 1] = {0};
 #ifdef __linux__
   // This solution was suggested by an answer in
   // http://stackoverflow.com/questions/7051844/how-to-find-the-full-path-of-the-c-linux-program-from-within
-  char execution_path[PATH_MAX + 1] = {0}; 
+  std::cerr << "In Linux find home" << std::endl; 
   readlink("/proc/self/exe", execution_path, PATH_MAX);
   // now trim the end of the path off, we just want the directory
-  char * mydir = dirname(execution_path);
-  return std::string(mydir); 
-#elif __OSX__
+#endif
+#ifdef __APPLE__
+  unsigned int psize = PATH_MAX + 1;
+  std::cerr << "In OSX find home" << std::endl; 
+  _NSGetExecutablePath(execution_path, &psize);
   // This code has not been tested. 
 #endif
+  char * mydir = dirname(execution_path);
+
+  std::cerr << "Got home   @@@ path = [" << mydir << "]" << std::endl; 
+  return std::string(mydir); 
+
 }
 

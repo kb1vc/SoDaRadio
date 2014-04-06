@@ -208,7 +208,8 @@ namespace SoDaRadio_GUI {
 
     wxString config_filename(cfn.c_str(), wxConvUTF8);
     LoadSoDaConfig(config_filename);
-
+    save_config_file_name = config_filename;
+    
     // now open the logfile, if any
     std::string lfn = params.getLogFileName();
     wxString log_filename(lfn.c_str(), wxConvUTF8);
@@ -218,7 +219,6 @@ namespace SoDaRadio_GUI {
       std::cerr << "loaded configuration." << std::endl;
     }
   
-    save_config_file_name = wxT("");
 
   
     // Now connect up a few events

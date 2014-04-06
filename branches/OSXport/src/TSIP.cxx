@@ -226,7 +226,9 @@ bool PrimaryTimingReport::updateStatus()
 {
   std::cout << boost::format("Time: %02d:%02d:%02d") % ((unsigned int) TimeHours) %
     ((unsigned int) TimeMinutes) % ((unsigned int) TimeSeconds)
-	    << std::endl; 
+	    << std::endl;
+
+  return true;
 }
 
 bool SuplementalTimingReport::parseBuf(unsigned char * buf, int buflen)
@@ -279,5 +281,7 @@ bool SuplementalTimingReport::parseBuf(unsigned char * buf, int buflen)
 bool SuplementalTimingReport::updateStatus()
 {
   std::cout << boost::format("Temperature: %5f  Altitude %lf Lat = %f  Lon = %lf GPDdecode = %02x") % Temperature % Altitude % Latitude % Longitude % ((unsigned int) GPSDecodeStatus)
-	    << std::endl; 
+	    << std::endl;
+
+  return true;
 }

@@ -32,12 +32,15 @@
 #include <wx/string.h>
 #include <wx/wx.h>
 #include <wx/textdlg.h>
+#include <wx/sysopt.h>
+#include <wx/filedlg.h>
 #include <wx/colour.h>
 #include "../src/Command.hxx"
 #include "Navigation.hxx"
 #include <math.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+
 
 namespace SoDaRadio_GUI {
   
@@ -108,10 +111,17 @@ namespace SoDaRadio_GUI {
   
   void SoDaRadio_Top::OnOpenConfig( wxCommandEvent& event )
   {
-    wxString defaultDir = wxT("~/.SoDa");
-    wxString defaultFilename = wxT("SoDa.soda_cfg");
-    wxString wildcard = wxT("SoDa Config files (*.soda_cfg)|*.soda_cfg");
-    wxFileDialog dialog(this, wxT("Load Configuration File"), defaultDir, defaultFilename, wildcard, wxOPEN);
+#ifdef __APPLE__
+    wxMessageDialog msg(NULL, _T("Open Configuration is not supported yet on OS X"),
+			_T("Unsupported Operation"), wxICON_EXCLAMATION | wxOK);
+    msg.ShowModal();
+    return;
+#endif    
+    wxString defaultDir = _T("~/.SoDaRadio");
+    wxString defaultFilename = _T("SoDa.soda_cfg");
+    wxString wildcard = _T("SoDa Config files (*.soda_cfg)|*.soda_cfg");
+    wxFileDialog dialog(this, _T("Load Configuration File"),
+			defaultDir, defaultFilename, wildcard, wxFD_OPEN);
   
 
     if (dialog.ShowModal() == wxID_OK) {
@@ -122,34 +132,78 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnSaveConfig( wxCommandEvent& event )
   {
+    std::cerr << "got to OnSaveConfig" << std::endl; 
     if(save_config_file_name.length() == 0) {
+      std::cerr << "dispatch to OnSaveConfigAs" << std::endl; 
       OnSaveConfigAs(event);
     }
     else {
-      SaveSoDaConfig(save_config_file_name); 
+      std::cerr << "going to SaveSoDaConfig with filename [" << save_config_file_name << "]" << std::endl; 
+      SaveSoDaConfig(save_config_file_name);
+      std::cerr << "returned from savesodaconfig." << std::endl;
     }
   }
 
   void SoDaRadio_Top::OnSaveConfigAs( wxCommandEvent& event )
   {
-    wxString defaultDir = wxT("~/.SoDa");
-    wxString defaultFilename = wxT("SoDa.soda_cfg");
-    wxString wildcard = wxT("SoDa Config files (*.soda_cfg)|*.soda_cfg");
-    wxFileDialog dialog(this, wxT("Save to Selected Configuration File"), defaultDir, defaultFilename, wildcard, wxSAVE);
+    std::cerr << "in onsaveconfigas" << std::endl;
 
-    if (dialog.ShowModal() == wxID_OK) {
-      wxString fname = dialog.GetPath();
+#ifdef __APPLE__
+    wxMessageDialog msg(NULL, _T("Save Configuration is not supported yet on OS X"),
+			_T("Unsupported Operation"), wxICON_EXCLAMATION | wxOK);
+    msg.ShowModal();
+    return;
+#endif    
+
+    wxString defaultDir;
+    wxString defaultFilename;
+    wxString wildcard;
+    wxString title;
+
+    defaultDir = _T("~/.SoDaRadio");
+    defaultFilename = _T("SoDa.soda_cfg");
+    wildcard = _T("SoDa Config files (.soda_cfg)|*.soda_cfg|");
+    title = _T("Save to Selected Configuration File");
+
+    std::cerr << "About to create wxFileDialog" << std::endl; 
+    //wxFileDialog  dialog(this, title, defaultDir, defaultFilename, wildcard, wxFD_SAVE);
+//     wxFileDialog dialog(this, _T("Testing save file"), wxEmptyString, wxEmptyString,
+// 			_T("SoDa Configuration Files (*.cpp)|*.cpp"),
+// 			wxFD_SAVE);
+
+    wxGenericFileDialog fdialog(this, _T("Testing save config"),
+				wxEmptyString, wxEmptyString,
+				_T("Config files (*.cpp)|*.cpp"),
+				wxFD_SAVE);
+    // wxFileDialog  dialog(this, wxT("(Save XYZ file)"), wxT(""), wxT(""), wxT("XYZ files (*.xyz)|*.xyz"), wxFD_SAVE|wxFD_OVERWRITE_PROMPT);
+
+    
+    std::cerr << "About to showmodal" << std::endl; 
+    if (fdialog.ShowModal() == wxID_OK) {
+      std::cerr << "About to getpath" << std::endl; 
+      wxString fname = fdialog.GetPath();
       save_config_file_name = fname; 
+      std::cerr << "going to SaveSoDaConfig with filename [" << save_config_file_name << "]" << std::endl; 
       SaveSoDaConfig(fname);
+      std::cerr << "returned from savesodaconfig" << std::endl;
     }
+    std::cerr << "returning from onsaveconfigas." << std::endl;
+
   }
 
   void SoDaRadio_Top::OnOpenLogfile( wxCommandEvent& event )
   {
+#ifdef __APPLE__
+    wxMessageDialog msg(NULL, _T("Open Logfile is not supported yet on OS X"),
+			_T("Unsupported Operation"), wxICON_EXCLAMATION | wxOK);
+    msg.ShowModal();
+    return;
+#endif    
+
     wxString defaultDir = wxT("~/.SoDa");
     wxString defaultFilename = wxT("SoDa.soda_log");
     wxString wildcard = wxT("SoDa Log files (*.soda_log)|*.soda_log");
-    wxFileDialog dialog(this, wxT("Open/Create Log File"), defaultDir, defaultFilename, wildcard, wxSAVE);
+    wxFileDialog dialog(this, wxT("Open/Create Log File"), defaultDir, defaultFilename, wildcard, wxFD_SAVE);
 
     if (dialog.ShowModal() == wxID_OK) {
       log_file_name = dialog.GetPath();
