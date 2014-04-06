@@ -116,7 +116,7 @@ namespace SoDaRadio_GUI {
 	if(stat > 0) {
 	  wxCommandEvent event(wxEVT_COMMAND_MENU_SELECTED,
 			       SoDaRadio_Top::MSG_UPDATE_SPECTRUM);
-	  radio_gui->AddPendingEvent(event); 
+	  radio_gui->GetEventHandler()->AddPendingEvent(event); 
 	  didwork = true;
 	}
 	else if(stat < 0) {
@@ -177,7 +177,7 @@ namespace SoDaRadio_GUI {
       {
 	wxCommandEvent event(wxEVT_COMMAND_MENU_SELECTED,
 			     SoDaRadio_Top::MSG_TERMINATE_TX);
-	radio_gui->AddPendingEvent(event); 
+	radio_gui->GetEventHandler()->AddPendingEvent(event); 
       }
       break; 
     default:
