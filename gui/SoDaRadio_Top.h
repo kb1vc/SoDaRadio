@@ -34,6 +34,7 @@
 */
 
 #include "SoDaRadio_GUI.h"
+#include "SoDaRadio_Band.hxx"
 #include "GuiParams.hxx"
 #include "TunerDigit.hxx"
 #include "RadioListenerThread.hxx"
@@ -54,7 +55,7 @@ namespace SoDaRadio_GUI {
   
   class TuningDialog;
   class ControlsDialog;
-  class TransverterConfigDialog;
+  class BandConfigDialog;
   class LogDialog;
 
   /**
@@ -84,7 +85,8 @@ namespace SoDaRadio_GUI {
 
     void OnSetFromCall( wxCommandEvent& event); 
     void OnSetFromGrid( wxCommandEvent& event); 
-    void OnSetTransverterOffset( wxCommandEvent& event); 
+    void OnConfigBand( wxCommandEvent& event);
+    void OnBandSelect( wxCommandEvent& event); 
 
     void OnQSOMenuSet( wxCommandEvent & event);
   
@@ -153,6 +155,9 @@ namespace SoDaRadio_GUI {
     double GetLONominalBase() { return nominal_lo_base_freq; }
     void SetLONominalBase(double v) { nominal_lo_base_freq = v; }
 
+    void SaveCurrentBand();
+    void SetCurrentBand(SoDaRadio_Band * band); 
+
     wxString getModeString() { return m_ModeBox->GetStringSelection(); }
 
     // message types. 
@@ -179,7 +184,9 @@ namespace SoDaRadio_GUI {
     void setLOOffset(double v);
   
     double getTXOffset() { return tx_transverter_offset; }
-    double getRXOffset() { return rx_transverter_offset; }
+    double getRXOffset() {
+      return rx_transverter_offset;
+    }
 
     void setGPSLoc(double lat, double lon);
 
@@ -198,10 +205,13 @@ namespace SoDaRadio_GUI {
     bool LoadSoDaConfig(const wxString & fname);
     void CreateDefaultConfig(boost::property_tree::ptree * config_tree);
     void SetConfigFileName(const wxString & fname); 
+
+    void setupBandSelect(SoDaRadio_BandSet * bandset);
+    
     
   private:
     char SDR_version_string[64];
-  
+
     wxString GPS_Lat_Str; // (wxT("XXX"));
     wxString GPS_Lon_Str; // (wxT("XXX"));
     wxString GPS_Grid_Str; //(wxT("XXX"));
@@ -222,9 +232,9 @@ namespace SoDaRadio_GUI {
     // Control and Tuning dialogs
     TuningDialog * tuner; 
     ControlsDialog * controls;
-    TransverterConfigDialog * transconf; 
+    BandConfigDialog * bandconf; 
     LogDialog * logdialog; 
-  
+    
     // State of the radio
     bool tx_on;
     bool cw_mode;
@@ -233,12 +243,21 @@ namespace SoDaRadio_GUI {
     wxString save_config_file_name;
     float tx_rf_outpower;
 
+    // the antenna choice
+    void setRXAnt(std::string rx_ant_sel); 
+
     double tx_transverter_offset, rx_transverter_offset;
 
     double nominal_lo_base_freq;
     double lo_multiplier;
     double actual_lo_base_freq;
+
+    // the band list.
+    SoDaRadio_BandSet * bandset; 
+    SoDaRadio_Band * current_band; ///< the band that we're currently in (or NULL)
   
+
+    
     double applyRXTVOffset(double fr) {
       return fr - rx_transverter_offset; 
     }
@@ -473,25 +492,50 @@ namespace SoDaRadio_GUI {
     bool log_ena; 
   };
 
-  class TransverterConfigDialog : public m_TransverterConfigDialog {
+  class BandConfigDialog : public m_BandConfigDialog {
   public:
-  TransverterConfigDialog(wxWindow * parent, SoDaRadio_Top * radio) :
-    m_TransverterConfigDialog(parent) {
-      radio_top = radio; 
+  BandConfigDialog(wxWindow * parent, SoDaRadio_Top * radio) :
+    m_BandConfigDialog(parent) {
+      radio_top = radio;
     }
 
-    void OnTVConfDone( wxCommandEvent & event);
-    void OnTVConfCancel( wxCommandEvent & event);
+    void OnBandOK( wxCommandEvent & event);
+    void OnBandCancel( wxCommandEvent & event);
+    void OnTransverterModeSel( wxCommandEvent & event);
 
-    void OnTVActivate( wxCommandEvent & event);
+    void OnConfigChoice( wxCommandEvent & event); 
+    void OnBandActivate( wxCommandEvent & event);
 
-    /// get the current state of the transverter offset/enable
-    /// and reflect it in the widget states. 
-    void UpdateSettings();
+    void OnProblem(std::string const & probstring); 
+
+
+    /// load the configuration list with the bands we know about.
+    void initBandList(SoDaRadio_BandSet * bandset);
+
+    void clearTextBoxes() {
+      m_BandName->Clear();
+      m_low_edge->Clear();
+      m_high_edge->Clear();
+    }
+
+    void setChoiceBox(wxChoice * box, std::string & sel);
+    
   private:
-    void ReadSettings(); 
-    SoDaRadio_Top * radio_top;   
+    SoDaRadio_Top * radio_top;
+    SoDaRadio_BandSet * bands;
   }; 
-}
 
+
+  class BandConfigProblem : public m_BandConfigProblem {
+  public:
+
+  BandConfigProblem(wxWindow * parent, const char * probstring) : m_BandConfigProblem(parent) {
+      // setup the gui version string
+      wxString wxver(probstring, wxConvUTF8);
+      m_BandConfigReason->SetLabel(wxver);
+    }
+    void OnBandErrorOK( wxCommandEvent & event); 
+  
+  };
+}
 #endif // __SoDaRadio_Top__

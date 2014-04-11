@@ -1,6 +1,6 @@
 SoDa -- A Software Defined Radio for the Ettus Research USRP
 
-Version 1.2
+Version 2.0
 
 This package builds two programs: 
 
@@ -10,8 +10,17 @@ defined multimode VHF/UHF transciever.
 SoDaRadio -- a GUI that offers a user interface to the controls
 for SoDaServer
 
+There are several improvements over versions 1.1 and 1.2. 
+Chief among these is a "band select" scheme that allows the
+user to define band segments, and transverter settings. 
+
+Before running this version, you should remove the file ~/.SoDaRadio/SoDa.soda_cfg as it is no longer compatible with version 2.0.  I really ought to fix that.
+
+
 See the INSTALL file for instructions on configuring, building 
 and installing SoDa
+
+
 
 ---- 
 
@@ -26,9 +35,9 @@ fftw3 -- builds against version 3.3.0
 
 INSTALL Quick Start
 
-# unpack soda-1.2.tar.gz 
-tar xzvf soda-1.2.tar.gz
-cd soda-1.2
+# unpack soda-2.0.tar.gz 
+tar xzvf soda-2.0.tar.gz
+cd soda-2.0
 mkdir build
 cd build
 ../configure

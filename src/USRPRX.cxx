@@ -51,15 +51,22 @@ SoDa::USRPRX::USRPRX(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
   cmd_subs = cmd_stream->subscribe();
 
   // create the rx buffer streamers.
-  uhd::stream_args_t stream_args("fc32", "sc16"); 
+  uhd::stream_args_t stream_args("fc32", "sc16");
+  std::vector<size_t> channel_nums;
+  channel_nums.push_back(0);
+  stream_args.channels = channel_nums;
   rx_bits = usrp->get_rx_stream(stream_args);
+
+  usrp->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_STOP_CONTINUOUS);
   
+  std::cerr << boost::format("Got new streamer -- num channels = %d\n") % rx_bits->get_num_channels();
   // no UI listening for spectrum dumps yet.
   ui = NULL; 
 
   rx_sample_rate = params->getRXRate();
   rx_buffer_size = params->getRFBufferSize(); 
-  
+
+  std::cerr << boost::format("RX sample rate %f should be %f\n") % usrp->get_rx_rate() % rx_sample_rate;
   // we aren't receiving yet. 
   audio_rx_stream_enabled = false;
 
@@ -117,18 +124,25 @@ void SoDa::USRPRX::run()
       if(buf == NULL) throw(new SoDa::SoDaException("USRPRX couldn't allocate SoDaBuf object", this)); 
       if(buf->getComplexBuf() == NULL) throw(new SoDa::SoDaException("USRPRX allocated empty SoDaBuf object", this));
       
-      unsigned int left = rx_buffer_size;
+      unsigned int left = rx_buffer_size * 2;
       unsigned int coll_so_far = 0;
       uhd::rx_metadata_t md;
-      std::complex<float> *dbuf = buf->getComplexBuf(); 
+      std::complex<float> *dbuf = buf->getComplexBuf();
+      std::complex<float> *adbuf = new std::complex<float>[rx_buffer_size * 2];
+      std::complex<float> * dbp = dbuf;
       while(left != 0) {
-	unsigned int got = rx_bits->recv(&(dbuf[coll_so_far]), left, md);
+	unsigned int got = rx_bits->recv(&(adbuf[coll_so_far]), left, md);
+	for(int ii = 0; ii < got; ii += 2) {
+	  *dbp = adbuf[coll_so_far + ii];
+	  dbp++;
+	}
 	coll_so_far += got;
-	left -= got; 
+	left -= got;
       }
-      // if((rxbufcount & 0x1f) == 0) {
-      // 	std::cerr << " got an IF rxbuf number " << rxbufcount << std::endl; 
-      // }
+      delete [] adbuf; 
+      if((rxbufcount & 0x1ff) == 0) {
+      	std::cerr << boost::format(" got an IF rxbuf number %d size %d\n") % rxbufcount % rx_buffer_size;
+      }
       rxbufcount++; 
       // we got a buffer...
       
@@ -208,15 +222,15 @@ void SoDa::USRPRX::execCommand(Command * cmd)
 
 void SoDa::USRPRX::startStream()
 {
-  //  std::cerr << "Starting RX Stream from USRP" << std::endl; 
-  usrp->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_START_CONTINUOUS);
+  //  std::cerr << "Starting RX Stream from USRP" << std::endl;
+  usrp->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_START_CONTINUOUS, 0);
   audio_rx_stream_enabled = true; 
 }
 
 void SoDa::USRPRX::stopStream()
 {
   //  std::cerr << "Stoping RX Stream from USRP" << std::endl; 
-  usrp->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_STOP_CONTINUOUS);
+  usrp->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_STOP_CONTINUOUS, 0);
   audio_rx_stream_enabled = false;
 }
 
