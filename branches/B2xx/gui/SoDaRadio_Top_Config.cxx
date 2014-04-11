@@ -43,54 +43,52 @@ namespace SoDaRadio_GUI {
   
   void SoDaRadio_Top::SaveSoDaConfig(const wxString & fname)
   {
-    // std::cerr << "In save soda config with config_tree == " << config_tree << std::endl;
-    if(config_tree == NULL) {
-      config_tree = new boost::property_tree::ptree();
-      //std::cerr << "got new config tree" << std::endl; 
-      config_tree->put("af.gain", 3.0);
-      //std::cerr << "completed get tree put" << std::endl; 
-    }
+
+    config_tree = new boost::property_tree::ptree();
+
+    config_tree->put("SoDaRadio.af.gain", 3.0);
+    //std::cerr << "completed get tree put" << std::endl; 
 
     // query all the relevant widgets and record their values
-    config_tree->put("rx.mode", m_ModeBox->GetStringSelection().mb_str(wxConvUTF8));
-    config_tree->put("rx.freq", rx_frequency);
-    config_tree->put("rx.prev_freq", last_rx_frequency);
+    config_tree->put("SoDaRadio.rx.mode", m_ModeBox->GetStringSelection().mb_str(wxConvUTF8));
+    config_tree->put("SoDaRadio.rx.freq", rx_frequency);
+    config_tree->put("SoDaRadio.rx.prev_freq", last_rx_frequency);
   
-    config_tree->put("tx.freq", tx_frequency);
-    config_tree->put("tx.prev_freq", last_tx_frequency);
-    config_tree->put("tx.rf_outpower", tx_rf_outpower);
-
-    config_tree->put("transverter.base.nominal", nominal_lo_base_freq);
-    config_tree->put("transverter.base.actual", actual_lo_base_freq);
-    config_tree->put("transverter.lo.mult", lo_multiplier);
+    config_tree->put("SoDaRadio.tx.freq", tx_frequency);
+    config_tree->put("SoDaRadio.tx.prev_freq", last_tx_frequency);
+    config_tree->put("SoDaRadio.tx.rf_outpower", tx_rf_outpower);
   
-    config_tree->put("station.call", from_callsign.mb_str(wxConvUTF8));
-    config_tree->put("station.qth", from_grid.mb_str(wxConvUTF8));
+    config_tree->put("SoDaRadio.station.call", from_callsign.mb_str(wxConvUTF8));
+    config_tree->put("SoDaRadio.station.qth", from_grid.mb_str(wxConvUTF8));
 
-    config_tree->put("af.gain", m_AFGain->GetValue());
-    config_tree->put("af.bw", m_AFBWChoice->GetSelection());  
+    config_tree->put("SoDaRadio.af.gain", m_AFGain->GetValue());
+    config_tree->put("SoDaRadio.af.bw", m_AFBWChoice->GetSelection());  
 
-    config_tree->put("cw.speed", controls->getCWSpeed());
-    config_tree->put("cw.sidetone", controls->getSTGain());
+    config_tree->put("SoDaRadio.cw.speed", controls->getCWSpeed());
+    config_tree->put("SoDaRadio.cw.sidetone", controls->getSTGain());
 
-    config_tree->put("spectrum.center_freq", spectrum_center_freq);
-    config_tree->put("spectrum.yscale", spectrum_y_scale);
-    config_tree->put("spectrum.bandspread", spectrum_bandspread);
-    config_tree->put("spectrum.reflevel", spectrum_y_reflevel);
+    config_tree->put("SoDaRadio.spectrum.center_freq", spectrum_center_freq);
+    config_tree->put("SoDaRadio.spectrum.yscale", spectrum_y_scale);
+    config_tree->put("SoDaRadio.spectrum.bandspread", spectrum_bandspread);
+    config_tree->put("SoDaRadio.spectrum.reflevel", spectrum_y_reflevel);
     if(SpectrumDisplay->GetSelection() == 0) {
-      config_tree->put("spectrum.display", "waterfall");
+      config_tree->put("SoDaRadio.spectrum.display", "waterfall");
     }
     else {
-      config_tree->put("spectrum.display", "periodogram");
+      config_tree->put("SoDaRadio.spectrum.display", "periodogram");
     }
   
-    config_tree->put("reference.source", tuner->getExtRefEna());
-    config_tree->put("tx.tx_rx_locked", tx_rx_locked);
+    config_tree->put("SoDaRadio.reference.source", tuner->getExtRefEna());
+    config_tree->put("SoDaRadio.tx.tx_rx_locked", tx_rx_locked);
     boost::property_tree::xml_writer_settings<char> wset('\t',1);
-    // std::cerr << "Got char tab set." << std::endl; 
+
+    // save the band configurations to the tree.
+    config_tree->put("SoDaRadio.current_band", current_band->getName());
+    
+    SaveCurrentBand();
+    bandset->save(config_tree);
+    
     write_xml((const char*) fname.mb_str(wxConvUTF8), *config_tree, std::locale(), wset);
-
-
   }
 
   void SoDaRadio_Top::CreateDefaultConfig(boost::property_tree::ptree * config_tree)
@@ -110,13 +108,12 @@ namespace SoDaRadio_GUI {
   
   bool SoDaRadio_Top::LoadSoDaConfig(const wxString & fname)
   {
-    std::cerr << boost::format("Loading SoDa configuration from file [%s]\n") % fname.mb_str(wxConvUTF8);
+
     if(config_tree != NULL) delete config_tree;
 
     config_tree = new boost::property_tree::ptree();
     // does the file exist?
     if(!wxFile::Exists(fname.c_str())) {
-      std::cerr << "config file not found -- using default." << std::endl; 
       // then we need to load the default config.
       CreateDefaultConfig(config_tree);
       // also pop up the save config dialog box.
@@ -129,22 +126,23 @@ namespace SoDaRadio_GUI {
       config_stream.close();
     }
 
+    // The original config format wasn't really proper XML... 
+    if(config_tree->get_child_optional("SoDaRadio")) {
+      config_tree = & config_tree->get_child("SoDaRadio"); 
+    }
+    
     // now call all the event updates.
     wxCommandEvent nullCE;
     wxScrollEvent nullSE;
     wxSpinEvent nullSPE;
 
+    // load the band information
+    bandset = new SoDaRadio_BandSet(config_tree);
+    setupBandSelect(bandset); 
+    
     // now go through each widget and read its value, and update it.
     m_ModeBox->SetStringSelection(wxString::FromUTF8(config_tree->get<std::string>("rx.mode").c_str()));
     OnModeChoice(nullCE);
-  
-
-    nominal_lo_base_freq = config_tree->get<double>("transverter.base.nominal");
-    actual_lo_base_freq = config_tree->get<double>("transverter.base.actual");
-    lo_multiplier = config_tree->get<double>("transverter.lo.mult");
-  
-    tx_transverter_offset = actual_lo_base_freq * lo_multiplier; 
-    rx_transverter_offset = actual_lo_base_freq * lo_multiplier;
   
     rx_frequency = config_tree->get<double>("rx.freq");
     last_rx_frequency = config_tree->get<double>("rx.prev_freq");
@@ -155,6 +153,7 @@ namespace SoDaRadio_GUI {
     last_tx_frequency = config_tree->get<double>("tx.prev_freq");
     // tuner->newTXFreq();
     UpdateTXFreq(tx_frequency);
+
   
     // frequency updates
     SoDa::Command rncmd(SoDa::Command::SET, SoDa::Command::RX_RETUNE_FREQ,
@@ -169,7 +168,6 @@ namespace SoDaRadio_GUI {
     tx_rf_outpower = config_tree->get<float>("tx.rf_outpower");
     controls->setTXPower(tx_rf_outpower);
 
-
     
     from_callsign = wxString::FromUTF8(config_tree->get<std::string>("station.call").c_str());
     from_grid = wxString::FromUTF8(config_tree->get<std::string>("station.qth").c_str());
@@ -181,10 +179,9 @@ namespace SoDaRadio_GUI {
 
     // these are the gain controls.
     m_AFGain->SetValue(config_tree->get<float>("af.gain"));
-    OnAFBWChoice(nullCE);
-  
     m_AFBWChoice->SetSelection(config_tree->get<int>("af.bw"));
-    OnAFGainScroll(nullSE);
+    OnAFGainScroll(nullSE);  
+    OnAFBWChoice(nullCE);
   
 
     controls->setCWSpeed(config_tree->get<float>("cw.speed"));
@@ -216,6 +213,38 @@ namespace SoDaRadio_GUI {
       tx_rx_locked = true;
     }
     OnTXRXLock(nullCE); 
+
+    // now set the current band.
+    SoDaRadio_Band * defband;
+    try {
+      defband = bandset->getByName(config_tree->get<std::string>("current_band"));
+    } catch (boost::exception const & ex) {
+      defband = bandset->getByIndex(0);
+    }
+    SetCurrentBand(defband);
+
     return true; 
+  }
+
+  void SoDaRadio_Top::setupBandSelect(SoDaRadio_BandSet * bandset)
+  {
+    int i, ct;
+    ct = m_bandSelect->GetMenuItemCount();
+    for(i = ct-1; i >= 0; i--) {
+      wxMenuItem * mitem = m_bandSelect->FindItemByPosition(i);
+      m_bandSelect->Delete(mitem);
+    }
+
+    int band_list_idx = 5000; 
+    BOOST_FOREACH(SoDaRadio_Band * v, bandset->band_list) {
+      wxMenuItem * newItem = new wxMenuItem( m_bandSelect, band_list_idx, wxString(v->getName().c_str(), wxConvUTF8),
+					     wxEmptyString, wxITEM_NORMAL); 
+      m_bandSelect->Append(newItem);
+      int id = newItem->GetId();
+      this->Connect(id, wxEVT_COMMAND_MENU_SELECTED,
+		    wxCommandEventHandler(SoDaRadio_Top::OnBandSelect ));
+
+      band_list_idx++; 
+    }
   }
 }
