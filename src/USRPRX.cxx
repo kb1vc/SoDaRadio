@@ -133,7 +133,7 @@ void SoDa::USRPRX::run()
       while(left != 0) {
 	unsigned int got = rx_bits->recv(&(adbuf[coll_so_far]), left, md);
 	for(int ii = 0; ii < got; ii += 2) {
-	  *dbp = adbuf[coll_so_far + ii];
+	  *dbp = adbuf[coll_so_far + ii + 1];
 	  dbp++;
 	}
 	coll_so_far += got;

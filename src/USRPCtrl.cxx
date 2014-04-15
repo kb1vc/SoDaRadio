@@ -70,27 +70,15 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
     throw SoDaException((boost::format("Unable to allocate USRP unit with arguments = [%]\n") % params->getUHDArgs()).str(), this);
   }
 
-  first_gettime = 0.0;
-  double tmp = getTime();
-  // remove the whole number of seconds -- paranoia
-  first_gettime = floor(tmp); 
-
-
   uhd::property_tree::sptr tree = usrp->get_device()->get_tree();
   const std::string mbname = tree->list("/mboards").at(0);
-
-  dumpTree("/mboards", tree);
-
   // find out what kind of device we have.
   std::string mboard_name = tree->access<std::string>("/mboards/" + mbname + "/name").get();
 
-  uhd::usrp::subdev_spec_t rx_subdev_spec = tree->access<uhd::usrp::subdev_spec_t>("/mboards/" + mbname + "/rx_subdev_spec").get();
-  std::cerr << "rx subdev spec = " << rx_subdev_spec.to_pp_string() << std::endl;
-  
-  std::cerr << boost::format("\n\n_______________\nMboard name = [%s]\n\n\n") % mboard_name;
   if((mboard_name == "B200") || (mboard_name == "B210")) {
     // B2xx needs a master clock rate of 50 MHz to generate a sample rate of 625 kS/s.
     usrp->set_master_clock_rate(50.0e6);
+    std::cerr << "Initial setup: " << usrp->get_pp_string() << std::endl; 
     is_B2xx = true; 
   }
   else {
@@ -99,10 +87,27 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
 
   // we need to setup the subdevices
   if(is_B2xx) {
-    uhd::usrp::subdev_spec_t spec;
-    spec.push_back(uhd::usrp::subdev_spec_pair_t("A", "A"));
-    usrp->set_rx_subdev_spec(spec, 0);
+    std::cerr << boost::format("subdev for chan 0 is initially, [%s]\n") % usrp->get_rx_subdev_name(0);
+    usrp->set_rx_subdev_spec(std::string("A:A"), 0);
+    std::cerr << boost::format("subdev for chan 0 set to, [%s]\n") % usrp->get_rx_subdev_name(0);
+    std::cerr << "New setup: " << usrp->get_pp_string() << std::endl; 
   }
+
+  first_gettime = 0.0;
+  double tmp = getTime();
+  // remove the whole number of seconds -- paranoia
+  first_gettime = floor(tmp); 
+
+
+
+  dumpTree("/mboards", tree);
+
+
+  uhd::usrp::subdev_spec_t rx_subdev_spec = tree->access<uhd::usrp::subdev_spec_t>("/mboards/" + mbname + "/rx_subdev_spec").get();
+  std::cerr << "rx subdev spec = " << rx_subdev_spec.to_pp_string() << std::endl;
+  
+  std::cerr << boost::format("\n\n_______________\nMboard name = [%s]\n\n\n") % mboard_name;
+  
   // get the tx front end subtree
   uhd::fs_path tx_fe_root;
   tx_fe_root = is_B2xx ? ("/mboards/" + mbname + "/dboards/A/tx_frontends/A") :
