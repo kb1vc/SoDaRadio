@@ -103,7 +103,6 @@ void SoDa::USRPRX::run()
 
   bool exitflag = false;
 
-  int rxbufcount = 0; 
   while(!exitflag) {
     Command * cmd = cmd_stream->get(cmd_subs);
     if(cmd != NULL) {
@@ -124,28 +123,16 @@ void SoDa::USRPRX::run()
       if(buf == NULL) throw(new SoDa::SoDaException("USRPRX couldn't allocate SoDaBuf object", this)); 
       if(buf->getComplexBuf() == NULL) throw(new SoDa::SoDaException("USRPRX allocated empty SoDaBuf object", this));
       
-      unsigned int left = rx_buffer_size * 2;
+      unsigned int left = rx_buffer_size;
       unsigned int coll_so_far = 0;
       uhd::rx_metadata_t md;
       std::complex<float> *dbuf = buf->getComplexBuf();
-      std::complex<float> *adbuf = new std::complex<float>[rx_buffer_size * 2];
-      std::complex<float> * dbp = dbuf;
       while(left != 0) {
-	unsigned int got = rx_bits->recv(&(adbuf[coll_so_far]), left, md);
-	for(int ii = 0; ii < got; ii += 2) {
-	  *dbp = adbuf[coll_so_far + ii + 1];
-	  dbp++;
-	}
+	unsigned int got = rx_bits->recv(&(dbuf[coll_so_far]), left, md);
 	coll_so_far += got;
 	left -= got;
       }
-      delete [] adbuf; 
-      if((rxbufcount & 0x1ff) == 0) {
-      	std::cerr << boost::format(" got an IF rxbuf number %d size %d\n") % rxbufcount % rx_buffer_size;
-      }
-      rxbufcount++; 
-      // we got a buffer...
-      
+
       // If the anybody cares, send the IF buffer out.
       // If the UI is listening, it will do an FFT on the buffer
       // and send the positive spectrum via the UI to any listener.

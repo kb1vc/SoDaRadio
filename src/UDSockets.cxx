@@ -62,6 +62,7 @@ SoDa::UD::ServerSocket::ServerSocket(const std::string & path)
   unlink(server_address.sun_path);
   int len = strlen(server_address.sun_path) + sizeof(server_address.sun_family); 
 
+  mailbox_pathname = path; 
 
   // now bind it
   if (bind(server_socket, (struct sockaddr *) &server_address, len) < 0) {

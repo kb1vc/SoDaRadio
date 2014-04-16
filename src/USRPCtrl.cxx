@@ -89,7 +89,9 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
   if(is_B2xx) {
     std::cerr << boost::format("subdev for chan 0 is initially, [%s]\n") % usrp->get_rx_subdev_name(0);
     usrp->set_rx_subdev_spec(std::string("A:A"), 0);
-    std::cerr << boost::format("subdev for chan 0 set to, [%s]\n") % usrp->get_rx_subdev_name(0);
+    usrp->set_tx_subdev_spec(std::string("A:A"), 0);
+    std::cerr << boost::format("RX subdev for chan 0 set to, [%s]\n") % usrp->get_rx_subdev_name(0);
+    std::cerr << boost::format("TX subdev for chan 0 set to, [%s]\n") % usrp->get_tx_subdev_name(0);
     std::cerr << "New setup: " << usrp->get_pp_string() << std::endl; 
   }
 
@@ -98,9 +100,7 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
   // remove the whole number of seconds -- paranoia
   first_gettime = floor(tmp); 
 
-
-
-  dumpTree("/mboards", tree);
+  // dumpTree("/mboards", tree);
 
 
   uhd::usrp::subdev_spec_t rx_subdev_spec = tree->access<uhd::usrp::subdev_spec_t>("/mboards/" + mbname + "/rx_subdev_spec").get();
@@ -295,15 +295,19 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
     // using the full range of the tuning hardware.
 
     // if the tx is off, we pretend that we're locked and we ignore the freq.
-    if(!tx_on) return;
+    // This is a problem with the B2xx series -- the TX must be on to shift the tx freq
+    // if(!tx_on) return;
 
-    if(debug_mode) {
+    if(debug_mode || 1) {
       std::cerr << "Tuning TX unit to new frequency: ["
 		<< std::setprecision(10) << freq << std::endl;
     }
-    
+
+    // bool last_tx_ena = tx_fe_subtree->access<bool>("enabled").get();
+    // tx_fe_subtree->access<bool>("enabled").set(true);
     last_tx_tune_result = usrp->set_tx_freq(freq);  
     last_tx_tune_result = checkLock(tx_trequest, 't', last_tx_tune_result);
+    // tx_fe_subtree->access<bool>("enabled").set(last_tx_ena);
   }
 
   // If we are setting the RX mode, then we need to send
@@ -469,9 +473,12 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
       // set txgain to zero
       usrp->set_tx_gain(0.0);
       usrp->set_rx_gain(rx_rf_gain);
-      // tune the TX unit 1MHz away from where we want to be. 
+      // tune the TX unit 1MHz away from where we want to be.
       tx_freq_rxmode_offset = rxmode_offset; // so tuning works.
       set1stLOFreq(tx_freq + tx_freq_rxmode_offset, 't', false);
+      std::cerr << boost::format("putting TX freq at offset %f -- tx was %f  is now %f\n")
+	% tx_freq_rxmode_offset % tx_freq % (tx_freq + tx_freq_rxmode_offset); 
+
       // turn off the transmit relay and the TX chain.
       // This also turns off the TX LO on a WBX module, so
       // the above tx_freq_rxmode  trick may not be necessary
@@ -642,7 +649,8 @@ void SoDa::USRPCtrl::setTXEna(bool val)
     // set the tx gain. 
     usrp->set_tx_gain(tx_rf_gain);
     // tx freq
-    set1stLOFreq(tx_freq, 't', false);  
+    std::cerr << boost::format("setTXEna TX MODE setting tx freq to %f\n") % (tx_freq + tx_freq_rxmode_offset); 
+    set1stLOFreq(tx_freq + tx_freq_rxmode_offset, 't', false);  
   }
 }
 
