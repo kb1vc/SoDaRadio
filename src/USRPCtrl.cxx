@@ -429,10 +429,17 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
     break; 
   case Command::TX_RF_GAIN:
     tx_rf_gain = tx_rf_gain_range.start() + cmd->dparms[0] * 0.01 * (tx_rf_gain_range.stop() - tx_rf_gain_range.start());
+    std::cerr << boost::format("TX: Setting gain to %f from SET TX_RF_GAIN dparm = %f  start = %f stop = %f\n")
+      % tx_rf_gain % cmd->dparms[0] % tx_rf_gain_range.start() % tx_rf_gain_range.stop(); 
+
     if(tx_on) {
       usrp->set_tx_gain(tx_rf_gain);
       cmd_stream->put(new Command(Command::REP, Command::TX_RF_GAIN, 
 				  usrp->get_tx_gain())); 
+      std::cerr << boost::format("TX: Really Setting gain to %f from SET TX_RF_GAIN dparm = %f  start = %f stop = %f\n")
+	% tx_rf_gain % cmd->dparms[0] % tx_rf_gain_range.start() % tx_rf_gain_range.stop(); 
+
+
     }
     break; 
   case SoDa::Command::TX_STATE: // SET TX_ON
@@ -441,6 +448,7 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
       tx_on = true; 
       usrp->set_rx_gain(0.0); 
       usrp->set_tx_gain(tx_rf_gain); 
+      std::cerr << boost::format("TX: Setting gain to %f from SET TX_ON\n") % tx_rf_gain; 
       cmd_stream->put(new Command(Command::REP, Command::TX_RF_GAIN, 
 				  usrp->get_tx_gain()));
       // to move a birdie away, we bumped the TX LO,, move it back. 
@@ -472,6 +480,7 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
       tx_on = false; 
       // set txgain to zero
       usrp->set_tx_gain(0.0);
+      std::cerr << boost::format("TX: Setting gain to %f from SET TX_OFF\n") % 0.0;
       usrp->set_rx_gain(rx_rf_gain);
       // tune the TX unit 1MHz away from where we want to be.
       tx_freq_rxmode_offset = rxmode_offset; // so tuning works.
@@ -648,6 +657,7 @@ void SoDa::USRPCtrl::setTXEna(bool val)
     usrp->set_tx_rate(tx_samp_rate); 
     // set the tx gain. 
     usrp->set_tx_gain(tx_rf_gain);
+    std::cerr << boost::format("TX: Setting gain to %f from enaTX \n") % tx_rf_gain;
     // tx freq
     std::cerr << boost::format("setTXEna TX MODE setting tx freq to %f\n") % (tx_freq + tx_freq_rxmode_offset); 
     set1stLOFreq(tx_freq + tx_freq_rxmode_offset, 't', false);  
