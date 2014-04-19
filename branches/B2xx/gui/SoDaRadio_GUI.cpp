@@ -1504,7 +1504,7 @@ m_ControlsDialog::m_ControlsDialog( wxWindow* parent, wxWindowID id, const wxStr
 	wxStaticBoxSizer* PowerSizer;
 	PowerSizer = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("TX Power") ), wxVERTICAL );
 	
-	m_TXPower = new wxSlider( this, wxID_ANY, 7, -10, 30, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL|wxSL_LABELS );
+	m_TXPower = new wxSlider( this, wxID_ANY, 7, 0, 100, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL|wxSL_LABELS );
 	m_TXPower->SetMinSize( wxSize( 100,-1 ) );
 	
 	PowerSizer->Add( m_TXPower, 0, wxALL, 5 );
