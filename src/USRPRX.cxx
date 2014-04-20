@@ -59,14 +59,12 @@ SoDa::USRPRX::USRPRX(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
 
   usrp->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_STOP_CONTINUOUS);
   
-  std::cerr << boost::format("Got new streamer -- num channels = %d\n") % rx_bits->get_num_channels();
   // no UI listening for spectrum dumps yet.
   ui = NULL; 
 
   rx_sample_rate = params->getRXRate();
   rx_buffer_size = params->getRFBufferSize(); 
 
-  std::cerr << boost::format("RX sample rate %f should be %f\n") % usrp->get_rx_rate() % rx_sample_rate;
   // we aren't receiving yet. 
   audio_rx_stream_enabled = false;
 

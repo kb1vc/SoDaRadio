@@ -78,7 +78,7 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
   if((mboard_name == "B200") || (mboard_name == "B210")) {
     // B2xx needs a master clock rate of 50 MHz to generate a sample rate of 625 kS/s.
     usrp->set_master_clock_rate(50.0e6);
-    std::cerr << "Initial setup: " << usrp->get_pp_string() << std::endl; 
+    if (debug_mode) std::cerr << "Initial setup: " << usrp->get_pp_string() << std::endl; 
     is_B2xx = true; 
   }
   else {
@@ -87,12 +87,8 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
 
   // we need to setup the subdevices
   if(is_B2xx) {
-    std::cerr << boost::format("subdev for chan 0 is initially, [%s]\n") % usrp->get_rx_subdev_name(0);
     usrp->set_rx_subdev_spec(std::string("A:A"), 0);
     usrp->set_tx_subdev_spec(std::string("A:A"), 0);
-    std::cerr << boost::format("RX subdev for chan 0 set to, [%s]\n") % usrp->get_rx_subdev_name(0);
-    std::cerr << boost::format("TX subdev for chan 0 set to, [%s]\n") % usrp->get_tx_subdev_name(0);
-    std::cerr << "New setup: " << usrp->get_pp_string() << std::endl; 
   }
 
   first_gettime = 0.0;
@@ -104,9 +100,6 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
 
 
   uhd::usrp::subdev_spec_t rx_subdev_spec = tree->access<uhd::usrp::subdev_spec_t>("/mboards/" + mbname + "/rx_subdev_spec").get();
-  std::cerr << "rx subdev spec = " << rx_subdev_spec.to_pp_string() << std::endl;
-  
-  std::cerr << boost::format("\n\n_______________\nMboard name = [%s]\n\n\n") % mboard_name;
   
   // get the tx front end subtree
   uhd::fs_path tx_fe_root;
@@ -228,7 +221,8 @@ uhd::tune_result_t SoDa::USRPCtrl::checkLock(uhd::tune_request_t & req, char sel
     if(lo_locked.to_bool()) break;
     else usleep(1000);
     if((lock_itercount & 0xfff) == 0) {
-      std::cerr << "waiting for LO lock, count = " << lock_itercount << " on " << sel << std::endl;
+      std::cerr << boost::format("Waiting for %c LO lock to freq = %f (%f:%f)  count = %d\n")
+	% sel % req.target_freq % req.rf_freq % req.dsp_freq % lock_itercount; 
       if(sel == 'r') ret = usrp->set_rx_freq(req);
       else ret = usrp->set_tx_freq(req);
     }
@@ -248,7 +242,8 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
   
   double target_rx_freq = freq;
   
-  uhd::tune_request_t tx_trequest(freq);
+  uhd::tune_request_t tx_request(freq);
+  
   if(sel == 'r') {
     // we round the target frequency to a point that puts the
     // baseband between 80 and 220 KHz below the requested
@@ -280,7 +275,7 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
     }
     last_rx_tune_result = usrp->set_rx_freq(rx_trequest);
     last_rx_tune_result = checkLock(rx_trequest, 'r', last_rx_tune_result);
-    if(debug_mode || 1) {
+    if(debug_mode) {
       std::cerr << boost::format("RX Tune RF_actual %lf DDC = %lf tuned = %lf target = %lf request  rf = %lf request ddc = %lf\n")
 	% last_rx_tune_result.actual_rf_freq
 	% last_rx_tune_result.actual_dsp_freq
@@ -295,18 +290,18 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
     // using the full range of the tuning hardware.
 
     // if the tx is off, we pretend that we're locked and we ignore the freq.
-    // This is a problem with the B2xx series -- the TX must be on to shift the tx freq
-    // if(!tx_on) return;
+    // unless we're on a B2xx -- in that case, we adjust the LO anyway.
+    if(!tx_on && !is_B2xx) return;
 
-    if(debug_mode || 1) {
-      std::cerr << "Tuning TX unit to new frequency: ["
-		<< std::setprecision(10) << freq << std::endl;
+    if(debug_mode) {
+      std::cerr << boost::format("Tuning TX unit to new frequency %f (request = %f  (%f %f))\n")
+	% freq % tx_request.target_freq % tx_request.rf_freq % tx_request.dsp_freq;
     }
 
     // bool last_tx_ena = tx_fe_subtree->access<bool>("enabled").get();
     // tx_fe_subtree->access<bool>("enabled").set(true);
     last_tx_tune_result = usrp->set_tx_freq(freq);  
-    last_tx_tune_result = checkLock(tx_trequest, 't', last_tx_tune_result);
+    last_tx_tune_result = checkLock(tx_request, 't', last_tx_tune_result);
     // tx_fe_subtree->access<bool>("enabled").set(last_tx_ena);
   }
 
@@ -331,7 +326,7 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
  * @li LO_CHECK set the FE chain to the specified frequency. This is used in
  * calibrating a transverter chain by "tuning" to a frequency near the transverter
  * LO and listening to the leakage signal.  (It's a long story.)
- * @li TX_RETUNE_FREQ, RX_TUNE_FREQ and RX_FE_FREQ all set the transmit FE chain frequency
+ * @li TX_RETUNE_FREQ, TX_TUNE_FREQ and TX_FE_FREQ all set the transmit FE chain frequency
  * to the requested value PLUS the tx_freq_rxmode_offset (the transmit IF frequency).
  * @li RX_SAMP_RATE set the receive A/D sample rate in the USRP
  * @li TX_SAMP_RATE set the transmit D/A sample rate in the USRP
@@ -355,7 +350,7 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
     freq = cmd->dparms[0];
     fdiff = freq - (last_rx_tune_result.actual_rf_freq - last_rx_tune_result.actual_dsp_freq);
     
-    if(debug_mode || 1) {
+    if(debug_mode) {
       std::cerr << boost::format("Got RX RETUNE request -- frequency %f diff = %f  last actual_rf %f  dsp %f\n")
 	% freq % fdiff % last_rx_tune_result.actual_rf_freq % last_rx_tune_result.actual_dsp_freq; 
     }
@@ -404,9 +399,7 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
     break; 
 
   case Command::RX_SAMP_RATE:
-    std::cerr << boost::format("About to set rx sample rate to %f\n") % cmd->dparms[0];
     usrp->set_rx_rate(cmd->dparms[0]);
-    std::cerr << boost::format("Just set rx sample rate to %f\n") % usrp->get_rx_rate();
     cmd_stream->put(new Command(Command::REP, Command::RX_SAMP_RATE, 
 			       usrp->get_rx_rate())); 
     break; 
@@ -429,16 +422,11 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
     break; 
   case Command::TX_RF_GAIN:
     tx_rf_gain = tx_rf_gain_range.start() + cmd->dparms[0] * 0.01 * (tx_rf_gain_range.stop() - tx_rf_gain_range.start());
-    std::cerr << boost::format("TX: Setting gain to %f from SET TX_RF_GAIN dparm = %f  start = %f stop = %f\n")
-      % tx_rf_gain % cmd->dparms[0] % tx_rf_gain_range.start() % tx_rf_gain_range.stop(); 
 
     if(tx_on) {
       usrp->set_tx_gain(tx_rf_gain);
       cmd_stream->put(new Command(Command::REP, Command::TX_RF_GAIN, 
 				  usrp->get_tx_gain())); 
-      std::cerr << boost::format("TX: Really Setting gain to %f from SET TX_RF_GAIN dparm = %f  start = %f stop = %f\n")
-	% tx_rf_gain % cmd->dparms[0] % tx_rf_gain_range.start() % tx_rf_gain_range.stop(); 
-
 
     }
     break; 
@@ -448,7 +436,6 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
       tx_on = true; 
       usrp->set_rx_gain(0.0); 
       usrp->set_tx_gain(tx_rf_gain); 
-      std::cerr << boost::format("TX: Setting gain to %f from SET TX_ON\n") % tx_rf_gain; 
       cmd_stream->put(new Command(Command::REP, Command::TX_RF_GAIN, 
 				  usrp->get_tx_gain()));
       // to move a birdie away, we bumped the TX LO,, move it back. 
@@ -480,13 +467,10 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
       tx_on = false; 
       // set txgain to zero
       usrp->set_tx_gain(0.0);
-      std::cerr << boost::format("TX: Setting gain to %f from SET TX_OFF\n") % 0.0;
       usrp->set_rx_gain(rx_rf_gain);
       // tune the TX unit 1MHz away from where we want to be.
       tx_freq_rxmode_offset = rxmode_offset; // so tuning works.
       set1stLOFreq(tx_freq + tx_freq_rxmode_offset, 't', false);
-      std::cerr << boost::format("putting TX freq at offset %f -- tx was %f  is now %f\n")
-	% tx_freq_rxmode_offset % tx_freq % (tx_freq + tx_freq_rxmode_offset); 
 
       // turn off the transmit relay and the TX chain.
       // This also turns off the TX LO on a WBX module, so
@@ -657,9 +641,7 @@ void SoDa::USRPCtrl::setTXEna(bool val)
     usrp->set_tx_rate(tx_samp_rate); 
     // set the tx gain. 
     usrp->set_tx_gain(tx_rf_gain);
-    std::cerr << boost::format("TX: Setting gain to %f from enaTX \n") % tx_rf_gain;
     // tx freq
-    std::cerr << boost::format("setTXEna TX MODE setting tx freq to %f\n") % (tx_freq + tx_freq_rxmode_offset); 
     set1stLOFreq(tx_freq + tx_freq_rxmode_offset, 't', false);  
   }
 }
