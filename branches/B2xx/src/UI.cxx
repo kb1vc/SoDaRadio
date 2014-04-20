@@ -117,6 +117,7 @@ void SoDa::UI::run()
   char buf[1024];
 
   cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_FE_FREQ, 144.2e6));
+  cmd_stream->put(new SoDa::Command(Command::SET, Command::TX_FE_FREQ, 144.2e6));
   cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_LO3_FREQ, 100e3));
   cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_AF_FILTER, 1));
   usleep(100000);
