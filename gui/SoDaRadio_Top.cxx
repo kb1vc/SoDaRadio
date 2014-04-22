@@ -101,8 +101,26 @@ namespace SoDaRadio_GUI {
     if(server != "None") {
       if(fork()) {
 	int stat;
-	stat = execl(server_commandline_string.c_str(), server.c_str(), "--uds_name",
-	      sock_basename.c_str(), (char*) 0);
+	char * argv[5];
+	// coercion to char* (as opposed to const char*) is to get around
+	// a compiler finickyness around conversions from const char** to const* char* or whatever.
+	// sigh.
+	argv[0] = (char*) server_commandline_string.c_str();
+	argv[1] = (char*) "--uds_name";
+	argv[2] = (char*) sock_basename.c_str();
+	std::string uhd_args = params.getUHDArgs();
+	if(uhd_args != "") {
+	  argv[3] = (char*) "--uhdargs";
+	  argv[4] = (char*) uhd_args.c_str();
+	  argv[5] = NULL; 
+	}
+	else {
+	  argv[3] = NULL;
+	}
+
+	stat = execv(argv[0], argv); 
+	// stat = execl(server_commandline_string.c_str(), server.c_str(), "--uds_name",
+	//       sock_basename.c_str(), (char*) 0);
 	if(stat < 0) {
 	  std::cerr << boost::format("Couldn't start SoDaServer. Got error [%s]. Is \"%s\" missing?\n")
 	    % strerror(errno)
@@ -112,12 +130,12 @@ namespace SoDaRadio_GUI {
       }
     }
 
-    // setup the client socket trying once every second for 10 seconds before we give up
-    soda_radio = new SoDa::UD::ClientSocket(sock_basename + "_cmd", 5);
-    soda_fft = new SoDa::UD::ClientSocket(sock_basename + "_wfall", 5);
+    // setup the client socket trying once every second for 60 seconds before we give up
+    soda_radio = new SoDa::UD::ClientSocket(sock_basename + "_cmd", 60);
+    soda_fft = new SoDa::UD::ClientSocket(sock_basename + "_wfall", 60);
 
     // create the listener thread
-    if(debug_mode) {
+    if(debug_mode || 1) {
       std::cerr << "Creating listener thread." << std::endl;
     }
     listener = new RadioListenerThread(this);

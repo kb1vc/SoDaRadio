@@ -40,4 +40,12 @@
 
 	* released (soon) as soda-1.2
 
+2014-04-21 Matt Reilly kb1vc (kb1vc@kb1vc.org)
+	* Updates to support B2xx devices
+	* Added --uhdargs switch to SoDaRadio gui -- allows specification
+	of the target device to be passed to the Server
+	* Fixed race between startup of server and gui connection to
+	server sockets. 
+	* released (soon) as soda-2.1
+	
 	
