@@ -37,6 +37,8 @@ SoDa::GuiParams::GuiParams(int argc, wxChar ** wxargv)
     ("help", "help message")
     ("server", po::value<std::string>(&server_name)->default_value("SoDaServer"),
      "Name/path to SoDaServer program. Normally found in the directory containing SoDaRadio")
+    ("uhdargs", po::value<std::string>(&uhd_args)->default_value(""),
+     "multi uhd device address arguments -- 'type=b200' selects a B2xx unit in preference over an N2xx device")
     ("uds_name", po::value<std::string>(&server_sock_basename)->default_value("/tmp/SoDa_"),
      "unix domain socket name for server to UI client message channels")
     ("config", po::value<std::string>(&config_filename)->default_value(""),

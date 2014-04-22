@@ -101,12 +101,12 @@ SoDa::UD::ClientSocket::ClientSocket(const std::string & path, int startup_timeo
     if(stat >= 0) break;
     else {
       // we should wait a little while before we give up.
-      sleep(1);
+      sleep(2);
     }
   }
 
   if(stat < 0) {
-    std::cerr << "Couldn't connect to UNIX socket [" << path << "].  I quit." << std::endl;
+    std::cerr << "Client couldn't connect to UNIX socket [" << path << "].  I quit." << std::endl;
     perror("oops.");
     exit(-1); 
   }

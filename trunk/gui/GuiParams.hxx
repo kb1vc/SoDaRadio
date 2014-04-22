@@ -42,6 +42,7 @@ namespace SoDa {
     std::string getServerName() { return server_name; }
     std::string getLogFileName() { return log_filename; }
     std::string getConfigFileName() { return config_filename; }
+    std::string getUHDArgs() { return uhd_args; }
   private:
     // this is really quite gross -- wxApp is not very nice about this. 
     char ** convertWXargs2Cargs(int argc, wxChar ** argv);
@@ -52,7 +53,8 @@ namespace SoDa {
     // message socket params
     std::string server_sock_basename; 
     std::string config_filename; 
-    std::string log_filename; 
+    std::string log_filename;
+    std::string uhd_args; 
   };
 
 }
