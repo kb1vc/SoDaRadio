@@ -51,15 +51,20 @@ SoDa::USRPRX::USRPRX(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
   cmd_subs = cmd_stream->subscribe();
 
   // create the rx buffer streamers.
-  uhd::stream_args_t stream_args("fc32", "sc16"); 
+  uhd::stream_args_t stream_args("fc32", "sc16");
+  std::vector<size_t> channel_nums;
+  channel_nums.push_back(0);
+  stream_args.channels = channel_nums;
   rx_bits = usrp->get_rx_stream(stream_args);
+
+  usrp->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_STOP_CONTINUOUS);
   
   // no UI listening for spectrum dumps yet.
   ui = NULL; 
 
   rx_sample_rate = params->getRXRate();
   rx_buffer_size = params->getRFBufferSize(); 
-  
+
   // we aren't receiving yet. 
   audio_rx_stream_enabled = false;
 
@@ -96,7 +101,6 @@ void SoDa::USRPRX::run()
 
   bool exitflag = false;
 
-  int rxbufcount = 0; 
   while(!exitflag) {
     Command * cmd = cmd_stream->get(cmd_subs);
     if(cmd != NULL) {
@@ -120,18 +124,13 @@ void SoDa::USRPRX::run()
       unsigned int left = rx_buffer_size;
       unsigned int coll_so_far = 0;
       uhd::rx_metadata_t md;
-      std::complex<float> *dbuf = buf->getComplexBuf(); 
+      std::complex<float> *dbuf = buf->getComplexBuf();
       while(left != 0) {
 	unsigned int got = rx_bits->recv(&(dbuf[coll_so_far]), left, md);
 	coll_so_far += got;
-	left -= got; 
+	left -= got;
       }
-      // if((rxbufcount & 0x1f) == 0) {
-      // 	std::cerr << " got an IF rxbuf number " << rxbufcount << std::endl; 
-      // }
-      rxbufcount++; 
-      // we got a buffer...
-      
+
       // If the anybody cares, send the IF buffer out.
       // If the UI is listening, it will do an FFT on the buffer
       // and send the positive spectrum via the UI to any listener.
@@ -208,15 +207,15 @@ void SoDa::USRPRX::execCommand(Command * cmd)
 
 void SoDa::USRPRX::startStream()
 {
-  //  std::cerr << "Starting RX Stream from USRP" << std::endl; 
-  usrp->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_START_CONTINUOUS);
+  //  std::cerr << "Starting RX Stream from USRP" << std::endl;
+  usrp->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_START_CONTINUOUS, 0);
   audio_rx_stream_enabled = true; 
 }
 
 void SoDa::USRPRX::stopStream()
 {
   //  std::cerr << "Stoping RX Stream from USRP" << std::endl; 
-  usrp->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_STOP_CONTINUOUS);
+  usrp->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_STOP_CONTINUOUS, 0);
   audio_rx_stream_enabled = false;
 }
 

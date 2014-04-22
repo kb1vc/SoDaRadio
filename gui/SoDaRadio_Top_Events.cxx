@@ -605,7 +605,7 @@ namespace SoDaRadio_GUI {
   void SoDaRadio_Top::OnRFGainScroll(wxScrollEvent & event)
   {
     int igain = m_RFGain->GetValue(); 
-    double gain = ((double) igain) / 10.0;
+    double gain = ((double) igain);
     SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::RX_RF_GAIN, gain);
     sendMsg(&ncmd); 
   }
