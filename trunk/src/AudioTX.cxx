@@ -41,7 +41,8 @@ SoDa::AudioTX::AudioTX(Params * params, DatMBox * _tx_stream,
 		       CmdMBox * _cmd_stream,
 		       AudioIfc * _audio_ifc) : SoDa::SoDaThread("AudioTX")
 {
-  debug_mode = false; 
+  debug_mode = false;
+  debug_ctr = 0;
   tx_stream = _tx_stream;
 
   cmd_stream = _cmd_stream; 
@@ -136,6 +137,7 @@ SoDa::SoDaBuf * SoDa::AudioTX::modulateAM(float * audio_buf,
 {
   /// If the modulation scheme is USB or SSB,
   /// we need to make an analytic signal from the scalar real audio_buf.
+  
   if(is_usb || is_lsb) {
     /// If we're looking at USB, then for I = sin(w), Q => cos(w)
     /// for LSB I = sin(w), Q => -cos(w)
@@ -149,6 +151,8 @@ SoDa::SoDaBuf * SoDa::AudioTX::modulateAM(float * audio_buf,
       audio_IQ_buf[i] = std::complex<float>(audio_buf[i], 0.0) * mic_gain;
     }
   }
+
+  
 
   /// Now that the I/Q channels have been populated, get a transmit buffer. 
   /// and upsample the I/Q audio up to the RF rate.

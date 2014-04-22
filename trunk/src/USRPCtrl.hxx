@@ -75,7 +75,12 @@ namespace SoDa {
     /// @return a pointer to the USRP radio object
     uhd::usrp::multi_usrp::sptr getUSRP() { return usrp; }
   private:
-    Params * params; 
+    Params * params;
+
+    /// The B200 and B210 need some special handling, as they
+    /// don't have frontend lock indications (as of 3.7.0)
+    /// and need a special sample rate.
+    bool is_B2xx;
 
     /// Parse an incoming command and dispatch.
     /// @param cmd a command record
@@ -157,6 +162,12 @@ namespace SoDa {
     // gain settings
     double rx_rf_gain; ///< rf gain for RX front end amp/attenuator
     double tx_rf_gain; ///< rf gain for final TX amp
+
+    uhd::gain_range_t rx_rf_gain_range; ///< property of the device -- what is the min/maximum RX gain setting?
+    uhd::gain_range_t tx_rf_gain_range; ///< property of the device -- what is the min/maximum TX gain setting?
+
+    uhd::freq_range_t rx_rf_freq_range; ///< property of the device -- what is the min/maximum RX frequency?
+    uhd::freq_range_t tx_rf_freq_range; ///< property of the device -- what is the min/maximum TX frequency?
 
     // state of the box
     bool tx_on; ///< if true, we are transmitting.

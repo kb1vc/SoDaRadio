@@ -65,7 +65,11 @@ namespace SoDa {
     class ServerSocket : public NetSocket {
     public:
       ServerSocket(const std::string & path);
-      ~ServerSocket() { close(conn_socket);  close(server_socket); }
+      ~ServerSocket() {
+	close(conn_socket);
+	close(server_socket);
+	unlink(mailbox_pathname.c_str()); 
+      }
       bool isReady();
 
       int get(void *ptr, unsigned int size) {
@@ -80,7 +84,8 @@ namespace SoDa {
 	return rv; 
       }
     private:
-      bool ready; 
+      bool ready;
+      std::string mailbox_pathname; 
     };
 
     class ClientSocket : public NetSocket {

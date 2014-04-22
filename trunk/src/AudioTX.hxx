@@ -138,6 +138,7 @@ namespace SoDa {
     float mic_gain;
 
     bool debug_mode; ///< if true, print extra debug info
+    int debug_ctr; 
   }; 
 }
 
