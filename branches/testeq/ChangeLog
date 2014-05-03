@@ -1,0 +1,51 @@
+2014-02-14 Matt Reilly kb1vc (kb1vc@kb1vc.org)
+	* initial release of version 1.1  
+
+2014-02-15 Matt Reilly kb1vc (kb1vc@kb1vc.org)
+	* add figures and pictures to the doc/figs and doc/pix
+	directories.  These are used in doxygen generation
+	* update Makefile.am, configure.ac, and m4 files to 
+	support choice of libuhd library and include directories
+	* Hooray! Hooray!  The new version of libuhd (003.007) supports
+	Integer-N tuning for the front-end LO. Thank you to Ben and
+	company at Ettus for implementing this useful feature. 
+	* release as soda-1.1.1
+	
+	
+2014-02-16 Matt Reilly kb1vc (kb1vc@kb1vc.org)
+	* Remove spurious dependence on PortAudio
+	* fixed portability problems wrt OSX, still peeling the onion
+	* fixed resampler aliasing problem near nyquist limit. 
+	* released as soda-1.1.1c
+
+2014-02-19 Matt Reilly kb1vc (kb1vc@kb1vc.org)
+	* Fixed typo in TX signal path figure
+	* Changed FM demodulators from differentiator based
+	to atan based.  Audio quality is much improved. 
+
+	* Added The SoDaRadio GUI now automatically starts
+	the server.  If the server is not installed, you can
+	tell SoDaRadio where to find the server with the --server
+	command line switch: 
+
+	gui/SoDaRadio --server=src/SoDaServer
+
+	for instance, if you're running out of the build area. 
+
+	* Added a default configuration that brings the radio
+	up tuned to a national weather service station.  Config
+	can now be saved to ${HOME}/.SoDaRadio and that's where
+	we look first, unless the user supplies the --config
+	command line switch to SoDaRadio.
+
+	* released (soon) as soda-1.2
+
+2014-04-21 Matt Reilly kb1vc (kb1vc@kb1vc.org)
+	* Updates to support B2xx devices
+	* Added --uhdargs switch to SoDaRadio gui -- allows specification
+	of the target device to be passed to the Server
+	* Fixed race between startup of server and gui connection to
+	server sockets. 
+	* released (soon) as soda-2.1
+	
+	
