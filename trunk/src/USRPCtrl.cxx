@@ -132,7 +132,7 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
 
 void SoDa::USRPCtrl::run()
 {
-  uhd::set_thread_priority(); 
+  uhd::set_thread_priority_safe(); 
   // now do the event loop.  we watch
   // for commands and responses on the command stream.
   
