@@ -49,3 +49,12 @@
 	* released (soon) as soda-2.1
 	
 	
+2014-05-18 Matt Reilly kb1vc (kb1vc@kb1vc.org)
+	* Fixed problem in setting thread priority --
+	use set_thread_priority_safe to avoid a thrown exception
+	when the user does not have rtprio
+	* Added HWMB_REP command type to report the motherboard type
+	for the target radio
+	* Added GET/REP handling in the GUI to get the MB type
+	for the target radio and add it to the application frame title.
+	

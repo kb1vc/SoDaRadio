@@ -208,7 +208,10 @@ namespace SoDaRadio_GUI {
 
     void setupBandSelect(SoDaRadio_BandSet * bandset);
     
-    
+
+    void setRadioName(const wxString & mname) {
+      this->SetTitle(wxT("SoDa Radio ") + mname);
+    }
   private:
     char SDR_version_string[64];
 
