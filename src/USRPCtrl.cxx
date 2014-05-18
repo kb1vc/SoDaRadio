@@ -149,8 +149,10 @@ void SoDa::USRPCtrl::run()
   cmd_stream->put(new Command(Command::SET, Command::CLOCK_SOURCE,
 			     params->getClockSource())); 
 
-  cmd_stream->put(new Command(Command::SET, Command::TX_RF_GAIN, 100.0)); 
-  cmd_stream->put(new Command(Command::SET, Command::RX_RF_GAIN, 10.0));
+  cmd_stream->put(new Command(Command::SET, Command::TX_RF_GAIN, 0.0)); 
+  cmd_stream->put(new Command(Command::SET, Command::RX_RF_GAIN, 0.0));
+
+  cmd_stream->put(new Command(Command::SET, Command::RX_AF_GAIN, 0.0));
 
   // transmitter is off
   tx_on = false; 
