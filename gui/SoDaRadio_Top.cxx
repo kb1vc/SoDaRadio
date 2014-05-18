@@ -251,6 +251,8 @@ namespace SoDaRadio_GUI {
 
     // setup status bar -- hardwire the accelerators for now.
     m_ClueBar->SetStatusText(wxT("^C Set To Call        ^G Set To Grid        ^L Enter Log Comment        ^X Enter CW Text"), 0);
+
+    sendMsg(new SoDa::Command(SoDa::Command::GET, SoDa::Command::HWMB_REP)); 
   }
 
   bool SoDaRadio_Top::CreateSpectrumTrace(double * freqs, float * powers, unsigned int len)

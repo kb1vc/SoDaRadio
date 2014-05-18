@@ -97,7 +97,8 @@ namespace SoDaRadio_GUI {
     bool exitflag = false;
 
     pid_t pid = getpid(); 
-  
+
+
     SoDa::Command * ncmd;
 
     ncmd = new SoDa::Command();
@@ -179,7 +180,10 @@ namespace SoDaRadio_GUI {
 			     SoDaRadio_Top::MSG_TERMINATE_TX);
 	radio_gui->AddPendingEvent(event); 
       }
-      break; 
+      break;
+    case SoDa::Command::HWMB_REP:
+      radio_gui->setRadioName(wxString((char*) cmd->sparm, wxConvUTF8));
+      break;  
     default:
       break; 
     }
