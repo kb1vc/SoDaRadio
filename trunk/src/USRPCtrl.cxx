@@ -56,6 +56,18 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
 {
   // turn off all the babbling, by default. 
   debug_mode = false;
+
+  // initialize variables
+  last_rx_req_freq = 0.0; // at least this is a number...
+  tx_on = false;
+  first_gettime = 0.0;
+  rx_rf_gain = 0.0;
+  tx_rf_gain = 0.0;
+  tx_freq = 0.0;
+  tx_freq_rxmode_offset = 0.0;
+  tx_samp_rate = 625000;
+  tx_ant = std::string("TX");
+  motherboard_name = std::string("UNKNOWN_MB");
   
   cmd_stream = _cmd_stream;
   params = _params;
@@ -126,7 +138,8 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
   initControlGPIO();
 
   // turn off the transmitter
-  setTXEna(false); 
+  setTXEna(false);
+
 }
 
 
