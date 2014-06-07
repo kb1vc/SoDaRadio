@@ -1,6 +1,28 @@
 SoDa -- A Software Defined Radio for the Ettus Research USRP
 
-Version 2.0
+Version 2.2
+
+Minor updates to fix problems with unitialized data in 
+the USRPCtrl object. 
+
+Also fixed thread scheduling warning -- the program now works
+for users that don't have RTPRIO privs. 
+
+Thanks to an alert user for these reports. 
+
+Note that some UBUNTU users have found that they must set
+the UBUNTU_MENUPROXY to something in order to get pulldowns
+to display.  UBUNTU is getting a little annoying. 
+I do this (Ubuntu 12.04.4 LTS) with 
+export UBUNTU_MENUPROXY=libappmenu.so
+Others running Ubuntu 14.04 do this:
+export UBUNTU_MENUPROXY=0
+
+
+
+--------------
+
+Version 2.1
 
 This package builds two programs: 
 
