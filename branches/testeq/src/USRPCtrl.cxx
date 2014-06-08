@@ -73,9 +73,9 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
   uhd::property_tree::sptr tree = usrp->get_device()->get_tree();
   const std::string mbname = tree->list("/mboards").at(0);
   // find out what kind of device we have.
-  std::string mboard_name = tree->access<std::string>("/mboards/" + mbname + "/name").get();
+  motherboard_name = tree->access<std::string>("/mboards/" + mbname + "/name").get();
 
-  if((mboard_name == "B200") || (mboard_name == "B210")) {
+  if((motherboard_name == "B200") || (motherboard_name == "B210")) {
     // B2xx needs a master clock rate of 50 MHz to generate a sample rate of 625 kS/s.
     usrp->set_master_clock_rate(50.0e6);
     if (debug_mode) std::cerr << "Initial setup: " << usrp->get_pp_string() << std::endl; 
@@ -132,7 +132,7 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
 
 void SoDa::USRPCtrl::run()
 {
-  uhd::set_thread_priority(); 
+  uhd::set_thread_priority_safe(); 
   // now do the event loop.  we watch
   // for commands and responses on the command stream.
   
@@ -149,8 +149,10 @@ void SoDa::USRPCtrl::run()
   cmd_stream->put(new Command(Command::SET, Command::CLOCK_SOURCE,
 			     params->getClockSource())); 
 
-  cmd_stream->put(new Command(Command::SET, Command::TX_RF_GAIN, 100.0)); 
-  cmd_stream->put(new Command(Command::SET, Command::RX_RF_GAIN, 10.0));
+  cmd_stream->put(new Command(Command::SET, Command::TX_RF_GAIN, 0.0)); 
+  cmd_stream->put(new Command(Command::SET, Command::RX_RF_GAIN, 0.0));
+
+  cmd_stream->put(new Command(Command::SET, Command::RX_AF_GAIN, 0.0));
 
   // transmitter is off
   tx_on = false; 
@@ -561,7 +563,11 @@ void SoDa::USRPCtrl::execGetCommand(Command * cmd)
     cmd_stream->put(new Command(Command::REP, Command::CLOCK_SOURCE,
 				res));
     break;
-		    
+
+  case Command::HWMB_REP:
+    cmd_stream->put(new Command(Command::REP, Command::HWMB_REP,
+				motherboard_name));
+    break; 
   default:
     break; 
   }

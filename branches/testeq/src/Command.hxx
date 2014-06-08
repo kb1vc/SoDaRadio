@@ -342,11 +342,22 @@ namespace SoDa {
        * forms: GET
        */
       DBG_REP,
+
+      /**
+       * Report the motherbaord name (the model name of the USRP)
+       *
+       * no param
+       *
+       * forms: GET, REP
+       */
+      HWMB_REP,
       
       /**
        * On receipt of a STOP command, all threads should exit their run loop.
        *
        * no param
+       *
+       * forms: SET
        */
       STOP,
 

@@ -33,7 +33,7 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
-bin_PROGRAMS = SoDaServer$(EXEEXT)
+bin_PROGRAMS = SoDaServer$(EXEEXT) SoDaCan$(EXEEXT)
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -56,6 +56,19 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
+am__dirstamp = $(am__leading_dot)dirstamp
+am_SoDaCan_OBJECTS = SoDaCan-SoDaCan.$(OBJEXT) \
+	SoDaCan-UDSockets.$(OBJEXT) SoDaCan-IPSockets.$(OBJEXT) \
+	SoDaCan-Command.$(OBJEXT) ../gui/SoDaCan-FindHome.$(OBJEXT)
+SoDaCan_OBJECTS = $(am_SoDaCan_OBJECTS)
+am__DEPENDENCIES_1 =
+am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+SoDaCan_DEPENDENCIES = $(am__DEPENDENCIES_2)
+SoDaCan_LINK = $(CXXLD) $(SoDaCan_CXXFLAGS) $(CXXFLAGS) \
+	$(SoDaCan_LDFLAGS) $(LDFLAGS) -o $@
 am_SoDaServer_OBJECTS = SoDaServer-Params.$(OBJEXT) \
 	SoDaServer-SoDaServer.$(OBJEXT) SoDaServer-SoDaBase.$(OBJEXT) \
 	SoDaServer-USRPCtrl.$(OBJEXT) SoDaServer-USRPRX.$(OBJEXT) \
@@ -72,11 +85,6 @@ am_SoDaServer_OBJECTS = SoDaServer-Params.$(OBJEXT) \
 	SoDaServer-UDSockets.$(OBJEXT) SoDaServer-AudioALSA.$(OBJEXT) \
 	SoDaServer-AudioPA.$(OBJEXT)
 SoDaServer_OBJECTS = $(am_SoDaServer_OBJECTS)
-am__DEPENDENCIES_1 =
-am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 SoDaServer_DEPENDENCIES = $(am__DEPENDENCIES_2)
 SoDaServer_LINK = $(CXXLD) $(SoDaServer_CXXFLAGS) $(CXXFLAGS) \
 	$(SoDaServer_LDFLAGS) $(LDFLAGS) -o $@
@@ -93,8 +101,8 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(SoDaServer_SOURCES)
-DIST_SOURCES = $(SoDaServer_SOURCES)
+SOURCES = $(SoDaCan_SOURCES) $(SoDaServer_SOURCES)
+DIST_SOURCES = $(SoDaCan_SOURCES) $(SoDaServer_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -240,11 +248,16 @@ top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = subdir-objects
 AM_CPPFLAGS = -I$(top_srcdir)/src ${BOOST_CPPFLAGS}
 AM_BOOSTLIBFLAGS = ${BOOST_LDFLAGS} ${BOOST_PROGRAM_OPTIONS_LIB} ${BOOST_THREAD_LIB} ${BOOST_DATE_TIME_LIB} ${BOOST_SYSTEM_LIB} ${BOOST_FILESYSTEM_LIB} ${BOOST_SERIALIZATION_LIB} ${BOOST_REGEX_LIB}
+SoDaCan_SOURCES = SoDaCan.cxx UDSockets.cxx UDSockets.hxx IPSockets.cxx IPSockets.hxx Command.cxx Command.hxx ../gui/FindHome.cxx ../gui/FindHome.hxx
 SoDaServer_SOURCES = Params.cxx  SoDaServer.cxx SoDaBase.cxx USRPCtrl.cxx USRPRX.cxx USRPTX.cxx CWTX.cxx AudioRX.cxx AudioTX.cxx UI.cxx Command.cxx OSFilter.cxx HilbertTransformer.cxx  ReSampler.cxx ReSamplers625x48.cxx Spectrogram.cxx CWGenerator.cxx TSIP.cxx GPS_TSIPmon.cxx UDSockets.cxx AudioRX.hxx AudioTX.hxx Command.hxx CWGenerator.hxx CWTX.hxx GPS_TSIPmon.hxx HilbertTransformer.hxx IPSockets.hxx  MultiMBox.hxx OSFilter.hxx Params.hxx QuadratureOscillator.hxx ReSampler.hxx ReSamplers625x48.hxx SoDaBase.hxx SoDa_filter_tables.hxx SoDa_tx_filter_tables.hxx Spectrogram.hxx TSIP.hxx UDSockets.hxx UI.hxx USRPCtrl.hxx USRPRX.hxx USRPTX.hxx  AudioALSA.hxx AudioALSA.cxx AudioIfc.hxx MedianFilter.hxx AudioPA.hxx AudioPA.cxx
 SoDaServer_CPPFLAGS = $(AM_CPPFLAGS)  -g
 SoDaServer_LDADD = $(AM_BOOSTLIBFLAGS)  -lrt
 SoDaServer_CXXFLAGS = -g
 SoDaServer_LDFLAGS = -g 
+SoDaCan_CPPFLAGS = $(AM_CPPFLAGS)  -g
+SoDaCan_LDADD = $(AM_BOOSTLIBFLAGS)  -lrt
+SoDaCan_CXXFLAGS = -g
+SoDaCan_LDFLAGS = -g 
 all: all-am
 
 .SUFFIXES:
@@ -316,16 +329,33 @@ uninstall-binPROGRAMS:
 
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
+../gui/$(am__dirstamp):
+	@$(MKDIR_P) ../gui
+	@: > ../gui/$(am__dirstamp)
+../gui/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) ../gui/$(DEPDIR)
+	@: > ../gui/$(DEPDIR)/$(am__dirstamp)
+../gui/SoDaCan-FindHome.$(OBJEXT): ../gui/$(am__dirstamp) \
+	../gui/$(DEPDIR)/$(am__dirstamp)
+SoDaCan$(EXEEXT): $(SoDaCan_OBJECTS) $(SoDaCan_DEPENDENCIES) $(EXTRA_SoDaCan_DEPENDENCIES) 
+	@rm -f SoDaCan$(EXEEXT)
+	$(SoDaCan_LINK) $(SoDaCan_OBJECTS) $(SoDaCan_LDADD) $(LIBS)
 SoDaServer$(EXEEXT): $(SoDaServer_OBJECTS) $(SoDaServer_DEPENDENCIES) $(EXTRA_SoDaServer_DEPENDENCIES) 
 	@rm -f SoDaServer$(EXEEXT)
 	$(SoDaServer_LINK) $(SoDaServer_OBJECTS) $(SoDaServer_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
+	-rm -f ../gui/SoDaCan-FindHome.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@../gui/$(DEPDIR)/SoDaCan-FindHome.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaCan-Command.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaCan-IPSockets.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaCan-SoDaCan.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaCan-UDSockets.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaServer-AudioALSA.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaServer-AudioPA.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaServer-AudioRX.Po@am__quote@
@@ -364,6 +394,76 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+
+SoDaCan-SoDaCan.o: SoDaCan.cxx
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaCan_CPPFLAGS) $(CPPFLAGS) $(SoDaCan_CXXFLAGS) $(CXXFLAGS) -MT SoDaCan-SoDaCan.o -MD -MP -MF $(DEPDIR)/SoDaCan-SoDaCan.Tpo -c -o SoDaCan-SoDaCan.o `test -f 'SoDaCan.cxx' || echo '$(srcdir)/'`SoDaCan.cxx
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/SoDaCan-SoDaCan.Tpo $(DEPDIR)/SoDaCan-SoDaCan.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='SoDaCan.cxx' object='SoDaCan-SoDaCan.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaCan_CPPFLAGS) $(CPPFLAGS) $(SoDaCan_CXXFLAGS) $(CXXFLAGS) -c -o SoDaCan-SoDaCan.o `test -f 'SoDaCan.cxx' || echo '$(srcdir)/'`SoDaCan.cxx
+
+SoDaCan-SoDaCan.obj: SoDaCan.cxx
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaCan_CPPFLAGS) $(CPPFLAGS) $(SoDaCan_CXXFLAGS) $(CXXFLAGS) -MT SoDaCan-SoDaCan.obj -MD -MP -MF $(DEPDIR)/SoDaCan-SoDaCan.Tpo -c -o SoDaCan-SoDaCan.obj `if test -f 'SoDaCan.cxx'; then $(CYGPATH_W) 'SoDaCan.cxx'; else $(CYGPATH_W) '$(srcdir)/SoDaCan.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/SoDaCan-SoDaCan.Tpo $(DEPDIR)/SoDaCan-SoDaCan.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='SoDaCan.cxx' object='SoDaCan-SoDaCan.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaCan_CPPFLAGS) $(CPPFLAGS) $(SoDaCan_CXXFLAGS) $(CXXFLAGS) -c -o SoDaCan-SoDaCan.obj `if test -f 'SoDaCan.cxx'; then $(CYGPATH_W) 'SoDaCan.cxx'; else $(CYGPATH_W) '$(srcdir)/SoDaCan.cxx'; fi`
+
+SoDaCan-UDSockets.o: UDSockets.cxx
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaCan_CPPFLAGS) $(CPPFLAGS) $(SoDaCan_CXXFLAGS) $(CXXFLAGS) -MT SoDaCan-UDSockets.o -MD -MP -MF $(DEPDIR)/SoDaCan-UDSockets.Tpo -c -o SoDaCan-UDSockets.o `test -f 'UDSockets.cxx' || echo '$(srcdir)/'`UDSockets.cxx
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/SoDaCan-UDSockets.Tpo $(DEPDIR)/SoDaCan-UDSockets.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='UDSockets.cxx' object='SoDaCan-UDSockets.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaCan_CPPFLAGS) $(CPPFLAGS) $(SoDaCan_CXXFLAGS) $(CXXFLAGS) -c -o SoDaCan-UDSockets.o `test -f 'UDSockets.cxx' || echo '$(srcdir)/'`UDSockets.cxx
+
+SoDaCan-UDSockets.obj: UDSockets.cxx
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaCan_CPPFLAGS) $(CPPFLAGS) $(SoDaCan_CXXFLAGS) $(CXXFLAGS) -MT SoDaCan-UDSockets.obj -MD -MP -MF $(DEPDIR)/SoDaCan-UDSockets.Tpo -c -o SoDaCan-UDSockets.obj `if test -f 'UDSockets.cxx'; then $(CYGPATH_W) 'UDSockets.cxx'; else $(CYGPATH_W) '$(srcdir)/UDSockets.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/SoDaCan-UDSockets.Tpo $(DEPDIR)/SoDaCan-UDSockets.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='UDSockets.cxx' object='SoDaCan-UDSockets.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaCan_CPPFLAGS) $(CPPFLAGS) $(SoDaCan_CXXFLAGS) $(CXXFLAGS) -c -o SoDaCan-UDSockets.obj `if test -f 'UDSockets.cxx'; then $(CYGPATH_W) 'UDSockets.cxx'; else $(CYGPATH_W) '$(srcdir)/UDSockets.cxx'; fi`
+
+SoDaCan-IPSockets.o: IPSockets.cxx
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaCan_CPPFLAGS) $(CPPFLAGS) $(SoDaCan_CXXFLAGS) $(CXXFLAGS) -MT SoDaCan-IPSockets.o -MD -MP -MF $(DEPDIR)/SoDaCan-IPSockets.Tpo -c -o SoDaCan-IPSockets.o `test -f 'IPSockets.cxx' || echo '$(srcdir)/'`IPSockets.cxx
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/SoDaCan-IPSockets.Tpo $(DEPDIR)/SoDaCan-IPSockets.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='IPSockets.cxx' object='SoDaCan-IPSockets.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaCan_CPPFLAGS) $(CPPFLAGS) $(SoDaCan_CXXFLAGS) $(CXXFLAGS) -c -o SoDaCan-IPSockets.o `test -f 'IPSockets.cxx' || echo '$(srcdir)/'`IPSockets.cxx
+
+SoDaCan-IPSockets.obj: IPSockets.cxx
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaCan_CPPFLAGS) $(CPPFLAGS) $(SoDaCan_CXXFLAGS) $(CXXFLAGS) -MT SoDaCan-IPSockets.obj -MD -MP -MF $(DEPDIR)/SoDaCan-IPSockets.Tpo -c -o SoDaCan-IPSockets.obj `if test -f 'IPSockets.cxx'; then $(CYGPATH_W) 'IPSockets.cxx'; else $(CYGPATH_W) '$(srcdir)/IPSockets.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/SoDaCan-IPSockets.Tpo $(DEPDIR)/SoDaCan-IPSockets.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='IPSockets.cxx' object='SoDaCan-IPSockets.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaCan_CPPFLAGS) $(CPPFLAGS) $(SoDaCan_CXXFLAGS) $(CXXFLAGS) -c -o SoDaCan-IPSockets.obj `if test -f 'IPSockets.cxx'; then $(CYGPATH_W) 'IPSockets.cxx'; else $(CYGPATH_W) '$(srcdir)/IPSockets.cxx'; fi`
+
+SoDaCan-Command.o: Command.cxx
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaCan_CPPFLAGS) $(CPPFLAGS) $(SoDaCan_CXXFLAGS) $(CXXFLAGS) -MT SoDaCan-Command.o -MD -MP -MF $(DEPDIR)/SoDaCan-Command.Tpo -c -o SoDaCan-Command.o `test -f 'Command.cxx' || echo '$(srcdir)/'`Command.cxx
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/SoDaCan-Command.Tpo $(DEPDIR)/SoDaCan-Command.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='Command.cxx' object='SoDaCan-Command.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaCan_CPPFLAGS) $(CPPFLAGS) $(SoDaCan_CXXFLAGS) $(CXXFLAGS) -c -o SoDaCan-Command.o `test -f 'Command.cxx' || echo '$(srcdir)/'`Command.cxx
+
+SoDaCan-Command.obj: Command.cxx
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaCan_CPPFLAGS) $(CPPFLAGS) $(SoDaCan_CXXFLAGS) $(CXXFLAGS) -MT SoDaCan-Command.obj -MD -MP -MF $(DEPDIR)/SoDaCan-Command.Tpo -c -o SoDaCan-Command.obj `if test -f 'Command.cxx'; then $(CYGPATH_W) 'Command.cxx'; else $(CYGPATH_W) '$(srcdir)/Command.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/SoDaCan-Command.Tpo $(DEPDIR)/SoDaCan-Command.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='Command.cxx' object='SoDaCan-Command.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaCan_CPPFLAGS) $(CPPFLAGS) $(SoDaCan_CXXFLAGS) $(CXXFLAGS) -c -o SoDaCan-Command.obj `if test -f 'Command.cxx'; then $(CYGPATH_W) 'Command.cxx'; else $(CYGPATH_W) '$(srcdir)/Command.cxx'; fi`
+
+../gui/SoDaCan-FindHome.o: ../gui/FindHome.cxx
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaCan_CPPFLAGS) $(CPPFLAGS) $(SoDaCan_CXXFLAGS) $(CXXFLAGS) -MT ../gui/SoDaCan-FindHome.o -MD -MP -MF ../gui/$(DEPDIR)/SoDaCan-FindHome.Tpo -c -o ../gui/SoDaCan-FindHome.o `test -f '../gui/FindHome.cxx' || echo '$(srcdir)/'`../gui/FindHome.cxx
+@am__fastdepCXX_TRUE@	$(am__mv) ../gui/$(DEPDIR)/SoDaCan-FindHome.Tpo ../gui/$(DEPDIR)/SoDaCan-FindHome.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../gui/FindHome.cxx' object='../gui/SoDaCan-FindHome.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaCan_CPPFLAGS) $(CPPFLAGS) $(SoDaCan_CXXFLAGS) $(CXXFLAGS) -c -o ../gui/SoDaCan-FindHome.o `test -f '../gui/FindHome.cxx' || echo '$(srcdir)/'`../gui/FindHome.cxx
+
+../gui/SoDaCan-FindHome.obj: ../gui/FindHome.cxx
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaCan_CPPFLAGS) $(CPPFLAGS) $(SoDaCan_CXXFLAGS) $(CXXFLAGS) -MT ../gui/SoDaCan-FindHome.obj -MD -MP -MF ../gui/$(DEPDIR)/SoDaCan-FindHome.Tpo -c -o ../gui/SoDaCan-FindHome.obj `if test -f '../gui/FindHome.cxx'; then $(CYGPATH_W) '../gui/FindHome.cxx'; else $(CYGPATH_W) '$(srcdir)/../gui/FindHome.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) ../gui/$(DEPDIR)/SoDaCan-FindHome.Tpo ../gui/$(DEPDIR)/SoDaCan-FindHome.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../gui/FindHome.cxx' object='../gui/SoDaCan-FindHome.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaCan_CPPFLAGS) $(CPPFLAGS) $(SoDaCan_CXXFLAGS) $(CXXFLAGS) -c -o ../gui/SoDaCan-FindHome.obj `if test -f '../gui/FindHome.cxx'; then $(CYGPATH_W) '../gui/FindHome.cxx'; else $(CYGPATH_W) '$(srcdir)/../gui/FindHome.cxx'; fi`
 
 SoDaServer-Params.o: Params.cxx
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaServer_CPPFLAGS) $(CPPFLAGS) $(SoDaServer_CXXFLAGS) $(CXXFLAGS) -MT SoDaServer-Params.o -MD -MP -MF $(DEPDIR)/SoDaServer-Params.Tpo -c -o SoDaServer-Params.o `test -f 'Params.cxx' || echo '$(srcdir)/'`Params.cxx
@@ -788,6 +888,8 @@ clean-generic:
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
+	-rm -f ../gui/$(DEPDIR)/$(am__dirstamp)
+	-rm -f ../gui/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
@@ -797,7 +899,7 @@ clean: clean-am
 clean-am: clean-binPROGRAMS clean-generic mostlyclean-am
 
 distclean: distclean-am
-	-rm -rf ./$(DEPDIR)
+	-rm -rf ../gui/$(DEPDIR) ./$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -843,7 +945,7 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-	-rm -rf ./$(DEPDIR)
+	-rm -rf ../gui/$(DEPDIR) ./$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
