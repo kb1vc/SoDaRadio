@@ -94,7 +94,7 @@ static void doFFTandDump(int fd, std::complex<float> * in, int len)
 
 void SoDa::USRPRX::run()
 {
-  uhd::set_thread_priority(); 
+  uhd::set_thread_priority_safe(); 
   // now do the event loop.  we watch
   // for commands and responses on the command stream.
   // and we watch for data in the input buffer. 

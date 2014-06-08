@@ -77,7 +77,8 @@ void SoDa::Command::initTables()
   target_map_s2v[std::string("SPEC_STEP")] = SPEC_STEP; 
   target_map_s2v[std::string("SPEC_BUF_LEN")] = SPEC_BUF_LEN;
   target_map_s2v[std::string("DBG_REP")] = DBG_REP; 
-  
+
+  target_map_s2v[std::string("HWMB_REP")] = HWMB_REP;
 
   target_map_s2v[std::string("STOP")] = STOP;
   target_map_v2s[RX_TUNE_FREQ] = new std::string("RX_TUNE_FREQ");
@@ -117,6 +118,8 @@ void SoDa::Command::initTables()
   target_map_v2s[SPEC_STEP] = new std::string("SPEC_STEP");
   target_map_v2s[SPEC_BUF_LEN] = new std::string("SPEC_BUF_LEN");
 
+  target_map_v2s[HWMB_REP] = new std::string("HWMB_REP");
+  
   target_map_v2s[DBG_REP] = new std::string("DBG_REP");
   target_map_v2s[STOP] = new std::string("STOP");
 }

@@ -59,7 +59,7 @@ namespace SoDa {
 	  std::cerr << "CW TXT STREAM: [" << cmd->toString() << "]" << std::endl;
 	  exitflag |= (cmd->target == Command::STOP);
 	  cmd_stream->free(cmd); 
-	}
+  	}
 	usleep(10000); 
       }
     }

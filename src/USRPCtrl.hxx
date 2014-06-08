@@ -183,6 +183,7 @@ namespace SoDa {
     double tx_samp_rate; ///< sample rate to USRP TX chain. 
     std::string tx_ant;  ///< TX antenna choice (usually has to be TX or TX/RX1?
 
+    std::string motherboard_name; ///< The model name of the USRP unit
 
     // enables verbose messages
     bool debug_mode; ///< print stuff when we are in debug mode
