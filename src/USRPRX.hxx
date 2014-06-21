@@ -64,7 +64,12 @@ namespace SoDa {
      * USRPRX is a thread -- this is its run loop. 
      */
     void run();
-    
+
+    /**
+     * At times we need to disable/enable the audio stream
+     * before startup.  (The Radio defaults to ENABLE, the
+     * test bench disables the audio stream.)
+     */
   private:   
     void execCommand(Command * cmd); 
     void execGetCommand(Command * cmd); 
@@ -96,7 +101,7 @@ namespace SoDa {
     unsigned int rx_buffer_size;
 
     // are we collecting?
-    bool audio_rx_stream_enabled;
+    bool rx_if_stream_ON;
 
     SoDa::Command::ModulationType rx_modulation;
     
@@ -109,7 +114,12 @@ namespace SoDa {
     double rx_sample_rate;
 
     // spectrum reporting
-    bool enable_spectrum_report; 
+    bool enable_spectrum_report;
+    // when true, we disable the digital downconverter -- used for RF testbench
+    bool baseband_passthrough_mode; 
+
+    // audio enable
+    bool audio_stream_enable; 
     
     //debug hooks
     int outf[2];

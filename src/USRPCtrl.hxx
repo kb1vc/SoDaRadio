@@ -115,9 +115,11 @@ namespace SoDa {
     /// @param freq target frequency (LO and DDS combined)
     /// @param sel 'r' for RX LO, 't' for TX LO
     /// @param set_if_freq if TRUE, tell the USRPRX thread to reset
+    /// @param min_ddc_offset 1st LO is set so that freq-LO > min_ddc_offset
     /// its front-end frequency so that it can adjust its own oscillator.
     void set1stLOFreq(double freq, char sel, bool set_if_freq = false);
 
+    void set1stLOBasebandFreq(double freq, char sel, double min_ddc_offset = 0.0);
     
     CmdMBox * cmd_stream; ///< command stream channel
     unsigned int subid;   ///< subscriber ID for this thread's connection to the command channel

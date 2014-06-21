@@ -56,6 +56,18 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
 {
   // turn off all the babbling, by default. 
   debug_mode = false;
+
+  // initialize variables
+  last_rx_req_freq = 0.0; // at least this is a number...
+  tx_on = false;
+  first_gettime = 0.0;
+  rx_rf_gain = 0.0;
+  tx_rf_gain = 0.0;
+  tx_freq = 0.0;
+  tx_freq_rxmode_offset = 0.0;
+  tx_samp_rate = 625000;
+  tx_ant = std::string("TX");
+  motherboard_name = std::string("UNKNOWN_MB");
   
   cmd_stream = _cmd_stream;
   params = _params;
@@ -126,7 +138,8 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
   initControlGPIO();
 
   // turn off the transmitter
-  setTXEna(false); 
+  setTXEna(false);
+
 }
 
 
@@ -234,6 +247,46 @@ uhd::tune_result_t SoDa::USRPCtrl::checkLock(uhd::tune_request_t & req, char sel
   return ret; 
 }
 
+void SoDa::USRPCtrl::set1stLOBasebandFreq(double freq, char sel, double min_ddc_offset)
+{
+  // select "r" for rx and "t" for tx.
+  // 
+  // ensure that the |ddc frequency is| >= to min_ddc_offset
+  
+  double target_rx_freq = freq;
+
+  // we're going to use fractional-n tuning
+  
+  uhd::tune_request_t tune_req(freq, min_ddc_offset);
+
+  
+  if(sel == 'r') {
+    last_rx_tune_result = usrp->set_rx_freq(tune_req);
+    last_rx_tune_result = checkLock(tune_req, 'r', last_rx_tune_result);
+    if(debug_mode || 1) {
+      std::cerr << boost::format("Baseband RX Tune RF_actual %lf DDC = %lf tuned = %lf target = %lf request  rf = %lf request ddc = %lf\n")
+	% last_rx_tune_result.actual_rf_freq
+	% last_rx_tune_result.actual_dsp_freq
+	% freq
+	% target_rx_freq
+	% tune_req.rf_freq
+	% tune_req.dsp_freq;
+    }
+  }
+  else {
+    last_tx_tune_result = usrp->set_tx_freq(tune_req);  
+    last_tx_tune_result = checkLock(tune_req, 't', last_tx_tune_result);
+  }
+
+  // If we are setting the RX mode, then we need to send
+  // a message to the USRPRX to tell it what its IF freq should be.
+  // we're at baseband, though.
+  if(sel == 'r') {
+    cmd_stream->put(new Command(Command::SET, Command::RX_LO3_FREQ,
+				0.0)); 
+  }
+}
+  
 void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
 {
   // select "r" for rx and "t" for tx.
@@ -277,7 +330,7 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
     }
     last_rx_tune_result = usrp->set_rx_freq(rx_trequest);
     last_rx_tune_result = checkLock(rx_trequest, 'r', last_rx_tune_result);
-    if(debug_mode) {
+    if(debug_mode || 1) {
       std::cerr << boost::format("RX Tune RF_actual %lf DDC = %lf tuned = %lf target = %lf request  rf = %lf request ddc = %lf\n")
 	% last_rx_tune_result.actual_rf_freq
 	% last_rx_tune_result.actual_dsp_freq
@@ -368,6 +421,13 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
   case Command::RX_FE_FREQ:
     last_rx_req_freq = cmd->dparms[0]; 
     set1stLOFreq(cmd->dparms[0], 'r', cmd->target != Command::RX_TUNE_FREQ);
+    cmd_stream->put(new Command(Command::REP, Command::RX_FE_FREQ, 
+			       last_rx_tune_result.actual_rf_freq - last_rx_tune_result.actual_dsp_freq)); 
+    break;
+
+  case Command::RX_FE_BASEBAND_FREQ:
+    last_rx_req_freq = cmd->dparms[0]; 
+    set1stLOBasebandFreq(cmd->dparms[0], 'r', cmd->dparms[1]);
     cmd_stream->put(new Command(Command::REP, Command::RX_FE_FREQ, 
 			       last_rx_tune_result.actual_rf_freq - last_rx_tune_result.actual_dsp_freq)); 
     break;

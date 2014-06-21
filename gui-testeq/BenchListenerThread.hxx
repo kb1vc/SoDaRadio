@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012, Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -26,38 +26,34 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "FindHome.hxx"
-extern "C" {
-#include <libgen.h>
-#include <unistd.h>
-#ifdef __linux__
-#include <linux/limits.h>
-#endif  
+#ifndef BenchLISTENER_THREAD_HDR
+#define BenchLISTENER_THREAD_HDR
+#include "../src/UDSockets.hxx"
+#include "../src/Command.hxx"
+
+#include <wx/wx.h>
+#include <wx/thread.h>
+
+namespace SoDaBench_GUI {
+  class SoDaBench_Top;
+
+  class BenchListenerThread : public wxThread {
+  public:
+    BenchListenerThread(SoDaBench_Top * _bench);
+
+    void * Entry();
+
+  private:
+    void setupSpectrumDisplay();
+    void setupFreqBuffer();
+    void execRepCommand(SoDa::Command * cmd); 
+    SoDaBench_Top * bench_gui;
+    SoDa::UD::ClientSocket * cmd_q, * fft_q; 
+    float * spect_buffer;
+    double * freq_buffer;
+    int spect_buflen, old_spect_buflen;
+    float spectrum_low_freq, spectrum_hi_freq, spectrum_step_freq; 
+  }; 
 }
 
-#include <iostream>
-
-/**
- * Find the directory in which the calling program resides.
- *
- * Note this feature relies on the existance of the procfs.
- * It works under Linux. I'm not sure what I'll do for other
- * operating systems.  
- *
- * @return string pointing to the program's directory. 
- */
-std::string findHome()
-{
-#ifdef __linux__
-  // This solution was suggested by an answer in
-  // http://stackoverflow.com/questions/7051844/how-to-find-the-full-path-of-the-c-linux-program-from-within
-  char execution_path[PATH_MAX + 1] = {0}; 
-  size_t ret = readlink("/proc/self/exe", execution_path, PATH_MAX);
-  // now trim the end of the path off, we just want the directory
-  char * mydir = dirname(execution_path);
-  return std::string(mydir); 
-#elif __OSX__
-  // This code has not been tested. 
 #endif
-}
-
