@@ -66,7 +66,7 @@ SoDa::USRPRX::USRPRX(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
   rx_buffer_size = params->getRFBufferSize(); 
 
   // we aren't receiving yet. 
-  audio_rx_stream_enabled = false;
+  rx_if_stream_ON = false;
 
   // wake up in USB mode
   rx_modulation = SoDa::Command::USB;
@@ -77,7 +77,9 @@ SoDa::USRPRX::USRPRX(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
   scount = 0;
 
   // enable spectrum reporting at startup
-  enable_spectrum_report = true; 
+  enable_spectrum_report = true;
+  // normal use includes a downconverter in the USRPRX unit. 
+  baseband_passthrough_mode = false; 
 }
 
 static void doFFTandDump(int fd, std::complex<float> * in, int len)
@@ -110,7 +112,7 @@ void SoDa::USRPRX::run()
       exitflag |= (cmd->target == Command::STOP); 
       cmd_stream->free(cmd); 
     }
-    else if(audio_rx_stream_enabled) {
+    else if(rx_if_stream_ON) {
       // go get some data
       // get a free buffer.
       SoDaBuf * buf = rx_stream->alloc();
@@ -151,12 +153,12 @@ void SoDa::USRPRX::run()
 	}
       }
 
-
       // support debug... 
       scount++;
       
       // tune it down with the IF oscillator
-      doMixer(buf); 
+      // 
+      if(!baseband_passthrough_mode) doMixer(buf); 
       
       // now put the baseband signal on the ring.
       rx_stream->put(buf);
@@ -209,14 +211,14 @@ void SoDa::USRPRX::startStream()
 {
   //  std::cerr << "Starting RX Stream from USRP" << std::endl;
   usrp->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_START_CONTINUOUS, 0);
-  audio_rx_stream_enabled = true; 
+  rx_if_stream_ON = true; 
 }
 
 void SoDa::USRPRX::stopStream()
 {
   //  std::cerr << "Stoping RX Stream from USRP" << std::endl; 
   usrp->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_STOP_CONTINUOUS, 0);
-  audio_rx_stream_enabled = false;
+  rx_if_stream_ON = false;
 }
 
 void SoDa::USRPRX::execSetCommand(Command * cmd)
@@ -249,6 +251,19 @@ void SoDa::USRPRX::execSetCommand(Command * cmd)
       usleep(750000);
       startStream();
       enable_spectrum_report = true;
+    }
+    break;
+  case SoDa::Command::RX_STATE: // SET RX_IF enable (test equipment)
+    if(cmd->iparms[0] == 0) {
+      enable_spectrum_report = false;
+    }
+    else if(cmd->iparms[0] == 1) {
+      enable_spectrum_report = true;
+      baseband_passthrough_mode = false;
+    }
+    else if(cmd->iparms[0] == 2) {
+      enable_spectrum_report = true;
+      baseband_passthrough_mode = true; 
     }
     break; 
   default:

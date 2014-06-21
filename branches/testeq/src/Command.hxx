@@ -195,8 +195,14 @@ namespace SoDa {
        * param is integer 0 disables TX, 3 enables TX
        */
       TX_STATE,
+
+      
       /**
-       * Ignored for now
+       * RX IF stream processing enable -- used only by SoDaBench test equipment
+       * param is integer
+       *     0 disables RX processing,
+       *     1 enables RX stream to UI,
+       *     2 enables RX stream to UI and bypasses USRPRX downconverter... 
        */
       RX_STATE,
 
@@ -246,6 +252,7 @@ namespace SoDa {
        *
        * @see USRPRX
        */
+
       RX_MODE,
       /**
        * Set the modulation mode for the transmit chain.
@@ -364,7 +371,18 @@ namespace SoDa {
       /**
        * No comment
        */
-      NULL_CMD
+      NULL_CMD,
+
+      /**
+       * Set the RX front end (1st LO, the 2nd IF LO) ensuring that
+       * the DDC LO is at least as large as the second parameter. 
+       *
+       * param 0 is target freq, 1 is minimum LO offset
+       *
+       * @see SoDa::USRPCtrl
+       */
+      RX_FE_BASEBAND_FREQ
+
     };
 
     /**

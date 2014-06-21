@@ -1,6 +1,26 @@
 SoDa -- A Software Defined Radio for the Ettus Research USRP
 
-Version 2.0
+Version 2.2
+
+Minor updates to fix problems with unitialized data in 
+the USRPCtrl object. 
+
+Also fixed thread scheduling warning -- the program now works
+for users that don't have RTPRIO privs. 
+
+Thanks to an alert user for these reports. 
+
+Note that some UBUNTU users have found that they must set
+the UBUNTU_MENUPROXY to something in order to get pulldowns
+to display.  UBUNTU is getting a little annoying. 
+I do this (Ubuntu 12.04.4 LTS) with 
+export UBUNTU_MENUPROXY=libappmenu.so
+Others running Ubuntu 14.04 do this:
+export UBUNTU_MENUPROXY=0
+
+--------------
+
+Version 2.1
 
 This package builds two programs: 
 
@@ -21,7 +41,6 @@ See the INSTALL file for instructions on configuring, building
 and installing SoDa
 
 
-
 ---- 
 
 Prerequisites: 
@@ -33,11 +52,12 @@ fftw3 -- builds against version 3.3.0
 
 ----
 
-INSTALL Quick Start
+INSTALL Quick Start  (X.x is the version that you just downloaded, 
+e.g. soda-X.x.tar.gz might be soda-2.2.tar.gz...)
 
-# unpack soda-2.0.tar.gz 
-tar xzvf soda-2.0.tar.gz
-cd soda-2.0
+# unpack soda-X.x.tar.gz 
+tar xzvf soda-X.x.tar.gz
+cd soda-X.x
 mkdir build
 cd build
 ../configure
@@ -65,7 +85,8 @@ gui/SoDaRadio --server=src/SoDaRadio
 It should come up tuned to something like 162.55 or nearby. 
 
 Poke buttons.  Try things.  Don't hit the "TX" button unless
-you have something connected. 
+you have something connected and the necessary license to operate
+in that band. 
 
 ---- 
 

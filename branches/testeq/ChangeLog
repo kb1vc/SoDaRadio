@@ -1,3 +1,4 @@
+
 2014-02-14 Matt Reilly kb1vc (kb1vc@kb1vc.org)
 	* initial release of version 1.1  
 
@@ -58,3 +59,9 @@
 	* Added GET/REP handling in the GUI to get the MB type
 	for the target radio and add it to the application frame title.
 	
+2014-06-07 Matt Reilly kb1vc (kb1vc@kb1vc.org)
+	* SVN 64
+	* added initialization for all member vars in USRPCtrl 
+	to fix NAN trouble reported by a user.
+	* bumped version to 2.2 ready for release.
+	* update README

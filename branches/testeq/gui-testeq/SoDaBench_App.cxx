@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2013,2014 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -25,39 +25,28 @@
   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+#include "SoDaBench_App.hxx"
+#include "SoDaBench_Top.h"
+#include "GuiParams.hxx"
 
-#include "FindHome.hxx"
-extern "C" {
-#include <libgen.h>
-#include <unistd.h>
-#ifdef __linux__
-#include <linux/limits.h>
-#endif  
-}
 
-#include <iostream>
+IMPLEMENT_APP(SoDaBench_App)
 
-/**
- * Find the directory in which the calling program resides.
- *
- * Note this feature relies on the existance of the procfs.
- * It works under Linux. I'm not sure what I'll do for other
- * operating systems.  
- *
- * @return string pointing to the program's directory. 
- */
-std::string findHome()
+SoDaBench_App::SoDaBench_App()
 {
-#ifdef __linux__
-  // This solution was suggested by an answer in
-  // http://stackoverflow.com/questions/7051844/how-to-find-the-full-path-of-the-c-linux-program-from-within
-  char execution_path[PATH_MAX + 1] = {0}; 
-  size_t ret = readlink("/proc/self/exe", execution_path, PATH_MAX);
-  // now trim the end of the path off, we just want the directory
-  char * mydir = dirname(execution_path);
-  return std::string(mydir); 
-#elif __OSX__
-  // This code has not been tested. 
-#endif
 }
 
+SoDaBench_App::~SoDaBench_App()
+{
+}
+
+bool SoDaBench_App::OnInit()
+{
+  // get the args and argvs
+  SoDa::GuiParams  p(argc, argv);
+  SoDaBench_GUI::SoDaBench_Top * top = new SoDaBench_GUI::SoDaBench_Top(p, (wxWindow*) NULL);
+  top->Show();
+  SetTopWindow(top);
+  wxInitAllImageHandlers();
+  return true; 
+}
