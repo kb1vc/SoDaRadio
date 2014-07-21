@@ -34,6 +34,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include <boost/asio.hpp>
+
 SoDa::AudioRX::AudioRX(Params * params,
 		       DatMBox * _rx_stream, CmdMBox * _cmd_stream,
 		       AudioIfc * _audio_ifc) : SoDa::SoDaThread("AudioRX")
@@ -104,8 +106,14 @@ SoDa::AudioRX::AudioRX(Params * params,
       catchup_rand_mask = ((catchup_rand_mask << 1) | 1));
   catchup_rand_mask = catchup_rand_mask >> 1;
 
+  // envelope power calculator
+  env_power_ctr = 0;
+  running_sumsq = 0.0;
+  
   // debug help
   dbg_ctr = 0;
+  running_sumsq = 0.0;
+
 }
 
 void SoDa::AudioRX::demodulateWBFM(SoDaBuf * rxbuf, SoDa::Command::ModulationType mod, float af_gain)
@@ -215,10 +223,16 @@ void SoDa::AudioRX::demodulateAM(std::complex<float> * dbuf)
     sumsq += v * v; 
     audio_buffer[i] = v; 
   }
-  sumsq = sqrt(sumsq / ((float) audio_buffer_size));
-  // if((dbg_ctr & 0xff) == 0) {
-  //   std::cerr << boost::format("maxval = %f rms = %f\n") % maxval % sumsq;
-  // }
+  float meansq = sumsq / ((float) audio_buffer_size);
+  running_sumsq += meansq;
+
+  env_power_ctr++;
+  if((env_power_ctr & 0xff) == 0) {
+    float fepc = (float) (0xff);
+    float rep_pow = running_sumsq / fepc;
+    cmd_stream->put(new SoDa::Command(Command::REP, Command::ENV_POWER, rep_pow)); 
+    running_sumsq = 0.0;
+  }
 
   // audio is biased above DC... it really really needs to get its DC component removed. 
   am_audio_filter->apply(audio_buffer, audio_buffer); 
@@ -229,6 +243,7 @@ void SoDa::AudioRX::demodulateAM(std::complex<float> * dbuf)
 
 void SoDa::AudioRX::demodulate(SoDaBuf * rxbuf)
 {
+  dbg_ctr++;
   // First we downsample and apply the audio filter unless this is a WBFM signal.
   std::complex<float> dbufi[audio_buffer_size]; 
   std::complex<float> dbufo[audio_buffer_size]; 
@@ -339,6 +354,10 @@ void SoDa::AudioRX::execSetCommand(SoDa::Command * cmd)
     af_sidetone_gain = powf(10.0, 0.1 * (cmd->dparms[0] - 50.0));
     cmd_stream->put(new Command(Command::REP, Command::RX_AF_GAIN, 
 				50 + 10.0 * log10(af_gain)));
+    break;
+  case SoDa::Command::CLEAR_ENV_POWER: // clear the envelope power accumulator
+    env_power_ctr = 0;
+    running_sumsq = 0.0; 
     break; 
   }
 }

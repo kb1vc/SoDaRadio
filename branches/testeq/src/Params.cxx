@@ -50,6 +50,12 @@ SoDa::Params::Params(int argc, char * argv[])
     std::cout << "SoDa -- The 'SoD' stands for Software Defined. The 'a' doesn't stand for anything.   " << desc << std::endl;
     exit(-1); 
   }
+
+  rx_rate = tx_rate = 625.0e3;
+  af_rate = 48000.0;
+  rf_buffer_size = 30000;
+  af_buffer_size = 2304;
+
   
   // now we fill in the parameters.
   readConfigFile(config_filename); 

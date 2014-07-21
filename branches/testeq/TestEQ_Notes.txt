@@ -1,0 +1,61 @@
+Use the SoDaServer as a starting point -- 
+SoDaBenchServer -- leave out AudioRX and AudioTX
+
+1. Setup ability to change sample rate from radio
+2. Modify RX unit to disable AudioRX channel
+
+
+----
+
+Sample Rates -- 
+
+We want 1, 10, 100, 1k, 10k, and 100k resolution 
+bandwidth. 
+
+So for 1, 10, 100, 1k, 10k, 100k resolution, we need sample-rate/buffer-size
+100k/100k, 100k/10k, 1M/10k, 1M/1k, 1M/100, 8M/80
+
+But this leaves us with some unpleasant sizes.  So, if
+we assume that some units are averages of the others, 
+could we do
+10k/10k (1 Hz), 100k/10k (10 Hz), 1M/10k (100 Hz), 
+1M/10k (average 10 buckets for 1k)
+1M/10k (average 100 buckets for 10k)
+1M/10k (average 1000 buckets for 100k)
+
+So, we collect 10k buffers in the RX front end. 
+RF sample rate is 1MS/sec
+We downsample for the 1Hz and 10Hz versions.
+The server always sends 10k points back to the display.
+The display figures out how to stitch them together and/or
+average between buckets. 
+
+Assume 2K points per display. 
+
+Res BW   Max Span
+1   	 2kHz
+10	 20kHz
+100	 200kHz
+1k	 2MHz
+10k	 20MHz
+100k	 200MHz
+
+
+number of tuning steps
+         ------------------ span -------------------------
+Res BW   2kHz    20kHz    200kHz    2MHz   20MHz    200MHz
+1   	 1       
+10	 1         1
+100      1         1        1
+1k       1         1        1        3      
+10k      1         1        1        3      22 
+100k     1         1        1        3      22      202
+
+
+----
+
+The spectrum UI sends back an FFT everytime it gets an RX packet. 
+
+The RX unit goes into "single buffer" mode and only collects a buffer
+when commanded by the USRPCtrl 
+

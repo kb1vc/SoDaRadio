@@ -173,6 +173,38 @@ namespace SoDa {
 
     int datatype_size; 
   };
+
+  class AudioNull : public AudioIfc {
+  public:
+    AudioNull(unsigned int _sample_rate, DataFormat _fmt, unsigned int _sample_count_hint) :
+      AudioIfc(_sample_rate, _fmt, _sample_count_hint, "AudioNull -- No-op Interface") {
+    }
+
+    int send(void * buf, unsigned int len) {
+      return len;
+    }
+
+    bool sendBufferReady(unsigned int len) {
+      return true;
+    }
+    
+    int recv(void * buf, unsigned int len, bool block = true) {
+      return 0;
+    }
+
+    bool recvBufferReady(unsigned int len) {
+      return true;
+    }
+
+    void sleepOut() { return; }
+
+    void wakeOut() { return; }
+
+    void sleepIn() { return; }
+
+    void wakeIn() { return; }
+    
+  };
 }
 
 

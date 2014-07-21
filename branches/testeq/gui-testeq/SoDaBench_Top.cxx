@@ -26,17 +26,17 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 extern "C" {
-#include "dem-gridlib.h"
 #include <string.h>
 }
 #include "SoDaBench_Top.h"
+#include "BenchListenerThread.hxx"
 #include <wx/string.h>
 #include <wx/wx.h>
 #include <wx/colour.h>
 #include "../src/Command.hxx"
 #include <boost/format.hpp>
 #include "SoDaLogo.xpm"
-#include "FindHome.hxx"
+#include "../gui/FindHome.hxx"
 /**
  * @file SoDaBench_Top.cxx
  *
@@ -59,12 +59,13 @@ namespace SoDaBench_GUI {
    * @li the wxWidgets GUI event loop that dispatches user requests
    * through the SoDaBench_Top thread.
    */
-  SoDaBench_Top::SoDaBench_Top( SoDa::GuiParams & params,  wxWindow* parent )
+  SoDaBench_Top::SoDaBench_Top( SoDa::GuiParams & _params,  wxWindow* parent )
 :
     SoDaBenchFrame( parent )
   {
+    params = _params;
     // revision string is initially empty
-    SDR_version_string[0] = '\000';
+    SDR_version_string = std::string("");
 
     // make an icon.
     wxIcon logo((char **) &SoDaLogo);
@@ -72,8 +73,48 @@ namespace SoDaBench_GUI {
 
     debug_mode = false;
 
-    // Did we find a soda configuration file?  
+    sweeper_a = sweeper_b = NULL;
+    spec_analyzer_a = spec_analyzer_b = NULL; 
+#if 0    
+    // startup the server
+    setupServer(); 
 
+    // now link to the server; 
+    initListener(); 
+#endif
+  }
+
+  void SoDaBench_Top::initListener()
+  {
+    // setup the comm channel.
+    std::string sock_basename = params.getServerSocketBasename(); 
+
+    // setup the client socket trying once every second for 60 seconds before we give up
+    soda_bench = new SoDa::UD::ClientSocket(sock_basename + "_bcmd", 60);
+    soda_fft = new SoDa::UD::ClientSocket(sock_basename + "_bwfall", 60);
+
+    // create the listener thread
+    if(debug_mode || 1) {
+      std::cerr << "Creating listener thread." << std::endl;
+    }
+    listener = new BenchListenerThread(this);
+    // now launch it.
+    if(debug_mode) {
+      std::cerr << "Launching listener thread." << std::endl;
+    }
+    if(listener->Create() != wxTHREAD_NO_ERROR) {
+      wxLogError(wxT("Couldn't create bench listener thread...")); 
+    }
+
+  
+    if(debug_mode) {
+      std::cerr << "Running listener thread." << std::endl;
+    }
+    listener->Run(); 
+  }
+
+  void SoDaBench_Top::setupServer()
+  {
     // Startup the server process -- it should be in the same directory as
     // this program, unless an alternate server image was specified. 
     std::string myhome = findHome();
@@ -81,17 +122,16 @@ namespace SoDaBench_GUI {
     // Now start the server
     std::string server = params.getServerName();
     std::string server_commandline_string; 
-    if(server == "SoDaServer") {
+    if(server == "SoDaBenchServer") {
       // find it in our home directory
-      server_commandline_string = myhome + "/SoDaServer";
+      server_commandline_string = myhome + "/SoDaBenchServer";
     }
     else {
       server_commandline_string = server; 
     }
 
-    // setup the comm channel.
-    std::string sock_basename = params.getServerSocketBasename(); 
-
+    std::string sock_basename = params.getServerSocketBasename();
+    
     // fix a problem with UBUNTU menu proxy... .
     char mproxyfix[] = "UBUNTU_MENUPROXY=";
     putenv(mproxyfix);
@@ -124,31 +164,74 @@ namespace SoDaBench_GUI {
 	}
       }
     }
-
-    // setup the client socket trying once every second for 60 seconds before we give up
-    soda_bench = new SoDa::UD::ClientSocket(sock_basename + "_cmd", 60);
-    soda_fft = new SoDa::UD::ClientSocket(sock_basename + "_wfall", 60);
-
-    // create the listener thread
-    if(debug_mode || 1) {
-      std::cerr << "Creating listener thread." << std::endl;
-    }
-    listener = new BenchListenerThread(this);
-    // now launch it.
-    if(debug_mode) {
-      std::cerr << "Launching listener thread." << std::endl;
-    }
-    if(listener->Create() != wxTHREAD_NO_ERROR) {
-      wxLogError(wxT("Couldn't create bench listener thread...")); 
-    }
-
-  
-    if(debug_mode) {
-      std::cerr << "Running listener thread." << std::endl;
-    }
-    listener->Run(); 
-
   }
 
+  void SoDaBench_Top::unsupportedEvent(std::string & str) {
+    std::cerr << "Unsupported event: " << str << std::endl; 
+  }
+  
+  void SoDaBench_Top::OnOpenConfig( wxCommandEvent & event)
+  {
+    unsupportedEvent(std::string("OpenConfig"));
+  }
+
+  void SoDaBench_Top::OnSaveConfig( wxCommandEvent & event)
+  {
+    unsupportedEvent(std::string("SaveConfig"));
+  }
+
+  void SoDaBench_Top::OnSaveConfigAs( wxCommandEvent & event)
+  {
+    unsupportedEvent(std::string("SaveConfigAs"));
+  }
+
+  void SoDaBench_Top::OnQuit( wxCommandEvent & event)
+  {
+    Close();
+  }
+
+  void SoDaBench_Top::OnAbout( wxCommandEvent & event)
+  {
+    AboutDialog * ad = new AboutDialog(this, SDR_version_string);
+    ad->ShowModal();
+  }
+
+
+  void SoDaBench_Top::OnUserGuide( wxCommandEvent & event)
+  {
+    unsupportedEvent(std::string("UserGuide"));
+  }
+
+
+  void SoDaBench_Top::OnInstSel( wxCommandEvent & event)
+  {
+    wxCheckBox * w = (wxCheckBox*) event.GetEventObject();
+    if(w == m_SAA) {
+      if(spec_analyzer_a == NULL) {
+	spec_analyzer_a = new SpectrumAnalyzerDialog(this, std::string("A"), this);
+      }
+      spec_analyzer_a->ShowModal();
+    }
+    else if(w == m_SAB) {
+      if(spec_analyzer_b == NULL) {
+	spec_analyzer_b = new SpectrumAnalyzerDialog(this, std::string("B"), this);
+      }
+      spec_analyzer_b->ShowModal();
+    }
+    else if(w == m_SweepA) {
+      if(sweeper_a == NULL) {
+	sweeper_a = new SweeperDialog(this, std::string("A"), this);
+      }
+      sweeper_a->ShowModal();
+    }
+    else if(w == m_SweepB) {
+      if(sweeper_b == NULL) {
+	sweeper_b = new SweeperDialog(this, std::string("B"), this);
+      }
+      sweeper_b->ShowModal();
+    }
+      
     
+  }
+  
 }

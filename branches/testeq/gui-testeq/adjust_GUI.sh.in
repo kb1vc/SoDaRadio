@@ -5,7 +5,7 @@
 
 echo "#include \"SoDaLogo_Big.xpm\"" >> temporary_junk.cpp
 
-cat temporary_junk.cpp ../../gui/SoDaBench_GUI.cpp > temporary_junk2.cpp
+cat temporary_junk.cpp @top_srcdir@/gui-testeq/SoDaBench_GUI.cpp > temporary_junk2.cpp
 
   sed -e 's/wxT("SoDaLogo_Big.png"), wxBITMAP_TYPE_ANY/SoDaLogo_Big_xpm/g' < temporary_junk2.cpp > SoDaBench_GUI.cxx
 

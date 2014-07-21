@@ -10,7 +10,7 @@ AM_PROG_CC_C_O
 
 AC_CONFIG_MACRO_DIR([m4])
 
-AC_CONFIG_FILES([Makefile src/Makefile gui/Makefile gui/adjust_GUI.sh exp/Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile gui/Makefile gui/adjust_GUI.sh exp/Makefile gui-testeq/Makefile gui-testeq/adjust_GUI.sh])
 
 AC_CONFIG_SRCDIR(src/SoDaServer.cxx)
 

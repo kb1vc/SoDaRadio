@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013, Matthew H. Reilly (kb1vc)
+Copyright (c) 2012, Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,38 +26,37 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef GUIPARAMS_HDR
-#define GUIPARAMS_HDR
-
-#include <boost/format.hpp>
-#include <boost/program_options.hpp>
-#include <wx/app.h>
+#ifndef NFTempmon_HDR
+#define NFTempmon_HDR
+#include "SoDaBase.hxx"
+#include "MultiMBox.hxx"
+#include "Command.hxx"
+#include "Params.hxx"
+#include <boost/asio.hpp>
+#include <time.h>
+#include <sys/time.h>
 
 namespace SoDa {
-  class GuiParams {
+  class NFThermometer : public SoDaThread {
   public:
-    GuiParams(int argc, wxChar ** argv);
-    GuiParams() {}; 
-
-    std::string getServerSocketBasename() { return server_sock_basename; }
-    std::string getServerName() { return server_name; }
-    std::string getLogFileName() { return log_filename; }
-    std::string getConfigFileName() { return config_filename; }
-    std::string getUHDArgs() { return uhd_args; }
+    NFThermometer(Params * params, CmdMBox * cmd_stream);
+    void run();
   private:
-    // this is really quite gross -- wxApp is not very nice about this. 
-    char ** convertWXargs2Cargs(int argc, wxChar ** argv);
-    
-    boost::program_options::variables_map pmap;
+    void execGetCommand(Command * cmd); 
+    void execSetCommand(Command * cmd); 
+    void execRepCommand(Command * cmd); 
 
-    std::string server_name;     ///< Where do we find the server?
-    // message socket params
-    std::string server_sock_basename; 
-    std::string config_filename; 
-    std::string log_filename;
-    std::string uhd_args; 
-  };
+    CmdMBox *cmd_stream;
+    unsigned int cmd_subs;
 
+
+
+    // serial port for thermal monitor used in noise figure calibrator
+    boost::asio::io_service ioser;
+    boost::asio::serial_port * therm_port;
+    bool therm_open;
+
+  }; 
 }
 
 

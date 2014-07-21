@@ -27,10 +27,10 @@
 */
 #include "SoDaBench_App.hxx"
 #include "SoDaBench_Top.h"
-#include "GuiParams.hxx"
+#include "../gui/GuiParams.hxx"
 
 
-IMPLEMENT_APP(SoDaBench_App)
+IMPLEMENT_APP(SoDaBench_App);
 
 SoDaBench_App::SoDaBench_App()
 {

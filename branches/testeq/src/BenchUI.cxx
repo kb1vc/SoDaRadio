@@ -51,27 +51,17 @@ SoDa::BenchUI::BenchUI(Params * params,
   baseband_rx_freq = 144e6; // just a filler to avoid divide by zero. 
   spectrum_center_freq = 144.2e6;
   
-  // create the spectrogram object -- it eats RX IF buffers and produces
+  // create the spectrogram objects -- it eats RX IF buffers and produces
   // power spectral density plots.
-  spectrogram_buckets = 4096;
+  spectrogram_buckets = 10000;
   spectrogram = new Spectrogram(spectrogram_buckets);
-
-  // we also need an LO check spectrogram.  In particular we want
-  // something with really bodacious resolution.
-  lo_spectrogram_buckets = 16384;
-  lo_spectrogram = new Spectrogram(lo_spectrogram_buckets);
-  lo_spectrum = new float[lo_spectrogram_buckets * 4];
-  for(int i = 0; i < lo_spectrogram_buckets; i++) {
-    lo_spectrum[i] = 0.0; 
-  }
 
   // Now  how wide is a 200KHz wide chunk of spectrum, given
   // spectrogram_buckets frequency buckets in the RF sample rate
   double rxrate = params->getRXRate();
   hz_per_bucket = rxrate / ((float) spectrogram_buckets);
   required_spect_buckets = (int) (floor(0.5 + 200e3 / hz_per_bucket));
-  lo_hz_per_bucket = rxrate / ((float) lo_spectrogram_buckets);
-  
+    
   // now allocate the buffer that we'll send to the UI
   spectrum = new float[spectrogram_buckets * 4];
   log_spectrum = new float[spectrogram_buckets * 4];
@@ -98,13 +88,13 @@ void SoDa::BenchUI::updateSpectrumState()
 				    spectrum_center_freq + 100e3));
 }
 
-SoDa::BenchUI::~UI()
+SoDa::BenchUI::~BenchUI()
 {
   delete server_socket;
   delete wfall_socket; 
 }
 
-void SoDa::UI::run()
+void SoDa::BenchUI::run()
 {
   SoDa::Command * net_cmd, * ring_cmd;
 
@@ -113,12 +103,12 @@ void SoDa::UI::run()
   
   char buf[1024];
 
-  cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_FE_FREQ, 144.2e6));
-  cmd_stream->put(new SoDa::Command(Command::SET, Command::TX_FE_FREQ, 144.2e6));
-  cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_LO3_FREQ, 100e3));
-  cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_AF_FILTER, 1));
+  cmd_stream->put(new SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_FE_FREQ, 144.2e6));
+  cmd_stream->put(new SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_FE_FREQ, 144.2e6));
+  cmd_stream->put(new SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_LO3_FREQ, 100e3));
+  cmd_stream->put(new SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_AF_FILTER, 1));
   usleep(100000);
-  cmd_stream->put(new SoDa::Command(Command::SET, Command::TX_STATE, 0));
+  cmd_stream->put(new SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_STATE, 0));
 
   updateSpectrumState(); 
 
@@ -137,8 +127,8 @@ void SoDa::UI::run()
 	updateSpectrumState();
 
 	std::string vers= (boost::format("%s SVN %s") % PACKAGE_VERSION % SVN_VERSION).str(); 
-	SoDa::Command * vers_cmd = new SoDa::Command(Command::REP,
-						     Command::SDR_VERSION,
+	SoDa::Command * vers_cmd = new SoDa::Command(SoDa::Command::REP,
+						     SoDa::Command::SDR_VERSION,
 						     vers.c_str());
 	server_socket->put(vers_cmd, sizeof(SoDa::Command));
 
@@ -167,7 +157,7 @@ void SoDa::UI::run()
       didwork = true; 
       if(net_cmd->target == SoDa::Command::STOP) {
 	// relay "stop" commands to the GPS unit. 
-	gps_stream->put(new SoDa::Command(Command::SET, Command::STOP, 0));
+	gps_stream->put(new SoDa::Command(SoDa::Command::SET, SoDa::Command::STOP, 0));
 	break;
       }
       net_cmd = NULL; 
@@ -182,15 +172,6 @@ void SoDa::UI::run()
       didwork = true; 
     }
 
-    while((ring_cmd = gps_stream->get(gps_subs)) != NULL) {
-      if(ring_cmd->cmd == SoDa::Command::REP) {
-	server_socket->put(ring_cmd, sizeof(SoDa::Command));
-      }
-      execCommand(ring_cmd); 
-      gps_stream->free(ring_cmd);
-      didwork = true; 
-    }
-      
     
     // listen ont the IF stream
     int bcount;
@@ -217,24 +198,24 @@ void SoDa::UI::run()
   return; 
 }
 
-void SoDa::UI::reportSpectrumCenterFreq()
+void SoDa::BenchUI::reportSpectrumCenterFreq()
 {
-    server_socket->put(new SoDa::Command(Command::REP, Command::SPEC_RANGE_LOW,
+    server_socket->put(new SoDa::Command(SoDa::Command::REP, SoDa::Command::SPEC_RANGE_LOW,
 					 spectrum_center_freq - 100e3),
 		       sizeof(SoDa::Command));
-    server_socket->put(new SoDa::Command(Command::REP, Command::SPEC_RANGE_HI,
+    server_socket->put(new SoDa::Command(SoDa::Command::REP, SoDa::Command::SPEC_RANGE_HI,
 					 spectrum_center_freq + 100e3),
 		       sizeof(SoDa::Command));
-    server_socket->put(new SoDa::Command(Command::REP, Command::SPEC_STEP,
+    server_socket->put(new SoDa::Command(SoDa::Command::REP, SoDa::Command::SPEC_STEP,
 					 hz_per_bucket),
 		       sizeof(SoDa::Command));
-    server_socket->put(new SoDa::Command(Command::REP, Command::SPEC_BUF_LEN,
+    server_socket->put(new SoDa::Command(SoDa::Command::REP, SoDa::Command::SPEC_BUF_LEN,
 					 required_spect_buckets),
 		       sizeof(SoDa::Command));
 }
 
 
-void SoDa::UI::execSetCommand(Command * cmd)
+void SoDa::BenchUI::execSetCommand(Command * cmd)
 {
   // when we get a SET SPEC_CENTER_FREQ
   switch(cmd->target) {
@@ -247,7 +228,7 @@ void SoDa::UI::execSetCommand(Command * cmd)
   }
 }
 
-void SoDa::UI::execGetCommand(Command * cmd)
+void SoDa::BenchUI::execGetCommand(Command * cmd)
 {
   switch(cmd->target) {
   case SoDa::Command::LO_OFFSET: // remember that we want to report
@@ -257,7 +238,7 @@ void SoDa::UI::execGetCommand(Command * cmd)
   }
 }
 
-void SoDa::UI::execRepCommand(Command * cmd)
+void SoDa::BenchUI::execRepCommand(Command * cmd)
 {
   switch(cmd->target) {
   case SoDa::Command::RX_FE_FREQ:
@@ -275,7 +256,7 @@ static bool first_ready = true;
 static float fft_acc_gain = 0.0;
 static bool calc_max_first = true;
 
-void SoDa::UI::sendFFT(SoDa::SoDaBuf * buf)
+void SoDa::BenchUI::sendFFT(SoDa::SoDaBuf * buf)
 {
   fft_send_counter++; 
   dbgctrfft++; 
@@ -290,67 +271,33 @@ void SoDa::UI::sendFFT(SoDa::SoDaBuf * buf)
   // Note that we'll only send over on buffer every
   // 20 times that we're called -- this will keep
   // the IP traffic to something reasonable. 
-  if(lo_check_mode) {
-    lo_spectrogram->apply_acc(buf->getComplexBuf(), buf->getComplexLen(), lo_spectrum, (fft_send_counter == 0) ? 0.0 : 0.1);
-  }
-  else {
-    spectrogram->apply_acc(buf->getComplexBuf(), buf->getComplexLen(), spectrum, fft_acc_gain);
-  }
+  spectrogram->apply_acc(buf->getComplexBuf(), buf->getComplexLen(), spectrum, fft_acc_gain);
+  
   fft_acc_gain = 1.0;
   calc_max_first = false; 
 
   float * slice;
   
-  if(!lo_check_mode) {
-    // find the right slice
-    int idx;
-    // first the index of the center point
-    // this is the bucket for the baseband rx freq
-    idx = (spectrogram_buckets / 2); 
-    idx += (int) round((spectrum_center_freq - baseband_rx_freq) / hz_per_bucket);
-    // now we've got the index for the center.
-    // correct it to be the start...
-    idx -= required_spect_buckets / 2; 
+
+  // find the right slice
+  int idx;
+  // first the index of the center point
+  // this is the bucket for the baseband rx freq
+  idx = (spectrogram_buckets / 2); 
+  idx += (int) round((spectrum_center_freq - baseband_rx_freq) / hz_per_bucket);
+  // now we've got the index for the center.
+  // correct it to be the start...
+  idx -= required_spect_buckets / 2; 
     
-    if((idx < 0) || (idx > spectrogram_buckets)) {
-      slice = NULL; 
-    }
-    else {
-      slice = &(spectrum[idx]);
-    }
+  if((idx < 0) || (idx > spectrogram_buckets)) {
+    slice = NULL; 
+  }
+  else {
+    slice = &(spectrum[idx]);
   }
 
-  if(lo_check_mode && (fft_send_counter >= FFT_SEND_THRESHOLD)) {
-    // scan the buffer. Then find the peak.
-    // scan from lo_spectrum midpoint minus 2KHz to plus 2KHz
-    float magmax = 0.0;
-    int maxi;
-    int idxrange = ((int) (2000.0 / lo_hz_per_bucket));
-    int i, j; 
-    for(i = -idxrange, j = (lo_spectrogram_buckets / 2) - idxrange; i < idxrange; i++, j++) {
-      std::complex<float> v = lo_spectrum[j];
-      float mag = v.real() * v.real() + v.imag() * v.imag();
-      if(mag > magmax) {
-	std::cerr << "magnitude peak at " << i << " mag = " << mag << std::endl; 
-	magmax = mag;
-	maxi = i; 
-      }
-    }
-    lo_check_mode = false;
-    // send the report
-    double freq = ((float) maxi) * lo_hz_per_bucket;
-    std::cerr << "offset = " << freq << std::endl; 
-    cmd_stream->put(new SoDa::Command(Command::REP, Command::LO_OFFSET,
-				      freq)); 
-    cmd_stream->put(new SoDa::Command(Command::REP, Command::SPEC_RANGE_LOW,
-				      spectrum_center_freq - 100e3));
-    cmd_stream->put(new SoDa::Command(Command::REP, Command::SPEC_RANGE_HI,
-				      spectrum_center_freq + 100e3));
-    // send the end-of-calib command
-    cmd_stream->put(new SoDa::Command(Command::SET, Command::LO_CHECK,
-				      0.0)); 
-  }
-  else if((fft_send_counter >= FFT_SEND_THRESHOLD) && (slice != NULL)) {
+
+  if((fft_send_counter >= FFT_SEND_THRESHOLD) && (slice != NULL)) {
     // send the buffer over to the XY plotter.
     for(int i = 0; i < required_spect_buckets; i++) {
       log_spectrum[i] = 10.0 * log10(slice[i] * 0.05); 

@@ -43,6 +43,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition.hpp>
+#include <boost/asio.hpp>
 #include <fstream>
 #include <string>
 
@@ -261,6 +262,11 @@ namespace SoDa {
 
     // median filter for FM demods
     MedianFilter3<float> fmMedianFilter; ///< simple 3 point median filter for FM units
+
+    // counter for calculating average envelope power in demod output
+    unsigned int env_power_ctr;
+    // accumulated power
+    float running_sumsq;
     
     // debug helper
     unsigned int dbg_ctr; ///< debug counter, used to support one-time or infrequent bulletins

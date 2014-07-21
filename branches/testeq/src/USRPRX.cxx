@@ -115,9 +115,20 @@ void SoDa::USRPRX::run()
     else if(rx_if_stream_ON) {
       // go get some data
       // get a free buffer.
-      SoDaBuf * buf = rx_stream->alloc();
+      SoDaBuf * buf = NULL;
+      buf = rx_stream->alloc();
       if(buf == NULL) {
 	buf = new SoDaBuf(rx_buffer_size); 
+      }
+      else {
+	while(buf->getComplexMaxLen() != rx_buffer_size) {
+	  // throw the buffer away...
+	  delete buf;
+	  buf = rx_stream->alloc();
+	  if(buf == NULL) {
+	    buf = new SoDaBuf(rx_buffer_size);
+	  }
+	}
       }
 
       if(buf == NULL) throw(new SoDa::SoDaException("USRPRX couldn't allocate SoDaBuf object", this)); 
@@ -143,6 +154,15 @@ void SoDa::USRPRX::run()
 	SoDaBuf * if_buf = if_stream->alloc();
 	if(if_buf == NULL) {
 	  if_buf = new SoDaBuf(rx_buffer_size); 
+	}
+	else {
+	  while(if_buf->getComplexMaxLen() != rx_buffer_size) {
+	    delete if_buf;
+	    if_buf = rx_stream->alloc();
+	    if(if_buf == NULL) {
+	      if_buf = new SoDaBuf(rx_buffer_size);
+	    }
+	  }
 	}
 
 	if(if_buf->copy(buf)) {
@@ -265,6 +285,9 @@ void SoDa::USRPRX::execSetCommand(Command * cmd)
       enable_spectrum_report = true;
       baseband_passthrough_mode = true; 
     }
+    break;
+  case SoDa::Command::RX_BUFFER_SIZE:
+    rx_buffer_size = cmd->iparms[0]; 
     break; 
   default:
     break; 

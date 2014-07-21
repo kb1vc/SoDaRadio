@@ -8,9 +8,9 @@
 #include "SoDaBench_GUI.h"
 
 ///////////////////////////////////////////////////////////////////////////
-using namespace SoDaRFBench_GUI;
+using namespace SoDaBench_GUI;
 
-SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxFrame( parent, id, title, pos, size, style )
+SoDaBenchFrame::SoDaBenchFrame( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxFrame( parent, id, title, pos, size, style )
 {
 	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
 	
@@ -75,33 +75,33 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 	TopSizer->Fit( this );
 	
 	// Connect Events
-	this->Connect( OpenConfig->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnOpenConfig ) );
-	this->Connect( SaveConfig->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnSaveConfig ) );
-	this->Connect( SaveConfigAs->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnSaveConfigAs ) );
-	this->Connect( Quit->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnQuit ) );
-	this->Connect( Aboutitem->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnAbout ) );
-	this->Connect( UserGuideitem->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnUserGuide ) );
-	m_SAA->Connect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnInstSel ), NULL, this );
-	m_SAB->Connect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnInstSel ), NULL, this );
-	m_SweepA->Connect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnInstSel ), NULL, this );
-	m_SweepB->Connect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnInstSel ), NULL, this );
-	m_VNA->Connect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnInstSel ), NULL, this );
+	this->Connect( OpenConfig->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaBenchFrame::OnOpenConfig ) );
+	this->Connect( SaveConfig->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaBenchFrame::OnSaveConfig ) );
+	this->Connect( SaveConfigAs->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaBenchFrame::OnSaveConfigAs ) );
+	this->Connect( Quit->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaBenchFrame::OnQuit ) );
+	this->Connect( Aboutitem->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaBenchFrame::OnAbout ) );
+	this->Connect( UserGuideitem->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaBenchFrame::OnUserGuide ) );
+	m_SAA->Connect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( SoDaBenchFrame::OnInstSel ), NULL, this );
+	m_SAB->Connect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( SoDaBenchFrame::OnInstSel ), NULL, this );
+	m_SweepA->Connect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( SoDaBenchFrame::OnInstSel ), NULL, this );
+	m_SweepB->Connect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( SoDaBenchFrame::OnInstSel ), NULL, this );
+	m_VNA->Connect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( SoDaBenchFrame::OnInstSel ), NULL, this );
 }
 
-SoDaRadioFrame::~SoDaRadioFrame()
+SoDaBenchFrame::~SoDaBenchFrame()
 {
 	// Disconnect Events
-	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnOpenConfig ) );
-	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnSaveConfig ) );
-	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnSaveConfigAs ) );
-	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnQuit ) );
-	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnAbout ) );
-	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnUserGuide ) );
-	m_SAA->Disconnect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnInstSel ), NULL, this );
-	m_SAB->Disconnect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnInstSel ), NULL, this );
-	m_SweepA->Disconnect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnInstSel ), NULL, this );
-	m_SweepB->Disconnect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnInstSel ), NULL, this );
-	m_VNA->Disconnect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnInstSel ), NULL, this );
+	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaBenchFrame::OnOpenConfig ) );
+	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaBenchFrame::OnSaveConfig ) );
+	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaBenchFrame::OnSaveConfigAs ) );
+	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaBenchFrame::OnQuit ) );
+	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaBenchFrame::OnAbout ) );
+	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaBenchFrame::OnUserGuide ) );
+	m_SAA->Disconnect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( SoDaBenchFrame::OnInstSel ), NULL, this );
+	m_SAB->Disconnect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( SoDaBenchFrame::OnInstSel ), NULL, this );
+	m_SweepA->Disconnect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( SoDaBenchFrame::OnInstSel ), NULL, this );
+	m_SweepB->Disconnect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( SoDaBenchFrame::OnInstSel ), NULL, this );
+	m_VNA->Disconnect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( SoDaBenchFrame::OnInstSel ), NULL, this );
 }
 
 m_AboutDialog::m_AboutDialog( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
@@ -247,7 +247,7 @@ m_NewConfigDialog::~m_NewConfigDialog()
 	m_NoThanksCreateConfigDefault->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_NewConfigDialog::OnDismissCreateConfigDefault ), NULL, this );
 }
 
-m_SweeperDialog::m_SweeperDialog( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : SoDaBench::SweeperControl( parent, id, title, pos, size, style )
+m_SweeperDialog::m_SweeperDialog( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
 {
 	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
 	
@@ -451,7 +451,7 @@ m_SweeperDialog::~m_SweeperDialog()
 	m_StopUnits2->Disconnect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( m_SweeperDialog::OnFreqRangeSel ), NULL, this );
 }
 
-m_SpectrumAnalyzerDialog::m_SpectrumAnalyzerDialog( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : SoDaBench::SweeperControl( parent, id, title, pos, size, style )
+m_SpectrumAnalyzerDialog::m_SpectrumAnalyzerDialog( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
 {
 	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
 	
@@ -584,16 +584,16 @@ m_SpectrumAnalyzerDialog::m_SpectrumAnalyzerDialog( wxWindow* parent, wxWindowID
 	sbSizer22 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Trace Selection") ), wxHORIZONTAL );
 	
 	m_checkMaxTrace = new wxCheckBox( this, wxID_ANY, wxT("Trace Max"), wxDefaultPosition, wxDefaultSize, 0 );
-	sbSizer22->Add( m_checkMaxTrace, 0, wxALL, 5 );
+	sbSizer22->Add( m_checkMaxTrace, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 	
 	m_checkAvgTrace = new wxCheckBox( this, wxID_ANY, wxT("Average Trace"), wxDefaultPosition, wxDefaultSize, 0 );
-	sbSizer22->Add( m_checkAvgTrace, 0, wxALL, 5 );
+	sbSizer22->Add( m_checkAvgTrace, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 	
 	
 	sbSizer22->Add( 0, 0, 1, wxEXPAND, 5 );
 	
 	m_btnTraceReset = new wxToggleButton( this, wxID_ANY, wxT("Reset"), wxDefaultPosition, wxDefaultSize, 0 );
-	sbSizer22->Add( m_btnTraceReset, 0, wxALL, 5 );
+	sbSizer22->Add( m_btnTraceReset, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 	
 	gbSizer2->Add( sbSizer22, wxGBPosition( 5, 0 ), wxGBSpan( 1, 2 ), wxEXPAND, 5 );
 	
@@ -606,6 +606,9 @@ m_SpectrumAnalyzerDialog::m_SpectrumAnalyzerDialog( wxWindow* parent, wxWindowID
 	this->Layout();
 	
 	// Connect Events
+	this->Connect( wxEVT_CLOSE_WINDOW, wxCloseEventHandler( m_SpectrumAnalyzerDialog::onCloseSpectrumAnalyzer ) );
+	this->Connect( wxEVT_ICONIZE, wxIconizeEventHandler( m_SpectrumAnalyzerDialog::onIconizeSpectrumAnalyzer ) );
+	this->Connect( wxEVT_INIT_DIALOG, wxInitDialogEventHandler( m_SpectrumAnalyzerDialog::onInitSpectrumAnalyzer ) );
 	m_CenterFreqBox->Connect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( m_SpectrumAnalyzerDialog::OnFreqEnter ), NULL, this );
 	m_CentUnits->Connect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( m_SpectrumAnalyzerDialog::OnFreqRangeSel ), NULL, this );
 	m_SpanSelection->Connect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( m_SpectrumAnalyzerDialog::OnFreqRangeSel ), NULL, this );
@@ -621,6 +624,9 @@ m_SpectrumAnalyzerDialog::m_SpectrumAnalyzerDialog( wxWindow* parent, wxWindowID
 m_SpectrumAnalyzerDialog::~m_SpectrumAnalyzerDialog()
 {
 	// Disconnect Events
+	this->Disconnect( wxEVT_CLOSE_WINDOW, wxCloseEventHandler( m_SpectrumAnalyzerDialog::onCloseSpectrumAnalyzer ) );
+	this->Disconnect( wxEVT_ICONIZE, wxIconizeEventHandler( m_SpectrumAnalyzerDialog::onIconizeSpectrumAnalyzer ) );
+	this->Disconnect( wxEVT_INIT_DIALOG, wxInitDialogEventHandler( m_SpectrumAnalyzerDialog::onInitSpectrumAnalyzer ) );
 	m_CenterFreqBox->Disconnect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( m_SpectrumAnalyzerDialog::OnFreqEnter ), NULL, this );
 	m_CentUnits->Disconnect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( m_SpectrumAnalyzerDialog::OnFreqRangeSel ), NULL, this );
 	m_SpanSelection->Disconnect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( m_SpectrumAnalyzerDialog::OnFreqRangeSel ), NULL, this );

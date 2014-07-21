@@ -202,7 +202,8 @@ namespace SoDa {
        * param is integer
        *     0 disables RX processing,
        *     1 enables RX stream to UI,
-       *     2 enables RX stream to UI and bypasses USRPRX downconverter... 
+       *     2 enables RX stream to UI, bypasses DDC downconverter, and puts the
+       *       RX unit in "collect single buffer" mode (for spectrum analyzers)... 
        */
       RX_STATE,
 
@@ -381,8 +382,72 @@ namespace SoDa {
        *
        * @see SoDa::USRPCtrl
        */
-      RX_FE_BASEBAND_FREQ
+      RX_FE_BASEBAND_FREQ,
 
+      /**
+       * buffer size for RX is normally 625k for SoDaRadio.
+       * Test equipment may use a different buffer size. 
+       *
+       * param is an unsigned int
+       */
+      RX_BUFFER_SIZE,
+
+      /**
+       * SpectrumAnalyzer needs to know whether it should
+       * downsample the input RF stream before FFT. 
+       *
+       * param is an unsigned int 
+       */
+      SPEC_DOWNSAMP_RATE, 
+      
+      /**
+       * RX unit can be put in "single buffer" mode (via SET RX_STATE=2) where
+       * it collects and processes one buffer at a time, on
+       * command from the USRPCtrl unit. This is the command to the USRPRX
+       * that does that. 
+       * USPRCtrl sends this command when a retune has completed (in RX_STATE=2 mode)
+       * or when the remote GUI sends a TRIGGER_COLLECT command
+       *
+       * param is a double -- the current center frequency.
+       */
+      RX_COLLECT_BUFFER,
+
+      /**
+       * This is the command that a GUI sends to trigger a new collection.
+       * It will only ever be processed by the USRPCtrl unit, and forwarded as
+       * RX_COLLECT_BUFFER
+       *
+       */
+      TRIGGER_COLLECT,
+
+
+      /**
+       * This is a report of the envelope power since the last CLEAR env power. 
+       * This is created by the AudioRX thread
+       * the parameter is a float that constitutes the mean squared amplitude in the
+       * demodulated signal.  The second paramter is the peak value in the evenlope
+       *
+       */
+      ENV_POWER, 
+
+      /**
+       * This is a command to reset the envelope power statistics. 
+       * This is handled by the AudioRX thread
+       */
+      CLEAR_ENV_POWER,
+
+      /**
+       * This is a report of the thermal sensors (used in the noise figure meter)
+       * This is created by the NFThermometer thread
+       * the parameter is a string that is the content of the temperature report
+       * from the arduino NF_Meter_Thermometer sketch.
+       *
+       */
+      NF_THERM 
+
+
+
+      
     };
 
     /**
@@ -519,15 +584,25 @@ namespace SoDa {
     Command(const Command & cc) {
       cmd = cc.cmd;
       target = cc.target;
-      strncpy(sparm, cc.sparm, 64);
-      dparms[0] = cc.dparms[0];
-      dparms[1] = cc.dparms[1];
-      dparms[2] = cc.dparms[2];
-      dparms[3] = cc.dparms[3];
-      iparms[0] = cc.iparms[0];
-      iparms[1] = cc.iparms[1];
-      iparms[2] = cc.iparms[2];
-      iparms[3] = cc.iparms[3];
+      switch (cc.parm_type) {
+	
+      case 'D':
+	dparms[0] = cc.dparms[0];
+	dparms[1] = cc.dparms[1];
+	dparms[2] = cc.dparms[2];
+	dparms[3] = cc.dparms[3];
+	break; 
+      case 'I':
+	iparms[0] = cc.iparms[0];
+	iparms[1] = cc.iparms[1];
+	iparms[2] = cc.iparms[2];
+	iparms[3] = cc.iparms[3];
+	break;
+      case 'S':
+      default:
+	strncpy(sparm, cc.sparm, 64);
+	break; 
+      }
       id = -1 * command_sequence_number++;
       parm_type = cc.parm_type; 
     }

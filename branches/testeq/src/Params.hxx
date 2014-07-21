@@ -80,7 +80,7 @@ namespace SoDa {
     void saveConfigFile(std::string &cf_name ); 
 
     /**
-     * Sample rates and all that other stuff are fixed.
+     * Sample rates and all that other stuff are fixed for SoDaRadio
      * we do this because downsampling the RX can take a lot
      * of time (in general) unless we focus on the simple
      * common case.  Here we're going to use a
@@ -89,16 +89,24 @@ namespace SoDa {
      * 625/48 ratio is easiest to achieve with an IF buffer
      * size of 30000 samples 30,000 * 48 / 625 = 2304 --
      * the size of the RX buffer
+     *
+     * Test equipment, however, may change sample rates and sizes to fit the application
      */
-    double getRXRate() { return 625000; }
+    double getRXRate() { return rx_rate; }
+    void setRXRate(double r) { rx_rate = r; }
     /**
-     * @brief TX rate will always be 625K
+     * @brief TX rate will always be 625K for the radio,
+     * but it may change for test equipment uses
      */
-    double getTXRate() { return 625000; }
+    double getTXRate() { return tx_rate; }
+    void setTXRate(double r) { tx_rate = r; }
 
-    double getAudioSampleRate() { return 48000.0 ; }
-    unsigned int getRFBufferSize() { return (unsigned int) 30000; }
-    unsigned int getAFBufferSize() { return (unsigned int) 2304; }
+    double getAudioSampleRate() { return af_rate; }
+    void setAudioSampleRate(double r) { af_rate = r; }
+    unsigned int getRFBufferSize() { return rf_buffer_size; }
+    void setRFBufferSize(unsigned int s) { rf_buffer_size = s; }
+    unsigned int getAFBufferSize() { return af_buffer_size; }
+    void setAFBufferSize(unsigned int s) { af_buffer_size = s; }
 
     std::string getServerSocketBasename() { return server_sock_basename; }
 
@@ -111,7 +119,8 @@ namespace SoDa {
     std::string config_filename;
 
     std::string clock_source;
-    double rx_rate, tx_rate;
+    double rx_rate, tx_rate, af_rate;
+    unsigned int rf_buffer_size, af_buffer_size;
     std::string rx_ant, tx_ant;
 
     // message socket parameters

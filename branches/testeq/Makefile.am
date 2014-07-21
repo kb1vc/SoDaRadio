@@ -17,4 +17,6 @@ EXTRA_DIST = Doxyfile saved_svn_version.txt  \
 
 
 ACLOCAL_AMFLAGS = -I ./m4
+
+# not yet gui-testeq
 SUBDIRS = src gui exp 
