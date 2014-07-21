@@ -27,10 +27,10 @@
 */
 
 /**
- * @file SoDaBenchServer.cxx
+ * @file SoDaNFSurvey.cxx
  *
  * @brief The MAIN process that creates and supervises all the threads that make
- * up the SoDa RF Test Equipment server.
+ * up the SoDa Noise Figure Survey application
  *
  * @author Matt Reilly (kb1vc)
  */
@@ -38,7 +38,7 @@
  * @mainpage SoDaBench: Classes and a Server process to build a Linux USRP RF testbench
  *
  *
- * The SoDa RF Bench is a multi-threaded application
+ * The SoDa Noise Figure Survey is a multi-threaded application
  * developed for the Linux operating system and the Ettus Radio USRP family
  * of SDR platforms. 
  *
@@ -46,10 +46,8 @@
  *
  * @section structure Structure of the Radio
  *
- * The SoDa RF  program is partitioned into two parts:
  *
- * - the SDR controller program, called SoDaBenchServer
- * - the GUI program, called SoDaBench implemented in SoDaBench_Top
+ * - the SDR controller program, called SoDaNFSurvey
  *
  *
  * The GUI is built on the wxWidgets GUI toolset, and communicates
@@ -97,9 +95,116 @@
 #include "Params.hxx"
 #include "USRPCtrl.hxx"
 #include "USRPRX.hxx"
+#include "AudioRX.hxx"
+#include "AudioIfc.hxx"
 #include "USRPTX.hxx"
-#include "BenchUI.hxx"
+#include "NFThermometer.hxx"
 #include "Command.hxx"
+
+namespace SoDa {
+  class NFControl : public SoDaThread {
+  public:
+    NFControl(Params * params, CmdMBox * _cmd_stream) :
+      SoDaThread("Noise Figure Survey Control")
+    {
+      cmd_stream = _cmd_stream; 
+      cmd_subs = cmd_stream->subscribe();
+      exitflag = false; 
+    }
+
+    void initRadio() {
+      usleep(100000);
+
+      cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_FE_FREQ, 144.2e6));
+      cmd_stream->put(new SoDa::Command(Command::SET, Command::TX_FE_FREQ, 144.2e6));
+      cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_LO3_FREQ, 100e3));
+      // 2KHz? 
+      // setup bandwidth
+      cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_AF_FILTER, (int) SoDa::Command::BW_2000));
+      // setup mode for AM
+      cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_MODE, (int) SoDa::Command::AM));
+      cmd_stream->put(new SoDa::Command(Command::SET, Command::TX_STATE, 0));
+
+      cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_AF_GAIN, 40.0));
+      cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_RF_GAIN, 100000.0));
+    }
+
+    
+    void run() {
+      // first do the initial setup.
+      initRadio();
+
+      therm_buf[0] = '\000';
+      
+      // now loop
+      double freq;
+      while(1) {
+	for(freq = 51.3176e6; freq < 6000.0e6; freq += 100.0e6) {
+	  if(exitflag) return; 
+	  // tune to the new freq
+	  tune(freq);
+	  // wait a second
+	  for(int i = 0; i < 100; i++) {
+	    pollCommands(); 
+	    usleep(10000);	  
+	  }
+	  // clear the power count
+	  cmd_stream->put(new SoDa::Command(Command::SET, Command::CLEAR_ENV_POWER));
+
+	  // ask for the temperature and for the last envelope power
+	  waiting_for_temp = true;
+	  waiting_for_power = true;
+	  while(waiting_for_temp || waiting_for_power) {
+	    pollCommands();
+	    usleep(10000); 
+	  }
+
+	  // now dump the report
+	  std::cout << boost::format("%g %s %g\n") % freq % therm_buf % env_power;
+	  std::cout.flush();
+	}
+      }
+    }
+
+  private:
+    void pollCommands() {
+      Command * cmd; 
+      while((cmd = cmd_stream->get(cmd_subs)) != NULL) {
+	execCommand(cmd);
+	exitflag |= (cmd->target == Command::STOP); 
+	cmd_stream->free(cmd);
+      }
+    }
+
+    void tune(double f) {
+      cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_RETUNE_FREQ, f));
+    }
+
+    void execRepCommand(SoDa::Command * cmd) {
+      switch (cmd->target) {
+      case SoDa::Command::NF_THERM:
+	strncpy(therm_buf, cmd->sparm, 64);
+	waiting_for_temp = false; 
+	break;
+      case SoDa::Command::ENV_POWER:
+	env_power = cmd->dparms[0]; 
+	waiting_for_power = false; 
+	break; 
+      }
+    }
+    
+    CmdMBox * cmd_stream; ///< mailbox producing command stream from user
+    unsigned int cmd_subs; ///< mailbox subscription ID for command stream
+
+    bool exitflag; 
+
+    bool waiting_for_temp;
+    bool waiting_for_power;
+
+    char therm_buf[64];
+    float env_power; 
+  }; 
+}
 
 /// do the work of creating the SoDa threads
 /// @param argc number of command line arguments
@@ -124,38 +229,37 @@ int doWork(int argc, char * argv[])
   // the rx and tx streams are vectors of complex floats.
   // we don't declare the extent here, as it will be set
   // by a negotiation.  
-  SoDa::DatMBox rx_stream, tx_stream, if_stream, cw_env_stream;
+  SoDa::DatMBox rx_stream, if_stream, cw_env_stream;
   SoDa::CmdMBox cmd_stream(false);
 
   /// doWork creates the USRP Control, RX Streamer, and TX Streamer threads
   /// @see SoDa::USRPCtrl @see SoDa::USRPRX @see SoDa::USRPTX
   SoDa::USRPCtrl ctrl(&params, &cmd_stream);
   SoDa::USRPRX rx(&params, ctrl.getUSRP(), &rx_stream, &if_stream, &cmd_stream); 
-  SoDa::USRPTX tx(&params, ctrl.getUSRP(), &tx_stream, &cw_env_stream, &cmd_stream); 
+  SoDa::AudioNull audio_ifc(params.getAudioSampleRate(), SoDa::AudioIfc::FLOAT, params.getAFBufferSize());
+  SoDa::AudioRX arx(&params, &rx_stream, &cmd_stream, &audio_ifc);
+  SoDa::NFThermometer therm(&params, &cmd_stream);
+  SoDa::NFControl nf(&params, &cmd_stream);
   
-  /// doWork creates the user interface (UI) thread @see SoDa::UI
-  SoDa::BenchUI ui(&params,&rx_stream, &if_stream, &cmd_stream);
-
   // Now start each of the activities -- they may or may not
   // implement the "start" method -- not all objects need to be threads.
-  
-  // start the UI -- configure stuff and all that. 
-  ui.start();
 
-  // first command in the list will disable the downconverter. 
-  cmd_stream.put(new SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_STATE, 2));
  
   // start command consumers first.
   ctrl.start();
   rx.start();
-  tx.start();
-
-
+  arx.start();
+  therm.start(); 
+  // now do the survey.
+  nf.start();
+  
   // wait for the user interface to tell us that it is time to quit.
-  ui.join();
   ctrl.join();
   rx.join();
-  tx.join();
+  arx.join();
+
+  std::cerr << "waiting to join nf control thread.";
+  nf.join(); 
   
   // when we get here, we are done... (UI should not return until it gets an "exit/quit" command.)
 

@@ -324,6 +324,8 @@ EXTRA_DIST = Doxyfile saved_svn_version.txt  \
 	doc/pix/Tuning_Dialog.png 
 
 ACLOCAL_AMFLAGS = -I ./m4
+
+# not yet gui-testeq
 SUBDIRS = src gui exp 
 all: all-recursive
 

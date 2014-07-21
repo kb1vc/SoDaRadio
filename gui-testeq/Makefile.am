@@ -15,7 +15,7 @@ WX_LIBS = @WX_LIBS@
 
 bin_PROGRAMS = SoDaBench
 
-SoDaBench_SOURCES = SoDaBench_App.cxx SoDaBench_GUI.cxx  SoDaBench_Top.cxx SoDaBench_Top_Events.cxx SoDaBench_Top_Config.cxx ../src/UDSockets.cxx ../src/Command.cxx Navigation.cxx dem-gridlib.c xyplot.cxx RadioListenerThread.cxx GuiParams.cxx waterfall.cxx dem-gridlib.h GuiParams.hxx Navigation.hxx RadioListenerThread.hxx SoDaBench_App.hxx SoDaBench_GUI.h SoDaBench_Top.h TunerDigit.hxx waterfall.hxx xyplot.hxx FindHome.hxx FindHome.cxx Default.soda_cfg.h SoDaBench_Band.hxx
+SoDaBench_SOURCES = SoDaBench_App.cxx SoDaBench_GUI.cxx  SoDaBench_Top.cxx  ../src/UDSockets.cxx ../src/Command.cxx  ../gui/xyplot.cxx BenchListenerThread.cxx ../gui/waterfall.cxx  BenchListenerThread.hxx SoDaBench_App.hxx SoDaBench_GUI.h SoDaBench_Top.h ../gui/waterfall.hxx ../gui/xyplot.hxx ../gui/FindHome.hxx ../gui/FindHome.cxx  ../gui/GuiParams.hxx ../gui/GuiParams.cxx 
 
 SoDaBench_CPPFLAGS = $(AM_CPPFLAGS) $(WX_CPPFLAGS) 
 SoDaBench_LDADD = $(AM_BOOSTLIBFLAGS) $(WX_LIBS)

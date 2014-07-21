@@ -8,9 +8,6 @@
 #ifndef __SoDaBench_GUI__
 #define __SoDaBench_GUI__
 
-namespace SoDaBench{ class SweeperControl; }
-
-#include "SoDaBench_SweeperControl.hxx"
 #include <wx/string.h>
 #include <wx/bitmap.h>
 #include <wx/image.h>
@@ -40,12 +37,12 @@ namespace SoDaBench{ class SweeperControl; }
 
 ///////////////////////////////////////////////////////////////////////////
 
-namespace SoDaRFBench_GUI
+namespace SoDaBench_GUI
 {
 	///////////////////////////////////////////////////////////////////////////////
-	/// Class SoDaRadioFrame
+	/// Class SoDaBenchFrame
 	///////////////////////////////////////////////////////////////////////////////
-	class SoDaRadioFrame : public wxFrame 
+	class SoDaBenchFrame : public wxFrame 
 	{
 		private:
 		
@@ -71,8 +68,8 @@ namespace SoDaRFBench_GUI
 		
 		public:
 			
-			SoDaRadioFrame( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("SoDa RF Test Bench"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( -1,-1 ), long style = wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL );
-			~SoDaRadioFrame();
+			SoDaBenchFrame( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("SoDa RF Test Bench"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( -1,-1 ), long style = wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL );
+			~SoDaBenchFrame();
 		
 	};
 	
@@ -161,7 +158,7 @@ namespace SoDaRFBench_GUI
 	///////////////////////////////////////////////////////////////////////////////
 	/// Class m_SweeperDialog
 	///////////////////////////////////////////////////////////////////////////////
-	class m_SweeperDialog : public SoDaBench::SweeperControl
+	class m_SweeperDialog : public wxDialog 
 	{
 		private:
 		
@@ -205,7 +202,7 @@ namespace SoDaRFBench_GUI
 	///////////////////////////////////////////////////////////////////////////////
 	/// Class m_SpectrumAnalyzerDialog
 	///////////////////////////////////////////////////////////////////////////////
-	class m_SpectrumAnalyzerDialog : public SoDaBench::SweeperControl
+	class m_SpectrumAnalyzerDialog : public wxDialog 
 	{
 		private:
 		
@@ -230,6 +227,9 @@ namespace SoDaRFBench_GUI
 			wxPanel* m_panel2;
 			
 			// Virtual event handlers, overide them in your derived class
+			virtual void onCloseSpectrumAnalyzer( wxCloseEvent& event ) { event.Skip(); }
+			virtual void onIconizeSpectrumAnalyzer( wxIconizeEvent& event ) { event.Skip(); }
+			virtual void onInitSpectrumAnalyzer( wxInitDialogEvent& event ) { event.Skip(); }
 			virtual void OnFreqEnter( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnFreqRangeSel( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnDispModeSwitch( wxCommandEvent& event ) { event.Skip(); }
@@ -245,6 +245,6 @@ namespace SoDaRFBench_GUI
 		
 	};
 	
-} // namespace SoDaRFBench_GUI
+} // namespace SoDaBench_GUI
 
 #endif //__SoDaBench_GUI__

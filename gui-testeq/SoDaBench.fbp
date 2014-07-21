@@ -13,7 +13,7 @@
         <property name="help_provider">none</property>
         <property name="internationalize">0</property>
         <property name="name">SoDaBench</property>
-        <property name="namespace">&quot;SoDaRFBench_GUI&quot;</property>
+        <property name="namespace">&quot;SoDaBench_GUI&quot;</property>
         <property name="path">.</property>
         <property name="precompiled_header"></property>
         <property name="relative_path">1</property>
@@ -31,7 +31,7 @@
             <property name="id">wxID_ANY</property>
             <property name="maximum_size"></property>
             <property name="minimum_size"></property>
-            <property name="name">SoDaRadioFrame</property>
+            <property name="name">SoDaBenchFrame</property>
             <property name="pos"></property>
             <property name="size">-1,-1</property>
             <property name="style">wxDEFAULT_FRAME_STYLE</property>
@@ -1522,7 +1522,7 @@
                 </object>
             </object>
         </object>
-        <object class="Dialog" expanded="1">
+        <object class="Dialog" expanded="0">
             <property name="bg"></property>
             <property name="center"></property>
             <property name="context_help"></property>
@@ -1538,7 +1538,7 @@
             <property name="pos"></property>
             <property name="size">433,401</property>
             <property name="style">wxDEFAULT_DIALOG_STYLE</property>
-            <property name="subclass">SoDaBench::SweeperControl; SoDaBench_SweeperControl.hxx</property>
+            <property name="subclass">; </property>
             <property name="title">Sweep Oscillator Output 0</property>
             <property name="tooltip"></property>
             <property name="validator_data_type"></property>
@@ -2687,7 +2687,7 @@
             <property name="pos"></property>
             <property name="size">999,589</property>
             <property name="style">wxDEFAULT_DIALOG_STYLE</property>
-            <property name="subclass">SoDaBench::SweeperControl; SoDaBench_SweeperControl.hxx</property>
+            <property name="subclass">; </property>
             <property name="title">Spectrum Analyzer: RX Channel A</property>
             <property name="tooltip"></property>
             <property name="validator_data_type"></property>
@@ -2700,13 +2700,13 @@
             <event name="OnActivate"></event>
             <event name="OnActivateApp"></event>
             <event name="OnChar"></event>
-            <event name="OnClose"></event>
+            <event name="OnClose">onCloseSpectrumAnalyzer</event>
             <event name="OnEnterWindow"></event>
             <event name="OnEraseBackground"></event>
             <event name="OnHibernate"></event>
-            <event name="OnIconize"></event>
+            <event name="OnIconize">onIconizeSpectrumAnalyzer</event>
             <event name="OnIdle"></event>
-            <event name="OnInitDialog"></event>
+            <event name="OnInitDialog">onInitSpectrumAnalyzer</event>
             <event name="OnKeyDown"></event>
             <event name="OnKeyUp"></event>
             <event name="OnKillFocus"></event>

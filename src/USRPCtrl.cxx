@@ -263,7 +263,7 @@ void SoDa::USRPCtrl::set1stLOBasebandFreq(double freq, char sel, double min_ddc_
   if(sel == 'r') {
     last_rx_tune_result = usrp->set_rx_freq(tune_req);
     last_rx_tune_result = checkLock(tune_req, 'r', last_rx_tune_result);
-    if(debug_mode || 1) {
+    if(debug_mode) {
       std::cerr << boost::format("Baseband RX Tune RF_actual %lf DDC = %lf tuned = %lf target = %lf request  rf = %lf request ddc = %lf\n")
 	% last_rx_tune_result.actual_rf_freq
 	% last_rx_tune_result.actual_dsp_freq
@@ -330,7 +330,7 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
     }
     last_rx_tune_result = usrp->set_rx_freq(rx_trequest);
     last_rx_tune_result = checkLock(rx_trequest, 'r', last_rx_tune_result);
-    if(debug_mode || 1) {
+    if(debug_mode) {
       std::cerr << boost::format("RX Tune RF_actual %lf DDC = %lf tuned = %lf target = %lf request  rf = %lf request ddc = %lf\n")
 	% last_rx_tune_result.actual_rf_freq
 	% last_rx_tune_result.actual_dsp_freq

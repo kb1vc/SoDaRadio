@@ -62,14 +62,9 @@ namespace SoDa {
     SoDa::UD::ServerSocket * server_socket, * wfall_socket; 
 
     // we ship a spectrogram of the RX IF stream to the GUI
-    Spectrogram * spectrogram;
     unsigned int spectrogram_buckets; 
+    Spectrogram * spectrogram;
 
-    Spectrogram * lo_spectrogram; 
-    unsigned int lo_spectrogram_buckets;
-    double lo_hz_per_bucket;
-    float * lo_spectrum; 
-    
     double baseband_rx_freq;
     double spectrum_center_freq;
     double hz_per_bucket; 

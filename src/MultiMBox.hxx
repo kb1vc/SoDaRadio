@@ -95,14 +95,20 @@ namespace SoDa {
     
     void put(T * m) {
       int i;
-      m->setReaderCount(subscriber_count);
-      m->setMBoxTag(this); 
-      for(i = 0; i < subscriber_count; i++) {
-	Subscriber * s = subscribers[i];
-	boost::mutex::scoped_lock lock(s->postmutex); 
-	s->posted_list.push(m);
-	s->post_count++; 
-	s->postcond.notify_all(); 
+      // if there are no subscribers, just free the message. 
+      if(subscriber_count == 0) {
+	free(m);
+      }
+      else {
+	m->setReaderCount(subscriber_count);
+	m->setMBoxTag(this); 
+	for(i = 0; i < subscriber_count; i++) {
+	  Subscriber * s = subscribers[i];
+	  boost::mutex::scoped_lock lock(s->postmutex); 
+	  s->posted_list.push(m);
+	  s->post_count++; 
+	  s->postcond.notify_all(); 
+	}
       }
     }
 
