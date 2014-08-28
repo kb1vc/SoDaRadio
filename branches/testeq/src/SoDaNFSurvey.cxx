@@ -122,7 +122,7 @@ namespace SoDa {
       // setup bandwidth
       cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_AF_FILTER, (int) SoDa::Command::BW_2000));
       // setup mode for AM
-      cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_MODE, (int) SoDa::Command::AM));
+      cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_MODE, (int) SoDa::Command::NF));
       cmd_stream->put(new SoDa::Command(Command::SET, Command::TX_STATE, 0));
 
       cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_AF_GAIN, 40.0));
@@ -139,7 +139,7 @@ namespace SoDa {
       // now loop
       double freq;
       while(1) {
-	for(freq = 51.3176e6; freq < 6000.0e6; freq += 100.0e6) {
+	for(freq = 51.3176e6; freq < 6000.0e6; freq += 10.0e6) {
 	  if(exitflag) return; 
 	  // tune to the new freq
 	  tune(freq);

@@ -97,7 +97,11 @@ void SoDa::NFThermometer::run()
       cmd_stream->put(new SoDa::Command(Command::REP, Command::NF_THERM, buf));       
       // std::cerr << boost::format("NFTHERM: [%s] \n") % buf; 
     }
-    
+    else {
+      cmd_stream->put(new SoDa::Command(Command::REP, Command::NF_THERM, "XX.XX XX.XX"));
+      // mimic 30 characters at 9600 baud + delay (30 * 8 * 100uS = 24000 usec )
+      usleep(100000);
+    }
     usleep(1000);
   }
 }

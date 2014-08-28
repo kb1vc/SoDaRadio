@@ -452,8 +452,9 @@ namespace SoDa {
 
     /**
      * @brief modulation selector targets take one of these values
+     * NF is noise figure meter
      */
-    enum ModulationType { LSB, USB, CW_U, CW_L, AM, WBFM, NBFM };
+    enum ModulationType { LSB, USB, CW_U, CW_L, AM, WBFM, NBFM, NF };
 
     /**
      * @brief these are the possible audio filter bandwidths

@@ -241,6 +241,37 @@ void SoDa::AudioRX::demodulateAM(std::complex<float> * dbuf)
   pendAudioBuffer(audio_buffer);
 }
 
+void SoDa::AudioRX::noisePower(SoDaBuf * rxbuf)
+{
+  std::complex<float> * dbuf = rxbuf->getComplexBuf();
+  int i;
+  float maxval = 0.0;
+  float sumsq = 0.0;
+  float sum = 0.0; 
+  for(i = 0; i < rf_buffer_size; i++) {
+    float v = abs(dbuf[i]);
+    sum += v; 
+  }
+  sum = sum / ((float) rf_buffer_size); 
+  for(i = 0; i < rf_buffer_size; i++) {
+    float v = abs(dbuf[i]);
+    v = v - sum;
+    v = fabs(v);
+    if(v > maxval) maxval = v;
+    sumsq += v * v; 
+  }
+  float meansq = sumsq / ((float) rf_buffer_size);
+  running_sumsq += meansq;
+
+  env_power_ctr++;
+  if((env_power_ctr & 0xff) == 0) {
+    float fepc = (float) (0xff);
+    float rep_pow = running_sumsq / fepc;
+    cmd_stream->put(new SoDa::Command(Command::REP, Command::ENV_POWER, rep_pow)); 
+    running_sumsq = 0.0;
+  }
+}
+
 void SoDa::AudioRX::demodulate(SoDaBuf * rxbuf)
 {
   dbg_ctr++;
@@ -251,7 +282,7 @@ void SoDa::AudioRX::demodulate(SoDaBuf * rxbuf)
   
   unsigned int reslen;
 
-  if((rx_modulation != SoDa::Command::WBFM) && (rx_modulation != SoDa::Command::NBFM)) {
+  if((rx_modulation != SoDa::Command::WBFM) && (rx_modulation != SoDa::Command::NBFM) && (rx_modulation != SoDa::Command::NF)) {
     rf_resampler->apply(rxbuf->getComplexBuf(), dbufi);
     
     // now do the low pass filter
@@ -288,6 +319,9 @@ void SoDa::AudioRX::demodulate(SoDaBuf * rxbuf)
   case SoDa::Command::AM:
     demodulateAM(dbufo); 
     break; 
+  case SoDa::Command::NF:
+    noisePower(rxbuf);
+    break;
   default:
     // all other modes are unsupported just for now.
     throw(new SoDa::SoDaException("Unsupported Modulation Mode in RX", this)); 
@@ -544,5 +578,6 @@ void SoDa::AudioRX::buildFilterMap()
 
   nbfm_pre_filter = new SoDa::OSFilter(0.0, 0.0, 25000.0, 32000.0, 512, 1.0, rf_sample_rate, rf_buffer_size);
 
-
+  // this is used for noise figure measurement
+  wbam_pre_filter = new SoDa::OSFilter(0.0, 0.0, 40000.0, 42000.0, 512, 1.0, audio_sample_rate, audio_buffer_size);
 }

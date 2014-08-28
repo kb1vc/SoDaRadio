@@ -130,6 +130,14 @@ namespace SoDa {
     void demodulateAM(std::complex<float> * drxbuf);
 
     /**
+     * @brief don't demodulate anything -- just calculate the
+     * average power in band. 
+     *
+     * @param drxbuf downsampled  RF input buffer
+     */
+    void noisePower(SoDaBuf * rxbuf);
+
+    /**
      * @brief demodulate the input stream as a narrowband frequency modulated signal
      * place the resulting audio buffer on the audio output queue.
      *
@@ -244,8 +252,7 @@ namespace SoDa {
     SoDa::OSFilter * am_pre_filter; ///< Before AM demod, we do some (6KHz) prefilter
     SoDa::OSFilter * nbfm_pre_filter; ///< Before NBFM demod, we do some (15KHz) prefilter -- rf rate
     SoDa::OSFilter * am_audio_filter; ///< After AM demod, we do a second filter
-
-    
+    SoDa::OSFilter * wbam_pre_filter; ///< for noise figure measurements -- use a 50 kHz filter.... 
     
     std::map<SoDa::Command::AudioFilterBW, SoDa::OSFilter *> filter_map; ///< map filter selectors to the filter objects
 
