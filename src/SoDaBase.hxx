@@ -235,6 +235,8 @@ namespace SoDa {
       else {
 	ret = (boost::format("Unknown SoDa Object threw exception [%s]\n") % reason).str();
       }
+
+      return ret;
     }
 
     /**
