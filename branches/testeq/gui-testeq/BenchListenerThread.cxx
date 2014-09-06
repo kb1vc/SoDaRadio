@@ -154,12 +154,9 @@ namespace SoDaBench_GUI {
       spect_buflen = cmd->iparms[0]; 
       check_buf_setup = true;
       break;
-    case SoDa::Command::LO_OFFSET:
-      bench_gui->setLOOffset(cmd->dparms[0]);
-      break;
-    case SoDa::Command::SDR_VERSION:
-      bench_gui->setSDRVersion(cmd->sparm); 
-      break;
+    // case SoDa::Command::SDR_VERSION:
+    //   bench_gui->setSDRVersion(cmd->sparm); 
+    //   break;
     case SoDa::Command::TX_CW_MARKER:
       {
 	wxCommandEvent event(wxEVT_COMMAND_MENU_SELECTED,
@@ -167,9 +164,9 @@ namespace SoDaBench_GUI {
 	bench_gui->AddPendingEvent(event); 
       }
       break;
-    case SoDa::Command::HWMB_REP:
-      bench_gui->setBenchName(wxString((char*) cmd->sparm, wxConvUTF8));
-      break;  
+    // case SoDa::Command::HWMB_REP:
+    //   bench_gui->setBenchName(wxString((char*) cmd->sparm, wxConvUTF8));
+    //   break;  
     default:
       break; 
     }

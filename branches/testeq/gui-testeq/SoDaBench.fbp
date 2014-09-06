@@ -33,7 +33,7 @@
             <property name="minimum_size"></property>
             <property name="name">SoDaBenchFrame</property>
             <property name="pos"></property>
-            <property name="size">-1,-1</property>
+            <property name="size">229,259</property>
             <property name="style">wxDEFAULT_FRAME_STYLE</property>
             <property name="subclass"></property>
             <property name="title">SoDa RF Test Bench</property>
@@ -2685,7 +2685,7 @@
             <property name="minimum_size"></property>
             <property name="name">m_SpectrumAnalyzerDialog</property>
             <property name="pos"></property>
-            <property name="size">999,589</property>
+            <property name="size">1207,586</property>
             <property name="style">wxDEFAULT_DIALOG_STYLE</property>
             <property name="subclass">; </property>
             <property name="title">Spectrum Analyzer: RX Channel A</property>

@@ -68,7 +68,7 @@ namespace SoDaBench_GUI
 		
 		public:
 			
-			SoDaBenchFrame( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("SoDa RF Test Bench"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( -1,-1 ), long style = wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL );
+			SoDaBenchFrame( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("SoDa RF Test Bench"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 229,259 ), long style = wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL );
 			~SoDaBenchFrame();
 		
 	};
@@ -240,7 +240,7 @@ namespace SoDaBench_GUI
 		
 		public:
 			
-			m_SpectrumAnalyzerDialog( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("Spectrum Analyzer: RX Channel A"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 999,589 ), long style = wxDEFAULT_DIALOG_STYLE );
+			m_SpectrumAnalyzerDialog( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("Spectrum Analyzer: RX Channel A"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 1207,586 ), long style = wxDEFAULT_DIALOG_STYLE );
 			~m_SpectrumAnalyzerDialog();
 		
 	};
