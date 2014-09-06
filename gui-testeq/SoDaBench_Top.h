@@ -37,6 +37,8 @@
 #include "../src/UDSockets.hxx"
 #include "../src/Command.hxx"
 #include "../gui/GuiParams.hxx"
+#include "../gui/xyplot.hxx"
+#include "../gui/waterfall.hxx"
 #include <map>
 #include <fstream>
 #include <boost/property_tree/ptree.hpp>
@@ -70,6 +72,20 @@ namespace SoDaBench_GUI {
     SoDaBench_Top(SoDa::GuiParams & params, wxWindow * parent);
     friend class SweeperDialog;
     friend class SpectrumAnalyzerDialog;
+
+    SoDa::UD::ClientSocket * GetCmdQueue() { return soda_bench; }
+    SoDa::UD::ClientSocket * GetFFTQueue() { return soda_fft; }
+
+    double getRXOffset() { return 0.0; }
+    
+    bool CreateSpectrumTrace(double * freqs, float * powers, unsigned int len);
+
+    enum MSG_ID { MSG_UPDATE_SPECTRUM, MSG_HANDLE_CMD, MSG_UPDATE_GPSLOC, MSG_UPDATE_GPSTIME, MSG_TERMINATE_TX };
+
+    void sendMsg(SoDa::Command * cmd) {
+      soda_bench->put(cmd, sizeof(SoDa::Command)); 
+    }
+    
   protected:
     // Handlers for SoDaBenchFrame events.
     void OnOpenConfig( wxCommandEvent& event );
@@ -81,11 +97,18 @@ namespace SoDaBench_GUI {
 
     void OnInstSel( wxCommandEvent & event);
 
-    void unsupportedEvent(std::string & str);
+    void unsupportedEvent(const std::string & str);
+
+    SoDaRadio_GUI::XYPlot * pgram_plot;
+    SoDaRadio_GUI::Waterfall * wfall_plot;
+    // the trace
+    SoDaRadio_GUI::XYPlot::Trace * pgram_trace; 
+
   protected:
     std::string SDR_version_string; 
     
   private:
+    
     bool debug_mode; 
     void setupServer();
     void initListener();

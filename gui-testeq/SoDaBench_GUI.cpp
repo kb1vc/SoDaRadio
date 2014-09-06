@@ -72,7 +72,6 @@ SoDaBenchFrame::SoDaBenchFrame( wxWindow* parent, wxWindowID id, const wxString&
 	
 	this->SetSizer( TopSizer );
 	this->Layout();
-	TopSizer->Fit( this );
 	
 	// Connect Events
 	this->Connect( OpenConfig->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaBenchFrame::OnOpenConfig ) );

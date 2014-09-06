@@ -75,13 +75,13 @@ namespace SoDaBench_GUI {
 
     sweeper_a = sweeper_b = NULL;
     spec_analyzer_a = spec_analyzer_b = NULL; 
-#if 0    
+
     // startup the server
     setupServer(); 
 
     // now link to the server; 
     initListener(); 
-#endif
+
   }
 
   void SoDaBench_Top::initListener()
@@ -89,9 +89,14 @@ namespace SoDaBench_GUI {
     // setup the comm channel.
     std::string sock_basename = params.getServerSocketBasename(); 
 
+    std::cerr << "SoDaBench_Top about to create client socket." << std::endl;
+  
     // setup the client socket trying once every second for 60 seconds before we give up
     soda_bench = new SoDa::UD::ClientSocket(sock_basename + "_bcmd", 60);
+    std::cerr << boost::format("SoDaBench_Top created client socket [%s_bcmd]\n") % sock_basename; 
+
     soda_fft = new SoDa::UD::ClientSocket(sock_basename + "_bwfall", 60);
+    std::cerr << boost::format("SoDaBench_Top created client socket [%s_bwfall]\n") % sock_basename; 
 
     // create the listener thread
     if(debug_mode || 1) {
@@ -164,9 +169,10 @@ namespace SoDaBench_GUI {
 	}
       }
     }
+
   }
 
-  void SoDaBench_Top::unsupportedEvent(std::string & str) {
+  void SoDaBench_Top::unsupportedEvent(const std::string & str) {
     std::cerr << "Unsupported event: " << str << std::endl; 
   }
   
@@ -192,7 +198,8 @@ namespace SoDaBench_GUI {
 
   void SoDaBench_Top::OnAbout( wxCommandEvent & event)
   {
-    AboutDialog * ad = new AboutDialog(this, SDR_version_string);
+    char * version_string = (char *) SDR_version_string.c_str(); 
+    AboutDialog * ad = new AboutDialog(this, version_string);
     ad->ShowModal();
   }
 
@@ -209,29 +216,44 @@ namespace SoDaBench_GUI {
     if(w == m_SAA) {
       if(spec_analyzer_a == NULL) {
 	spec_analyzer_a = new SpectrumAnalyzerDialog(this, std::string("A"), this);
+	SoDa::Command sa_on(Command::SET, Command::SPEC_ENA_A); 
+	sendMsg(&sa_on); 
       }
-      spec_analyzer_a->ShowModal();
+      spec_analyzer_a->Show();
     }
     else if(w == m_SAB) {
       if(spec_analyzer_b == NULL) {
 	spec_analyzer_b = new SpectrumAnalyzerDialog(this, std::string("B"), this);
       }
-      spec_analyzer_b->ShowModal();
+      spec_analyzer_b->Show();
     }
     else if(w == m_SweepA) {
       if(sweeper_a == NULL) {
 	sweeper_a = new SweeperDialog(this, std::string("A"), this);
       }
-      sweeper_a->ShowModal();
+      sweeper_a->Show();
     }
     else if(w == m_SweepB) {
       if(sweeper_b == NULL) {
 	sweeper_b = new SweeperDialog(this, std::string("B"), this);
       }
-      sweeper_b->ShowModal();
+      sweeper_b->Show();
     }
       
     
+  }
+
+
+  bool SoDaBench_Top::CreateSpectrumTrace(double * freqs, float * powers, unsigned int len)
+  {
+    if(pgram_plot == NULL) return false; 
+    if(wfall_plot == NULL) return false;
+  
+    pgram_trace = new SoDaRadio_GUI::XYPlot::Trace(freqs, powers, len, 1, wxT(""));
+    wfall_plot->RegisterBuffers(freqs, powers, len); 
+    wxColor t1(0xff, 0x00, 0x00, 0x80); 
+    pgram_plot->AddTrace(0, t1, pgram_trace);
+    return true; 
   }
   
 }

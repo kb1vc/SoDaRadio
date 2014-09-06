@@ -13,7 +13,7 @@ WX_CXXFLAGS = @WX_CXXFLAGS_ONLY@
 WX_CFLAGS = @WX_CFLAGS_ONLY@
 WX_LIBS = @WX_LIBS@
 
-bin_PROGRAMS = SoDaBench
+bin_PROGRAMS = SoDaBench 
 
 SoDaBench_SOURCES = SoDaBench_App.cxx SoDaBench_GUI.cxx  SoDaBench_Top.cxx  ../src/UDSockets.cxx ../src/Command.cxx  ../gui/xyplot.cxx BenchListenerThread.cxx ../gui/waterfall.cxx  BenchListenerThread.hxx SoDaBench_App.hxx SoDaBench_GUI.h SoDaBench_Top.h ../gui/waterfall.hxx ../gui/xyplot.hxx ../gui/FindHome.hxx ../gui/FindHome.cxx  ../gui/GuiParams.hxx ../gui/GuiParams.cxx 
 
