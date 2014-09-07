@@ -64,7 +64,8 @@ am__dirstamp = $(am__leading_dot)dirstamp
 am_Audio_test_OBJECTS = Audio_test-Audio_test.$(OBJEXT) \
 	../src/Audio_test-AudioPA.$(OBJEXT) \
 	../src/Audio_test-AudioALSA.$(OBJEXT) \
-	../src/Audio_test-SoDaBase.$(OBJEXT)
+	../src/Audio_test-SoDaBase.$(OBJEXT) \
+	../src/Audio_test-Debug.$(OBJEXT)
 Audio_test_OBJECTS = $(am_Audio_test_OBJECTS)
 am__DEPENDENCIES_1 =
 am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
@@ -89,7 +90,8 @@ Hilbert_Test_DEPENDENCIES = $(am__DEPENDENCIES_2)
 Hilbert_Test_LINK = $(CXXLD) $(Hilbert_Test_CXXFLAGS) $(CXXFLAGS) \
 	$(Hilbert_Test_LDFLAGS) $(LDFLAGS) -o $@
 am_MultiMBox_Test_OBJECTS = MultiMBox_Test-MultiMBox_Test.$(OBJEXT) \
-	../src/MultiMBox_Test-SoDaBase.$(OBJEXT)
+	../src/MultiMBox_Test-SoDaBase.$(OBJEXT) \
+	../src/MultiMBox_Test-Debug.$(OBJEXT)
 MultiMBox_Test_OBJECTS = $(am_MultiMBox_Test_OBJECTS)
 MultiMBox_Test_DEPENDENCIES = $(am__DEPENDENCIES_2)
 am_OSFilter_Test_OBJECTS = OSFilter_Test-OSFilter_Test.$(OBJEXT) \
@@ -108,7 +110,8 @@ ReSampler_Test_LINK = $(CXXLD) $(ReSampler_Test_CXXFLAGS) $(CXXFLAGS) \
 	$(ReSampler_Test_LDFLAGS) $(LDFLAGS) -o $@
 am_SoDa_ThreadTest_OBJECTS =  \
 	SoDa_ThreadTest-SoDa_ThreadTest.$(OBJEXT) \
-	../src/SoDa_ThreadTest-SoDaBase.$(OBJEXT)
+	../src/SoDa_ThreadTest-SoDaBase.$(OBJEXT) \
+	../src/SoDa_ThreadTest-Debug.$(OBJEXT)
 SoDa_ThreadTest_OBJECTS = $(am_SoDa_ThreadTest_OBJECTS)
 SoDa_ThreadTest_DEPENDENCIES = $(am__DEPENDENCIES_2)
 am_Sockets_Test_OBJECTS = Sockets_Test-Sockets_Test.$(OBJEXT) \
@@ -126,7 +129,8 @@ am_TestServer_OBJECTS = TestServer-TestServer.$(OBJEXT) \
 	../src/TestServer-Params.$(OBJEXT) \
 	../src/TestServer-UDSockets.$(OBJEXT) \
 	../src/TestServer-Spectrogram.$(OBJEXT) \
-	../src/TestServer-SoDaBase.$(OBJEXT)
+	../src/TestServer-SoDaBase.$(OBJEXT) \
+	../src/TestServer-Debug.$(OBJEXT)
 TestServer_OBJECTS = $(am_TestServer_OBJECTS)
 TestServer_DEPENDENCIES = $(am__DEPENDENCIES_2)
 DEFAULT_INCLUDES = -I.@am__isrc@
@@ -302,13 +306,13 @@ AM_BOOSTLIBFLAGS = ${BOOST_PROGRAM_OPTIONS_LIB} ${BOOST_THREAD_LIB} ${BOOST_DATE
 Sockets_Test_SOURCES = Sockets_Test.cxx  ../src/IPSockets.cxx ../src/UDSockets.cxx ../src/IPSockets.hxx ../src/UDSockets.hxx
 Sockets_Test_CPPFLAGS = $(AM_CPPFLAGS)
 Sockets_Test_LDADD = $(AM_BOOSTLIBFLAGS)
-SoDa_ThreadTest_SOURCES = SoDa_ThreadTest.cxx  ../src/SoDaBase.cxx
+SoDa_ThreadTest_SOURCES = SoDa_ThreadTest.cxx  ../src/SoDaBase.cxx ../src/Debug.cxx
 SoDa_ThreadTest_CPPFLAGS = $(AM_CPPFLAGS)
 SoDa_ThreadTest_LDADD = $(AM_BOOSTLIBFLAGS)
-Audio_test_SOURCES = Audio_test.cxx  ../src/AudioPA.cxx ../src/AudioALSA.cxx ../src/SoDaBase.cxx
+Audio_test_SOURCES = Audio_test.cxx  ../src/AudioPA.cxx ../src/AudioALSA.cxx ../src/SoDaBase.cxx ../src/Debug.cxx
 Audio_test_CPPFLAGS = $(AM_CPPFLAGS)
 Audio_test_LDADD = $(AM_BOOSTLIBFLAGS)
-MultiMBox_Test_SOURCES = MultiMBox_Test.cxx  ../src/SoDaBase.cxx
+MultiMBox_Test_SOURCES = MultiMBox_Test.cxx  ../src/SoDaBase.cxx ../src/Debug.cxx
 MultiMBox_Test_CPPFLAGS = $(AM_CPPFLAGS)
 MultiMBox_Test_LDADD = $(AM_BOOSTLIBFLAGS)
 OSFilter_Test_SOURCES = OSFilter_Test.cxx  ../src/OSFilter.cxx
@@ -329,7 +333,7 @@ FFT_Test_LDFLAGS = -g -O1
 TSIP_Test_SOURCES = TSIP_Test.cxx  ../src/TSIP.cxx
 TSIP_Test_CPPFLAGS = $(AM_CPPFLAGS)
 TSIP_Test_LDADD = $(AM_BOOSTLIBFLAGS) 
-TestServer_SOURCES = TestServer.cxx  ../src/Command.cxx ../src/UI.cxx ../src/Params.cxx ../src/UDSockets.cxx ../src/Spectrogram.cxx ../src/SoDaBase.cxx
+TestServer_SOURCES = TestServer.cxx  ../src/Command.cxx ../src/UI.cxx ../src/Params.cxx ../src/UDSockets.cxx ../src/Spectrogram.cxx ../src/SoDaBase.cxx ../src/Debug.cxx
 TestServer_CPPFLAGS = $(AM_CPPFLAGS)
 TestServer_LDADD = $(AM_BOOSTLIBFLAGS) -lrt
 ReSampler_Test_SOURCES = ReSampler_Test.cxx  ../src/ReSampler.cxx ../src/ReSamplers625x48.cxx ../src/SoDaBase.cxx
@@ -425,6 +429,8 @@ clean-binPROGRAMS:
 	../src/$(DEPDIR)/$(am__dirstamp)
 ../src/Audio_test-SoDaBase.$(OBJEXT): ../src/$(am__dirstamp) \
 	../src/$(DEPDIR)/$(am__dirstamp)
+../src/Audio_test-Debug.$(OBJEXT): ../src/$(am__dirstamp) \
+	../src/$(DEPDIR)/$(am__dirstamp)
 Audio_test$(EXEEXT): $(Audio_test_OBJECTS) $(Audio_test_DEPENDENCIES) $(EXTRA_Audio_test_DEPENDENCIES) 
 	@rm -f Audio_test$(EXEEXT)
 	$(CXXLINK) $(Audio_test_OBJECTS) $(Audio_test_LDADD) $(LIBS)
@@ -451,6 +457,8 @@ Hilbert_Test$(EXEEXT): $(Hilbert_Test_OBJECTS) $(Hilbert_Test_DEPENDENCIES) $(EX
 	$(Hilbert_Test_LINK) $(Hilbert_Test_OBJECTS) $(Hilbert_Test_LDADD) $(LIBS)
 ../src/MultiMBox_Test-SoDaBase.$(OBJEXT): ../src/$(am__dirstamp) \
 	../src/$(DEPDIR)/$(am__dirstamp)
+../src/MultiMBox_Test-Debug.$(OBJEXT): ../src/$(am__dirstamp) \
+	../src/$(DEPDIR)/$(am__dirstamp)
 MultiMBox_Test$(EXEEXT): $(MultiMBox_Test_OBJECTS) $(MultiMBox_Test_DEPENDENCIES) $(EXTRA_MultiMBox_Test_DEPENDENCIES) 
 	@rm -f MultiMBox_Test$(EXEEXT)
 	$(CXXLINK) $(MultiMBox_Test_OBJECTS) $(MultiMBox_Test_LDADD) $(LIBS)
@@ -469,6 +477,8 @@ ReSampler_Test$(EXEEXT): $(ReSampler_Test_OBJECTS) $(ReSampler_Test_DEPENDENCIES
 	@rm -f ReSampler_Test$(EXEEXT)
 	$(ReSampler_Test_LINK) $(ReSampler_Test_OBJECTS) $(ReSampler_Test_LDADD) $(LIBS)
 ../src/SoDa_ThreadTest-SoDaBase.$(OBJEXT): ../src/$(am__dirstamp) \
+	../src/$(DEPDIR)/$(am__dirstamp)
+../src/SoDa_ThreadTest-Debug.$(OBJEXT): ../src/$(am__dirstamp) \
 	../src/$(DEPDIR)/$(am__dirstamp)
 SoDa_ThreadTest$(EXEEXT): $(SoDa_ThreadTest_OBJECTS) $(SoDa_ThreadTest_DEPENDENCIES) $(EXTRA_SoDa_ThreadTest_DEPENDENCIES) 
 	@rm -f SoDa_ThreadTest$(EXEEXT)
@@ -497,6 +507,8 @@ TSIP_Test$(EXEEXT): $(TSIP_Test_OBJECTS) $(TSIP_Test_DEPENDENCIES) $(EXTRA_TSIP_
 	../src/$(DEPDIR)/$(am__dirstamp)
 ../src/TestServer-SoDaBase.$(OBJEXT): ../src/$(am__dirstamp) \
 	../src/$(DEPDIR)/$(am__dirstamp)
+../src/TestServer-Debug.$(OBJEXT): ../src/$(am__dirstamp) \
+	../src/$(DEPDIR)/$(am__dirstamp)
 TestServer$(EXEEXT): $(TestServer_OBJECTS) $(TestServer_DEPENDENCIES) $(EXTRA_TestServer_DEPENDENCIES) 
 	@rm -f TestServer$(EXEEXT)
 	$(CXXLINK) $(TestServer_OBJECTS) $(TestServer_LDADD) $(LIBS)
@@ -506,19 +518,23 @@ mostlyclean-compile:
 	-rm -f ../gui/FindHome_Test-FindHome.$(OBJEXT)
 	-rm -f ../src/Audio_test-AudioALSA.$(OBJEXT)
 	-rm -f ../src/Audio_test-AudioPA.$(OBJEXT)
+	-rm -f ../src/Audio_test-Debug.$(OBJEXT)
 	-rm -f ../src/Audio_test-SoDaBase.$(OBJEXT)
 	-rm -f ../src/Hilbert_Test-HilbertTransformer.$(OBJEXT)
 	-rm -f ../src/Hilbert_Test-SoDaBase.$(OBJEXT)
+	-rm -f ../src/MultiMBox_Test-Debug.$(OBJEXT)
 	-rm -f ../src/MultiMBox_Test-SoDaBase.$(OBJEXT)
 	-rm -f ../src/OSFilter_Test-OSFilter.$(OBJEXT)
 	-rm -f ../src/ReSampler_Test-ReSampler.$(OBJEXT)
 	-rm -f ../src/ReSampler_Test-ReSamplers625x48.$(OBJEXT)
 	-rm -f ../src/ReSampler_Test-SoDaBase.$(OBJEXT)
+	-rm -f ../src/SoDa_ThreadTest-Debug.$(OBJEXT)
 	-rm -f ../src/SoDa_ThreadTest-SoDaBase.$(OBJEXT)
 	-rm -f ../src/Sockets_Test-IPSockets.$(OBJEXT)
 	-rm -f ../src/Sockets_Test-UDSockets.$(OBJEXT)
 	-rm -f ../src/TSIP_Test-TSIP.$(OBJEXT)
 	-rm -f ../src/TestServer-Command.$(OBJEXT)
+	-rm -f ../src/TestServer-Debug.$(OBJEXT)
 	-rm -f ../src/TestServer-Params.$(OBJEXT)
 	-rm -f ../src/TestServer-SoDaBase.$(OBJEXT)
 	-rm -f ../src/TestServer-Spectrogram.$(OBJEXT)
@@ -531,19 +547,23 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@../gui/$(DEPDIR)/FindHome_Test-FindHome.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/Audio_test-AudioALSA.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/Audio_test-AudioPA.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/Audio_test-Debug.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/Audio_test-SoDaBase.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/Hilbert_Test-HilbertTransformer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/Hilbert_Test-SoDaBase.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/MultiMBox_Test-Debug.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/MultiMBox_Test-SoDaBase.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/OSFilter_Test-OSFilter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/ReSampler_Test-ReSampler.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/ReSampler_Test-ReSamplers625x48.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/ReSampler_Test-SoDaBase.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/SoDa_ThreadTest-Debug.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/SoDa_ThreadTest-SoDaBase.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/Sockets_Test-IPSockets.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/Sockets_Test-UDSockets.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/TSIP_Test-TSIP.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/TestServer-Command.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/TestServer-Debug.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/TestServer-Params.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/TestServer-SoDaBase.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/TestServer-Spectrogram.Po@am__quote@
@@ -632,6 +652,20 @@ Audio_test-Audio_test.obj: Audio_test.cxx
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../src/SoDaBase.cxx' object='../src/Audio_test-SoDaBase.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(Audio_test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ../src/Audio_test-SoDaBase.obj `if test -f '../src/SoDaBase.cxx'; then $(CYGPATH_W) '../src/SoDaBase.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/SoDaBase.cxx'; fi`
+
+../src/Audio_test-Debug.o: ../src/Debug.cxx
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(Audio_test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ../src/Audio_test-Debug.o -MD -MP -MF ../src/$(DEPDIR)/Audio_test-Debug.Tpo -c -o ../src/Audio_test-Debug.o `test -f '../src/Debug.cxx' || echo '$(srcdir)/'`../src/Debug.cxx
+@am__fastdepCXX_TRUE@	$(am__mv) ../src/$(DEPDIR)/Audio_test-Debug.Tpo ../src/$(DEPDIR)/Audio_test-Debug.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../src/Debug.cxx' object='../src/Audio_test-Debug.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(Audio_test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ../src/Audio_test-Debug.o `test -f '../src/Debug.cxx' || echo '$(srcdir)/'`../src/Debug.cxx
+
+../src/Audio_test-Debug.obj: ../src/Debug.cxx
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(Audio_test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ../src/Audio_test-Debug.obj -MD -MP -MF ../src/$(DEPDIR)/Audio_test-Debug.Tpo -c -o ../src/Audio_test-Debug.obj `if test -f '../src/Debug.cxx'; then $(CYGPATH_W) '../src/Debug.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/Debug.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) ../src/$(DEPDIR)/Audio_test-Debug.Tpo ../src/$(DEPDIR)/Audio_test-Debug.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../src/Debug.cxx' object='../src/Audio_test-Debug.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(Audio_test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ../src/Audio_test-Debug.obj `if test -f '../src/Debug.cxx'; then $(CYGPATH_W) '../src/Debug.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/Debug.cxx'; fi`
 
 FFT_Test-FFT_Test.o: FFT_Test.cxx
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(FFT_Test_CPPFLAGS) $(CPPFLAGS) $(FFT_Test_CXXFLAGS) $(CXXFLAGS) -MT FFT_Test-FFT_Test.o -MD -MP -MF $(DEPDIR)/FFT_Test-FFT_Test.Tpo -c -o FFT_Test-FFT_Test.o `test -f 'FFT_Test.cxx' || echo '$(srcdir)/'`FFT_Test.cxx
@@ -745,6 +779,20 @@ MultiMBox_Test-MultiMBox_Test.obj: MultiMBox_Test.cxx
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(MultiMBox_Test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ../src/MultiMBox_Test-SoDaBase.obj `if test -f '../src/SoDaBase.cxx'; then $(CYGPATH_W) '../src/SoDaBase.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/SoDaBase.cxx'; fi`
 
+../src/MultiMBox_Test-Debug.o: ../src/Debug.cxx
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(MultiMBox_Test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ../src/MultiMBox_Test-Debug.o -MD -MP -MF ../src/$(DEPDIR)/MultiMBox_Test-Debug.Tpo -c -o ../src/MultiMBox_Test-Debug.o `test -f '../src/Debug.cxx' || echo '$(srcdir)/'`../src/Debug.cxx
+@am__fastdepCXX_TRUE@	$(am__mv) ../src/$(DEPDIR)/MultiMBox_Test-Debug.Tpo ../src/$(DEPDIR)/MultiMBox_Test-Debug.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../src/Debug.cxx' object='../src/MultiMBox_Test-Debug.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(MultiMBox_Test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ../src/MultiMBox_Test-Debug.o `test -f '../src/Debug.cxx' || echo '$(srcdir)/'`../src/Debug.cxx
+
+../src/MultiMBox_Test-Debug.obj: ../src/Debug.cxx
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(MultiMBox_Test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ../src/MultiMBox_Test-Debug.obj -MD -MP -MF ../src/$(DEPDIR)/MultiMBox_Test-Debug.Tpo -c -o ../src/MultiMBox_Test-Debug.obj `if test -f '../src/Debug.cxx'; then $(CYGPATH_W) '../src/Debug.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/Debug.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) ../src/$(DEPDIR)/MultiMBox_Test-Debug.Tpo ../src/$(DEPDIR)/MultiMBox_Test-Debug.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../src/Debug.cxx' object='../src/MultiMBox_Test-Debug.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(MultiMBox_Test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ../src/MultiMBox_Test-Debug.obj `if test -f '../src/Debug.cxx'; then $(CYGPATH_W) '../src/Debug.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/Debug.cxx'; fi`
+
 OSFilter_Test-OSFilter_Test.o: OSFilter_Test.cxx
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OSFilter_Test_CPPFLAGS) $(CPPFLAGS) $(OSFilter_Test_CXXFLAGS) $(CXXFLAGS) -MT OSFilter_Test-OSFilter_Test.o -MD -MP -MF $(DEPDIR)/OSFilter_Test-OSFilter_Test.Tpo -c -o OSFilter_Test-OSFilter_Test.o `test -f 'OSFilter_Test.cxx' || echo '$(srcdir)/'`OSFilter_Test.cxx
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/OSFilter_Test-OSFilter_Test.Tpo $(DEPDIR)/OSFilter_Test-OSFilter_Test.Po
@@ -856,6 +904,20 @@ SoDa_ThreadTest-SoDa_ThreadTest.obj: SoDa_ThreadTest.cxx
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../src/SoDaBase.cxx' object='../src/SoDa_ThreadTest-SoDaBase.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDa_ThreadTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ../src/SoDa_ThreadTest-SoDaBase.obj `if test -f '../src/SoDaBase.cxx'; then $(CYGPATH_W) '../src/SoDaBase.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/SoDaBase.cxx'; fi`
+
+../src/SoDa_ThreadTest-Debug.o: ../src/Debug.cxx
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDa_ThreadTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ../src/SoDa_ThreadTest-Debug.o -MD -MP -MF ../src/$(DEPDIR)/SoDa_ThreadTest-Debug.Tpo -c -o ../src/SoDa_ThreadTest-Debug.o `test -f '../src/Debug.cxx' || echo '$(srcdir)/'`../src/Debug.cxx
+@am__fastdepCXX_TRUE@	$(am__mv) ../src/$(DEPDIR)/SoDa_ThreadTest-Debug.Tpo ../src/$(DEPDIR)/SoDa_ThreadTest-Debug.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../src/Debug.cxx' object='../src/SoDa_ThreadTest-Debug.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDa_ThreadTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ../src/SoDa_ThreadTest-Debug.o `test -f '../src/Debug.cxx' || echo '$(srcdir)/'`../src/Debug.cxx
+
+../src/SoDa_ThreadTest-Debug.obj: ../src/Debug.cxx
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDa_ThreadTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ../src/SoDa_ThreadTest-Debug.obj -MD -MP -MF ../src/$(DEPDIR)/SoDa_ThreadTest-Debug.Tpo -c -o ../src/SoDa_ThreadTest-Debug.obj `if test -f '../src/Debug.cxx'; then $(CYGPATH_W) '../src/Debug.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/Debug.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) ../src/$(DEPDIR)/SoDa_ThreadTest-Debug.Tpo ../src/$(DEPDIR)/SoDa_ThreadTest-Debug.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../src/Debug.cxx' object='../src/SoDa_ThreadTest-Debug.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDa_ThreadTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ../src/SoDa_ThreadTest-Debug.obj `if test -f '../src/Debug.cxx'; then $(CYGPATH_W) '../src/Debug.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/Debug.cxx'; fi`
 
 Sockets_Test-Sockets_Test.o: Sockets_Test.cxx
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(Sockets_Test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT Sockets_Test-Sockets_Test.o -MD -MP -MF $(DEPDIR)/Sockets_Test-Sockets_Test.Tpo -c -o Sockets_Test-Sockets_Test.o `test -f 'Sockets_Test.cxx' || echo '$(srcdir)/'`Sockets_Test.cxx
@@ -1024,6 +1086,20 @@ TestServer-TestServer.obj: TestServer.cxx
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../src/SoDaBase.cxx' object='../src/TestServer-SoDaBase.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TestServer_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ../src/TestServer-SoDaBase.obj `if test -f '../src/SoDaBase.cxx'; then $(CYGPATH_W) '../src/SoDaBase.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/SoDaBase.cxx'; fi`
+
+../src/TestServer-Debug.o: ../src/Debug.cxx
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TestServer_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ../src/TestServer-Debug.o -MD -MP -MF ../src/$(DEPDIR)/TestServer-Debug.Tpo -c -o ../src/TestServer-Debug.o `test -f '../src/Debug.cxx' || echo '$(srcdir)/'`../src/Debug.cxx
+@am__fastdepCXX_TRUE@	$(am__mv) ../src/$(DEPDIR)/TestServer-Debug.Tpo ../src/$(DEPDIR)/TestServer-Debug.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../src/Debug.cxx' object='../src/TestServer-Debug.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TestServer_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ../src/TestServer-Debug.o `test -f '../src/Debug.cxx' || echo '$(srcdir)/'`../src/Debug.cxx
+
+../src/TestServer-Debug.obj: ../src/Debug.cxx
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TestServer_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ../src/TestServer-Debug.obj -MD -MP -MF ../src/$(DEPDIR)/TestServer-Debug.Tpo -c -o ../src/TestServer-Debug.obj `if test -f '../src/Debug.cxx'; then $(CYGPATH_W) '../src/Debug.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/Debug.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) ../src/$(DEPDIR)/TestServer-Debug.Tpo ../src/$(DEPDIR)/TestServer-Debug.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../src/Debug.cxx' object='../src/TestServer-Debug.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TestServer_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ../src/TestServer-Debug.obj `if test -f '../src/Debug.cxx'; then $(CYGPATH_W) '../src/Debug.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/Debug.cxx'; fi`
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \

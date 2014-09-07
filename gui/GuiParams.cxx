@@ -46,6 +46,8 @@ SoDa::GuiParams::GuiParams(int argc, wxChar ** wxargv)
      )
     ("log", po::value<std::string>(&log_filename)->default_value("SoDa.soda_log"),
      "Log filename")
+    ("debug", po::value<unsigned int>(&debug_level)->default_value(0)->implicit_value(1),
+     "Enable debug messages for value > 0.  Higher values may produce more detail.")
     ;
 
   po::store(po::parse_command_line(argc, argv, desc), pmap);

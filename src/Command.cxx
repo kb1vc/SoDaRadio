@@ -80,7 +80,12 @@ void SoDa::Command::initTables()
 
   target_map_s2v[std::string("HWMB_REP")] = HWMB_REP;
 
+  target_map_s2v[std::string("TVRT_LO_ENABLE")] = TVRT_LO_ENABLE;
+  target_map_s2v[std::string("TVRT_LO_DISABLE")] = TVRT_LO_DISABLE;
+  target_map_s2v[std::string("TVRT_LO_CONFIG")] = TVRT_LO_CONFIG;
+
   target_map_s2v[std::string("STOP")] = STOP;
+  
   target_map_v2s[RX_TUNE_FREQ] = new std::string("RX_TUNE_FREQ");
   target_map_v2s[TX_TUNE_FREQ] = new std::string("TX_TUNE_FREQ");
   target_map_v2s[RX_RETUNE_FREQ] = new std::string("RX_RETUNE_FREQ");
@@ -121,6 +126,9 @@ void SoDa::Command::initTables()
   target_map_v2s[HWMB_REP] = new std::string("HWMB_REP");
   
   target_map_v2s[DBG_REP] = new std::string("DBG_REP");
+  target_map_v2s[TVRT_LO_ENABLE] = new std::string("TVRT_LO_ENABLE");
+  target_map_v2s[TVRT_LO_DISABLE] = new std::string("TVRT_LO_DISABLE");
+  target_map_v2s[TVRT_LO_CONFIG] = new std::string("TVRT_LO_CONFIG");
   target_map_v2s[STOP] = new std::string("STOP");
 }
 
