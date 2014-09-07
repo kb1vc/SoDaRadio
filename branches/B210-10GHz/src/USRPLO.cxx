@@ -37,19 +37,14 @@
 #include <fcntl.h>
 #include <stdio.h>
 
-SoDa::USRPLO::USRPLO(Params * params, uhd::usrp::multi_usrp::sptr usrp,
+SoDa::USRPLO::USRPLO(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
 		     CmdMBox * _cmd_stream) : SoDa::SoDaThread("USRPLO")
 {
   cmd_stream = _cmd_stream;
+  usrp = _usrp; 
 
   // subscribe to the command stream.
   cmd_subs = cmd_stream->subscribe();
-
-  // create the tx buffer streamers.
-  debugMsg("About to create LO output stream.");
-  uhd::stream_args_t stream_args("fc32", "sc16"); 
-  stream_args.channels.push_back(1); 
-  LO_bits = usrp->get_tx_stream(stream_args);
 
   // find out how to configure the transmitter
   LO_sample_rate = params->getTXRate();
@@ -74,6 +69,16 @@ SoDa::USRPLO::USRPLO(Params * params, uhd::usrp::multi_usrp::sptr usrp,
   debugMsg("Configuration complete.");
 }
 
+void SoDa::USRPLO::initLOStream()
+{
+  if(LO_capable) {
+    // create the tx buffer streamers.
+    debugMsg("About to create LO output stream.");
+    uhd::stream_args_t stream_args("fc32", "sc16"); 
+    stream_args.channels.push_back(1); 
+    LO_bits = usrp->get_tx_stream(stream_args);
+  }
+}
 
 void SoDa::USRPLO::run()
 {
@@ -86,7 +91,7 @@ void SoDa::USRPLO::run()
   SoDaBuf * txbuf, * cwenv;
   Command * cmd;
   bool didwork = false; 
-
+  
   while(!exitflag) {
     bool didwork = false; 
     if((cmd = cmd_stream->get(cmd_subs)) != NULL) {
@@ -97,10 +102,10 @@ void SoDa::USRPLO::run()
       cmd_stream->free(cmd); 
       didwork = true; 
     }
-    else if(LO_enabled && LO_configured) {
+    else if(LO_enabled && LO_configured && LO_capable) {
       // now send it to the USRP
       LO_bits->send(const_env, LO_buffer_size, md);
-      md.start_of_burst = false; 
+      md.start_of_burst = false;
       didwork = true; 
     }
 
@@ -118,9 +123,16 @@ void SoDa::USRPLO::execSetCommand(Command * cmd)
     debugMsg("Enable Transverter LO");
     LO_enabled = true; 
     md.start_of_burst = true;
+    md.end_of_burst = false; 
+    md.has_time_spec = false; 
     break; 
   case SoDa::Command::TVRT_LO_DISABLE:
     debugMsg("Disable Transverter LO");
+    md.start_of_burst = false;
+    md.end_of_burst = true;
+    if(LO_capable) {
+      LO_bits->send("", 0, md);
+    }
     LO_enabled = false; 
     break;
   default:
@@ -136,10 +148,15 @@ void SoDa::USRPLO::execRepCommand(Command * cmd)
 {
   switch(cmd->target) {
   case SoDa::Command::TVRT_LO_CONFIG:
+    debugMsg("LO configured");
     LO_configured = true; 
     break;
   case SoDa::Command::HWMB_REP:
-    std::cerr << boost::format("USRPLO got model name of [%s]\n") % cmd->sparm; 
+    std::cerr << boost::format("USRPLO got model name of [%s]\n") % cmd->sparm;
+    if(std::string(cmd->sparm) == "B210") {
+      LO_capable = true;
+      initLOStream();
+    }
     break; 
   default:
     break;

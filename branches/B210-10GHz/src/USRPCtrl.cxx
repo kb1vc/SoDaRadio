@@ -358,6 +358,7 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
     std::cerr << "execSetCommand got a non-set command!  " << cmd->toString() << std::endl;
     return; 
   }
+  double tmp;
   switch (cmd->target) {
   case Command::RX_RETUNE_FREQ:
     last_rx_req_freq = cmd->dparms[0]; 
@@ -430,12 +431,16 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
     break; 
   case Command::TX_RF_GAIN:
     tx_rf_gain = tx_rf_gain_range.start() + cmd->dparms[0] * 0.01 * (tx_rf_gain_range.stop() - tx_rf_gain_range.start());
+    std::cerr << "TX gain set to " << tx_rf_gain << " power was " << cmd->dparms[0] << std::endl;
+    tmp = cmd->dparms[0];
+    debugMsg(boost::format("Setting TX gain to %g from power %g") % tx_rf_gain % tmp);
+    // debugMsg(boost::format("Set TX gain to %lg from power setting of %lg\n")
+    // 	     % tx_rf_gain % cmd->dparms[0]);
 
     if(tx_on) {
       usrp->set_tx_gain(tx_rf_gain);
       cmd_stream->put(new Command(Command::REP, Command::TX_RF_GAIN, 
 				  usrp->get_tx_gain())); 
-
     }
     break; 
   case SoDa::Command::TX_STATE: // SET TX_ON
@@ -501,11 +506,13 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
 
   case Command::RX_ANT:
     usrp->set_rx_antenna(cmd->sparm);
+    debugMsg(boost::format("Set RX antenna to %s") % cmd->sparm);
     break; 
 
   case Command::TX_ANT:
     tx_ant = cmd->sparm; 
     usrp->set_tx_antenna(cmd->sparm);
+    debugMsg(boost::format("Set TX antenna to %s") % cmd->sparm);
     break;
 
   case Command::TVRT_LO_CONFIG:
@@ -678,8 +685,20 @@ void SoDa::USRPCtrl::setTransverterLOFreqPower(double freq, double power)
   
   debugMsg(boost::format("Setting Transverter LO freq = %10lg power = %g gain = %g\n") % freq % power % gain);
   
+  usrp->set_tx_antenna("TX2", 1);
+    
   usrp->set_tx_gain(gain, 1);
   usrp->set_tx_freq(freq, 1);
   debugMsg("About to report Transverter LO setting.");
   cmd_stream->put(new Command(Command::REP, Command::TVRT_LO_CONFIG, freq, power));  
+
+  if(getDebugLevel()) {
+    BOOST_FOREACH (std::string key, usrp->get_usrp_tx_info(1).keys()) {
+      debugMsg(boost::format("LO output TX info: [%s] = \"%s\"\n") % key %
+	       usrp->get_usrp_tx_info(1).get(key));
+    }
+
+    debugMsg(boost::format("LO frequency = %10lg power %g  number of channels = %d\n") %
+	     usrp->get_tx_freq(1) % usrp->get_tx_gain(1) % usrp->get_tx_num_channels());
+  }
 }

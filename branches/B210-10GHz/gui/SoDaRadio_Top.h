@@ -368,7 +368,7 @@ namespace SoDaRadio_GUI {
     float powerToTXSetting(float fpow) {
       // take power in dBm and convert to
       // settings for TX
-      return (0.6 * fpow + 10.0); 
+      return (fpow);
     }
     float txSettingToPower(float setting) {
       // take power in dBm and convert to

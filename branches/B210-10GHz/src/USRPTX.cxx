@@ -194,6 +194,7 @@ void SoDa::USRPTX::transmitSwitch(bool tx_on)
     waiting_to_run_dry = false;
     md.start_of_burst = true;
     md.end_of_burst = false;
+    md.has_time_spec = false; 
     tx_enabled = true; 
   }
   else {
