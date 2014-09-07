@@ -142,7 +142,7 @@ int doWork(int argc, char * argv[])
   /// @see SoDa::Params
   SoDa::Params params(argc, argv);
 
-  SoDa::Debug d(params.getDebugLevel());
+  SoDa::Debug d(params.getDebugLevel(), "SoDaServer");
   d.setDefaultLevel(params.getDebugLevel());
   
   // These are the mailboxes that connect

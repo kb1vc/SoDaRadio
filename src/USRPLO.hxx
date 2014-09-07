@@ -70,6 +70,10 @@ namespace SoDa {
     void run(); 
   private:
     /**
+     * @brief establish stream if and only if this unit supports it.
+     */
+    void initLOStream(); 
+    /**
      * @brief start/stop LO
      * @param tx_on if true, go into transmit mode
      */
@@ -111,6 +115,8 @@ namespace SoDa {
     
     uhd::tx_streamer::sptr LO_bits; ///< USRP (UHD) transmit stream handle
     uhd::tx_metadata_t md; ///< metadata describing USRP transmit buffer
+
+    uhd::usrp::multi_usrp::sptr usrp; 
   }; 
 
 }
