@@ -81,6 +81,7 @@ namespace SoDa {
     /// don't have frontend lock indications (as of 3.7.0)
     /// and need a special sample rate.
     bool is_B2xx;
+    bool is_B210; ///< the B210 has two tx channels -- use the second for a Transverter LO -- see USRPLO
 
     /// Parse an incoming command and dispatch.
     /// @param cmd a command record
@@ -148,6 +149,10 @@ namespace SoDa {
     /// @param val true to enable the transmitter, false otherwise.
     void setTXEna(bool val);
 
+
+    /// set the transvert LO frequency and power
+    void setTransverterLOFreqPower(double freq, double power);
+    
     /// we use TX_IO bit 12 to turn on the TX relay
     /// we use TX_IO bit 11 to monitor the TX relay
     static const unsigned int TX_RELAY_CTL; ///< mask for RELAY control bit

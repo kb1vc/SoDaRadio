@@ -344,7 +344,7 @@ namespace SoDa {
       DBG_REP,
 
       /**
-       * Report the motherbaord name (the model name of the USRP)
+       * Report the motherboard name (the model name of the USRP)
        *
        * no param
        *
@@ -361,6 +361,39 @@ namespace SoDa {
        */
       STOP,
 
+      /**
+       * On receipt of a TVRT_LO_ENABLE command dump a perpetual constant IF stream
+       * of (1.0, 0.0) into the tx2 channel to get a steady output.
+       *
+       * Ignore this command unless the radio is a B210.
+       *
+       * forms: SET
+       */
+      TVRT_LO_ENABLE, 
+
+      /**
+       * On receipt of a TVRT_LO_DISABLE command, turn the LO output on TX2 off. 
+       * Ignore this command unless the radio is a B210.
+       *
+       * no param
+       *
+       * forms: SET
+       */
+      TVRT_LO_DISABLE, 
+
+      /**
+       * On receipt of a TVRT_LO_CONFIG command , set the TX2 channel
+       * frequency to dparam[0] and the TX2 output gain to dparam[1].
+       *
+       * Ignore this command unless the radio is a B210.
+       *
+       * param (double) output frequency
+       * param (double) output gain setting
+       *
+       * forms: SET, REP
+       */
+      TVRT_LO_CONFIG, 
+      
       /**
        * No comment
        */
