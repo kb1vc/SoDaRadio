@@ -100,6 +100,7 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
   if(is_B2xx) {
     usrp->set_rx_subdev_spec(std::string("A:A"), 0);
     if(is_B210) {
+      debugMsg("Setup two subdevices.");
       usrp->set_tx_subdev_spec(std::string("A:A A:B"), 0);
     }
     else {
@@ -433,7 +434,7 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
     tx_rf_gain = tx_rf_gain_range.start() + cmd->dparms[0] * 0.01 * (tx_rf_gain_range.stop() - tx_rf_gain_range.start());
     std::cerr << "TX gain set to " << tx_rf_gain << " power was " << cmd->dparms[0] << std::endl;
     tmp = cmd->dparms[0];
-    debugMsg(boost::format("Setting TX gain to %g from power %g") % tx_rf_gain % tmp);
+    debugMsg(boost::format("Setting TX gain to %lg from power %lg") % tx_rf_gain % tmp);
     // debugMsg(boost::format("Set TX gain to %lg from power setting of %lg\n")
     // 	     % tx_rf_gain % cmd->dparms[0]);
 

@@ -71,13 +71,17 @@ SoDa::USRPLO::USRPLO(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
 
 void SoDa::USRPLO::initLOStream()
 {
-  if(LO_capable) {
-    // create the tx buffer streamers.
-    debugMsg("About to create LO output stream.");
-    uhd::stream_args_t stream_args("fc32", "sc16"); 
-    stream_args.channels.push_back(1); 
-    LO_bits = usrp->get_tx_stream(stream_args);
-  }
+  // create the tx buffer streamers.
+  debugMsg("About to create LO output stream.");
+  uhd::stream_args_t stream_args("fc32", "sc16");
+  debugMsg(boost::format("channels list is now %d long")
+	   % stream_args.channels.size());
+  
+  stream_args.channels.push_back(1); 
+  debugMsg(boost::format("channels list grew to %d long")
+	   % stream_args.channels.size());
+
+  // LO_bits = usrp->get_tx_stream(stream_args);
 }
 
 void SoDa::USRPLO::run()
@@ -154,8 +158,8 @@ void SoDa::USRPLO::execRepCommand(Command * cmd)
   case SoDa::Command::HWMB_REP:
     std::cerr << boost::format("USRPLO got model name of [%s]\n") % cmd->sparm;
     if(std::string(cmd->sparm) == "B210") {
-      LO_capable = true;
       initLOStream();
+      // LO_capable = true;
     }
     break; 
   default:
