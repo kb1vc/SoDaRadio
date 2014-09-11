@@ -80,8 +80,6 @@
  * @li SoDa::UI waits for requests and CW text on the UDP socket from the GUI, and forwards status and
  *     spectrum plots back to the GUI. 
  * @li SoDa::GPS_TSIPmon monitors a serial connection to a Trimble Thunderbolt GPS receiver.
- * @li SoDa::USRPLO is used by B210 and other multi-channel radios to produce
- *     a local oscillator for feeding a transverter mixer. 
  *
  * The SoDa receiver architecture is a 3 stage heterodyne design.  
  * The first two IF conversions are performed within the USRP SDR platform.
@@ -117,7 +115,6 @@
 #include "USRPCtrl.hxx"
 #include "USRPRX.hxx"
 #include "USRPTX.hxx"
-#include "USRPLO.hxx"
 #include "AudioRX.hxx"
 #include "AudioTX.hxx"
 #include "CWTX.hxx"
@@ -161,7 +158,6 @@ int doWork(int argc, char * argv[])
   SoDa::USRPCtrl ctrl(&params, &cmd_stream);
   SoDa::USRPRX rx(&params, ctrl.getUSRP(), &rx_stream, &if_stream, &cmd_stream); 
   SoDa::USRPTX tx(&params, ctrl.getUSRP(), &tx_stream, &cw_env_stream, &cmd_stream);
-  SoDa::USRPLO lo(&params, ctrl.getUSRP(), &cmd_stream);
   
 
   /// doWork creates the audio server on the host machine.
@@ -202,7 +198,6 @@ int doWork(int argc, char * argv[])
   arx.start();
   atx.start();
   cwtx.start();
-  lo.start();
 
   // now the gps...
   d.debugMsg("Starting gps");
@@ -216,7 +211,6 @@ int doWork(int argc, char * argv[])
   arx.join();
   atx.join();
   cwtx.join();
-  lo.join();
   gps.join();
   d.debugMsg("Exit");
   
