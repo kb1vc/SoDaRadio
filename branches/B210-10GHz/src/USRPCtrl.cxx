@@ -86,7 +86,8 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
 
   if((motherboard_name == "B200") || (motherboard_name == "B210")) {
     // B2xx needs a master clock rate of 50 MHz to generate a sample rate of 625 kS/s.
-    usrp->set_master_clock_rate(50.0e6);
+    // B2xx needs a master clock rate of 25 MHz to generate a sample rate of 625 kS/s.
+    usrp->set_master_clock_rate(25.0e6);
     debugMsg(boost::format("Initial setup %s") % usrp->get_pp_string());
     is_B2xx = true;
     is_B210 = (motherboard_name == "B210");
@@ -145,6 +146,8 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
   // turn off the transmitter
   setTXEna(false);
 
+  // turn of the LO
+  tvrt_lo_mode = false; 
 }
 
 
@@ -261,8 +264,7 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
   
   double target_rx_freq = freq;
   
-  uhd::tune_request_t tx_request(freq);
-  
+ 
   if(sel == 'r') {
     // we round the target frequency to a point that puts the
     // baseband between 80 and 220 KHz below the requested
@@ -310,14 +312,39 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
     // unless we're on a B2xx -- in that case, we adjust the LO anyway.
     if(!tx_on && !is_B2xx) return;
 
+
+    uhd::tune_request_t tx_request(freq);
+    
+    if(tvrt_lo_mode) {
+      tx_request.rf_freq_policy = uhd::tune_request_t::POLICY_MANUAL;
+      tx_request.rf_freq = tvrt_lo_fe_freq;
+    }
+    else {
+      tx_request.rf_freq_policy = uhd::tune_request_t::POLICY_AUTO;
+    }
+
+
     debugMsg(boost::format("Tuning TX unit to new frequency %f (request = %f  (%f %f))\n")
 	     % freq % tx_request.target_freq % tx_request.rf_freq % tx_request.dsp_freq);
 
-    // bool last_tx_ena = tx_fe_subtree->access<bool>("enabled").get();
-    // tx_fe_subtree->access<bool>("enabled").set(true);
-    last_tx_tune_result = usrp->set_tx_freq(freq);  
+    last_tx_tune_result = usrp->set_tx_freq(tx_request);
+
+    debugMsg(boost::format("Tuned TX unit to new frequency %g t.rf %g a.rf %g t.dsp %g a.dsp %g\n")
+	     % freq
+	     % last_tx_tune_result.target_rf_freq
+	     % last_tx_tune_result.actual_rf_freq
+	     % last_tx_tune_result.target_dsp_freq
+	     % last_tx_tune_result.actual_dsp_freq);
+
+
+
     last_tx_tune_result = checkLock(tx_request, 't', last_tx_tune_result);
     // tx_fe_subtree->access<bool>("enabled").set(last_tx_ena);
+
+    double txfreqs[2];
+    txfreqs[0] = usrp->get_tx_freq(0);
+    txfreqs[1] = usrp->get_tx_freq(1);
+    debugMsg(boost::format("TX LO = %g  TVRT LO = %g\n") % txfreqs[0] % txfreqs[1]);
   }
 
   // If we are setting the RX mode, then we need to send
@@ -519,6 +546,17 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
   case Command::TVRT_LO_CONFIG:
     setTransverterLOFreqPower(cmd->dparms[0], cmd->dparms[1]);
     break;
+
+  case SoDa::Command::TVRT_LO_ENABLE:
+    debugMsg("Enable Transverter LO");
+    enableTransverterLO();
+    break; 
+
+  case SoDa::Command::TVRT_LO_DISABLE:
+    debugMsg("Disable Transverter LO");
+    disableTransverterLO();
+    break;
+
   default:
     break; 
   }
@@ -682,24 +720,39 @@ void SoDa::USRPCtrl::setTransverterLOFreqPower(double freq, double power)
   uhd::gain_range_t tx_gain_range = usrp->get_tx_gain_range(1);
   double plo = tx_gain_range.start();
   double phi = tx_gain_range.stop();
-  double gain = plo + power * (phi - plo);
+  tvrt_lo_gain = plo + power * (phi - plo);
+  tvrt_lo_freq = freq; 
   
-  debugMsg(boost::format("Setting Transverter LO freq = %10lg power = %g gain = %g\n") % freq % power % gain);
+  debugMsg(boost::format("Setting Transverter LO freq = %10lg power = %g gain = %g\n") % tvrt_lo_freq % power % tvrt_lo_gain);
   
+  debugMsg("About to report Transverter LO setting.");
+  cmd_stream->put(new Command(Command::REP, Command::TVRT_LO_CONFIG, tvrt_lo_freq, power));  
+
+}
+
+void SoDa::USRPCtrl::enableTransverterLO()
+{
   usrp->set_tx_antenna("TX2", 1);
     
-  usrp->set_tx_gain(gain, 1);
-  usrp->set_tx_freq(freq, 1);
-  debugMsg("About to report Transverter LO setting.");
-  cmd_stream->put(new Command(Command::REP, Command::TVRT_LO_CONFIG, freq, power));  
+  usrp->set_tx_gain(tvrt_lo_gain, 1);
+  // tune the first LO 4MHz below the target, and let the DDC make up the rest. 
+  uhd::tune_request_t lo_freq_req(tvrt_lo_freq, -4.0e6);
+  uhd::tune_result_t tres = usrp->set_tx_freq(lo_freq_req, 1);
 
-  if(getDebugLevel()) {
-    BOOST_FOREACH (std::string key, usrp->get_usrp_tx_info(1).keys()) {
-      debugMsg(boost::format("LO output TX info: [%s] = \"%s\"\n") % key %
-	       usrp->get_usrp_tx_info(1).get(key));
-    }
+  tvrt_lo_mode = true;
+  
+  debugMsg(boost::format("LO frequency = %10lg power %g  number of channels = %d target_rf %g actual rf %g target dsp %g actual dsp %g\n")
+	     
+	     % usrp->get_tx_freq(1) % usrp->get_tx_gain(1) % usrp->get_tx_num_channels()
+	     % tres.target_rf_freq % tres.actual_rf_freq % tres.target_dsp_freq % tres.actual_dsp_freq);
 
-    debugMsg(boost::format("LO frequency = %10lg power %g  number of channels = %d\n") %
-	     usrp->get_tx_freq(1) % usrp->get_tx_gain(1) % usrp->get_tx_num_channels());
-  }
+  tvrt_lo_fe_freq = tres.target_rf_freq; 
 }
+
+void SoDa::USRPCtrl::disableTransverterLO()
+{
+  tvrt_lo_mode = false;
+  usrp->set_tx_gain(0.0, 1);
+  usrp->set_tx_freq(100.0e6, 1);
+}
+

@@ -152,6 +152,8 @@ namespace SoDa {
 
     /// set the transvert LO frequency and power
     void setTransverterLOFreqPower(double freq, double power);
+    void enableTransverterLO();
+    void disableTransverterLO();
     
     /// we use TX_IO bit 12 to turn on the TX relay
     /// we use TX_IO bit 11 to monitor the TX relay
@@ -190,6 +192,12 @@ namespace SoDa {
 
     std::string motherboard_name; ///< The model name of the USRP unit
 
+    // transverter local oscillator support.
+    bool tvrt_lo_mode; ///< if true, set the transmit frequency, with some knowledge of the tvrt LO.
+    double tvrt_lo_gain; ///< output power for the second transmit channel (used for transverter LO)
+    double tvrt_lo_freq; ///< the frequency of the second transmit channel oscillator
+    double tvrt_lo_fe_freq; ///< the frequency of the second transmit channel front-end oscillator
+    
     // enables verbose messages
     bool debug_mode; ///< print stuff when we are in debug mode
   };

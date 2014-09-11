@@ -53,7 +53,7 @@ SoDa::USRPLO::USRPLO(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
   // we aren't waiting for anything. 
   waiting_to_run_dry = false; 
 
-  // build the beacon buffer and the zero buffer.
+  // build the transverter local oscillator buffer and the zero buffer.
   const_env = new std::complex<float>[LO_buffer_size];
   for(int i = 0; i < LO_buffer_size; i++) {
     const_env[i] = std::complex<float>(1.0, 0.0);
