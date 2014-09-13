@@ -111,6 +111,8 @@ namespace SoDaRadio_GUI {
 
     if(config_tree != NULL) delete config_tree;
 
+    if(debug_mode) std::cerr << "About to create config tree" << std::endl; 
+	
     config_tree = new boost::property_tree::ptree();
     // does the file exist?
     if(!wxFile::Exists(fname.c_str())) {
@@ -136,9 +138,12 @@ namespace SoDaRadio_GUI {
     wxScrollEvent nullSE;
     wxSpinEvent nullSPE;
 
+    if(debug_mode) std::cerr << "loading band information" << std::endl; 
     // load the band information
     bandset = new SoDaRadio_BandSet(config_tree);
     setupBandSelect(bandset); 
+    
+    if(debug_mode) std::cerr << "loaded band information" << std::endl;
     
     // now go through each widget and read its value, and update it.
     m_ModeBox->SetStringSelection(wxString::FromUTF8(config_tree->get<std::string>("rx.mode").c_str()));
@@ -157,10 +162,10 @@ namespace SoDaRadio_GUI {
   
     // frequency updates
     SoDa::Command rncmd(SoDa::Command::SET, SoDa::Command::RX_RETUNE_FREQ,
-			applyRXTVOffset(rx_frequency));
+					    applyRXTVOffset(rx_frequency));
     sendMsg(&rncmd);
     SoDa::Command tncmd(SoDa::Command::SET, SoDa::Command::TX_RETUNE_FREQ,
-			applyTXTVOffset(tx_frequency));
+					    applyTXTVOffset(tx_frequency));
     sendMsg(&tncmd);
 
 

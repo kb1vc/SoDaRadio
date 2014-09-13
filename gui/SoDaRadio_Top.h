@@ -40,6 +40,7 @@
 #include "RadioListenerThread.hxx"
 #include "../src/UDSockets.hxx"
 #include "../src/Command.hxx"
+#include "../src/Debug.hxx"
 #include <map>
 #include <fstream>
 #include <boost/property_tree/ptree.hpp>
@@ -71,7 +72,7 @@ namespace SoDaRadio_GUI {
    * @li the wxWidgets GUI event loop that dispatches user requests
    * through the SoDaRadio_Top thread.
    */
-  class SoDaRadio_Top : public SoDaRadioFrame
+  class SoDaRadio_Top : public SoDaRadioFrame, public SoDa::Debug
   {
     friend class TuningDialog;
     friend class ControlsDialog;
@@ -220,7 +221,7 @@ namespace SoDaRadio_GUI {
     wxString GPS_Grid_Str; //(wxT("XXX"));
     wxString GPS_UTC_Str; // (wxT("XXX"));
   
-    bool debug_mode; 
+    unsigned int debug_mode; 
     double rx_frequency, tx_frequency;
     double last_tx_frequency, last_rx_frequency;
     bool tx_rx_locked;
@@ -258,7 +259,6 @@ namespace SoDaRadio_GUI {
     // the band list.
     SoDaRadio_BandSet * bandset; 
     SoDaRadio_Band * current_band; ///< the band that we're currently in (or NULL)
-  
 
     
     double applyRXTVOffset(double fr) {
@@ -280,7 +280,7 @@ namespace SoDaRadio_GUI {
 
     // Comm socket to SoDa radio server.
     SoDa::UD::ClientSocket * soda_radio, * soda_fft;
-    void sendMsg(SoDa::Command * cmd) {
+    void sendMsg(const SoDa::Command * cmd) {
       soda_radio->put(cmd, sizeof(SoDa::Command));
     }
 
@@ -368,12 +368,12 @@ namespace SoDaRadio_GUI {
     float powerToTXSetting(float fpow) {
       // take power in dBm and convert to
       // settings for TX
-      return (0.6 * fpow + 10.0); 
+      return (fpow);
     }
     float txSettingToPower(float setting) {
       // take power in dBm and convert to
       // settings for TX
-      return ((setting - 10.0) / 0.6); 
+      return setting; // ((setting - 10.0) / 0.6); 
     }
 
   private:

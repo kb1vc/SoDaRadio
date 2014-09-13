@@ -475,6 +475,7 @@ namespace SoDaRadio_GUI
 			wxStaticText* m_staticText41;
 			wxSpinCtrl* m_BandID;
 			wxCheckBox* m_TransverterMode;
+			wxCheckBox* m_LOGenMode;
 			wxRadioBox* m_InjectionSel;
 			wxStaticText* m_TransFreqLabel;
 			wxTextCtrl* m_TransFreqEntry;

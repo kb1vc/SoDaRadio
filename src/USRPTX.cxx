@@ -51,8 +51,23 @@ SoDa::USRPTX::USRPTX(Params * params, uhd::usrp::multi_usrp::sptr usrp,
   // and to the CW envelope stream
   cw_subs = cw_env_stream->subscribe(); 
 
+  LO_enabled = false;
+  LO_configured = false;
+  LO_capable = false;
+
   // create the tx buffer streamers.
-  uhd::stream_args_t stream_args("fc32", "sc16"); 
+  uhd::stream_args_t stream_args("fc32", "sc16");
+  stream_args.channels.push_back(0);
+  if(usrp->get_tx_num_channels() > 1) {
+    debugMsg("This radio is transverter LO capable");
+    // use the second channel as a transverter LO
+    stream_args.channels.push_back(1);
+    LO_capable = true;
+  }
+  else {
+    debugMsg("This radio is NOT transverter LO capable");
+  }
+  
   tx_bits = usrp->get_tx_stream(stream_args);
 
   // find out how to configure the transmitter
@@ -69,9 +84,9 @@ SoDa::USRPTX::USRPTX(Params * params, uhd::usrp::multi_usrp::sptr usrp,
   // we aren't waiting for anything. 
   waiting_to_run_dry = false; 
 
-  // build the beacon buffer and the zero buffer.
+  // build the beacon buffer, and the zero buffer.
   beacon_env = new float[tx_buffer_size];
-  zero_env = new float[tx_buffer_size]; 
+  zero_env = new float[tx_buffer_size];
   for(int i = 0; i < tx_buffer_size; i++) {
     beacon_env[i] = 1.0;
     zero_env[i] = 0.0; 
@@ -83,11 +98,16 @@ SoDa::USRPTX::USRPTX(Params * params, uhd::usrp::multi_usrp::sptr usrp,
   // set the initial envelope amplitude
   cw_env_amplitude = 0.7;  // more or less sqrt2/2
   
-  // build the zero buffer
+  // build the zero buffer and the transverter lo buffer
   zero_buf = new std::complex<float>[tx_buffer_size];
-  for(int i = 0; i < tx_buffer_size; i++) zero_buf[i] = std::complex<float>(0.0, 0.0);
+  const_buf = new std::complex<float>[tx_buffer_size];
+  for(int i = 0; i < tx_buffer_size; i++) {
+    zero_buf[i] = std::complex<float>(0.0, 0.0);
+    const_buf[i] = std::complex<float>(1.0, 0.0);
+  }
   
-  tx_enabled = false; 
+  tx_enabled = false;
+  
 }
 
 
@@ -101,9 +121,13 @@ void SoDa::USRPTX::run()
   bool exitflag = false;
   SoDaBuf * txbuf, * cwenv;
   Command * cmd; 
-  
+  std::vector<std::complex<float> *> buffers(LO_capable ? 2 : 1);
+
   while(!exitflag) {
     bool didwork = false; 
+    if(LO_capable && LO_enabled && LO_configured) buffers[1] = const_buf;
+    else if(LO_capable) buffers[1] = zero_buf;
+    
     if((cmd = cmd_stream->get(cmd_subs)) != NULL) {
       // process the command.
       execCommand(cmd);
@@ -111,21 +135,18 @@ void SoDa::USRPTX::run()
       exitflag |= (cmd->target == Command::STOP); 
       cmd_stream->free(cmd); 
     }
-    else if((tx_modulation != SoDa::Command::CW_L) &&
+    else if(tx_enabled &&
+	    (tx_modulation != SoDa::Command::CW_L) &&
 	    (tx_modulation != SoDa::Command::CW_U) &&
 	    (txbuf = tx_stream->get(tx_subs)) != NULL) {
       // get a buffer and 
-      if(tx_enabled) {
-	// no need to upconvert -- we are just doing baseband
-	// TX if and using the DSP and front end oscs to tune
-	// to the exact freq.  
-	// then put it out to the transmitter.
-	tx_bits->send(txbuf->getComplexBuf(), txbuf->getComplexLen(), md);
-	md.start_of_burst = false; 
-	didwork = true; 
-      }
+      buffers[0] = txbuf->getComplexBuf();
+      tx_bits->send(buffers, txbuf->getComplexLen(), md);
+      md.start_of_burst = false; 
+      didwork = true; 
+
       // now free the buffer up.
-      tx_stream->free(txbuf); 
+      tx_stream->free(txbuf);
     }
     else if(tx_enabled &&
 	    ((tx_modulation != SoDa::Command::CW_L) ||
@@ -134,7 +155,8 @@ void SoDa::USRPTX::run()
       // modulate a carrier with a constant envelope
       doCW(cw_buf, cwenv->getFloatBuf(), cwenv->getComplexLen());
       // now send it to the USRP
-      tx_bits->send(cw_buf, cwenv->getComplexLen(), md);
+      buffers[0] = cw_buf;
+      tx_bits->send(buffers, cwenv->getComplexLen(), md);
       cw_env_stream->free(cwenv);
       md.start_of_burst = false; 
       didwork = true; 
@@ -144,23 +166,29 @@ void SoDa::USRPTX::run()
 	     (tx_modulation != SoDa::Command::CW_U)) &&
 	    ((cwenv = cw_env_stream->get(cw_subs)) == NULL)) {
       // we have an empty CW buffer -- we've run out of text.
-      doCW(cw_buf, zero_env, tx_buffer_size); 
-      tx_bits->send(cw_buf, tx_buffer_size, md); 
+      doCW(cw_buf, zero_env, tx_buffer_size);
+      buffers[0] = cw_buf;
+      tx_bits->send(buffers, tx_buffer_size, md); 
       // are we supposed to tell anybody about this? 
       if(waiting_to_run_dry) {
 	cmd_stream->put(new Command(Command::REP, Command::TX_CW_EMPTY, 0));
 	waiting_to_run_dry = false; 
       }
     }
-    else if(beacon_mode) {
-      if(tx_enabled) {
-	// modulate a carrier with a constant envelope
-	doCW(cw_buf, beacon_env, tx_buffer_size);
-	// now send it to the USRP
-	tx_bits->send(cw_buf, tx_buffer_size, md);
-	md.start_of_burst = false; 
-	didwork = true; 
-      }
+    else if(tx_enabled && beacon_mode) {
+      // modulate a carrier with a constant envelope
+      doCW(cw_buf, beacon_env, tx_buffer_size);
+      // now send it to the USRP
+      buffers[0] = cw_buf;
+      tx_bits->send(buffers, tx_buffer_size, md);
+      md.start_of_burst = false; 
+      didwork = true; 
+    }
+    else {
+      // all other cases -- we still want to send the LO buffer
+      buffers[0] = zero_buf;
+      tx_bits->send(buffers, tx_buffer_size, md);
+      didwork = true; 
     }
 
     if(!didwork) {
@@ -194,12 +222,16 @@ void SoDa::USRPTX::transmitSwitch(bool tx_on)
     waiting_to_run_dry = false;
     md.start_of_burst = true;
     md.end_of_burst = false;
+    md.has_time_spec = false; 
     tx_enabled = true; 
   }
   else {
-    if(!tx_enabled) return;
-    md.end_of_burst = true;
-    tx_bits->send(zero_buf, 10, md);
+    if(!tx_enabled && !LO_enabled) return;
+    if(!LO_enabled) {
+      // If LO is enabled, we always send SOMETHING....
+      md.end_of_burst = true;
+      tx_bits->send(zero_buf, 10, md);
+    }
     tx_enabled = false;
   }
 }
@@ -230,6 +262,14 @@ void SoDa::USRPTX::execSetCommand(Command * cmd)
   case Command::TX_CW_EMPTY:
     waiting_to_run_dry = true; 
     break;
+  case SoDa::Command::TVRT_LO_ENABLE:
+    debugMsg("Enable Transverter LO");
+    LO_enabled = true; 
+    break; 
+  case SoDa::Command::TVRT_LO_DISABLE:
+    debugMsg("Disable Transverter LO");
+    LO_enabled = false; 
+    break;
   default:
     break; 
   }
@@ -248,5 +288,13 @@ void SoDa::USRPTX::execGetCommand(Command * cmd)
 
 void SoDa::USRPTX::execRepCommand(Command * cmd)
 {
+  switch(cmd->target) {
+  case SoDa::Command::TVRT_LO_CONFIG:
+    debugMsg("LO configured");
+    LO_configured = true; 
+    break;
+  default:
+    break;
+  }
 }
 
