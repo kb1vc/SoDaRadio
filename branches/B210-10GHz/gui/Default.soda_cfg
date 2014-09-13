@@ -228,7 +228,7 @@
 				<rx_locked>false</rx_locked>
 			</tx>
 			<transverter_mode>true</transverter_mode>
-			<transverter_lo_freq>5000</transverter_lo_freq>
+			<transverter_lo_freq>5180</transverter_lo_freq>
 			<transverter_multiplier>1</transverter_multiplier>
 			<transverter_local_lo>true</transverter_local_lo>
 			<low_side_injection>false</low_side_injection>

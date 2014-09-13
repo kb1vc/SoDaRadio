@@ -193,6 +193,7 @@ namespace SoDa {
     std::string motherboard_name; ///< The model name of the USRP unit
 
     // transverter local oscillator support.
+    bool tvrt_lo_capable; ///< if true, this unit can implement a local transverter oscillator.
     bool tvrt_lo_mode; ///< if true, set the transmit frequency, with some knowledge of the tvrt LO.
     double tvrt_lo_gain; ///< output power for the second transmit channel (used for transverter LO)
     double tvrt_lo_freq; ///< the frequency of the second transmit channel oscillator
