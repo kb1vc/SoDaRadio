@@ -228,7 +228,7 @@
   config_stream << "				<rx_locked>false</rx_locked>";
   config_stream << "			</tx>";
   config_stream << "			<transverter_mode>true</transverter_mode>";
-  config_stream << "			<transverter_lo_freq>5000</transverter_lo_freq>";
+  config_stream << "			<transverter_lo_freq>5180</transverter_lo_freq>";
   config_stream << "			<transverter_multiplier>1</transverter_multiplier>";
   config_stream << "			<transverter_local_lo>true</transverter_local_lo>";
   config_stream << "			<low_side_injection>false</low_side_injection>";

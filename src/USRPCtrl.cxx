@@ -101,11 +101,14 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
   if(is_B2xx) {
     usrp->set_rx_subdev_spec(std::string("A:A"), 0);
     if(is_B210) {
-      debugMsg("Setup two subdevices.");
+      debugMsg("Setup two subdevices -- TVRT_LO Capable");
       usrp->set_tx_subdev_spec(std::string("A:A A:B"), 0);
+      tvrt_lo_capable = true;
     }
     else {
+      debugMsg("Setup one subdevice -- NOT TVRT_LO Capable");
       usrp->set_tx_subdev_spec(std::string("A:A"), 0);
+      tvrt_lo_capable = false;
     }
   }
 
@@ -147,7 +150,7 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
   setTXEna(false);
 
   // turn of the LO
-  tvrt_lo_mode = false; 
+  tvrt_lo_mode = false;
 }
 
 
@@ -343,8 +346,10 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
 
     double txfreqs[2];
     txfreqs[0] = usrp->get_tx_freq(0);
-    txfreqs[1] = usrp->get_tx_freq(1);
-    debugMsg(boost::format("TX LO = %g  TVRT LO = %g\n") % txfreqs[0] % txfreqs[1]);
+    if(tvrt_lo_mode) {
+      txfreqs[1] = usrp->get_tx_freq(1);
+      debugMsg(boost::format("TX LO = %g  TVRT LO = %g\n") % txfreqs[0] % txfreqs[1]);
+    }
   }
 
   // If we are setting the RX mode, then we need to send
@@ -732,6 +737,12 @@ void SoDa::USRPCtrl::setTransverterLOFreqPower(double freq, double power)
 
 void SoDa::USRPCtrl::enableTransverterLO()
 {
+  if(!tvrt_lo_capable) {
+    tvrt_lo_mode = false; 
+    return;
+  }
+
+  debugMsg("Enabling transverter LO\n");
   usrp->set_tx_antenna("TX2", 1);
     
   usrp->set_tx_gain(tvrt_lo_gain, 1);
@@ -752,6 +763,7 @@ void SoDa::USRPCtrl::enableTransverterLO()
 void SoDa::USRPCtrl::disableTransverterLO()
 {
   tvrt_lo_mode = false;
+  if(!tvrt_lo_capable) return; 
   usrp->set_tx_gain(0.0, 1);
   usrp->set_tx_freq(100.0e6, 1);
 }

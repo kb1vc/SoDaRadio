@@ -64,6 +64,9 @@ SoDa::USRPTX::USRPTX(Params * params, uhd::usrp::multi_usrp::sptr usrp,
     stream_args.channels.push_back(1);
     LO_capable = true;
   }
+  else {
+    debugMsg("This radio is NOT transverter LO capable");
+  }
   
   tx_bits = usrp->get_tx_stream(stream_args);
 
