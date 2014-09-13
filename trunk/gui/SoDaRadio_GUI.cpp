@@ -241,6 +241,7 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 	wxStaticBoxSizer* sbSizer30;
 	sbSizer30 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("TX Frequency") ), wxVERTICAL );
 	
+	sbSizer30->SetMinSize( wxSize( 230,-1 ) ); 
 	m_TXFreqText = new wxStaticText( this, wxID_ANY, wxT("10,368.100 000"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT );
 	m_TXFreqText->Wrap( -1 );
 	m_TXFreqText->SetFont( wxFont( 20, 70, 90, 90, false, wxEmptyString ) );
@@ -255,6 +256,7 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 	wxStaticBoxSizer* sbSizer311;
 	sbSizer311 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("RX Frequency") ), wxVERTICAL );
 	
+	sbSizer311->SetMinSize( wxSize( 230,-1 ) ); 
 	m_RXFreqText = new wxStaticText( this, wxID_ANY, wxT("10,368.100 000"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT );
 	m_RXFreqText->Wrap( -1 );
 	m_RXFreqText->SetFont( wxFont( 20, 70, 90, 90, false, wxEmptyString ) );
