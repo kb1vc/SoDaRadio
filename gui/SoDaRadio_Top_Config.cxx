@@ -44,7 +44,8 @@ namespace SoDaRadio_GUI {
   void SoDaRadio_Top::SaveSoDaConfig(const wxString & fname)
   {
 
-    config_tree = new boost::property_tree::ptree();
+    config_tree = config_tree_alloc = new boost::property_tree::ptree();
+    debugMsg(boost::format("Allocated config tree = %p\n") % config_tree);
 
     config_tree->put("SoDaRadio.af.gain", 3.0);
     //std::cerr << "completed get tree put" << std::endl; 
@@ -57,13 +58,13 @@ namespace SoDaRadio_GUI {
     config_tree->put("SoDaRadio.tx.freq", tx_frequency);
     config_tree->put("SoDaRadio.tx.prev_freq", last_tx_frequency);
     config_tree->put("SoDaRadio.tx.rf_outpower", tx_rf_outpower);
-  
+    debugMsg(boost::format("config tree = %p A\n") % config_tree);  
     config_tree->put("SoDaRadio.station.call", from_callsign.mb_str(wxConvUTF8));
     config_tree->put("SoDaRadio.station.qth", from_grid.mb_str(wxConvUTF8));
 
     config_tree->put("SoDaRadio.af.gain", m_AFGain->GetValue());
     config_tree->put("SoDaRadio.af.bw", m_AFBWChoice->GetSelection());  
-
+    debugMsg(boost::format("config tree = %p B\n") % config_tree);
     config_tree->put("SoDaRadio.cw.speed", controls->getCWSpeed());
     config_tree->put("SoDaRadio.cw.sidetone", controls->getSTGain());
 
@@ -71,13 +72,14 @@ namespace SoDaRadio_GUI {
     config_tree->put("SoDaRadio.spectrum.yscale", spectrum_y_scale);
     config_tree->put("SoDaRadio.spectrum.bandspread", spectrum_bandspread);
     config_tree->put("SoDaRadio.spectrum.reflevel", spectrum_y_reflevel);
+    debugMsg(boost::format("config tree = %p C\n") % config_tree);
     if(SpectrumDisplay->GetSelection() == 0) {
       config_tree->put("SoDaRadio.spectrum.display", "waterfall");
     }
     else {
       config_tree->put("SoDaRadio.spectrum.display", "periodogram");
     }
-  
+    debugMsg(boost::format("config tree = %p D\n") % config_tree);
     config_tree->put("SoDaRadio.reference.source", tuner->getExtRefEna());
     config_tree->put("SoDaRadio.tx.tx_rx_locked", tx_rx_locked);
     boost::property_tree::xml_writer_settings<char> wset('\t',1);
@@ -88,7 +90,10 @@ namespace SoDaRadio_GUI {
     SaveCurrentBand();
     bandset->save(config_tree);
     
+    debugMsg(boost::format("Saved config tree = %p before writexml\n") % config_tree);
     write_xml((const char*) fname.mb_str(wxConvUTF8), *config_tree, std::locale(), wset);
+
+    debugMsg(boost::format("Saved config tree = %p after writexml\n") % config_tree);
   }
 
   void SoDaRadio_Top::CreateDefaultConfig(boost::property_tree::ptree * config_tree)
@@ -108,47 +113,59 @@ namespace SoDaRadio_GUI {
   
   bool SoDaRadio_Top::LoadSoDaConfig(const wxString & fname)
   {
+    debugMsg(boost::format("About to delete config tree = %p\n") % config_tree);
+    if(config_tree_alloc != NULL) delete config_tree_alloc;
 
-    if(config_tree != NULL) delete config_tree;
-
-    if(debug_mode) std::cerr << "About to create config tree" << std::endl; 
+    debugMsg("About to create config tree\n");
 	
-    config_tree = new boost::property_tree::ptree();
+    config_tree_alloc = new boost::property_tree::ptree();
+    debugMsg(boost::format("Got new config tree = %p\n") % config_tree_alloc);
+    
     // does the file exist?
     if(!wxFile::Exists(fname.c_str())) {
       // then we need to load the default config.
-      CreateDefaultConfig(config_tree);
+      debugMsg(boost::format("Creating default config tree = %p\n") % config_tree_alloc);
+      CreateDefaultConfig(config_tree_alloc);
       // also pop up the save config dialog box.
       NewConfigDialog * ncd = new NewConfigDialog(this, this);
       ncd->Show();
     }
     else {
+      debugMsg(boost::format("Reading config file config tree = %p from %s\n") % config_tree_alloc % fname.c_str());
       std::ifstream config_stream((const char *) fname.mb_str(wxConvUTF8));
-      read_xml(config_stream, *config_tree, boost::property_tree::xml_parser::trim_whitespace);
+      read_xml(config_stream, *config_tree_alloc,
+	       boost::property_tree::xml_parser::trim_whitespace);
       config_stream.close();
     }
 
+    debugMsg(boost::format("filled in config tree = %p\n") % config_tree_alloc);
     // The original config format wasn't really proper XML... 
-    if(config_tree->get_child_optional("SoDaRadio")) {
-      config_tree = & config_tree->get_child("SoDaRadio"); 
+    if(config_tree_alloc->get_child_optional("SoDaRadio")) {
+      debugMsg(boost::format("new format config tree = %p\n") % config_tree_alloc);
+      config_tree = & config_tree_alloc->get_child("SoDaRadio"); 
+    } else {
+      debugMsg(boost::format("old format config tree = %p\n") % config_tree_alloc);
+      config_tree = config_tree_alloc; 
     }
     
+    debugMsg(boost::format("Got the config tree %p\n") % config_tree);
     // now call all the event updates.
     wxCommandEvent nullCE;
     wxScrollEvent nullSE;
     wxSpinEvent nullSPE;
 
-    if(debug_mode) std::cerr << "loading band information" << std::endl; 
+    debugMsg(boost::format("Loading band information config tree %p\n") % config_tree);
     // load the band information
     bandset = new SoDaRadio_BandSet(config_tree);
     setupBandSelect(bandset); 
     
-    if(debug_mode) std::cerr << "loaded band information" << std::endl;
+    debugMsg("Loaded band information\n");
     
     // now go through each widget and read its value, and update it.
     m_ModeBox->SetStringSelection(wxString::FromUTF8(config_tree->get<std::string>("rx.mode").c_str()));
     OnModeChoice(nullCE);
   
+    debugMsg("Updating frequencies\n");
     rx_frequency = config_tree->get<double>("rx.freq");
     last_rx_frequency = config_tree->get<double>("rx.prev_freq");
     UpdateRXFreq(rx_frequency);
@@ -168,12 +185,13 @@ namespace SoDaRadio_GUI {
 					    applyTXTVOffset(tx_frequency));
     sendMsg(&tncmd);
 
-
+    debugMsg("Setting transmit power\n");
     // query all the relevant widgets and record their values
     tx_rf_outpower = config_tree->get<float>("tx.rf_outpower");
     controls->setTXPower(tx_rf_outpower);
 
     
+    debugMsg("Setting QSO fields\n");
     from_callsign = wxString::FromUTF8(config_tree->get<std::string>("station.call").c_str());
     from_grid = wxString::FromUTF8(config_tree->get<std::string>("station.qth").c_str());
     to_grid = wxT("FN42bl");
@@ -182,6 +200,7 @@ namespace SoDaRadio_GUI {
       UpdateNavigation(); 
     }
 
+    debugMsg("Setting Gain controls\n");
     // these are the gain controls.
     m_AFGain->SetValue(config_tree->get<float>("af.gain"));
     m_AFBWChoice->SetSelection(config_tree->get<int>("af.bw"));
@@ -196,6 +215,7 @@ namespace SoDaRadio_GUI {
 
     tuner->setExtRefEna(config_tree->get<bool>("reference.source"));
 
+    debugMsg("Updating spectrum widget\n");
     // update the spectrum widget
     spectrum_bandspread = config_tree->get<float>("spectrum.bandspread");
     spectrum_center_freq = config_tree->get<float>("spectrum.center_freq");
@@ -219,6 +239,7 @@ namespace SoDaRadio_GUI {
     }
     OnTXRXLock(nullCE); 
 
+    debugMsg("Setting Current Band\n");
     // now set the current band.
     SoDaRadio_Band * defband;
     try {
@@ -228,6 +249,8 @@ namespace SoDaRadio_GUI {
     }
     SetCurrentBand(defband);
 
+    debugMsg("Completed LoadConfig\n");
+    
     return true; 
   }
 
@@ -241,7 +264,8 @@ namespace SoDaRadio_GUI {
     }
 
     int band_list_idx = 5000; 
-    BOOST_FOREACH(SoDaRadio_Band * v, bandset->band_list) {
+    BOOST_FOREACH(SoDaRadio_BandSet::BandMapEntry b, bandset->band_map) {
+      SoDaRadio_Band * v = b.second;
       wxMenuItem * newItem = new wxMenuItem( m_bandSelect, band_list_idx, wxString(v->getName().c_str(), wxConvUTF8),
 					     wxEmptyString, wxITEM_NORMAL); 
       m_bandSelect->Append(newItem);

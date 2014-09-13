@@ -300,7 +300,7 @@ namespace SoDaRadio_GUI {
     void UpdateNavigation();
 	
     // configuration info
-    boost::property_tree::ptree * config_tree; 
+    boost::property_tree::ptree * config_tree_alloc, * config_tree; 
 
     // Spectrum display
     double GetSpread();

@@ -132,7 +132,7 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnSaveConfigAs( wxCommandEvent& event )
   {
-    wxString defaultDir = wxT("~/.SoDa");
+    wxString defaultDir = wxT("~/.SoDaRadio");
     wxString defaultFilename = wxT("SoDa.soda_cfg");
     wxString wildcard = wxT("SoDa Config files (*.soda_cfg)|*.soda_cfg");
     wxFileDialog dialog(this, wxT("Save to Selected Configuration File"), defaultDir, defaultFilename, wildcard, wxSAVE);

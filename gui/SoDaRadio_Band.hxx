@@ -31,6 +31,7 @@
 #include <string>
 #include <iostream>
 #include <list>
+#include <map>
 #include <boost/format.hpp>
 #include <boost/foreach.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -178,7 +179,9 @@ public:
       band.put("transverter_mode", false); 
     }
 
+    debugMsg(boost::format("sodaradio band sees config_tree = %p\n") % config_tree); 
     config_tree->add_child("SoDaRadio.bands.band", band);
+    debugMsg(boost::format("sodaradio band sees config_tree = %p after add_child\n") % config_tree); 
   }
   
   bool inBand(double freq) {
@@ -233,9 +236,13 @@ public:
 
 class SoDaRadio_BandSet : public SoDa::Debug {
 public:
+  
+  typedef std::pair<std::string, SoDaRadio_Band*> BandMapEntry;
+  
   SoDaRadio_BandSet(boost::property_tree::ptree * config_tree) :
     SoDa::Debug("SoDaRadio_BandSet")
   {
+    debugMsg(boost::format("sodaradio bandset const sees config_tree = %p\n") % config_tree); 
     if(!config_tree->get_child_optional("bands")) {
       return;
     }
@@ -246,37 +253,33 @@ public:
 	add(nb);
       }
     }
+    debugMsg(boost::format("sodaradio bandset const sees config_tree = %p at end\n") % config_tree); 
   }
   
   void save(boost::property_tree::ptree * config_tree) {
-    for(std::list< SoDaRadio_Band * >::iterator bi = band_list.begin();
-	bi != band_list.end();
-	++bi) {
-      (*bi)->save(config_tree); 
-    }    
+    debugMsg(boost::format("sodaradio bandset save const sees config_tree = %p\n") % config_tree); 
+    BOOST_FOREACH(BandMapEntry b, band_map) {
+      b.second->save(config_tree);
+    }
+    debugMsg(boost::format("sodaradio bandset save const sees config_tree = %p at end\n") % config_tree); 
   }
 
   void add(SoDaRadio_Band * band) {
-    band_list.push_back(band); 
+    band_map[band->getName()] = band;
   }
 
-  SoDaRadio_Band * getByName(const std::string & name) {
-    for(std::list< SoDaRadio_Band * >::iterator bi = band_list.begin();
-	bi != band_list.end();
-	++bi) {
-      SoDaRadio_Band * r = *bi;
-      if(r->isNamed(name)) return r; 
+  SoDaRadio_Band * getByName(const std::string name) {
+    if(band_map.find(name) != band_map.end()) {
+      return band_map[name]; 
     }
-    return NULL; 
+    else return NULL; 
   }
 
   SoDaRadio_Band * getByIndex(int idx) {
-    int i = 0; 
-    for(std::list< SoDaRadio_Band * >::iterator bi = band_list.begin();
-	bi != band_list.end();
-	++bi, i++) {
-      SoDaRadio_Band * r = *bi;
-      if(i == idx) return r; 
+    int i = 0;
+    BOOST_FOREACH(BandMapEntry b, band_map) {
+      if(i == idx) return b.second;
+      i++; 
     }
     return NULL; 
   }
@@ -284,7 +287,8 @@ public:
   SoDaRadio_Band * getByFreq(double freq) {
     SoDaRadio_Band * ret = NULL;
     double smallest_range = 1e12; // find the best match.
-    BOOST_FOREACH(SoDaRadio_Band * v, band_list) {
+    BOOST_FOREACH(BandMapEntry b, band_map) {
+      SoDaRadio_Band * v = b.second; 
       if((v->lower_band_edge <= freq) && (v->upper_band_edge >= freq)) {
 	double diff = v->upper_band_edge - v->lower_band_edge;
 	if(diff < smallest_range) {
@@ -297,8 +301,8 @@ public:
   }
 
   std::string getNextName() {
-    if(bli != band_list.end()) {
-      SoDaRadio_Band * r = *bli; 
+    if(bli != band_map.end()) {
+      SoDaRadio_Band * r = (*bli).second; 
       ++bli; 
       return r->getName(); 
     }
@@ -306,12 +310,12 @@ public:
   }
 
   std::string getFirstName() {
-    bli = band_list.begin();
+    bli = band_map.begin();
     return getNextName(); 
   }
 
-  std::list< SoDaRadio_Band * > band_list; 
+  std::map< std::string, SoDaRadio_Band * > band_map; 
 private:
-  std::list< SoDaRadio_Band * >::iterator bli;
+  std::map< std::string,  SoDaRadio_Band * >::iterator bli;
 }; 
 #endif
