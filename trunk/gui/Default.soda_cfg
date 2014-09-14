@@ -181,9 +181,9 @@
 		</band>
 		<band>
 			<name>10GHz</name>
-			<upper_band_edge>10368.5</upper_band_edge>
+			<upper_band_edge>10370.5</upper_band_edge>
 			<lower_band_edge>10368</lower_band_edge>
-			<last_rx_freq>10368.29572222222</last_rx_freq>
+			<last_rx_freq>10368.09572222222</last_rx_freq>
 			<last_tx_freq>10368</last_tx_freq>
 			<rx_antenna_choice>RX2</rx_antenna_choice>
 			<enable_transmit>true</enable_transmit>
@@ -208,11 +208,11 @@
 		</band>
 		<band>
 			<name>10GHz-B210</name>
-			<upper_band_edge>10368.5</upper_band_edge>
-			<lower_band_edge>10368</lower_band_edge>
+			<upper_band_edge>10370</upper_band_edge>
+			<lower_band_edge>10360</lower_band_edge>
 			<last_rx_freq>10368.09572222222</last_rx_freq>
-			<last_tx_freq>10368</last_tx_freq>
-			<rx_antenna_choice>RX2</rx_antenna_choice>
+			<last_tx_freq>10368.09572222222</last_tx_freq>
+			<rx_antenna_choice>TX/RX</rx_antenna_choice>
 			<enable_transmit>true</enable_transmit>
 			<default_mode>CW_U</default_mode>
 			<band_id>3</band_id>
