@@ -1,5 +1,18 @@
 SoDa -- A Software Defined Radio for the Ettus Research USRP
 
+
+Version 3.0
+
+See the blog entry for the B210 10GHz transverter. 
+
+Major changes to USRP server and GUI to support a minimal cost
+10GHz rig using the B210 and an external mixer. 
+
+Other changes for debugging (added Debug class and debugMsg). 
+Fixed a load configuration bug.
+
+--------------
+
 Version 2.2
 
 Minor updates to fix problems with unitialized data in 
