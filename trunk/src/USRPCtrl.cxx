@@ -111,6 +111,10 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
       tvrt_lo_capable = false;
     }
   }
+  else {
+    debugMsg("Setup one subdevice -- NOT TVRT_LO Capable");
+    tvrt_lo_capable = false;
+  }
 
   first_gettime = 0.0;
   double tmp = getTime();
