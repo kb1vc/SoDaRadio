@@ -1,5 +1,17 @@
 SoDa -- A Software Defined Radio for the Ettus Research USRP
 
+Version 3.1
+
+fixed an unitialized variable that caused intermittent
+failure with units that were not B200 or B210.  URSPCtl
+would throw an exception complaining about the unavailability
+of a second transmit channel. 
+
+Note that there is STILL a problem with any of the File->Save...
+dialog boxes under Fedora... working on this.
+
+
+---------------
 
 Version 3.0
 
