@@ -118,6 +118,10 @@ int doWork(int argc, char * argv[])
   params.setRXRate(1.0e6);
   params.setRFBufferSize(10000);
   params.setTXRate(1.0e6);
+
+  // setup the debug widget
+  SoDa::Debug d(params.getDebugLevel(), "SoDaBench");
+  d.setDefaultLevel(params.getDebugLevel());
   
   // These are the mailboxes that connect
   // the various widgets
@@ -144,12 +148,31 @@ int doWork(int argc, char * argv[])
 
   // first command in the list will disable the downconverter. 
   cmd_stream.put(new SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_STATE, 2));
+
+  // test -- send some commands to start the sweeper at 432.300 step by 50 Hz, in 200 mS increments
+  // cmd_stream.put(new SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_ANT, std::string("TX/RX")));
+  // cmd_stream.put(new SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_BEACON, 1)); 
+  // cmd_stream.put(new SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_STATE, 1));
+  // cmd_stream.put(new SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_RF_GAIN, 100.0));
+  // cmd_stream.put(new SoDa::Command(SoDa::Command::SET, SoDa::Command::START_TX_SWEEP, 432.3e6, 432.32e6,50.0, 2000000.0));
+		 
  
   // start command consumers first.
   ctrl.start();
   rx.start();
   tx.start();
 
+  usleep(5000000);
+
+  
+  cmd_stream.put(new SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_ANT, std::string("TX/RX")));
+  cmd_stream.put(new SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_BEACON, 1)); 
+  cmd_stream.put(new SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_STATE, 1));
+  cmd_stream.put(new SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_RF_GAIN, 100.0));
+  cmd_stream.put(new SoDa::Command(SoDa::Command::SET, SoDa::Command::START_TX_SWEEP, 432.3e6, 432.304e6,0.0, 20000.0));
+
+  // usleep(1000000);
+  // cmd_stream.put(new SoDa::Command(SoDa::Command::SET, SoDa::Command::STOP_TX_SWEEP));
 
   // wait for the user interface to tell us that it is time to quit.
   ui.join();

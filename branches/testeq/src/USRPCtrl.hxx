@@ -47,8 +47,43 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <uhd/usrp/dboard_base.hpp>
 #include <uhd/types/tune_request.hpp>
 #include <uhd/types/tune_result.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <math.h>
+
+namespace pt = boost::posix_time;
 
 namespace SoDa {
+
+  ///  @class TXSweep
+  ///
+  ///  remembers the parameters for a transmit sweep command -- used in SoDaBench
+  class TXSweep {
+  public:
+    TXSweep() {
+      enabled = false; 
+    }
+
+    void enable() { enabled = true; }
+    void disable() { enabled = false; }
+
+    void setParms(double *p) {
+      start = p[0];
+      stop = p[1];
+      fstep = p[2];
+      long usec = lrint(p[3]);
+      tstep = pt::microseconds(usec);
+
+      current = start; 
+    }
+
+    bool enabled; 
+    double start; //< start frequency
+    double stop; //< end frequency
+    double fstep; //< HZ between frequency settings
+    double current; //< The current frequency that we're driving out
+    pt::time_duration tstep; //< seconds between frequency settings
+  }; 
+  
   ///  @class USRPCtrl
   /// 
   ///  Though libuhd is designed to be re-entrant, there are some indications
@@ -81,6 +116,7 @@ namespace SoDa {
     /// don't have frontend lock indications (as of 3.7.0)
     /// and need a special sample rate.
     bool is_B2xx;
+    bool is_B210; ///< the B210 has two tx channels -- use the second for a Transverter LO -- see USRPLO
 
     /// Parse an incoming command and dispatch.
     /// @param cmd a command record
@@ -150,6 +186,19 @@ namespace SoDa {
     /// @param val true to enable the transmitter, false otherwise.
     void setTXEna(bool val);
 
+
+    /// set the transvert LO frequency and power
+    void setTransverterLOFreqPower(double freq, double power);
+    void enableTransverterLO();
+    void disableTransverterLO();
+
+    /// transmit sweeper structures.
+    TXSweep tx_sweep;
+    void stepTXSweep();
+
+    /// local deferred command queue
+    SoDa::CommandQueue<boost::posix_time::ptime> pending_commands; 
+    
     /// we use TX_IO bit 12 to turn on the TX relay
     /// we use TX_IO bit 11 to monitor the TX relay
     static const unsigned int TX_RELAY_CTL; ///< mask for RELAY control bit
@@ -187,6 +236,13 @@ namespace SoDa {
 
     std::string motherboard_name; ///< The model name of the USRP unit
 
+    // transverter local oscillator support.
+    bool tvrt_lo_capable; ///< if true, this unit can implement a local transverter oscillator.
+    bool tvrt_lo_mode; ///< if true, set the transmit frequency, with some knowledge of the tvrt LO.
+    double tvrt_lo_gain; ///< output power for the second transmit channel (used for transverter LO)
+    double tvrt_lo_freq; ///< the frequency of the second transmit channel oscillator
+    double tvrt_lo_fe_freq; ///< the frequency of the second transmit channel front-end oscillator
+    
     // enables verbose messages
     bool debug_mode; ///< print stuff when we are in debug mode
   };

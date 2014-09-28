@@ -28,7 +28,6 @@
 
 #include "xyplot.hxx"
 #include <wx/print.h>
-#include "SoDaRadio_Top.h"
 
 using namespace std;
 
@@ -59,7 +58,7 @@ namespace SoDaRadio_GUI {
     str.Printf(marker_template, x * marker_x_scalefactor, y * marker_y_scalefactor); 
   }
 
-  XYPlot::XYPlot(wxPanel * parent, SoDaRadio_Top * _radio, int id,
+  XYPlot::XYPlot(wxPanel * parent, GraphClient * _client, int id,
 		 const wxPoint & pos,
 		 const wxSize & size,
 		 const int flags
@@ -67,7 +66,7 @@ namespace SoDaRadio_GUI {
     : wxPanel(parent, id, pos, size, wxSUNKEN_BORDER)
   {
     m_parent = parent;
-    radio = _radio;
+    client = _client;
 
     xlabel = wxT("");
     ylabel = wxT("");
@@ -102,7 +101,7 @@ namespace SoDaRadio_GUI {
     if((x > ll.x) && (x < ur.x) && (y < ll.y) && (y > ur.y)) {
       double fx, fy;
       UnScaleXY(wxPoint(x, y), fx, fy);
-      radio->SetRXFreqFromDisp(fx); 
+      if(client != NULL) client->handleClick(fx, fy); 
     }
     if (refresh_required) Refresh(); 
     event.Skip(); 

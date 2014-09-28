@@ -31,16 +31,20 @@
 #include <string>
 #include <iostream>
 #include <list>
+#include <map>
 #include <boost/format.hpp>
 #include <boost/foreach.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
+#include "../src/Debug.hxx"
 
-class SoDaRadio_Band {
+class SoDaRadio_Band : public SoDa::Debug {
 public:
-  SoDaRadio_Band(boost::property_tree::ptree * banditem) {
+  SoDaRadio_Band(boost::property_tree::ptree * banditem) :
+    SoDa::Debug("SoDaRadio_Band") {
     
     band_name = banditem->get<std::string>("name");
+    debugMsg(boost::format("creating band %s") % band_name);
     upper_band_edge = banditem->get<double>("upper_band_edge");
     lower_band_edge = banditem->get<double>("lower_band_edge");
 
@@ -57,10 +61,18 @@ public:
     transverter_mode = banditem->get<bool>("transverter_mode");
 
     if(transverter_mode) {
+      debugMsg("in transverter mode");
+      transverter_local_lo = banditem->get<bool>("transverter_local_lo", false);
+      debugMsg(boost::format("Transverter mode with transverter_local_lo = %d") % transverter_local_lo);
       transverter_lo_freq = banditem->get<double>("transverter_lo_freq");
       transverter_multiplier = banditem->get<double>("transverter_multiplier");
       low_side_injection = banditem->get<bool>("low_side_injection"); 
+      debugMsg("completed transverter mode");
     }
+    else {
+      transverter_local_lo = false;
+    }
+
 
     try {
       tx_rx_locked = banditem->get<bool>("tx.rx_locked");
@@ -90,15 +102,15 @@ public:
     
   }
 
-  SoDaRadio_Band() {
-    return; 
+  SoDaRadio_Band() : SoDa::Debug("SoDaRadio_Band-empty") {
+     return; 
   }
   
   SoDaRadio_Band(std::string name, double lower, double upper,
 		 std::string mode, 
 		 std::string rx_ant,
 		 unsigned char _band_id, 
-		 bool tx_ena) {
+		 bool tx_ena) : SoDa::Debug("SoDaRadio_Band") {
     setupBand(name, lower, upper, mode, rx_ant, _band_id, tx_ena);
   }
 
@@ -108,6 +120,7 @@ public:
 		 unsigned char _band_id,
 		 bool tx_ena) {
     transverter_mode = false;
+    transverter_local_lo = false; 
     band_name = name;
     upper_band_edge = upper;
     lower_band_edge = lower;
@@ -126,8 +139,9 @@ public:
     tx_rx_locked = true;
   }
 
-  void setupTransverter(double lo_freq, double mult, bool low_side) {
+  void setupTransverter(double lo_freq, double mult, bool low_side, bool local_lo) {
     transverter_mode = true;
+    transverter_local_lo = local_lo;
     transverter_lo_freq = lo_freq; 
     transverter_multiplier = mult; 
     low_side_injection = low_side; 
@@ -156,6 +170,7 @@ public:
 
     if(transverter_mode) {
       band.put("transverter_mode", true);
+      band.put("transverter_local_lo", transverter_local_lo);
       band.put("transverter_lo_freq", transverter_lo_freq);
       band.put("transverter_multiplier", transverter_multiplier);
       band.put("low_side_injection", low_side_injection); 
@@ -164,7 +179,9 @@ public:
       band.put("transverter_mode", false); 
     }
 
+    debugMsg(boost::format("sodaradio band sees config_tree = %p\n") % config_tree); 
     config_tree->add_child("SoDaRadio.bands.band", band);
+    debugMsg(boost::format("sodaradio band sees config_tree = %p after add_child\n") % config_tree); 
   }
   
   bool inBand(double freq) {
@@ -198,6 +215,7 @@ public:
   std::string default_mode; ///< what is the "default" choice for modulation type?
 
   bool transverter_mode; ///< if true, we use a transverter for this band.
+  bool transverter_local_lo; ///< if true, the LO for the transverter is generated on the USRP 2nd TX channel
   double transverter_lo_freq; ///< this is the LO freq that we'll measure for calibration purposes.
   double transverter_multiplier; ///< actual freq = tuned_freq + lo_freq * mult
   bool low_side_injection;
@@ -216,9 +234,15 @@ public:
   unsigned char band_id; ///< an 8 bit specifier to select the band on an external bandswitch.
 }; 
 
-class SoDaRadio_BandSet {
+class SoDaRadio_BandSet : public SoDa::Debug {
 public:
-  SoDaRadio_BandSet(boost::property_tree::ptree * config_tree) {
+  
+  typedef std::pair<std::string, SoDaRadio_Band*> BandMapEntry;
+  
+  SoDaRadio_BandSet(boost::property_tree::ptree * config_tree) :
+    SoDa::Debug("SoDaRadio_BandSet")
+  {
+    debugMsg(boost::format("sodaradio bandset const sees config_tree = %p\n") % config_tree); 
     if(!config_tree->get_child_optional("bands")) {
       return;
     }
@@ -229,37 +253,33 @@ public:
 	add(nb);
       }
     }
+    debugMsg(boost::format("sodaradio bandset const sees config_tree = %p at end\n") % config_tree); 
   }
   
   void save(boost::property_tree::ptree * config_tree) {
-    for(std::list< SoDaRadio_Band * >::iterator bi = band_list.begin();
-	bi != band_list.end();
-	++bi) {
-      (*bi)->save(config_tree); 
-    }    
+    debugMsg(boost::format("sodaradio bandset save const sees config_tree = %p\n") % config_tree); 
+    BOOST_FOREACH(BandMapEntry b, band_map) {
+      b.second->save(config_tree);
+    }
+    debugMsg(boost::format("sodaradio bandset save const sees config_tree = %p at end\n") % config_tree); 
   }
 
   void add(SoDaRadio_Band * band) {
-    band_list.push_back(band); 
+    band_map[band->getName()] = band;
   }
 
-  SoDaRadio_Band * getByName(const std::string & name) {
-    for(std::list< SoDaRadio_Band * >::iterator bi = band_list.begin();
-	bi != band_list.end();
-	++bi) {
-      SoDaRadio_Band * r = *bi;
-      if(r->isNamed(name)) return r; 
+  SoDaRadio_Band * getByName(const std::string name) {
+    if(band_map.find(name) != band_map.end()) {
+      return band_map[name]; 
     }
-    return NULL; 
+    else return NULL; 
   }
 
   SoDaRadio_Band * getByIndex(int idx) {
-    int i = 0; 
-    for(std::list< SoDaRadio_Band * >::iterator bi = band_list.begin();
-	bi != band_list.end();
-	++bi, i++) {
-      SoDaRadio_Band * r = *bi;
-      if(i == idx) return r; 
+    int i = 0;
+    BOOST_FOREACH(BandMapEntry b, band_map) {
+      if(i == idx) return b.second;
+      i++; 
     }
     return NULL; 
   }
@@ -267,7 +287,8 @@ public:
   SoDaRadio_Band * getByFreq(double freq) {
     SoDaRadio_Band * ret = NULL;
     double smallest_range = 1e12; // find the best match.
-    BOOST_FOREACH(SoDaRadio_Band * v, band_list) {
+    BOOST_FOREACH(BandMapEntry b, band_map) {
+      SoDaRadio_Band * v = b.second; 
       if((v->lower_band_edge <= freq) && (v->upper_band_edge >= freq)) {
 	double diff = v->upper_band_edge - v->lower_band_edge;
 	if(diff < smallest_range) {
@@ -280,8 +301,8 @@ public:
   }
 
   std::string getNextName() {
-    if(bli != band_list.end()) {
-      SoDaRadio_Band * r = *bli; 
+    if(bli != band_map.end()) {
+      SoDaRadio_Band * r = (*bli).second; 
       ++bli; 
       return r->getName(); 
     }
@@ -289,12 +310,12 @@ public:
   }
 
   std::string getFirstName() {
-    bli = band_list.begin();
+    bli = band_map.begin();
     return getNextName(); 
   }
 
-  std::list< SoDaRadio_Band * > band_list; 
+  std::map< std::string, SoDaRadio_Band * > band_map; 
 private:
-  std::list< SoDaRadio_Band * >::iterator bli; 
+  std::map< std::string,  SoDaRadio_Band * >::iterator bli;
 }; 
 #endif

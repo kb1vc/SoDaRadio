@@ -40,6 +40,8 @@ SoDa::Params::Params(int argc, char * argv[])
      "configuration file for initial settings")
     ("uds_name", po::value<std::string>(&server_sock_basename)->default_value("/tmp/SoDa_"),
      "unix domain socket name for server to UI client message channels")
+    ("debug", po::value<unsigned int>(&debug_level)->default_value(0)->implicit_value(1),
+     "Enable debug messages for value > 0.  Higher values may produce more detail.")
     ;
 
   po::store(po::parse_command_line(argc, argv, desc), pmap);

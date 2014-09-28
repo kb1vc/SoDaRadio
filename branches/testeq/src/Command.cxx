@@ -80,7 +80,28 @@ void SoDa::Command::initTables()
 
   target_map_s2v[std::string("HWMB_REP")] = HWMB_REP;
 
+  target_map_s2v[std::string("TVRT_LO_ENABLE")] = TVRT_LO_ENABLE;
+  target_map_s2v[std::string("TVRT_LO_DISABLE")] = TVRT_LO_DISABLE;
+  target_map_s2v[std::string("TVRT_LO_CONFIG")] = TVRT_LO_CONFIG;
+
+  target_map_s2v[std::string("RX_FE_BASEBAND_FREQ")] = RX_FE_BASEBAND_FREQ;
+  target_map_s2v[std::string("RX_BUFFER_SIZE")] = RX_BUFFER_SIZE;
+  target_map_s2v[std::string("SPEC_DOWNSAMP_RATE")] = SPEC_DOWNSAMP_RATE;
+  target_map_s2v[std::string("RX_COLLECT_BUFFER")] = RX_COLLECT_BUFFER;
+  target_map_s2v[std::string("TRIGGER_COLLECT")] = TRIGGER_COLLECT;
+
+  target_map_s2v[std::string("ENV_POWER")] = ENV_POWER;
+  target_map_s2v[std::string("CLEAR_ENV_POWER")] = CLEAR_ENV_POWER;
+  target_map_s2v[std::string("NF_THERM")] = NF_THERM;
+  target_map_s2v[std::string("SPEC_ENA_A")] = SPEC_ENA_A;
+  target_map_s2v[std::string("SPEC_ENA_B")] = SPEC_ENA_B; 
+
+  target_map_s2v[std::string("START_TX_SWEEP")] = START_TX_SWEEP;
+  target_map_s2v[std::string("STOP_TX_SWEEP")] = STOP_TX_SWEEP;
+  target_map_s2v[std::string("STEP_TX_SWEEP")] = STEP_TX_SWEEP;
+
   target_map_s2v[std::string("STOP")] = STOP;
+  
   target_map_v2s[RX_TUNE_FREQ] = new std::string("RX_TUNE_FREQ");
   target_map_v2s[TX_TUNE_FREQ] = new std::string("TX_TUNE_FREQ");
   target_map_v2s[RX_RETUNE_FREQ] = new std::string("RX_RETUNE_FREQ");
@@ -121,6 +142,26 @@ void SoDa::Command::initTables()
   target_map_v2s[HWMB_REP] = new std::string("HWMB_REP");
   
   target_map_v2s[DBG_REP] = new std::string("DBG_REP");
+  target_map_v2s[TVRT_LO_ENABLE] = new std::string("TVRT_LO_ENABLE");
+  target_map_v2s[TVRT_LO_DISABLE] = new std::string("TVRT_LO_DISABLE");
+  target_map_v2s[TVRT_LO_CONFIG] = new std::string("TVRT_LO_CONFIG");
+
+  target_map_v2s[RX_FE_BASEBAND_FREQ] = new std::string("RX_FE_BASEBAND_FREQ");
+  target_map_v2s[RX_BUFFER_SIZE] = new std::string("RX_BUFFER_SIZE");
+  target_map_v2s[SPEC_DOWNSAMP_RATE] = new std::string("SPEC_DOWNSAMP_RATE");
+  target_map_v2s[RX_COLLECT_BUFFER] = new std::string("RX_COLLECT_BUFFER");
+  target_map_v2s[TRIGGER_COLLECT] = new std::string("TRIGGER_COLLECT");
+
+  target_map_v2s[ENV_POWER] = new std::string("ENV_POWER");
+  target_map_v2s[CLEAR_ENV_POWER] = new std::string("CLEAR_ENV_POWER");
+  target_map_v2s[NF_THERM] = new std::string("NF_THERM");
+  target_map_v2s[SPEC_ENA_A] = new std::string("SPEC_ENA_A");
+  target_map_v2s[SPEC_ENA_B] = new std::string("SPEC_ENA_B"); 
+
+  target_map_v2s[START_TX_SWEEP] = new std::string("START_TX_SWEEP");
+  target_map_v2s[STEP_TX_SWEEP] = new std::string("STEP_TX_SWEEP");
+  target_map_v2s[STOP_TX_SWEEP] = new std::string("STOP_TX_SWEEP");
+
   target_map_v2s[STOP] = new std::string("STOP");
 }
 

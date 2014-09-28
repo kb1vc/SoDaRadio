@@ -10,18 +10,18 @@ Sockets_Test_SOURCES = Sockets_Test.cxx  ../src/IPSockets.cxx ../src/UDSockets.c
 Sockets_Test_CPPFLAGS = $(AM_CPPFLAGS)
 Sockets_Test_LDADD = $(AM_BOOSTLIBFLAGS)
 
-SoDa_ThreadTest_SOURCES = SoDa_ThreadTest.cxx  ../src/SoDaBase.cxx
+SoDa_ThreadTest_SOURCES = SoDa_ThreadTest.cxx  ../src/SoDaBase.cxx ../src/Debug.cxx
 SoDa_ThreadTest_CPPFLAGS = $(AM_CPPFLAGS)
 SoDa_ThreadTest_LDADD = $(AM_BOOSTLIBFLAGS)
 
 
 
-Audio_test_SOURCES = Audio_test.cxx  ../src/AudioPA.cxx ../src/AudioALSA.cxx ../src/SoDaBase.cxx
+Audio_test_SOURCES = Audio_test.cxx  ../src/AudioPA.cxx ../src/AudioALSA.cxx ../src/SoDaBase.cxx ../src/Debug.cxx
 Audio_test_CPPFLAGS = $(AM_CPPFLAGS)
 Audio_test_LDADD = $(AM_BOOSTLIBFLAGS)
 
 
-MultiMBox_Test_SOURCES = MultiMBox_Test.cxx  ../src/SoDaBase.cxx
+MultiMBox_Test_SOURCES = MultiMBox_Test.cxx  ../src/SoDaBase.cxx ../src/Debug.cxx
 MultiMBox_Test_CPPFLAGS = $(AM_CPPFLAGS)
 MultiMBox_Test_LDADD = $(AM_BOOSTLIBFLAGS)
 
@@ -53,7 +53,7 @@ TSIP_Test_LDADD = $(AM_BOOSTLIBFLAGS)
 
 
 
-TestServer_SOURCES = TestServer.cxx  ../src/Command.cxx ../src/UI.cxx ../src/Params.cxx ../src/UDSockets.cxx ../src/Spectrogram.cxx ../src/SoDaBase.cxx
+TestServer_SOURCES = TestServer.cxx  ../src/Command.cxx ../src/UI.cxx ../src/Params.cxx ../src/UDSockets.cxx ../src/Spectrogram.cxx ../src/SoDaBase.cxx ../src/Debug.cxx
 TestServer_CPPFLAGS = $(AM_CPPFLAGS)
 TestServer_LDADD = $(AM_BOOSTLIBFLAGS) -lrt
 

@@ -31,6 +31,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Command.hxx"
 #include "MultiMBox.hxx"
+#include "Debug.hxx"
 #include <complex>
 #include <string>
 #include <boost/thread.hpp>
@@ -265,9 +266,9 @@ namespace SoDa {
    * All threads, however, must declare a "run" function, and handlers
    * for three types of SoDa::Command objects (GET, SET, and REPort)
    */
-  class SoDaThread : public SoDaBase {
+  class SoDaThread : public SoDaBase, public Debug {
   public:
-    SoDaThread(const std::string & oname) : SoDaBase(oname) {
+    SoDaThread(const std::string & oname) : SoDaBase(oname), Debug(oname) {
       th = NULL; 
     }
     /**
@@ -351,7 +352,10 @@ namespace SoDa {
 	run(); 
       }
       catch (SoDaException * exc) {
-	std::cerr << exc->toString() << std::endl;
+	std::cerr << getObjName() << " caught " << exc->toString() << std::endl;
+      }
+      catch (const std::exception & e) {
+	std::cerr << getObjName() << " caught exception here: " << e.what() << std::endl; 
       }
     }
   }; 

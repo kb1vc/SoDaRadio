@@ -70,7 +70,8 @@ am_SoDaBenchServer_OBJECTS = SoDaBenchServer-Params.$(OBJEXT) \
 	SoDaBenchServer-ReSampler.$(OBJEXT) \
 	SoDaBenchServer-ReSamplers625x48.$(OBJEXT) \
 	SoDaBenchServer-Spectrogram.$(OBJEXT) \
-	SoDaBenchServer-UDSockets.$(OBJEXT)
+	SoDaBenchServer-UDSockets.$(OBJEXT) \
+	SoDaBenchServer-Debug.$(OBJEXT)
 SoDaBenchServer_OBJECTS = $(am_SoDaBenchServer_OBJECTS)
 am__DEPENDENCIES_1 =
 am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
@@ -100,7 +101,7 @@ am_SoDaNFSurvey_OBJECTS = SoDaNFSurvey-Params.$(OBJEXT) \
 	SoDaNFSurvey-Spectrogram.$(OBJEXT) \
 	SoDaNFSurvey-UDSockets.$(OBJEXT) \
 	SoDaNFSurvey-NFThermometer.$(OBJEXT) \
-	SoDaNFSurvey-AudioRX.$(OBJEXT)
+	SoDaNFSurvey-AudioRX.$(OBJEXT) SoDaNFSurvey-Debug.$(OBJEXT)
 SoDaNFSurvey_OBJECTS = $(am_SoDaNFSurvey_OBJECTS)
 SoDaNFSurvey_DEPENDENCIES = $(am__DEPENDENCIES_2)
 SoDaNFSurvey_LINK = $(CXXLD) $(SoDaNFSurvey_CXXFLAGS) $(CXXFLAGS) \
@@ -119,7 +120,7 @@ am_SoDaServer_OBJECTS = SoDaServer-Params.$(OBJEXT) \
 	SoDaServer-CWGenerator.$(OBJEXT) SoDaServer-TSIP.$(OBJEXT) \
 	SoDaServer-GPS_TSIPmon.$(OBJEXT) \
 	SoDaServer-UDSockets.$(OBJEXT) SoDaServer-AudioALSA.$(OBJEXT) \
-	SoDaServer-AudioPA.$(OBJEXT)
+	SoDaServer-AudioPA.$(OBJEXT) SoDaServer-Debug.$(OBJEXT)
 SoDaServer_OBJECTS = $(am_SoDaServer_OBJECTS)
 SoDaServer_DEPENDENCIES = $(am__DEPENDENCIES_2)
 SoDaServer_LINK = $(CXXLD) $(SoDaServer_CXXFLAGS) $(CXXFLAGS) \
@@ -287,9 +288,9 @@ AUTOMAKE_OPTIONS = subdir-objects
 AM_CPPFLAGS = -I$(top_srcdir)/src ${BOOST_CPPFLAGS}
 AM_BOOSTLIBFLAGS = ${BOOST_LDFLAGS} ${BOOST_PROGRAM_OPTIONS_LIB} ${BOOST_THREAD_LIB} ${BOOST_DATE_TIME_LIB} ${BOOST_SYSTEM_LIB} ${BOOST_FILESYSTEM_LIB} ${BOOST_SERIALIZATION_LIB} ${BOOST_REGEX_LIB}
 SoDaCan_SOURCES = SoDaCan.cxx UDSockets.cxx UDSockets.hxx IPSockets.cxx IPSockets.hxx Command.cxx Command.hxx ../gui/FindHome.cxx ../gui/FindHome.hxx
-SoDaServer_SOURCES = Params.cxx  SoDaServer.cxx SoDaBase.cxx USRPCtrl.cxx USRPRX.cxx USRPTX.cxx CWTX.cxx AudioRX.cxx AudioTX.cxx UI.cxx Command.cxx OSFilter.cxx HilbertTransformer.cxx  ReSampler.cxx ReSamplers625x48.cxx Spectrogram.cxx CWGenerator.cxx TSIP.cxx GPS_TSIPmon.cxx UDSockets.cxx AudioRX.hxx AudioTX.hxx Command.hxx CWGenerator.hxx CWTX.hxx GPS_TSIPmon.hxx HilbertTransformer.hxx IPSockets.hxx  MultiMBox.hxx OSFilter.hxx Params.hxx QuadratureOscillator.hxx ReSampler.hxx ReSamplers625x48.hxx SoDaBase.hxx SoDa_filter_tables.hxx SoDa_tx_filter_tables.hxx Spectrogram.hxx TSIP.hxx UDSockets.hxx UI.hxx USRPCtrl.hxx USRPRX.hxx USRPTX.hxx  AudioALSA.hxx AudioALSA.cxx AudioIfc.hxx MedianFilter.hxx AudioPA.hxx AudioPA.cxx
-SoDaBenchServer_SOURCES = Params.cxx  SoDaBenchServer.cxx SoDaBase.cxx USRPCtrl.cxx USRPRX.cxx USRPTX.cxx BenchUI.cxx Command.cxx OSFilter.cxx HilbertTransformer.cxx  ReSampler.cxx ReSamplers625x48.cxx Spectrogram.cxx UDSockets.cxx Command.hxx HilbertTransformer.hxx IPSockets.hxx  MultiMBox.hxx OSFilter.hxx Params.hxx QuadratureOscillator.hxx ReSampler.hxx ReSamplers625x48.hxx SoDaBase.hxx SoDa_filter_tables.hxx SoDa_tx_filter_tables.hxx Spectrogram.hxx TSIP.hxx UDSockets.hxx BenchUI.hxx USRPCtrl.hxx USRPRX.hxx USRPTX.hxx MedianFilter.hxx
-SoDaNFSurvey_SOURCES = Params.cxx  SoDaNFSurvey.cxx SoDaBase.cxx USRPCtrl.cxx USRPRX.cxx USRPTX.cxx BenchUI.cxx Command.cxx OSFilter.cxx HilbertTransformer.cxx  ReSampler.cxx ReSamplers625x48.cxx Spectrogram.cxx UDSockets.cxx Command.hxx HilbertTransformer.hxx IPSockets.hxx  MultiMBox.hxx OSFilter.hxx Params.hxx QuadratureOscillator.hxx ReSampler.hxx ReSamplers625x48.hxx SoDaBase.hxx SoDa_filter_tables.hxx SoDa_tx_filter_tables.hxx Spectrogram.hxx TSIP.hxx UDSockets.hxx BenchUI.hxx USRPCtrl.hxx USRPRX.hxx USRPTX.hxx MedianFilter.hxx NFThermometer.hxx NFThermometer.cxx AudioRX.hxx AudioRX.cxx
+SoDaServer_SOURCES = Params.cxx  SoDaServer.cxx SoDaBase.cxx USRPCtrl.cxx USRPRX.cxx USRPTX.cxx CWTX.cxx AudioRX.cxx AudioTX.cxx UI.cxx Command.cxx OSFilter.cxx HilbertTransformer.cxx  ReSampler.cxx ReSamplers625x48.cxx Spectrogram.cxx CWGenerator.cxx TSIP.cxx GPS_TSIPmon.cxx UDSockets.cxx AudioRX.hxx AudioTX.hxx Command.hxx CWGenerator.hxx CWTX.hxx GPS_TSIPmon.hxx HilbertTransformer.hxx IPSockets.hxx  MultiMBox.hxx OSFilter.hxx Params.hxx QuadratureOscillator.hxx ReSampler.hxx ReSamplers625x48.hxx SoDaBase.hxx SoDa_filter_tables.hxx SoDa_tx_filter_tables.hxx Spectrogram.hxx TSIP.hxx UDSockets.hxx UI.hxx USRPCtrl.hxx USRPRX.hxx USRPTX.hxx  AudioALSA.hxx AudioALSA.cxx AudioIfc.hxx MedianFilter.hxx AudioPA.hxx AudioPA.cxx Debug.hxx Debug.cxx
+SoDaBenchServer_SOURCES = Params.cxx  SoDaBenchServer.cxx SoDaBase.cxx USRPCtrl.cxx USRPRX.cxx USRPTX.cxx BenchUI.cxx Command.cxx OSFilter.cxx HilbertTransformer.cxx  ReSampler.cxx ReSamplers625x48.cxx Spectrogram.cxx UDSockets.cxx Command.hxx HilbertTransformer.hxx IPSockets.hxx  MultiMBox.hxx OSFilter.hxx Params.hxx QuadratureOscillator.hxx ReSampler.hxx ReSamplers625x48.hxx SoDaBase.hxx SoDa_filter_tables.hxx SoDa_tx_filter_tables.hxx Spectrogram.hxx TSIP.hxx UDSockets.hxx BenchUI.hxx USRPCtrl.hxx USRPRX.hxx USRPTX.hxx MedianFilter.hxx Debug.hxx Debug.cxx
+SoDaNFSurvey_SOURCES = Params.cxx  SoDaNFSurvey.cxx SoDaBase.cxx USRPCtrl.cxx USRPRX.cxx USRPTX.cxx BenchUI.cxx Command.cxx OSFilter.cxx HilbertTransformer.cxx  ReSampler.cxx ReSamplers625x48.cxx Spectrogram.cxx UDSockets.cxx Command.hxx HilbertTransformer.hxx IPSockets.hxx  MultiMBox.hxx OSFilter.hxx Params.hxx QuadratureOscillator.hxx ReSampler.hxx ReSamplers625x48.hxx SoDaBase.hxx SoDa_filter_tables.hxx SoDa_tx_filter_tables.hxx Spectrogram.hxx TSIP.hxx UDSockets.hxx BenchUI.hxx USRPCtrl.hxx USRPRX.hxx USRPTX.hxx MedianFilter.hxx NFThermometer.hxx NFThermometer.cxx AudioRX.hxx AudioRX.cxx Debug.cxx Debug.hxx
 SoDaServer_CPPFLAGS = $(AM_CPPFLAGS)  -g
 SoDaServer_LDADD = $(AM_BOOSTLIBFLAGS)  -lrt
 SoDaServer_CXXFLAGS = -g
@@ -408,6 +409,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@../gui/$(DEPDIR)/SoDaCan-FindHome.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaBenchServer-BenchUI.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaBenchServer-Command.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaBenchServer-Debug.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaBenchServer-HilbertTransformer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaBenchServer-OSFilter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaBenchServer-Params.Po@am__quote@
@@ -427,6 +429,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaNFSurvey-AudioRX.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaNFSurvey-BenchUI.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaNFSurvey-Command.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaNFSurvey-Debug.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaNFSurvey-HilbertTransformer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaNFSurvey-NFThermometer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaNFSurvey-OSFilter.Po@am__quote@
@@ -447,6 +450,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaServer-CWGenerator.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaServer-CWTX.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaServer-Command.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaServer-Debug.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaServer-GPS_TSIPmon.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaServer-HilbertTransformer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaServer-OSFilter.Po@am__quote@
@@ -674,6 +678,20 @@ SoDaBenchServer-UDSockets.obj: UDSockets.cxx
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='UDSockets.cxx' object='SoDaBenchServer-UDSockets.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaBenchServer_CPPFLAGS) $(CPPFLAGS) $(SoDaBenchServer_CXXFLAGS) $(CXXFLAGS) -c -o SoDaBenchServer-UDSockets.obj `if test -f 'UDSockets.cxx'; then $(CYGPATH_W) 'UDSockets.cxx'; else $(CYGPATH_W) '$(srcdir)/UDSockets.cxx'; fi`
+
+SoDaBenchServer-Debug.o: Debug.cxx
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaBenchServer_CPPFLAGS) $(CPPFLAGS) $(SoDaBenchServer_CXXFLAGS) $(CXXFLAGS) -MT SoDaBenchServer-Debug.o -MD -MP -MF $(DEPDIR)/SoDaBenchServer-Debug.Tpo -c -o SoDaBenchServer-Debug.o `test -f 'Debug.cxx' || echo '$(srcdir)/'`Debug.cxx
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/SoDaBenchServer-Debug.Tpo $(DEPDIR)/SoDaBenchServer-Debug.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='Debug.cxx' object='SoDaBenchServer-Debug.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaBenchServer_CPPFLAGS) $(CPPFLAGS) $(SoDaBenchServer_CXXFLAGS) $(CXXFLAGS) -c -o SoDaBenchServer-Debug.o `test -f 'Debug.cxx' || echo '$(srcdir)/'`Debug.cxx
+
+SoDaBenchServer-Debug.obj: Debug.cxx
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaBenchServer_CPPFLAGS) $(CPPFLAGS) $(SoDaBenchServer_CXXFLAGS) $(CXXFLAGS) -MT SoDaBenchServer-Debug.obj -MD -MP -MF $(DEPDIR)/SoDaBenchServer-Debug.Tpo -c -o SoDaBenchServer-Debug.obj `if test -f 'Debug.cxx'; then $(CYGPATH_W) 'Debug.cxx'; else $(CYGPATH_W) '$(srcdir)/Debug.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/SoDaBenchServer-Debug.Tpo $(DEPDIR)/SoDaBenchServer-Debug.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='Debug.cxx' object='SoDaBenchServer-Debug.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaBenchServer_CPPFLAGS) $(CPPFLAGS) $(SoDaBenchServer_CXXFLAGS) $(CXXFLAGS) -c -o SoDaBenchServer-Debug.obj `if test -f 'Debug.cxx'; then $(CYGPATH_W) 'Debug.cxx'; else $(CYGPATH_W) '$(srcdir)/Debug.cxx'; fi`
 
 SoDaCan-SoDaCan.o: SoDaCan.cxx
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaCan_CPPFLAGS) $(CPPFLAGS) $(SoDaCan_CXXFLAGS) $(CXXFLAGS) -MT SoDaCan-SoDaCan.o -MD -MP -MF $(DEPDIR)/SoDaCan-SoDaCan.Tpo -c -o SoDaCan-SoDaCan.o `test -f 'SoDaCan.cxx' || echo '$(srcdir)/'`SoDaCan.cxx
@@ -968,6 +986,20 @@ SoDaNFSurvey-AudioRX.obj: AudioRX.cxx
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='AudioRX.cxx' object='SoDaNFSurvey-AudioRX.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaNFSurvey_CPPFLAGS) $(CPPFLAGS) $(SoDaNFSurvey_CXXFLAGS) $(CXXFLAGS) -c -o SoDaNFSurvey-AudioRX.obj `if test -f 'AudioRX.cxx'; then $(CYGPATH_W) 'AudioRX.cxx'; else $(CYGPATH_W) '$(srcdir)/AudioRX.cxx'; fi`
+
+SoDaNFSurvey-Debug.o: Debug.cxx
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaNFSurvey_CPPFLAGS) $(CPPFLAGS) $(SoDaNFSurvey_CXXFLAGS) $(CXXFLAGS) -MT SoDaNFSurvey-Debug.o -MD -MP -MF $(DEPDIR)/SoDaNFSurvey-Debug.Tpo -c -o SoDaNFSurvey-Debug.o `test -f 'Debug.cxx' || echo '$(srcdir)/'`Debug.cxx
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/SoDaNFSurvey-Debug.Tpo $(DEPDIR)/SoDaNFSurvey-Debug.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='Debug.cxx' object='SoDaNFSurvey-Debug.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaNFSurvey_CPPFLAGS) $(CPPFLAGS) $(SoDaNFSurvey_CXXFLAGS) $(CXXFLAGS) -c -o SoDaNFSurvey-Debug.o `test -f 'Debug.cxx' || echo '$(srcdir)/'`Debug.cxx
+
+SoDaNFSurvey-Debug.obj: Debug.cxx
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaNFSurvey_CPPFLAGS) $(CPPFLAGS) $(SoDaNFSurvey_CXXFLAGS) $(CXXFLAGS) -MT SoDaNFSurvey-Debug.obj -MD -MP -MF $(DEPDIR)/SoDaNFSurvey-Debug.Tpo -c -o SoDaNFSurvey-Debug.obj `if test -f 'Debug.cxx'; then $(CYGPATH_W) 'Debug.cxx'; else $(CYGPATH_W) '$(srcdir)/Debug.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/SoDaNFSurvey-Debug.Tpo $(DEPDIR)/SoDaNFSurvey-Debug.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='Debug.cxx' object='SoDaNFSurvey-Debug.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaNFSurvey_CPPFLAGS) $(CPPFLAGS) $(SoDaNFSurvey_CXXFLAGS) $(CXXFLAGS) -c -o SoDaNFSurvey-Debug.obj `if test -f 'Debug.cxx'; then $(CYGPATH_W) 'Debug.cxx'; else $(CYGPATH_W) '$(srcdir)/Debug.cxx'; fi`
 
 SoDaServer-Params.o: Params.cxx
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaServer_CPPFLAGS) $(CPPFLAGS) $(SoDaServer_CXXFLAGS) $(CXXFLAGS) -MT SoDaServer-Params.o -MD -MP -MF $(DEPDIR)/SoDaServer-Params.Tpo -c -o SoDaServer-Params.o `test -f 'Params.cxx' || echo '$(srcdir)/'`Params.cxx
@@ -1276,6 +1308,20 @@ SoDaServer-AudioPA.obj: AudioPA.cxx
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='AudioPA.cxx' object='SoDaServer-AudioPA.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaServer_CPPFLAGS) $(CPPFLAGS) $(SoDaServer_CXXFLAGS) $(CXXFLAGS) -c -o SoDaServer-AudioPA.obj `if test -f 'AudioPA.cxx'; then $(CYGPATH_W) 'AudioPA.cxx'; else $(CYGPATH_W) '$(srcdir)/AudioPA.cxx'; fi`
+
+SoDaServer-Debug.o: Debug.cxx
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaServer_CPPFLAGS) $(CPPFLAGS) $(SoDaServer_CXXFLAGS) $(CXXFLAGS) -MT SoDaServer-Debug.o -MD -MP -MF $(DEPDIR)/SoDaServer-Debug.Tpo -c -o SoDaServer-Debug.o `test -f 'Debug.cxx' || echo '$(srcdir)/'`Debug.cxx
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/SoDaServer-Debug.Tpo $(DEPDIR)/SoDaServer-Debug.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='Debug.cxx' object='SoDaServer-Debug.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaServer_CPPFLAGS) $(CPPFLAGS) $(SoDaServer_CXXFLAGS) $(CXXFLAGS) -c -o SoDaServer-Debug.o `test -f 'Debug.cxx' || echo '$(srcdir)/'`Debug.cxx
+
+SoDaServer-Debug.obj: Debug.cxx
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaServer_CPPFLAGS) $(CPPFLAGS) $(SoDaServer_CXXFLAGS) $(CXXFLAGS) -MT SoDaServer-Debug.obj -MD -MP -MF $(DEPDIR)/SoDaServer-Debug.Tpo -c -o SoDaServer-Debug.obj `if test -f 'Debug.cxx'; then $(CYGPATH_W) 'Debug.cxx'; else $(CYGPATH_W) '$(srcdir)/Debug.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/SoDaServer-Debug.Tpo $(DEPDIR)/SoDaServer-Debug.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='Debug.cxx' object='SoDaServer-Debug.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaServer_CPPFLAGS) $(CPPFLAGS) $(SoDaServer_CXXFLAGS) $(CXXFLAGS) -c -o SoDaServer-Debug.obj `if test -f 'Debug.cxx'; then $(CYGPATH_W) 'Debug.cxx'; else $(CYGPATH_W) '$(srcdir)/Debug.cxx'; fi`
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \

@@ -32,7 +32,7 @@
 #include <string>
 #include "MultiMBox.hxx"
 #include <string.h>
-
+#include <set> 
 
 namespace SoDa {
   /** This is a list of all the commands that can "do something"
@@ -352,7 +352,7 @@ namespace SoDa {
       DBG_REP,
 
       /**
-       * Report the motherbaord name (the model name of the USRP)
+       * Report the motherboard name (the model name of the USRP)
        *
        * no param
        *
@@ -370,10 +370,38 @@ namespace SoDa {
       STOP,
 
       /**
-       * No comment
+       * On receipt of a TVRT_LO_ENABLE command dump a perpetual constant IF stream
+       * of (1.0, 0.0) into the tx2 channel to get a steady output.
+       *
+       * Ignore this command unless the radio is a B210.
+       *
+       * forms: SET
        */
-      NULL_CMD,
+      TVRT_LO_ENABLE, 
 
+      /**
+       * On receipt of a TVRT_LO_DISABLE command, turn the LO output on TX2 off. 
+       * Ignore this command unless the radio is a B210.
+       *
+       * no param
+       *
+       * forms: SET
+       */
+      TVRT_LO_DISABLE, 
+
+      /**
+       * On receipt of a TVRT_LO_CONFIG command , set the TX2 channel
+       * frequency to dparam[0] and the TX2 output gain to dparam[1].
+       *
+       * Ignore this command unless the radio is a B210.
+       *
+       * param (double) output frequency
+       * param (double) output gain setting
+       *
+       * forms: SET, REP
+       */
+      TVRT_LO_CONFIG, 
+      
       /**
        * Set the RX front end (1st LO, the 2nd IF LO) ensuring that
        * the DDC LO is at least as large as the second parameter. 
@@ -443,10 +471,42 @@ namespace SoDa {
        * from the arduino NF_Meter_Thermometer sketch.
        *
        */
-      NF_THERM 
+      NF_THERM,
 
+      /**
+       * This command enables the spectrum analyzer for channel A -- used in SoDaBench...
+       */
+      SPEC_ENA_A, 
 
+      /**
+       * This command enables the spectrum analyzer for channel B where available
+       * -- used in SoDaBench...
+       */
+      SPEC_ENA_B, 
 
+      /**
+       * Start the sweep oscillator
+       * param 0 -- the start frequency (Hz)
+       * param 1 -- the end frequency (Hz)
+       * param 2 -- the step in Hz
+       * param 3 -- the delay between steps (in microsec)
+       */
+      START_TX_SWEEP,
+
+      /**
+       * Stop the sweep oscillator
+       */
+      STOP_TX_SWEEP,
+
+      /**
+       * Do the next sweep step
+       */
+      STEP_TX_SWEEP, 
+      
+      /**
+       * Won't do anything
+       */
+      NULL_CMD
       
     };
 
@@ -665,6 +725,33 @@ namespace SoDa {
      */
     static void initTables(); 
   };
+
+  /**
+   * This is a generic event queue class for commands.  
+   */
+  template <typename T> class CommandQueue {
+  public:
+    typedef std::pair<T, Command *> QEntry;
+    
+    CommandQueue() {};
+    
+    void put(Command * cmd, T time) {
+      cmd_queue.insert(QEntry(time, cmd));
+    }
+
+    Command * getNext(T tim = T(0)) {
+      if(cmd_queue.empty()) return NULL; 
+      QEntry n = (*cmd_queue.begin());
+      if(n.first > tim) return NULL; 
+      else {
+	cmd_queue.erase(cmd_queue.begin());
+	return n.second;
+      }
+    }
+
+  private:
+    std::multiset<QEntry> cmd_queue; 
+  }; 
 }
 
 

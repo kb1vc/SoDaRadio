@@ -61,7 +61,7 @@ namespace SoDaBench_GUI {
    */
   SoDaBench_Top::SoDaBench_Top( SoDa::GuiParams & _params,  wxWindow* parent )
 :
-    SoDaBenchFrame( parent )
+    SoDaBenchFrame( parent ), SoDaRadio_GUI::GraphClient()
   {
     params = _params;
     // revision string is initially empty
@@ -216,7 +216,7 @@ namespace SoDaBench_GUI {
     if(w == m_SAA) {
       if(spec_analyzer_a == NULL) {
 	spec_analyzer_a = new SpectrumAnalyzerDialog(this, std::string("A"), this);
-	SoDa::Command sa_on(Command::SET, Command::SPEC_ENA_A); 
+	SoDa::Command sa_on(SoDa::Command::SET, SoDa::Command::SPEC_ENA_A); 
 	sendMsg(&sa_on); 
       }
       spec_analyzer_a->Show();
