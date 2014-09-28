@@ -80,7 +80,6 @@
  * @li SoDa::UI waits for requests and CW text on the UDP socket from the GUI, and forwards status and
  *     spectrum plots back to the GUI. 
  * @li SoDa::GPS_TSIPmon monitors a serial connection to a Trimble Thunderbolt GPS receiver.
- * 
  *
  * The SoDa receiver architecture is a 3 stage heterodyne design.  
  * The first two IF conversions are performed within the USRP SDR platform.
@@ -124,6 +123,7 @@
 #include "AudioPA.hxx"
 #include "AudioALSA.hxx"
 #include "Command.hxx"
+#include "Debug.hxx"
 
 /// do the work of creating the SoDa threads
 /// @param argc number of command line arguments
@@ -139,6 +139,9 @@ int doWork(int argc, char * argv[])
   /// @see SoDa::Params
   SoDa::Params params(argc, argv);
 
+  SoDa::Debug d(params.getDebugLevel(), "SoDaServer");
+  d.setDefaultLevel(params.getDebugLevel());
+  
   // These are the mailboxes that connect
   // the various widgets
   // the rx and tx streams are vectors of complex floats.
@@ -154,7 +157,8 @@ int doWork(int argc, char * argv[])
   /// @see SoDa::USRPCtrl @see SoDa::USRPRX @see SoDa::USRPTX
   SoDa::USRPCtrl ctrl(&params, &cmd_stream);
   SoDa::USRPRX rx(&params, ctrl.getUSRP(), &rx_stream, &if_stream, &cmd_stream); 
-  SoDa::USRPTX tx(&params, ctrl.getUSRP(), &tx_stream, &cw_env_stream, &cmd_stream); 
+  SoDa::USRPTX tx(&params, ctrl.getUSRP(), &tx_stream, &cw_env_stream, &cmd_stream);
+  
 
   /// doWork creates the audio server on the host machine.
   /// choices include a PortAudio interface and an ALSA interface.
@@ -178,12 +182,15 @@ int doWork(int argc, char * argv[])
 
   SoDa::GPS_TSIPmon gps(&params, &gps_stream); 
 
+  d.debugMsg("Created units.");
+  
   // Now start each of the activities -- they may or may not
   // implement the "start" method -- not all objects need to be threads.
-  
+
+  d.debugMsg("Starting UI");
   // start the UI -- configure stuff and all that. 
   ui.start();
-
+  d.debugMsg("Starting radio units");
   // start command consumers first.
   ctrl.start();
   rx.start();
@@ -193,6 +200,7 @@ int doWork(int argc, char * argv[])
   cwtx.start();
 
   // now the gps...
+  d.debugMsg("Starting gps");
   gps.start();
 
   // wait for the user interface to tell us that it is time to quit.
@@ -204,6 +212,7 @@ int doWork(int argc, char * argv[])
   atx.join();
   cwtx.join();
   gps.join();
+  d.debugMsg("Exit");
   
   // when we get here, we are done... (UI should not return until it gets an "exit/quit" command.)
 

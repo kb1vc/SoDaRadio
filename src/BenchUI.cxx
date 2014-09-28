@@ -47,6 +47,8 @@ SoDa::BenchUI::BenchUI(Params * params,
   // This UI object is a server.
   server_socket = new SoDa::UD::ServerSocket(params->getServerSocketBasename() + "_bcmd");
   wfall_socket = new SoDa::UD::ServerSocket(params->getServerSocketBasename() + "_bwfall");
+  std::cerr << boost::format("BenchUI created server sockets [%s_bcmd] and [%s_bwfall]\n")
+    % params->getServerSocketBasename() % params->getServerSocketBasename(); 
 
   baseband_rx_freq = 144e6; // just a filler to avoid divide by zero. 
   spectrum_center_freq = 144.2e6;

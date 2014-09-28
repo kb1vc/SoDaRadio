@@ -1,5 +1,8 @@
+#ifndef GRAPHCLIENT_HDR_H
+#define GRAPHCLIENT_HDR_H
+
 /*
-  Copyright (c) 2012,2013,2014 Matthew H. Reilly (kb1vc)
+  Copyright (c) 2014, Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -25,33 +28,17 @@
   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#include "SoDaRadio_App.hxx"
-#include "SoDaRadio_Top.h"
-#include "GuiParams.hxx"
 
 
-IMPLEMENT_APP(SoDaRadio_App)
 
-SoDaRadio_App::SoDaRadio_App()
-{
+namespace SoDaRadio_GUI {
+  class GraphClient {
+  public:
+    GraphClient() { return; }
+
+    // clients of graphs like XYPlot or Waterfall may supply a callback
+    // to handle clicks in the graph area. 
+    virtual void handleClick(double x, double y) { }
+  }; 
 }
-
-SoDaRadio_App::~SoDaRadio_App()
-{
-}
-
-bool SoDaRadio_App::OnInit()
-{
-  // get the args and argvs
-  SoDa::GuiParams  p(argc, argv);
-  std::cerr << "About to create top object" << std::endl; 
-  SoDaRadio_GUI::SoDaRadio_Top * top = new SoDaRadio_GUI::SoDaRadio_Top(p, (wxWindow*) NULL);
-  std::cerr << "Created top widget" << std::endl; 
-  top->Show();
-  std::cerr << "Showed top widget" << std::endl; 
-  SetTopWindow(top);
-  std::cerr << "Set top widget window" << std::endl; 
-  wxInitAllImageHandlers();
-  std::cerr << "Init handlers" << std::endl; 
-  return true; 
-}
+#endif

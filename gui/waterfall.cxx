@@ -28,7 +28,6 @@
 
 #include "waterfall.hxx"
 #include <wx/print.h>
-#include "SoDaRadio_Top.h"
 #include <boost/format.hpp>
 #include <math.h>
 
@@ -37,7 +36,6 @@ using namespace std;
 namespace SoDaRadio_GUI {
   
 #define TITLE_Y_OFFSET 0
-
 
 #define GRID_TOP_OFFSET 10
 #define XLABEL_Y_OFFSET 20
@@ -50,7 +48,7 @@ namespace SoDaRadio_GUI {
 #define YM_BOXTIC(n) ((int) (((double) (n * graph_height)) * 0.02))
 
 
-  Waterfall::Waterfall(wxPanel * parent, SoDaRadio_Top * _radio, int id,
+  Waterfall::Waterfall(wxPanel * parent, GraphClient * _client, int id,
 		       const wxPoint & pos,
 		       const wxSize & size,
 		       const int flags
@@ -59,7 +57,7 @@ namespace SoDaRadio_GUI {
   {
     enable_draw_events = false; 
     m_parent = parent;
-    radio = _radio;
+    client = _client; 
 
     // when we get exposed, we'll set the bitmap size. 
     bitmap = NULL;
@@ -104,7 +102,7 @@ namespace SoDaRadio_GUI {
       double fx, fy;
       UnScaleX(wxPoint(x, y), fx);
       // std::cerr << "Got a new frequency selection = " << fx << std::endl;
-      radio->SetRXFreqFromDisp(fx); 
+      if(client != NULL) client->handleClick(fx, y); 
     }
     if (refresh_required) Refresh(); 
     event.Skip(); 

@@ -32,17 +32,16 @@
 
 #include <wx/wx.h>
 #include <map>
+#include "GraphClient.hxx"
 
 using namespace std;
 
 namespace SoDaRadio_GUI {
   
-  class SoDaRadio_Top;
-
   class Waterfall : public wxPanel
   {
   public:
-    Waterfall(wxPanel * parent, SoDaRadio_Top * _radio, int id,
+    Waterfall(wxPanel * parent, GraphClient * _client, int id,
 	      const wxPoint & pos = wxDefaultPosition,
 	      const wxSize & size = wxDefaultSize,
 	      const int flags = 0xff
@@ -141,7 +140,7 @@ namespace SoDaRadio_GUI {
     wxBitmap * bitmap;
     wxMemoryDC bitmapDC; 
     wxPanel * m_parent;
-    SoDaRadio_Top * radio; 
+    GraphClient * client; 
 
     wxString title, xlabel;
     wxString x_template, xc_template;

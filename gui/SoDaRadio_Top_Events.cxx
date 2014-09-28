@@ -132,7 +132,7 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnSaveConfigAs( wxCommandEvent& event )
   {
-    wxString defaultDir = wxT("~/.SoDa");
+    wxString defaultDir = wxT("~/.SoDaRadio");
     wxString defaultFilename = wxT("SoDa.soda_cfg");
     wxString wildcard = wxT("SoDa Config files (*.soda_cfg)|*.soda_cfg");
     wxFileDialog dialog(this, wxT("Save to Selected Configuration File"), defaultDir, defaultFilename, wildcard, wxSAVE);
@@ -237,8 +237,8 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::sendCWMarker( int marker_id )
   {
-    SoDa::Command  * cmdptr = new SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_CW_MARKER, marker_id);
-    sendMsg(cmdptr); 
+    SoDa::Command cmdptr(SoDa::Command::SET, SoDa::Command::TX_CW_MARKER, marker_id);
+    sendMsg(&cmdptr); 
   }
 
   void SoDaRadio_Top::sendCWText( const wxString & cwstr, int repeat_count, bool append_cr)
@@ -265,8 +265,8 @@ namespace SoDaRadio_GUI {
       }
     
       for(i = 0; i < mycwstr.Len(); i += SoDa::Command::getMaxStringLen()) {
-	SoDa::Command  * cmdptr = new SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_CW_TEXT, &(cwbuf[i]));
-	sendMsg(cmdptr); 
+	SoDa::Command cmdptr(SoDa::Command::SET, SoDa::Command::TX_CW_TEXT, &(cwbuf[i]));
+	sendMsg(&cmdptr); 
       }
     }
     if(append_cr && (repeat_count != 1)) m_CWTextOutbound->AppendText(wxT("\n"));
@@ -853,11 +853,30 @@ namespace SoDaRadio_GUI {
       actual_lo_base_freq = nominal_lo_base_freq = band->transverter_lo_freq * 1e6; 
       lo_multiplier = band->transverter_multiplier;
       setLOOffset(0.0);
+      if(band->transverter_local_lo) {
+	debugMsg(boost::format("Enable Transverter LO freq = %lf power = %lf") % actual_lo_base_freq % 1.0); 
+	// send two messages -- set the LO freq and power
+	SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::TVRT_LO_CONFIG,
+			   actual_lo_base_freq, 1.0);
+	sendMsg(&ncmd);
+
+	// enable the LO
+	SoDa::Command ncmd2(SoDa::Command::SET, SoDa::Command::TVRT_LO_ENABLE);
+	sendMsg(&ncmd2);
+      }
+      else {
+	// disable the LO
+	SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::TVRT_LO_DISABLE);
+	sendMsg(&ncmd);
+      }
     }
     else {
       actual_lo_base_freq = nominal_lo_base_freq = 0.0;
       lo_multiplier = 0.0;
       setLOOffset(0.0);
+      // disable the LO if any
+      SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::TVRT_LO_DISABLE);
+      sendMsg(&ncmd);
     }
 
     m_PTT->Enable(band->enable_transmit);
@@ -1285,6 +1304,8 @@ namespace SoDaRadio_GUI {
 	  m_TransFreqEntry->SetValue(wxString((boost::format("%f") % choice->transverter_lo_freq).str().c_str(), wxConvUTF8));	  
 	  // set the multiplier
 	  m_TransMultEntry->SetValue(wxString((boost::format("%f") % choice->transverter_multiplier).str().c_str(), wxConvUTF8));
+	  // set the LO generation mode
+	  m_LOGenMode->SetValue(choice->transverter_local_lo);
 	}
       }
     }
@@ -1345,10 +1366,12 @@ namespace SoDaRadio_GUI {
     bool lsi; ///< low side injection.
     double tr_lo; ///< transverter local osc freq.
     double tr_mult; ///< transverter multiplier
+    bool local_lo;
     // now check the transverter stuff.
     if (m_TransverterMode->IsChecked()) {
       m_TransFreqEntry->GetValue().ToDouble(&tr_lo);
       m_TransMultEntry->GetValue().ToDouble(&tr_mult);
+      local_lo = m_LOGenMode->IsChecked();
 
       if(tr_lo <= 0.0) {
 	found_problem = true;
@@ -1370,7 +1393,7 @@ namespace SoDaRadio_GUI {
     if(!found_problem) {
       newband->setupBand(bandname, le, ue, mode, ant, bid, ena);
       if(m_TransverterMode->IsChecked()) {
-	newband->setupTransverter(tr_lo, tr_mult, lsi); 
+	newband->setupTransverter(tr_lo, tr_mult, lsi, local_lo); 
       }
       
       bands->add(newband); 
@@ -1409,6 +1432,8 @@ namespace SoDaRadio_GUI {
     bool ena = m_TransverterMode->IsChecked();
     m_InjectionSel->Enable(ena);
 
+    m_LOGenMode->Enable(ena);
+    
     m_TransFreqLabel->Enable(ena); 
     m_TransFreqLabel2->Enable(ena); 
     m_TransFreqEntry->Enable(ena); 

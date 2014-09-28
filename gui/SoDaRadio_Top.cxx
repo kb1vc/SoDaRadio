@@ -34,6 +34,7 @@ extern "C" {
 #include <wx/wx.h>
 #include <wx/colour.h>
 #include "../src/Command.hxx"
+#include "../src/Debug.hxx"
 #include <boost/format.hpp>
 #include "SoDaLogo.xpm"
 #include "FindHome.hxx"
@@ -61,8 +62,9 @@ namespace SoDaRadio_GUI {
    */
   SoDaRadio_Top::SoDaRadio_Top( SoDa::GuiParams & params,  wxWindow* parent )
 :
-    SoDaRadioFrame( parent )
+    SoDaRadioFrame( parent ), SoDa::Debug("SoDaRadio_Top"), SoDaRadio_GUI::GraphClient()
   {
+    std::cerr << "got to top top" << std::endl; 
     // revision string is initially empty
     SDR_version_string[0] = '\000';
 
@@ -70,7 +72,10 @@ namespace SoDaRadio_GUI {
     wxIcon logo((char **) &SoDaLogo);
     this->SetIcon(logo);
 
-    debug_mode = false;
+    SoDa::Debug::setDefaultLevel(params.getDebugLevel());
+    setDebugLevel(params.getDebugLevel());
+
+    debugMsg(boost::format("Debug level set to %d") % getDebugLevel());
 
     // we don't have a "current band" yet.
     current_band = NULL;
@@ -92,6 +97,7 @@ namespace SoDaRadio_GUI {
       server_commandline_string = server; 
     }
 
+
     // setup the comm channel.
     std::string sock_basename = params.getServerSocketBasename(); 
 
@@ -101,7 +107,7 @@ namespace SoDaRadio_GUI {
     if(server != "None") {
       if(fork()) {
 	int stat;
-	char * argv[5];
+	char * argv[8];
 	// coercion to char* (as opposed to const char*) is to get around
 	// a compiler finickyness around conversions from const char** to const* char* or whatever.
 	// sigh.
@@ -109,15 +115,17 @@ namespace SoDaRadio_GUI {
 	argv[1] = (char*) "--uds_name";
 	argv[2] = (char*) sock_basename.c_str();
 	std::string uhd_args = params.getUHDArgs();
+	int argctr = 3;
 	if(uhd_args != "") {
-	  argv[3] = (char*) "--uhdargs";
-	  argv[4] = (char*) uhd_args.c_str();
-	  argv[5] = NULL; 
-	}
-	else {
-	  argv[3] = NULL;
+	  argv[argctr++] = (char*) "--uhdargs";
+	  argv[argctr++] = (char*) uhd_args.c_str();
 	}
 
+	if(getDebugLevel()) {
+	  argv[argctr++] = (char*) "--debug";
+	  argv[argctr++] = (char*) (boost::format("%d") % getDebugLevel()).str().c_str();
+	}
+	argv[argctr] = NULL; 
 	stat = execv(argv[0], argv); 
 	// stat = execl(server_commandline_string.c_str(), server.c_str(), "--uds_name",
 	//       sock_basename.c_str(), (char*) 0);
@@ -135,18 +143,15 @@ namespace SoDaRadio_GUI {
     soda_fft = new SoDa::UD::ClientSocket(sock_basename + "_wfall", 60);
 
     // create the listener thread
-    if(debug_mode || 1) {
-      std::cerr << "Creating listener thread." << std::endl;
-    }
+    debugMsg("Creating listener thread.");
     listener = new RadioListenerThread(this);
     // now launch it.
-    if(debug_mode) {
-      std::cerr << "Launching listener thread." << std::endl;
-    }
+    debugMsg("Launching listener thread.");
     if(listener->Create() != wxTHREAD_NO_ERROR) {
       wxLogError(wxT("Couldn't create radio listener thread...")); 
     }
 
+    std::cerr << "created listener thread" << std::endl; 
   
     // what is the default button background color? 
     default_button_bg_color = m_PTT->GetBackgroundColour();
@@ -168,9 +173,8 @@ namespace SoDaRadio_GUI {
     cfreq_step = 25; 
     int xs, ys;
     FFTPanel->GetSize(&xs, &ys);
-    if(debug_mode) {
-      std::cerr << "size of FFT panel x,y " << xs << " " << ys << std::endl;
-    }
+    debugMsg(boost::format("size of FFT panel %d x %d ") % xs % ys);
+
 
     // xs = 1050;
     // ys = 200;
@@ -193,9 +197,7 @@ namespace SoDaRadio_GUI {
 
     SetSpectrum(50.0);
 
-    if(debug_mode) {
-      std::cerr << "Running listener thread." << std::endl;
-    }
+    debugMsg("Running listener thread.");
     listener->Run(); 
 
     // setup the tuner
@@ -212,9 +214,7 @@ namespace SoDaRadio_GUI {
     // setup the Log dialog
     logdialog = new LogDialog(this, this); 
   
-    if(debug_mode) {
-      std::cerr << "about to load configuration." << std::endl;
-    }
+    debugMsg("about to load configuration.");
     // load the configuration from a default file,
     // if available.
     std::string cfn = params.getConfigFileName();
@@ -226,18 +226,15 @@ namespace SoDaRadio_GUI {
 
     wxString config_filename(cfn.c_str(), wxConvUTF8);
     LoadSoDaConfig(config_filename);
+    debugMsg("loaded configuration.");
 
     // now open the logfile, if any
     std::string lfn = params.getLogFileName();
     wxString log_filename(lfn.c_str(), wxConvUTF8);
     OpenSoDaLog(log_filename); 
-
-    if(debug_mode) {
-      std::cerr << "loaded configuration." << std::endl;
-    }
-  
     save_config_file_name = wxT("");
 
+    debugMsg("loaded log file.");
   
     // Now connect up a few events
     Connect(MSG_UPDATE_SPECTRUM, wxEVT_COMMAND_MENU_SELECTED,
@@ -252,7 +249,8 @@ namespace SoDaRadio_GUI {
     // setup status bar -- hardwire the accelerators for now.
     m_ClueBar->SetStatusText(wxT("^C Set To Call        ^G Set To Grid        ^L Enter Log Comment        ^X Enter CW Text"), 0);
 
-    sendMsg(new SoDa::Command(SoDa::Command::GET, SoDa::Command::HWMB_REP)); 
+    SoDa::Command ncmd(SoDa::Command::GET, SoDa::Command::HWMB_REP);
+    sendMsg(&ncmd);
   }
 
   bool SoDaRadio_Top::CreateSpectrumTrace(double * freqs, float * powers, unsigned int len)
@@ -483,5 +481,4 @@ namespace SoDaRadio_GUI {
     tx_tuner[m_DigitDownT1] = tx[1]; 
     tx_tuner[m_DigitDownT0] = tx[0];   
   }
-    
 }

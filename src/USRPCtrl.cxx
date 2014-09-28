@@ -54,9 +54,6 @@ void dumpTree(const uhd::fs_path &path, uhd::property_tree::sptr tree){
 
 SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaThread("USRPCtrl")
 {
-  // turn off all the babbling, by default. 
-  debug_mode = false;
-
   // initialize variables
   last_rx_req_freq = 0.0; // at least this is a number...
   tx_on = false;
@@ -89,18 +86,34 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
 
   if((motherboard_name == "B200") || (motherboard_name == "B210")) {
     // B2xx needs a master clock rate of 50 MHz to generate a sample rate of 625 kS/s.
-    usrp->set_master_clock_rate(50.0e6);
-    if (debug_mode) std::cerr << "Initial setup: " << usrp->get_pp_string() << std::endl; 
-    is_B2xx = true; 
+    // B2xx needs a master clock rate of 25 MHz to generate a sample rate of 625 kS/s.
+    usrp->set_master_clock_rate(25.0e6);
+    debugMsg(boost::format("Initial setup %s") % usrp->get_pp_string());
+    is_B2xx = true;
+    is_B210 = (motherboard_name == "B210");
   }
   else {
     is_B2xx = false; 
+    is_B210 = false;
   }
 
   // we need to setup the subdevices
   if(is_B2xx) {
     usrp->set_rx_subdev_spec(std::string("A:A"), 0);
-    usrp->set_tx_subdev_spec(std::string("A:A"), 0);
+    if(is_B210) {
+      debugMsg("Setup two subdevices -- TVRT_LO Capable");
+      usrp->set_tx_subdev_spec(std::string("A:A A:B"), 0);
+      tvrt_lo_capable = true;
+    }
+    else {
+      debugMsg("Setup one subdevice -- NOT TVRT_LO Capable");
+      usrp->set_tx_subdev_spec(std::string("A:A"), 0);
+      tvrt_lo_capable = false;
+    }
+  }
+  else {
+    debugMsg("Setup one subdevice -- NOT TVRT_LO Capable");
+    tvrt_lo_capable = false;
   }
 
   first_gettime = 0.0;
@@ -140,6 +153,8 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
   // turn off the transmitter
   setTXEna(false);
 
+  // turn of the LO
+  tvrt_lo_mode = false;
 }
 
 
@@ -175,16 +190,26 @@ void SoDa::USRPCtrl::run()
   unsigned int cmds_processed = 0;
   unsigned int loopcount = 0; 
   while(!exitflag) {
-    loopcount++; 
-    Command * cmd = cmd_stream->get(subid);
-    if(cmd == NULL) {
-      boost::this_thread::sleep(boost::posix_time::milliseconds(50));
+    loopcount++;
+
+    // look at the pended command stream
+    Command * pcmd;
+    bool did_pend = false; 
+    while((pcmd = pending_commands.getNext(pt::microsec_clock::local_time())) != NULL) {
+      execCommand(pcmd);
+      did_pend = true; 
+      delete pcmd; 
     }
-    else {
+
+    // look at the input command stream
+    Command * cmd = cmd_stream->get(subid);
+    if((cmd == NULL) && (!did_pend)) {
+      boost::this_thread::sleep(boost::posix_time::milliseconds(1));
+    } 
+    else if(cmd != NULL) {
       // process the command.
-      if(debug_mode && ((cmds_processed & 0xff) == 0)) {
-	std::cerr << "USRPCtrl processed "
-		  << cmds_processed << " commands." << std::endl;
+      if((cmds_processed & 0xff) == 0) {
+	debugMsg(boost::format("USRPCtrl processed %d commands") % cmds_processed);
       }
       cmds_processed++; 
       execCommand(cmd);
@@ -297,8 +322,7 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
   
   double target_rx_freq = freq;
   
-  uhd::tune_request_t tx_request(freq);
-  
+ 
   if(sel == 'r') {
     // we round the target frequency to a point that puts the
     // baseband between 80 and 220 KHz below the requested
@@ -330,15 +354,13 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
     }
     last_rx_tune_result = usrp->set_rx_freq(rx_trequest);
     last_rx_tune_result = checkLock(rx_trequest, 'r', last_rx_tune_result);
-    if(debug_mode) {
-      std::cerr << boost::format("RX Tune RF_actual %lf DDC = %lf tuned = %lf target = %lf request  rf = %lf request ddc = %lf\n")
-	% last_rx_tune_result.actual_rf_freq
-	% last_rx_tune_result.actual_dsp_freq
-	% freq
-	% target_rx_freq
-	% rx_trequest.rf_freq
-	% rx_trequest.dsp_freq;
-    }
+    debugMsg(boost::format("RX Tune RF_actual %lf DDC = %lf tuned = %lf target = %lf request  rf = %lf request ddc = %lf\n")
+	     % last_rx_tune_result.actual_rf_freq
+	     % last_rx_tune_result.actual_dsp_freq
+	     % freq
+	     % target_rx_freq
+	     % rx_trequest.rf_freq
+	     % rx_trequest.dsp_freq);
   }
   else {
     // On the transmit side, we're using a minimal IF rate and
@@ -348,16 +370,41 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
     // unless we're on a B2xx -- in that case, we adjust the LO anyway.
     if(!tx_on && !is_B2xx) return;
 
-    if(debug_mode) {
-      std::cerr << boost::format("Tuning TX unit to new frequency %f (request = %f  (%f %f))\n")
-	% freq % tx_request.target_freq % tx_request.rf_freq % tx_request.dsp_freq;
+
+    uhd::tune_request_t tx_request(freq);
+    
+    if(tvrt_lo_mode) {
+      tx_request.rf_freq_policy = uhd::tune_request_t::POLICY_MANUAL;
+      tx_request.rf_freq = tvrt_lo_fe_freq;
+    }
+    else {
+      tx_request.rf_freq_policy = uhd::tune_request_t::POLICY_AUTO;
     }
 
-    // bool last_tx_ena = tx_fe_subtree->access<bool>("enabled").get();
-    // tx_fe_subtree->access<bool>("enabled").set(true);
-    last_tx_tune_result = usrp->set_tx_freq(freq);  
+
+    debugMsg(boost::format("Tuning TX unit to new frequency %f (request = %f  (%f %f))\n")
+	     % freq % tx_request.target_freq % tx_request.rf_freq % tx_request.dsp_freq);
+
+    last_tx_tune_result = usrp->set_tx_freq(tx_request);
+
+    debugMsg(boost::format("Tuned TX unit to new frequency %g t.rf %g a.rf %g t.dsp %g a.dsp %g\n")
+	     % freq
+	     % last_tx_tune_result.target_rf_freq
+	     % last_tx_tune_result.actual_rf_freq
+	     % last_tx_tune_result.target_dsp_freq
+	     % last_tx_tune_result.actual_dsp_freq);
+
+
+
     last_tx_tune_result = checkLock(tx_request, 't', last_tx_tune_result);
     // tx_fe_subtree->access<bool>("enabled").set(last_tx_ena);
+
+    double txfreqs[2];
+    txfreqs[0] = usrp->get_tx_freq(0);
+    if(tvrt_lo_mode) {
+      txfreqs[1] = usrp->get_tx_freq(1);
+      debugMsg(boost::format("TX LO = %g  TVRT LO = %g\n") % txfreqs[0] % txfreqs[1]);
+    }
   }
 
   // If we are setting the RX mode, then we need to send
@@ -399,16 +446,15 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
     std::cerr << "execSetCommand got a non-set command!  " << cmd->toString() << std::endl;
     return; 
   }
+  double tmp;
   switch (cmd->target) {
   case Command::RX_RETUNE_FREQ:
     last_rx_req_freq = cmd->dparms[0]; 
     freq = cmd->dparms[0];
     fdiff = freq - (last_rx_tune_result.actual_rf_freq - last_rx_tune_result.actual_dsp_freq);
     
-    if(debug_mode) {
-      std::cerr << boost::format("Got RX RETUNE request -- frequency %f diff = %f  last actual_rf %f  dsp %f\n")
-	% freq % fdiff % last_rx_tune_result.actual_rf_freq % last_rx_tune_result.actual_dsp_freq; 
-    }
+    debugMsg(boost::format("Got RX RETUNE request -- frequency %f diff = %f  last actual_rf %f  dsp %f\n")
+	     % freq % fdiff % last_rx_tune_result.actual_rf_freq % last_rx_tune_result.actual_dsp_freq);
 
     if((fdiff < 300e3) && (fdiff > 50e3)) {
       cmd_stream->put(new Command(Command::SET, Command::RX_LO3_FREQ, fdiff)); 
@@ -437,9 +483,7 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
       set1stLOFreq(last_rx_req_freq, 'r', false);
     }
     else {
-      if(debug_mode) {
-	std::cerr << "setting lo check freq to " << cmd->dparms[0] << std::endl;
-      }
+      debugMsg(boost::format("setting lo check freq to %lf\n") % cmd->dparms[0]);
       usrp->set_rx_freq(cmd->dparms[0]);
       // now send a GET lo offset command
       cmd_stream->put(new Command(Command::GET, Command::LO_OFFSET, 0));
@@ -449,11 +493,9 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
   case Command::TX_RETUNE_FREQ:
   case Command::TX_TUNE_FREQ:
   case Command::TX_FE_FREQ:
-    if (debug_mode) {
-      std::cerr << "\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n!!! GOT TX TUNE REQ !!!!!!!!\n!!!!!!!!!!!!!!!!!!" << std::endl;
-      std::cerr << " freq = " << std::setprecision(10) << freq << std::endl; 
-      std::cerr << "\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n!!! GOT TX TUNE REQ !!!!!!!!\n!!!!!!!!!!!!!!!!!!" << std::endl;
-    }
+    debugMsg(boost::format("\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n!!! GOT TX TUNE REQ !!!!!!!!\n!!!!!!!!!!!!!!!!!!\n"));
+    debugMsg(boost::format(" freq = %10lg\n") % freq);
+    debugMsg(boost::format("\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n!!! GOT TX TUNE REQ !!!!!!!!\n!!!!!!!!!!!!!!!!!!"));
     set1stLOFreq(cmd->dparms[0] + tx_freq_rxmode_offset, 't', false);
     tx_freq = cmd->dparms[0]; 
     cmd_stream->put(new Command(Command::REP, Command::TX_FE_FREQ, 
@@ -484,12 +526,16 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
     break; 
   case Command::TX_RF_GAIN:
     tx_rf_gain = tx_rf_gain_range.start() + cmd->dparms[0] * 0.01 * (tx_rf_gain_range.stop() - tx_rf_gain_range.start());
+    std::cerr << "TX gain set to " << tx_rf_gain << " power was " << cmd->dparms[0] << std::endl;
+    tmp = cmd->dparms[0];
+    debugMsg(boost::format("Setting TX gain to %lg from power %lg") % tx_rf_gain % tmp);
+    // debugMsg(boost::format("Set TX gain to %lg from power setting of %lg\n")
+    // 	     % tx_rf_gain % cmd->dparms[0]);
 
     if(tx_on) {
       usrp->set_tx_gain(tx_rf_gain);
       cmd_stream->put(new Command(Command::REP, Command::TX_RF_GAIN, 
 				  usrp->get_tx_gain())); 
-
     }
     break; 
   case SoDa::Command::TX_STATE: // SET TX_ON
@@ -504,22 +550,16 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
       tx_freq_rxmode_offset = 0.0; // so tuning works.
 
       // enable the transmit relay
-      if(debug_mode) {
-	std::cerr << "Enabling TX" << std::endl;
-	std::cerr << "Current TXENA " << tx_fe_subtree->access<bool>("enabled").get() << std::endl;
-	if(supports_tx_gpio) {
-	  std::cerr << boost::format("Current GPIO = %x ") %
-	    dboard->get_gpio_out(uhd::usrp::dboard_iface::UNIT_TX) << std::endl;
-	}
+      debugMsg(boost::format("Enabling TX\nCurrent TXENA %d\n") % tx_fe_subtree->access<bool>("enabled").get());
+      if(supports_tx_gpio) {
+	debugMsg(boost::format("Current GPIO = %x ") %
+		 dboard->get_gpio_out(uhd::usrp::dboard_iface::UNIT_TX));
       }
       setTXEna(true);
-      if(debug_mode) {
-	std::cerr << "New TXENA "
-		  << tx_fe_subtree->access<bool>("enabled").get() << std::endl;
-	if(supports_tx_gpio) {
-	  std::cerr << boost::format("New GPIO = %x ")
-	    % dboard->get_gpio_out(uhd::usrp::dboard_iface::UNIT_TX) << std::endl;
-	}
+
+      debugMsg(boost::format("New TXENA %d\n") % tx_fe_subtree->access<bool>("enabled").get());
+      if(supports_tx_gpio) {
+	debugMsg(boost::format("New GPIO = %x ") % dboard->get_gpio_out(uhd::usrp::dboard_iface::UNIT_TX));
       }
       // and tell the TX unit to turn on the TX
       cmd_stream->put(new Command(Command::SET, Command::TX_STATE, 
@@ -540,40 +580,65 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
       // We keep the rxmode_offset here in case other modules
       // leave the TXLO on.
       setTXEna(false); 
-      if(debug_mode) {
-	std::cerr << "Disabling TX" << std::endl;
-	std::cerr << "Got TXENA " << tx_fe_subtree->access<bool>("enabled").get() << std::endl;
-	if(supports_tx_gpio) {
-	  std::cerr << boost::format("Got GPIO = %x ") %
-	    dboard->get_gpio_out(uhd::usrp::dboard_iface::UNIT_TX) << std::endl;
-	}
+      debugMsg(boost::format("Disabling TX\nGot TXENA %d") % tx_fe_subtree->access<bool>("enabled").get());
+      if(supports_tx_gpio) {
+	debugMsg(boost::format("Got GPIO = %x ") % 
+		 dboard->get_gpio_out(uhd::usrp::dboard_iface::UNIT_TX));
       }
     }
     break; 
 
   case Command::CLOCK_SOURCE:
     if((cmd->iparms[0] & 1) == 1) {
-      if(debug_mode) {
-	std::cerr << "Setting reference to external" << std::endl;
-      }
+      debugMsg("Setting reference to external");
       usrp->set_clock_source(std::string("external"));
     }
     else {
-      if(debug_mode) {
-	std::cerr << "Setting reference to internal" << std::endl;
-      }
+      debugMsg("Setting reference to internal");
       usrp->set_clock_source(std::string("internal"));
     }
     break; 
 
   case Command::RX_ANT:
     usrp->set_rx_antenna(cmd->sparm);
+    debugMsg(boost::format("Set RX antenna to %s") % cmd->sparm);
     break; 
 
   case Command::TX_ANT:
     tx_ant = cmd->sparm; 
+    debugMsg(boost::format("Set TX antenna to %s") % cmd->sparm);
     usrp->set_tx_antenna(cmd->sparm);
     break;
+
+  case Command::TVRT_LO_CONFIG:
+    setTransverterLOFreqPower(cmd->dparms[0], cmd->dparms[1]);
+    break;
+
+  case SoDa::Command::TVRT_LO_ENABLE:
+    debugMsg("Enable Transverter LO");
+    enableTransverterLO();
+    break; 
+
+  case SoDa::Command::TVRT_LO_DISABLE:
+    debugMsg("Disable Transverter LO");
+    disableTransverterLO();
+    break;
+
+  case SoDa::Command::START_TX_SWEEP:
+    // setup the sweep start and stop and step time freqs
+    tx_sweep.setParms(cmd->dparms);
+    debugMsg(boost::format("Start TX sweep from %f to %f\n") % tx_sweep.start % tx_sweep.stop);
+    tx_sweep.enable();
+    stepTXSweep();
+    break; 
+
+  case SoDa::Command::STOP_TX_SWEEP:
+    tx_sweep.disable();
+    break; 
+
+  case SoDa::Command::STEP_TX_SWEEP:
+    stepTXSweep();
+    break; 
 
   default:
     break; 
@@ -632,6 +697,7 @@ void SoDa::USRPCtrl::execGetCommand(Command * cmd)
     break; 
   }
 }
+
 void SoDa::USRPCtrl::execRepCommand(Command * cmd)
 {
   switch (cmd->target) {
@@ -662,9 +728,8 @@ void SoDa::USRPCtrl::initControlGPIO()
     unsigned short out = dboard->get_gpio_out(uhd::usrp::dboard_iface::UNIT_TX);
   
     // and print it.
-    if(debug_mode) {
-      std::cerr << boost::format("TX GPIO direction = %04x  control = %04x  output = %04x  ctlmask = %04x  monmask = %04x") % dir % ctl % out % TX_RELAY_CTL % TX_RELAY_MON << std::endl;
-    }
+    debugMsg(boost::format("TX GPIO direction = %04x  control = %04x  output = %04x  ctlmask = %04x  monmask = %04x") % dir % ctl % out % TX_RELAY_CTL % TX_RELAY_MON);
+
 
     // now set the direction to OUT for the CTL bit
     dboard->set_gpio_ddr(uhd::usrp::dboard_iface::UNIT_TX,
@@ -694,9 +759,8 @@ void SoDa::USRPCtrl::setTXEna(bool val)
   
   // enable the transmitter (or disable it)
   tx_fe_subtree->access<bool>("enabled").set(val);
-  if(debug_mode) {
-    std::cerr << "Got " << tx_fe_subtree->access<bool>("enabled").get() << " from call to en/dis TX with val = " << val << std::endl;
-  }
+  debugMsg(boost::format("Got %d from call to en/dis TX with val = %d")
+	   % tx_fe_subtree->access<bool>("enabled").get() % val);
 
   // if we're enabling, set the power, freq, and other stuff
   if(val) {
@@ -732,5 +796,78 @@ bool SoDa::USRPCtrl::getTXRelayOn()
   }
 
   return ((enabits & TX_RELAY_MON) != 0); 
+}
+
+void SoDa::USRPCtrl::setTransverterLOFreqPower(double freq, double power)
+{
+  uhd::gain_range_t tx_gain_range = usrp->get_tx_gain_range(1);
+  double plo = tx_gain_range.start();
+  double phi = tx_gain_range.stop();
+  tvrt_lo_gain = plo + power * (phi - plo);
+  tvrt_lo_freq = freq; 
+  
+  debugMsg(boost::format("Setting Transverter LO freq = %10lg power = %g gain = %g\n") % tvrt_lo_freq % power % tvrt_lo_gain);
+  
+  debugMsg("About to report Transverter LO setting.");
+  cmd_stream->put(new Command(Command::REP, Command::TVRT_LO_CONFIG, tvrt_lo_freq, power));  
+
+}
+
+void SoDa::USRPCtrl::enableTransverterLO()
+{
+  if(!tvrt_lo_capable) {
+    tvrt_lo_mode = false; 
+    return;
+  }
+
+  debugMsg("Enabling transverter LO\n");
+  usrp->set_tx_antenna("TX2", 1);
+    
+  usrp->set_tx_gain(tvrt_lo_gain, 1);
+  // tune the first LO 4MHz below the target, and let the DDC make up the rest. 
+  uhd::tune_request_t lo_freq_req(tvrt_lo_freq, -4.0e6);
+  uhd::tune_result_t tres = usrp->set_tx_freq(lo_freq_req, 1);
+
+  tvrt_lo_mode = true;
+  
+  debugMsg(boost::format("LO frequency = %10lg power %g  number of channels = %d target_rf %g actual rf %g target dsp %g actual dsp %g\n")
+	     
+	     % usrp->get_tx_freq(1) % usrp->get_tx_gain(1) % usrp->get_tx_num_channels()
+	     % tres.target_rf_freq % tres.actual_rf_freq % tres.target_dsp_freq % tres.actual_dsp_freq);
+
+  tvrt_lo_fe_freq = tres.target_rf_freq; 
+}
+
+void SoDa::USRPCtrl::disableTransverterLO()
+{
+  tvrt_lo_mode = false;
+  if(!tvrt_lo_capable) return; 
+  usrp->set_tx_gain(0.0, 1);
+  usrp->set_tx_freq(100.0e6, 1);
+}
+
+void SoDa::USRPCtrl::stepTXSweep()
+{
+  if(!tx_sweep.enabled) return;
+
+  // set the tx frequency
+  // debugMsg(boost::format("Setting sweep freq to %12.9g\n") % tx_sweep.current);
+  uhd::tune_request_t tx_sw_req(tx_sweep.current);
+  if(!is_B2xx) {
+      tx_sw_req.args = uhd::device_addr_t("mode_n=integer");    
+  }
+  
+  usrp->set_tx_freq(tx_sw_req);
+
+  pt::ptime now = pt::microsec_clock::local_time();
+
+  // pend a next freq
+  pending_commands.put(new Command(Command::SET, Command::STEP_TX_SWEEP), now + tx_sweep.tstep);
+  
+  tx_sweep.current = tx_sweep.current + tx_sweep.fstep;
+  if(tx_sweep.current > tx_sweep.stop) {
+    tx_sweep.current = tx_sweep.start; 
+    debugMsg(boost::format("Setting sweep freq to %12.9g\n") % tx_sweep.current);
+  }
 }
 

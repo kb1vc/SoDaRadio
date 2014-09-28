@@ -352,7 +352,7 @@ m_SweeperDialog::m_SweeperDialog( wxWindow* parent, wxWindowID id, const wxStrin
 	wxString m_DispUnitsChoices[] = { wxT("kHz"), wxT("MHz"), wxT("GHz") };
 	int m_DispUnitsNChoices = sizeof( m_DispUnitsChoices ) / sizeof( wxString );
 	m_DispUnits = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_DispUnitsNChoices, m_DispUnitsChoices, 0 );
-	m_DispUnits->SetSelection( 1 );
+	m_DispUnits->SetSelection( 0 );
 	sbCurFreqSizer->Add( m_DispUnits, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 	
 	gbSizer2->Add( sbCurFreqSizer, wxGBPosition( 0, 0 ), wxGBSpan( 1, 2 ), wxALIGN_RIGHT|wxEXPAND, 5 );
@@ -481,10 +481,10 @@ m_SpectrumAnalyzerDialog::m_SpectrumAnalyzerDialog( wxWindow* parent, wxWindowID
 	wxStaticBoxSizer* sFreqSpanSizer;
 	sFreqSpanSizer = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Frequency Span") ), wxHORIZONTAL );
 	
-	wxString m_SpanSelectionChoices[] = { wxT("2 kHz"), wxT("20 kHz"), wxT("200 kHz"), wxT("2 MHz"), wxT("20 MHz"), wxT("200 MHz") };
+	wxString m_SpanSelectionChoices[] = { wxT("1 kHz"), wxT("2 kHz"), wxT("5 kHz"), wxT("10 kHz"), wxT("20 kHz"), wxT("50 kHz"), wxT("100 kHz"), wxT("200 kHz"), wxT("500 kHz"), wxT("1 MHz"), wxT("2 MHz"), wxT("5 MHz"), wxT("10 MHz"), wxT("20 MHz"), wxT("50 MHz"), wxT("100 MHz"), wxT("200 MHz"), wxT("500 MHz") };
 	int m_SpanSelectionNChoices = sizeof( m_SpanSelectionChoices ) / sizeof( wxString );
 	m_SpanSelection = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_SpanSelectionNChoices, m_SpanSelectionChoices, 0 );
-	m_SpanSelection->SetSelection( 4 );
+	m_SpanSelection->SetSelection( 0 );
 	sFreqSpanSizer->Add( m_SpanSelection, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 	
 	gbSizer2->Add( sFreqSpanSizer, wxGBPosition( 1, 1 ), wxGBSpan( 1, 1 ), wxEXPAND, 5 );

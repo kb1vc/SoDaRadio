@@ -39,6 +39,8 @@
 #include "../gui/GuiParams.hxx"
 #include "../gui/xyplot.hxx"
 #include "../gui/waterfall.hxx"
+#include "../gui/GraphClient.hxx"
+
 #include <map>
 #include <fstream>
 #include <boost/property_tree/ptree.hpp>
@@ -66,7 +68,7 @@ namespace SoDaBench_GUI {
   class SpectrumAnalyzerDialog;
   class SweeperDialog;
   class BenchListenerThread;
-  class SoDaBench_Top : public SoDaBenchFrame
+  class SoDaBench_Top : public SoDaBenchFrame, public SoDaRadio_GUI::GraphClient
   {
   public:
     SoDaBench_Top(SoDa::GuiParams & params, wxWindow * parent);

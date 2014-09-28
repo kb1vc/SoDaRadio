@@ -111,6 +111,8 @@ namespace SoDa {
     std::string getServerSocketBasename() { return server_sock_basename; }
 
     std::string getGPSDev() { return "/dev/ttyGPS"; }
+
+    unsigned int getDebugLevel() { return debug_level; }
   private:
     
     boost::program_options::variables_map pmap;
@@ -124,7 +126,9 @@ namespace SoDa {
     std::string rx_ant, tx_ant;
 
     // message socket parameters
-    std::string server_sock_basename; 
+    std::string server_sock_basename;
+
+    unsigned int debug_level; 
   };
 }
 #endif

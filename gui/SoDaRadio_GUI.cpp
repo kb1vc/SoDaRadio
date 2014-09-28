@@ -241,6 +241,7 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 	wxStaticBoxSizer* sbSizer30;
 	sbSizer30 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("TX Frequency") ), wxVERTICAL );
 	
+	sbSizer30->SetMinSize( wxSize( 230,-1 ) ); 
 	m_TXFreqText = new wxStaticText( this, wxID_ANY, wxT("10,368.100 000"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT );
 	m_TXFreqText->Wrap( -1 );
 	m_TXFreqText->SetFont( wxFont( 20, 70, 90, 90, false, wxEmptyString ) );
@@ -255,6 +256,7 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 	wxStaticBoxSizer* sbSizer311;
 	sbSizer311 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("RX Frequency") ), wxVERTICAL );
 	
+	sbSizer311->SetMinSize( wxSize( 230,-1 ) ); 
 	m_RXFreqText = new wxStaticText( this, wxID_ANY, wxT("10,368.100 000"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT );
 	m_RXFreqText->Wrap( -1 );
 	m_RXFreqText->SetFont( wxFont( 20, 70, 90, 90, false, wxEmptyString ) );
@@ -1798,6 +1800,11 @@ m_BandConfigDialog::m_BandConfigDialog( wxWindow* parent, wxWindowID id, const w
 	m_TransverterMode = new wxCheckBox( this, wxID_ANY, wxT("Transverter Mode"), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT );
 	TransverterSetup->Add( m_TransverterMode, 0, wxALL, 5 );
 	
+	m_LOGenMode = new wxCheckBox( this, wxID_ANY, wxT("LO from TX2 Port"), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT );
+	m_LOGenMode->Enable( false );
+	
+	TransverterSetup->Add( m_LOGenMode, 0, wxALL, 5 );
+	
 	wxString m_InjectionSelChoices[] = { wxT("Low Side"), wxT("High Side") };
 	int m_InjectionSelNChoices = sizeof( m_InjectionSelChoices ) / sizeof( wxString );
 	m_InjectionSel = new wxRadioBox( this, wxID_ANY, wxT("Injection"), wxDefaultPosition, wxDefaultSize, m_InjectionSelNChoices, m_InjectionSelChoices, 1, wxRA_SPECIFY_ROWS );
@@ -1878,6 +1885,7 @@ m_BandConfigDialog::m_BandConfigDialog( wxWindow* parent, wxWindowID id, const w
 	// Connect Events
 	m_BandChoiceBox->Connect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( m_BandConfigDialog::OnConfigChoice ), NULL, this );
 	m_TransverterMode->Connect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( m_BandConfigDialog::OnTransverterModeSel ), NULL, this );
+	m_LOGenMode->Connect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( m_BandConfigDialog::OnTransverterModeSel ), NULL, this );
 	m_BandCancel->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_BandConfigDialog::OnBandCancel ), NULL, this );
 	m_BandOK->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_BandConfigDialog::OnBandOK ), NULL, this );
 }
@@ -1887,6 +1895,7 @@ m_BandConfigDialog::~m_BandConfigDialog()
 	// Disconnect Events
 	m_BandChoiceBox->Disconnect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( m_BandConfigDialog::OnConfigChoice ), NULL, this );
 	m_TransverterMode->Disconnect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( m_BandConfigDialog::OnTransverterModeSel ), NULL, this );
+	m_LOGenMode->Disconnect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( m_BandConfigDialog::OnTransverterModeSel ), NULL, this );
 	m_BandCancel->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_BandConfigDialog::OnBandCancel ), NULL, this );
 	m_BandOK->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_BandConfigDialog::OnBandOK ), NULL, this );
 }

@@ -32,15 +32,15 @@
 
 #include <wx/wx.h>
 #include <map>
+#include "GraphClient.hxx"
 
 namespace SoDaRadio_GUI {
   using namespace std;
-  class SoDaRadio_Top;
 
   class XYPlot : public wxPanel
   {
   public:
-    XYPlot(wxPanel * parent, SoDaRadio_Top * _radio, int id,
+    XYPlot(wxPanel * parent, GraphClient * _client, int id,
 	   const wxPoint & pos = wxDefaultPosition,
 	   const wxSize & size = wxDefaultSize,
 	   const int flags = 0xff
@@ -174,7 +174,7 @@ namespace SoDaRadio_GUI {
     void PrintXY(wxString & str, double x, double y);
   
     wxPanel * m_parent;
-    SoDaRadio_Top * radio; 
+    GraphClient * client; 
 
     wxString title, xlabel, ylabel;
     wxString x_template, xc_template, y_template;
