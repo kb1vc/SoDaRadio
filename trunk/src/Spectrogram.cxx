@@ -125,11 +125,13 @@ void SoDa::Spectrogram::apply_acc(std::complex<float> * invec,
   int j, k;
 
   for(j = 0, k = (fft_len / 2); j < (fft_len / 2); j++, k++) {
-    outvec[j] = result[k] + outvec[j] * accumulation_gain; 
+    outvec[j] = result[k] * (1.0 - accumulation_gain) +
+      outvec[j] * accumulation_gain; 
   }
 
   for(j = (fft_len / 2), k = 0; j < fft_len; j++, k++) {
-    outvec[j] = result[k] + outvec[j] * accumulation_gain; 
+    outvec[j] = result[k] * (1.0 - accumulation_gain) +
+      outvec[j] * accumulation_gain; 
   }
 }
 

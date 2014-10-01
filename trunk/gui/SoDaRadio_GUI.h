@@ -19,14 +19,14 @@
 #include <wx/settings.h>
 #include <wx/statusbr.h>
 #include <wx/panel.h>
+#include <wx/slider.h>
+#include <wx/stattext.h>
 #include <wx/sizer.h>
 #include <wx/notebook.h>
 #include <wx/choice.h>
 #include <wx/statbox.h>
 #include <wx/spinctrl.h>
 #include <wx/button.h>
-#include <wx/slider.h>
-#include <wx/stattext.h>
 #include <wx/checkbox.h>
 #include <wx/textctrl.h>
 #include <wx/gbsizer.h>
@@ -71,8 +71,15 @@ namespace SoDaRadio_GUI
 			wxNotebook* SpectrumDisplay;
 			wxPanel* WaterFallPanel;
 			wxPanel* WfallPanel;
+			wxSlider* m_WaterfallWindowSel;
+			wxStaticText* m_staticText391;
+			
+			wxSlider* m_slider10;
+			wxStaticText* m_staticText44;
 			wxPanel* FFTPanelTop;
 			wxPanel* FFTPanel;
+			wxSlider* m_PeriodogramWindowSel;
+			wxStaticText* m_staticText39;
 			wxChoice* m_BandSpreadChoice;
 			wxSpinCtrl* m_cFreqSpin;
 			wxButton* m_RX2CF;
@@ -132,6 +139,8 @@ namespace SoDaRadio_GUI
 			virtual void OnSelectPage( wxNotebookEvent& event ) { event.Skip(); }
 			virtual void OnPaintWaterfall( wxPaintEvent& event ) { event.Skip(); }
 			virtual void OnWFallFreqSel( wxMouseEvent& event ) { event.Skip(); }
+			virtual void OnWindowLenUpdate( wxScrollEvent& event ) { event.Skip(); }
+			virtual void OnScrollSpeedUpdate( wxScrollEvent& event ) { event.Skip(); }
 			virtual void OnPaintPeriodogram( wxPaintEvent& event ) { event.Skip(); }
 			virtual void OnPeriodogramFreqSel( wxMouseEvent& event ) { event.Skip(); }
 			virtual void OnPerBandSpread( wxCommandEvent& event ) { event.Skip(); }

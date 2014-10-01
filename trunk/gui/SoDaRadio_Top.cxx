@@ -186,6 +186,7 @@ namespace SoDaRadio_GUI {
 
     pgram_plot->SetXTicTemplate(wxT("%4.1f"), 1e-3);
 
+    debugMsg("Creating Waterfall Panel");
     wfall_plot = new Waterfall(WfallPanel, this, wxID_ANY, 
 			       wxDefaultPosition, wxSize(xs, ys), // wxDefaultSize, //
 			       Waterfall::DRAW_LABEL | 
@@ -195,6 +196,7 @@ namespace SoDaRadio_GUI {
     wfall_plot->SetXTicTemplate(wxT("%4.1f"), 1e-3);
     // broken wfall_plot->SetCenterFreqTemplate(wxT("%9.4f"));
 
+    debugMsg("Setting Spectrum");
     SetSpectrum(50.0);
 
     debugMsg("Running listener thread.");

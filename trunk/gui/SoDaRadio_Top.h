@@ -106,6 +106,9 @@ namespace SoDaRadio_GUI {
     void OnSelectPage( wxNotebookEvent& event );
     void OnWFallFreqSel( wxMouseEvent& event );
     void OnPeriodogramFreqSel( wxMouseEvent& event );
+    void OnWindowLenUpdate(wxScrollEvent & event);
+    void OnScrollSpeedUpdate(wxScrollEvent & event);
+    
     void OnTXOnOff( wxCommandEvent& event );
     void OnCWControl( wxCommandEvent& event );
     void OnClrCWBuffer( wxCommandEvent& event );

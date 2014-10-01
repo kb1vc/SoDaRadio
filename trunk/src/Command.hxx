@@ -272,7 +272,10 @@ namespace SoDa {
       SPEC_RANGE_LOW,  ///< low spectrum frequency range
       SPEC_RANGE_HI,   ///< high spectrum frequency range
       SPEC_STEP, ///< freqency step
-      SPEC_BUF_LEN,    ///< number of samples in the buffer. 
+      SPEC_BUF_LEN,    ///< number of samples in the buffer.
+
+      SPEC_AVG_WINDOW, ///< how many FFT samples contribute to a spectrum report
+      SPEC_UPDATE_RATE, ///< how many FFT samples between spectrum reports
 
       /**
        * The master clock oscillator source
