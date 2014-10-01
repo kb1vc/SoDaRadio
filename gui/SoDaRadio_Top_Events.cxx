@@ -182,6 +182,18 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnSelectPage( wxNotebookEvent& event )
   {
+    if(SpectrumDisplay->GetSelection() == 0) {
+      // this is the waterfall display
+      SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::SPEC_AVG_WINDOW,
+			 m_WaterfallWindowSel->GetValue());
+      sendMsg(&ncmd);
+    }
+    else {
+      // this is the periodogram display
+      SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::SPEC_AVG_WINDOW,
+			 m_PeriodogramWindowSel->GetValue()); 
+      sendMsg(&ncmd);
+    }
   }
 
   void SoDaRadio_Top::OnWFallFreqSel( wxMouseEvent& event )
@@ -192,7 +204,26 @@ namespace SoDaRadio_GUI {
   {
   }
 
+  void SoDaRadio_Top::OnWindowLenUpdate( wxScrollEvent & event )
+  {
+    wxSlider * w = (wxSlider *) event.GetEventObject();
+    
+    SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::SPEC_AVG_WINDOW,
+		       w->GetValue()); 
+    sendMsg(&ncmd);
+  }
 
+  void SoDaRadio_Top::OnScrollSpeedUpdate( wxScrollEvent & event) {
+    wxSpinCtrl * w = (wxSpinCtrl *) event.GetEventObject();
+    int val = (int) w->GetValue();
+    debugMsg(boost::format("About to send a scroll speed message, param = %d.")
+	     % val);
+    SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::SPEC_UPDATE_RATE,
+		       w->GetValue()); 
+    sendMsg(&ncmd);
+    debugMsg("sent a scroll speed message.");
+  }
+  
   void SoDaRadio_Top::OnTerminateTX( wxCommandEvent& event )
   {
     // we got to the end of a CW string --
@@ -1048,14 +1079,18 @@ namespace SoDaRadio_GUI {
     xmin = spectrum_center_freq - (spectrum_bandspread / 2);
     xmax = spectrum_center_freq + (spectrum_bandspread / 2);
     ymax = spectrum_y_reflevel;
-    ymin = ymax - 10.0 * spectrum_y_scale; 
+    ymin = ymax - 10.0 * spectrum_y_scale;
+    debugMsg("In UpdateAxes");
+    debugMsg(boost::format("pgram_plot = %p  wfall_plot = %p\n") % pgram_plot % wfall_plot);
     pgram_plot->SetScale(xmin, xmax, ymin, ymax);
     wfall_plot->SetScale(xmin, xmax);
 
+    debugMsg("Sending axis update message\n");
     // now tell the radio
     SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::SPEC_CENTER_FREQ,
 		       applyRXTVOffset(spectrum_center_freq));
     sendMsg(&ncmd); 
+    debugMsg("Sent axis update message\n");
   }
 
   void SoDaRadio_Top::SetSpectrum(double bandspread)

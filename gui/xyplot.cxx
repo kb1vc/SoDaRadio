@@ -28,6 +28,7 @@
 
 #include "xyplot.hxx"
 #include <wx/print.h>
+#include <wx/dcbuffer.h>
 #include "SoDaRadio_Top.h"
 
 using namespace std;
@@ -150,7 +151,7 @@ namespace SoDaRadio_GUI {
   void XYPlot::Draw()
   {
     // setup the panel with the DC.
-    wxPaintDC dc(this);
+    wxBufferedPaintDC dc(this);
 
     // how big is the window?
     wxSize size = GetSize();

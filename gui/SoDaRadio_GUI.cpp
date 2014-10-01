@@ -113,12 +113,38 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 	WfallPanel = new wxPanel( WaterFallPanel, WfallPanelID, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
 	WfallPanel->SetMinSize( wxSize( 1000,250 ) );
 	
-	bSizer441->Add( WfallPanel, 4, wxEXPAND | wxALL, 5 );
+	bSizer441->Add( WfallPanel, 9, wxEXPAND | wxALL, 5 );
+	
+	wxBoxSizer* bSizer74;
+	bSizer74 = new wxBoxSizer( wxVERTICAL );
+	
+	m_WaterfallWindowSel = new wxSlider( WaterFallPanel, wxID_ANY, 4, 1, 100, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL|wxSL_LABELS );
+	m_WaterfallWindowSel->SetMinSize( wxSize( 100,50 ) );
+	
+	bSizer74->Add( m_WaterfallWindowSel, 0, wxALL, 5 );
+	
+	m_staticText391 = new wxStaticText( WaterFallPanel, wxID_ANY, wxT("Window Length"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE );
+	m_staticText391->Wrap( -1 );
+	bSizer74->Add( m_staticText391, 0, wxALL, 5 );
+	
+	
+	bSizer74->Add( 0, 0, 1, wxEXPAND, 5 );
+	
+	m_slider10 = new wxSlider( WaterFallPanel, wxID_ANY, 1, 4, 10, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL|wxSL_LABELS );
+	m_slider10->SetMinSize( wxSize( 100,50 ) );
+	
+	bSizer74->Add( m_slider10, 0, wxALL, 5 );
+	
+	m_staticText44 = new wxStaticText( WaterFallPanel, wxID_ANY, wxT("Scroll Speed"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE );
+	m_staticText44->Wrap( -1 );
+	bSizer74->Add( m_staticText44, 0, wxALL, 5 );
+	
+	bSizer441->Add( bSizer74, 1, wxEXPAND, 5 );
 	
 	WaterFallPanel->SetSizer( bSizer441 );
 	WaterFallPanel->Layout();
 	bSizer441->Fit( WaterFallPanel );
-	SpectrumDisplay->AddPage( WaterFallPanel, wxT("Waterfall"), false );
+	SpectrumDisplay->AddPage( WaterFallPanel, wxT("Waterfall"), true );
 	FFTPanelTop = new wxPanel( SpectrumDisplay, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
 	FFTPanelTop->SetMinSize( wxSize( 1000,250 ) );
 	
@@ -128,12 +154,26 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 	FFTPanel = new wxPanel( FFTPanelTop, FFTPanelID, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
 	FFTPanel->SetMinSize( wxSize( 1000,250 ) );
 	
-	bSizer44->Add( FFTPanel, 4, wxEXPAND | wxALL, 5 );
+	bSizer44->Add( FFTPanel, 9, wxEXPAND | wxALL, 5 );
+	
+	wxBoxSizer* bSizer73;
+	bSizer73 = new wxBoxSizer( wxVERTICAL );
+	
+	m_PeriodogramWindowSel = new wxSlider( FFTPanelTop, wxID_ANY, 20, 1, 100, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL|wxSL_LABELS );
+	m_PeriodogramWindowSel->SetMinSize( wxSize( 100,50 ) );
+	
+	bSizer73->Add( m_PeriodogramWindowSel, 0, wxALL, 5 );
+	
+	m_staticText39 = new wxStaticText( FFTPanelTop, wxID_ANY, wxT("Window Length"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE );
+	m_staticText39->Wrap( -1 );
+	bSizer73->Add( m_staticText39, 0, wxALL, 5 );
+	
+	bSizer44->Add( bSizer73, 1, wxEXPAND, 5 );
 	
 	FFTPanelTop->SetSizer( bSizer44 );
 	FFTPanelTop->Layout();
 	bSizer44->Fit( FFTPanelTop );
-	SpectrumDisplay->AddPage( FFTPanelTop, wxT("Periodogram"), true );
+	SpectrumDisplay->AddPage( FFTPanelTop, wxT("Periodogram"), false );
 	
 	bSizer51->Add( SpectrumDisplay, 1, wxEXPAND | wxALL, 5 );
 	
@@ -524,8 +564,11 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 	SpectrumDisplay->Connect( wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGED, wxNotebookEventHandler( SoDaRadioFrame::OnSelectPage ), NULL, this );
 	SpectrumDisplay->Connect( wxEVT_PAINT, wxPaintEventHandler( SoDaRadioFrame::OnPaintWaterfall ), NULL, this );
 	SpectrumDisplay->Connect( wxEVT_RIGHT_DCLICK, wxMouseEventHandler( SoDaRadioFrame::OnWFallFreqSel ), NULL, this );
+	m_WaterfallWindowSel->Connect( wxEVT_SCROLL_THUMBRELEASE, wxScrollEventHandler( SoDaRadioFrame::OnWindowLenUpdate ), NULL, this );
+	m_slider10->Connect( wxEVT_SCROLL_THUMBRELEASE, wxScrollEventHandler( SoDaRadioFrame::OnScrollSpeedUpdate ), NULL, this );
 	FFTPanelTop->Connect( wxEVT_PAINT, wxPaintEventHandler( SoDaRadioFrame::OnPaintPeriodogram ), NULL, this );
 	FFTPanelTop->Connect( wxEVT_RIGHT_DCLICK, wxMouseEventHandler( SoDaRadioFrame::OnPeriodogramFreqSel ), NULL, this );
+	m_PeriodogramWindowSel->Connect( wxEVT_SCROLL_THUMBRELEASE, wxScrollEventHandler( SoDaRadioFrame::OnWindowLenUpdate ), NULL, this );
 	m_BandSpreadChoice->Connect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnPerBandSpread ), NULL, this );
 	m_cFreqSpin->Connect( wxEVT_COMMAND_SPINCTRL_UPDATED, wxSpinEventHandler( SoDaRadioFrame::OnPerCFreqStep ), NULL, this );
 	m_RX2CF->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnPerRxToCentFreq ), NULL, this );
@@ -597,8 +640,11 @@ SoDaRadioFrame::~SoDaRadioFrame()
 	SpectrumDisplay->Disconnect( wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGED, wxNotebookEventHandler( SoDaRadioFrame::OnSelectPage ), NULL, this );
 	SpectrumDisplay->Disconnect( wxEVT_PAINT, wxPaintEventHandler( SoDaRadioFrame::OnPaintWaterfall ), NULL, this );
 	SpectrumDisplay->Disconnect( wxEVT_RIGHT_DCLICK, wxMouseEventHandler( SoDaRadioFrame::OnWFallFreqSel ), NULL, this );
+	m_WaterfallWindowSel->Disconnect( wxEVT_SCROLL_THUMBRELEASE, wxScrollEventHandler( SoDaRadioFrame::OnWindowLenUpdate ), NULL, this );
+	m_slider10->Disconnect( wxEVT_SCROLL_THUMBRELEASE, wxScrollEventHandler( SoDaRadioFrame::OnScrollSpeedUpdate ), NULL, this );
 	FFTPanelTop->Disconnect( wxEVT_PAINT, wxPaintEventHandler( SoDaRadioFrame::OnPaintPeriodogram ), NULL, this );
 	FFTPanelTop->Disconnect( wxEVT_RIGHT_DCLICK, wxMouseEventHandler( SoDaRadioFrame::OnPeriodogramFreqSel ), NULL, this );
+	m_PeriodogramWindowSel->Disconnect( wxEVT_SCROLL_THUMBRELEASE, wxScrollEventHandler( SoDaRadioFrame::OnWindowLenUpdate ), NULL, this );
 	m_BandSpreadChoice->Disconnect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnPerBandSpread ), NULL, this );
 	m_cFreqSpin->Disconnect( wxEVT_COMMAND_SPINCTRL_UPDATED, wxSpinEventHandler( SoDaRadioFrame::OnPerCFreqStep ), NULL, this );
 	m_RX2CF->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnPerRxToCentFreq ), NULL, this );
