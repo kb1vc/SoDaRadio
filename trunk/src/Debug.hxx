@@ -31,6 +31,8 @@
 
 #include <string>
 #include <boost/format.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/condition.hpp>
 
 
 namespace SoDa {
@@ -60,6 +62,7 @@ namespace SoDa {
     }
 
     void debugMsg(const std::string & msg, unsigned int threshold = 1) {
+      boost::mutex::scoped_lock lock(debug_msg_mutex);
       if((debug_level >= threshold) || (global_debug_level >= threshold)) {
 	std::cerr << unit_name << " " << msg << std::endl; 
       }
@@ -82,6 +85,7 @@ namespace SoDa {
     static void setGlobalLevel(unsigned int v) { global_debug_level = v; }
     static unsigned int  getGlobalLevel() { return global_debug_level; }
 
+    static boost::mutex debug_msg_mutex; 
     
   protected:
     std::string unit_name; ///< the name of the unit reporting status

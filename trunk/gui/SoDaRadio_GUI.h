@@ -20,11 +20,11 @@
 #include <wx/statusbr.h>
 #include <wx/panel.h>
 #include <wx/slider.h>
-#include <wx/stattext.h>
 #include <wx/sizer.h>
+#include <wx/statbox.h>
+#include <wx/stattext.h>
 #include <wx/notebook.h>
 #include <wx/choice.h>
-#include <wx/statbox.h>
 #include <wx/spinctrl.h>
 #include <wx/button.h>
 #include <wx/checkbox.h>
@@ -72,10 +72,8 @@ namespace SoDaRadio_GUI
 			wxPanel* WaterFallPanel;
 			wxPanel* WfallPanel;
 			wxSlider* m_WaterfallWindowSel;
-			wxStaticText* m_staticText391;
 			
-			wxSlider* m_slider10;
-			wxStaticText* m_staticText44;
+			wxSlider* m_WaterfallScrollSpeed;
 			wxPanel* FFTPanelTop;
 			wxPanel* FFTPanel;
 			wxSlider* m_PeriodogramWindowSel;

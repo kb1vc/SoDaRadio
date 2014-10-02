@@ -32,6 +32,7 @@
 #include <wx/string.h>
 #include <wx/wx.h>
 #include <wx/textdlg.h>
+#include <wx/filedlg.h>
 #include <wx/colour.h>
 #include "../src/Command.hxx"
 #include "Navigation.hxx"
@@ -111,7 +112,7 @@ namespace SoDaRadio_GUI {
     wxString defaultDir = wxT("~/.SoDa");
     wxString defaultFilename = wxT("SoDa.soda_cfg");
     wxString wildcard = wxT("SoDa Config files (*.soda_cfg)|*.soda_cfg");
-    wxFileDialog dialog(this, wxT("Load Configuration File"), defaultDir, defaultFilename, wildcard, wxOPEN);
+    wxFileDialog dialog(this, wxT("Load Configuration File"), defaultDir, defaultFilename, wildcard, wxFD_OPEN);
   
 
     if (dialog.ShowModal() == wxID_OK) {
@@ -135,7 +136,7 @@ namespace SoDaRadio_GUI {
     wxString defaultDir = wxT("~/.SoDaRadio");
     wxString defaultFilename = wxT("SoDa.soda_cfg");
     wxString wildcard = wxT("SoDa Config files (*.soda_cfg)|*.soda_cfg");
-    wxFileDialog dialog(this, wxT("Save to Selected Configuration File"), defaultDir, defaultFilename, wildcard, wxSAVE);
+    wxFileDialog dialog(this, wxT("Save to Selected Configuration File"), defaultDir, defaultFilename, wildcard, wxFD_SAVE);
 
     if (dialog.ShowModal() == wxID_OK) {
       wxString fname = dialog.GetPath();
@@ -149,7 +150,7 @@ namespace SoDaRadio_GUI {
     wxString defaultDir = wxT("~/.SoDa");
     wxString defaultFilename = wxT("SoDa.soda_log");
     wxString wildcard = wxT("SoDa Log files (*.soda_log)|*.soda_log");
-    wxFileDialog dialog(this, wxT("Open/Create Log File"), defaultDir, defaultFilename, wildcard, wxSAVE);
+    wxFileDialog dialog(this, wxT("Open/Create Log File"), defaultDir, defaultFilename, wildcard, wxFD_SAVE);
 
     if (dialog.ShowModal() == wxID_OK) {
       log_file_name = dialog.GetPath();
@@ -214,7 +215,7 @@ namespace SoDaRadio_GUI {
   }
 
   void SoDaRadio_Top::OnScrollSpeedUpdate( wxScrollEvent & event) {
-    wxSpinCtrl * w = (wxSpinCtrl *) event.GetEventObject();
+    wxSlider * w = (wxSlider *) event.GetEventObject();
     int val = (int) w->GetValue();
     debugMsg(boost::format("About to send a scroll speed message, param = %d.")
 	     % val);
@@ -1483,21 +1484,16 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnUpdateSpectrumPlot(wxCommandEvent & event)
   {
-    if(pgram_trace != NULL) {
-      pgram_plot->Draw();
-      if(wfall_plot != NULL) wfall_plot->DrawNew();
+    if(SpectrumDisplay->GetSelection() == 0) {
+      // update the waterfall
+      if((wfall_plot != NULL) && (wfall_plot->IsShownOnScreen())) {
+	wfall_plot->DrawNew();
+      }
     }
-    int i;
-    int len = pgram_trace->GetLength();
-    double * x;
-    float * y;
-    x = pgram_trace->GetXVec();
-    y = pgram_trace->GetYVec();
-    double xmin, xmax, ymin, ymax;
-    pgram_plot->GetScale(xmin, xmax, ymin, ymax);
-    float maxval = -1000.0;
-    float maxfreq = 0.0; 
-    int maxidx = 0; 
+    else if((pgram_trace != NULL) && (pgram_plot->IsShownOnScreen())) {
+      // otherwise, update the periodogram
+      pgram_plot->Draw();
+    }
   }
 
   void SoDaRadio_Top::OnUpdateGPSLoc(wxCommandEvent & event)

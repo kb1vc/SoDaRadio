@@ -40,6 +40,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <unistd.h>
 #include <sys/syscall.h>
 
+extern "C" {
+#include <signal.h>
+#include <stdio.h>
+#include <unistd.h>
+}
+
  /**
   * @file SoDaBase.hxx
   * The Baseclass for all SoDa objects, and useful commonly used classes.
@@ -331,7 +337,6 @@ namespace SoDa {
      */
     virtual void execRepCommand(Command * cmd) { }; 
 
-
   private:
     boost::thread * th;
 
@@ -342,8 +347,10 @@ namespace SoDa {
      * handler so that we can do something useful with it. 
      */
     void outerRun() {
+      hookSigSeg();
       pid_t tid;
       tid = syscall(SYS_gettid);
+      debugMsg(boost::format("%s starting as TID %x.\n") % getObjName() % tid); 
       try {
 	run(); 
       }
@@ -353,7 +360,35 @@ namespace SoDa {
       catch (const std::exception & e) {
 	std::cerr << getObjName() << " caught exception here: " << e.what() << std::endl; 
       }
+      catch (...) {
+	std::cerr << getObjName() << " caught unknown exception" << std::endl;
+      }
+      debugMsg(boost::format("%s terminating.\n") % getObjName()); 
     }
+
+    static void sigsegHandler(int sig)
+    {
+      std::cerr << "\n-----------"
+		<< "\n-----------"
+		<< "\n-----------"
+		<< "\n-----------"
+		<< " A SoDaThread caught a sig segv"
+		<< "\n-----------"
+		<< "\n-----------"
+		<< "\n-----------"
+		<< "\n-----------"
+		<< std::endl;
+      exit(-1);
+    }
+
+    void hookSigSeg() {
+      struct sigaction act;
+      sigemptyset(&act.sa_mask);
+      act.sa_handler = SoDaThread::sigsegHandler;
+      act.sa_flags = 0;
+      sigaction(SIGSEGV, &act, 0);
+    }
+    
   }; 
 }
 

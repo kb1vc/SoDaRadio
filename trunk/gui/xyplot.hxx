@@ -114,6 +114,7 @@ namespace SoDaRadio_GUI {
       Refresh(); 
     }
     void SetCenterFreqTemplate(const wxString & l, double scale_factor = 1.0)  {
+      std::cerr << "WHOOOOOOOWEEEE! template = [" << l << "]  factor = " << scale_factor << std::endl;
       cf_template = l;
       cf_scalefactor = scale_factor;
       Refresh(); 

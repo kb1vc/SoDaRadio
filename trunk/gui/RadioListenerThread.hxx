@@ -30,6 +30,12 @@
 #define RadioLISTENER_THREAD_HDR
 #include "../src/UDSockets.hxx"
 #include "../src/Command.hxx"
+#include "../src/Debug.hxx"
+extern "C" {
+#include <signal.h>
+#include <stdio.h>
+#include <unistd.h>
+}
 
 #include <wx/wx.h>
 #include <wx/thread.h>
@@ -37,7 +43,7 @@
 namespace SoDaRadio_GUI {
   class SoDaRadio_Top;
 
-  class RadioListenerThread : public wxThread {
+  class RadioListenerThread : public wxThread, public SoDa::Debug {
   public:
     RadioListenerThread(SoDaRadio_Top * _radio);
 
@@ -52,8 +58,22 @@ namespace SoDaRadio_GUI {
     float * spect_buffer;
     double * freq_buffer;
     int spect_buflen, old_spect_buflen;
-    float spectrum_low_freq, spectrum_hi_freq, spectrum_step_freq; 
-  }; 
+    float spectrum_low_freq, spectrum_hi_freq, spectrum_step_freq;
+
+    static void segfault_handler(int sig) {
+      std::cerr << "Radio Listener Thread got a segfault." << std::endl;
+      exit(-1);
+    }
+
+    void hookSigSeg() {
+      struct sigaction act;
+      act.sa_handler = RadioListenerThread::segfault_handler;
+      sigemptyset(&act.sa_mask);
+      act.sa_flags = 0;
+      sigaction(SIGSEGV, &act, 0);
+    }
+  };
+
 }
 
 #endif
