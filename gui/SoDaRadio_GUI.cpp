@@ -118,26 +118,28 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 	wxBoxSizer* bSizer74;
 	bSizer74 = new wxBoxSizer( wxVERTICAL );
 	
-	m_WaterfallWindowSel = new wxSlider( WaterFallPanel, wxID_ANY, 4, 1, 100, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL|wxSL_LABELS );
-	m_WaterfallWindowSel->SetMinSize( wxSize( 100,50 ) );
+	wxStaticBoxSizer* sbSizer36;
+	sbSizer36 = new wxStaticBoxSizer( new wxStaticBox( WaterFallPanel, wxID_ANY, wxT("Window Length") ), wxVERTICAL );
 	
-	bSizer74->Add( m_WaterfallWindowSel, 0, wxALL, 5 );
+	m_WaterfallWindowSel = new wxSlider( WaterFallPanel, wxID_ANY, 4, 1, 25, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL|wxSL_LABELS );
+	m_WaterfallWindowSel->SetMinSize( wxSize( 100,-1 ) );
 	
-	m_staticText391 = new wxStaticText( WaterFallPanel, wxID_ANY, wxT("Window Length"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE );
-	m_staticText391->Wrap( -1 );
-	bSizer74->Add( m_staticText391, 0, wxALL, 5 );
+	sbSizer36->Add( m_WaterfallWindowSel, 0, wxALL, 5 );
+	
+	bSizer74->Add( sbSizer36, 1, wxEXPAND, 5 );
 	
 	
 	bSizer74->Add( 0, 0, 1, wxEXPAND, 5 );
 	
-	m_slider10 = new wxSlider( WaterFallPanel, wxID_ANY, 1, 4, 10, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL|wxSL_LABELS );
-	m_slider10->SetMinSize( wxSize( 100,50 ) );
+	wxStaticBoxSizer* sbSizer351;
+	sbSizer351 = new wxStaticBoxSizer( new wxStaticBox( WaterFallPanel, wxID_ANY, wxT("Scroll Speed") ), wxVERTICAL );
 	
-	bSizer74->Add( m_slider10, 0, wxALL, 5 );
+	m_WaterfallScrollSpeed = new wxSlider( WaterFallPanel, wxID_ANY, 1, 4, 10, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL );
+	m_WaterfallScrollSpeed->SetMinSize( wxSize( 100,-1 ) );
 	
-	m_staticText44 = new wxStaticText( WaterFallPanel, wxID_ANY, wxT("Scroll Speed"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE );
-	m_staticText44->Wrap( -1 );
-	bSizer74->Add( m_staticText44, 0, wxALL, 5 );
+	sbSizer351->Add( m_WaterfallScrollSpeed, 0, wxALL, 5 );
+	
+	bSizer74->Add( sbSizer351, 1, wxEXPAND, 5 );
 	
 	bSizer441->Add( bSizer74, 1, wxEXPAND, 5 );
 	
@@ -565,7 +567,7 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 	SpectrumDisplay->Connect( wxEVT_PAINT, wxPaintEventHandler( SoDaRadioFrame::OnPaintWaterfall ), NULL, this );
 	SpectrumDisplay->Connect( wxEVT_RIGHT_DCLICK, wxMouseEventHandler( SoDaRadioFrame::OnWFallFreqSel ), NULL, this );
 	m_WaterfallWindowSel->Connect( wxEVT_SCROLL_THUMBRELEASE, wxScrollEventHandler( SoDaRadioFrame::OnWindowLenUpdate ), NULL, this );
-	m_slider10->Connect( wxEVT_SCROLL_THUMBRELEASE, wxScrollEventHandler( SoDaRadioFrame::OnScrollSpeedUpdate ), NULL, this );
+	m_WaterfallScrollSpeed->Connect( wxEVT_SCROLL_THUMBRELEASE, wxScrollEventHandler( SoDaRadioFrame::OnScrollSpeedUpdate ), NULL, this );
 	FFTPanelTop->Connect( wxEVT_PAINT, wxPaintEventHandler( SoDaRadioFrame::OnPaintPeriodogram ), NULL, this );
 	FFTPanelTop->Connect( wxEVT_RIGHT_DCLICK, wxMouseEventHandler( SoDaRadioFrame::OnPeriodogramFreqSel ), NULL, this );
 	m_PeriodogramWindowSel->Connect( wxEVT_SCROLL_THUMBRELEASE, wxScrollEventHandler( SoDaRadioFrame::OnWindowLenUpdate ), NULL, this );
@@ -641,7 +643,7 @@ SoDaRadioFrame::~SoDaRadioFrame()
 	SpectrumDisplay->Disconnect( wxEVT_PAINT, wxPaintEventHandler( SoDaRadioFrame::OnPaintWaterfall ), NULL, this );
 	SpectrumDisplay->Disconnect( wxEVT_RIGHT_DCLICK, wxMouseEventHandler( SoDaRadioFrame::OnWFallFreqSel ), NULL, this );
 	m_WaterfallWindowSel->Disconnect( wxEVT_SCROLL_THUMBRELEASE, wxScrollEventHandler( SoDaRadioFrame::OnWindowLenUpdate ), NULL, this );
-	m_slider10->Disconnect( wxEVT_SCROLL_THUMBRELEASE, wxScrollEventHandler( SoDaRadioFrame::OnScrollSpeedUpdate ), NULL, this );
+	m_WaterfallScrollSpeed->Disconnect( wxEVT_SCROLL_THUMBRELEASE, wxScrollEventHandler( SoDaRadioFrame::OnScrollSpeedUpdate ), NULL, this );
 	FFTPanelTop->Disconnect( wxEVT_PAINT, wxPaintEventHandler( SoDaRadioFrame::OnPaintPeriodogram ), NULL, this );
 	FFTPanelTop->Disconnect( wxEVT_RIGHT_DCLICK, wxMouseEventHandler( SoDaRadioFrame::OnPeriodogramFreqSel ), NULL, this );
 	m_PeriodogramWindowSel->Disconnect( wxEVT_SCROLL_THUMBRELEASE, wxScrollEventHandler( SoDaRadioFrame::OnWindowLenUpdate ), NULL, this );

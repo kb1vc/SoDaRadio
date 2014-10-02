@@ -31,3 +31,4 @@
 unsigned int SoDa::Debug::default_debug_level = 0;
 unsigned int SoDa::Debug::global_debug_level = 0;
 
+boost::mutex SoDa::Debug::debug_msg_mutex; 

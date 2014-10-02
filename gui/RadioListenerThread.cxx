@@ -30,6 +30,7 @@
 
 #include "SoDaRadio_Top.h"
 #include "SoDaRadio_App.hxx"
+#include "../src/Debug.hxx"
 #include <iostream>
 #include <wx/wx.h>
 #include <wx/app.h>
@@ -39,7 +40,7 @@
 
 namespace SoDaRadio_GUI {
 
-  RadioListenerThread::RadioListenerThread(SoDaRadio_Top * _radio_gui)
+  RadioListenerThread::RadioListenerThread(SoDaRadio_Top * _radio_gui) : SoDa::Debug("RadioListenerThread")
   {
     radio_gui = _radio_gui;
 
@@ -93,6 +94,9 @@ namespace SoDaRadio_GUI {
 
   void * RadioListenerThread::Entry()
   {
+    // setup a trap handler for segsegv so we know when it happens.
+    hookSigSeg();
+    
     //listen on the gui's command queue and on the fft queue.
     bool exitflag = false;
 
@@ -115,9 +119,10 @@ namespace SoDaRadio_GUI {
       if(spect_buffer != NULL) {
 	stat = fft_q->get(spect_buffer, sizeof(float) * spect_buflen);
 	if(stat > 0) {
+	  // if((dbgctr & 0xff) == 0) std::cerr << "."; 
 	  wxCommandEvent event(wxEVT_COMMAND_MENU_SELECTED,
 			       SoDaRadio_Top::MSG_UPDATE_SPECTRUM);
-	  radio_gui->AddPendingEvent(event); 
+	  radio_gui->GetEventHandler()->AddPendingEvent(event); 
 	  didwork = true;
 	}
 	else if(stat < 0) {
@@ -127,6 +132,7 @@ namespace SoDaRadio_GUI {
       if(!didwork) {
 	wxThread::Sleep(100);
       }
+
     }
 
     delete ncmd;   
@@ -178,16 +184,22 @@ namespace SoDaRadio_GUI {
       {
 	wxCommandEvent event(wxEVT_COMMAND_MENU_SELECTED,
 			     SoDaRadio_Top::MSG_TERMINATE_TX);
-	radio_gui->AddPendingEvent(event); 
+	radio_gui->GetEventHandler()->AddPendingEvent(event); 
       }
       break;
     case SoDa::Command::HWMB_REP:
+      debugMsg(boost::format("Got HWMB Report [%s]\n") % cmd->sparm); 
       radio_gui->setRadioName(wxString((char*) cmd->sparm, wxConvUTF8));
+      debugMsg("Set the Radio Name field.\n");
       break;  
     default:
       break; 
     }
 
-    if(check_buf_setup) setupSpectrumDisplay();
+    if(check_buf_setup) {
+      debugMsg("Calling setupSpectrumDisplay\n");
+      setupSpectrumDisplay();
+      debugMsg("Called setupSpectrumDisplay\n");
+    }
   }
 }

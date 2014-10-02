@@ -281,7 +281,6 @@ void SoDa::UI::execRepCommand(Command * cmd)
   case SoDa::Command::RX_FE_FREQ:
     // save the front end baseband frequency
     baseband_rx_freq = cmd->dparms[0];
-    new_spectrum_setting = true;
     break;
   default:
     break; 

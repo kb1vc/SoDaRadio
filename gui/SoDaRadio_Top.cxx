@@ -185,7 +185,7 @@ namespace SoDaRadio_GUI {
 			    );
 
     pgram_plot->SetXTicTemplate(wxT("%4.1f"), 1e-3);
-
+    
     debugMsg("Creating Waterfall Panel");
     wfall_plot = new Waterfall(WfallPanel, this, wxID_ANY, 
 			       wxDefaultPosition, wxSize(xs, ys), // wxDefaultSize, //
@@ -199,8 +199,8 @@ namespace SoDaRadio_GUI {
     debugMsg("Setting Spectrum");
     SetSpectrum(50.0);
 
-    debugMsg("Running listener thread.");
-    listener->Run(); 
+    // debugMsg("Running listener thread.");
+    // listener->Run(); 
 
     // setup the tuner
     tuner = new TuningDialog(this, this);
@@ -250,6 +250,9 @@ namespace SoDaRadio_GUI {
 
     // setup status bar -- hardwire the accelerators for now.
     m_ClueBar->SetStatusText(wxT("^C Set To Call        ^G Set To Grid        ^L Enter Log Comment        ^X Enter CW Text"), 0);
+
+    debugMsg("Running listener thread.");
+    listener->Run(); 
 
     SoDa::Command ncmd(SoDa::Command::GET, SoDa::Command::HWMB_REP);
     sendMsg(&ncmd);
