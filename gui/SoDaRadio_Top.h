@@ -58,6 +58,7 @@ namespace SoDaRadio_GUI {
   class ControlsDialog;
   class BandConfigDialog;
   class LogDialog;
+  class SpectConfigDialog;
 
   /**
    * The SoDaRadio object
@@ -76,6 +77,9 @@ namespace SoDaRadio_GUI {
   {
     friend class TuningDialog;
     friend class ControlsDialog;
+    friend class SpectConfigDialog;
+    friend class XYPlot;
+    friend class Waterfall;
   protected:
     // Handlers for SoDaRadioFrame events.
     void OnOpenConfig( wxCommandEvent& event );
@@ -106,8 +110,10 @@ namespace SoDaRadio_GUI {
     void OnSelectPage( wxNotebookEvent& event );
     void OnWFallFreqSel( wxMouseEvent& event );
     void OnPeriodogramFreqSel( wxMouseEvent& event );
-    void OnWindowLenUpdate(wxScrollEvent & event);
+    void OnPerWindowLenUpdate(wxScrollEvent & event);
+    void OnWfallWindowLenUpdate(wxScrollEvent & event);
     void OnScrollSpeedUpdate(wxScrollEvent & event);
+    void OnOpenSpectConfig(wxMouseEvent & event);
     
     void OnTXOnOff( wxCommandEvent& event );
     void OnCWControl( wxCommandEvent& event );
@@ -240,7 +246,8 @@ namespace SoDaRadio_GUI {
     TuningDialog * tuner; 
     ControlsDialog * controls;
     BandConfigDialog * bandconf; 
-    LogDialog * logdialog; 
+    LogDialog * logdialog;
+    SpectConfigDialog * spect_config;
     
     // State of the radio
     bool tx_on;
@@ -543,5 +550,138 @@ namespace SoDaRadio_GUI {
     void OnBandErrorOK( wxCommandEvent & event); 
   
   };
+
+  class SpectConfigDialog : public m_SpectConfigDialog {
+  public:
+    SpectConfigDialog(wxWindow * parent, SoDaRadio_Top * radio) : m_SpectConfigDialog(parent) {
+      radio_top = radio; 
+    }
+    void OnPerCFreqStep( wxSpinEvent& event ) {
+      radio_top->OnPerCFreqStep(event);
+    }
+
+    void OnPerBandSpread(wxCommandEvent & event) {
+      radio_top->OnPerBandSpread(event);
+    }
+
+    void OnPerYScaleChoice(wxCommandEvent & event) {
+      radio_top->OnPerYScaleChoice(event);
+    }
+    
+    void OnPerRefLevel(wxSpinEvent & event) {
+      radio_top->OnPerRefLevel(event);
+    }
+
+    void OnWindowLenUpdate( wxScrollEvent& event ) {
+      wxSlider * w = (wxSlider *) event.GetEventObject(); 
+      if(w == m_PeriodogramWindowSel) radio_top->OnPerWindowLenUpdate(event);
+      else radio_top->OnWfallWindowLenUpdate(event);
+
+    }
+
+    void OnScrollSpeedUpdate( wxScrollEvent& event ) {
+      radio_top->OnScrollSpeedUpdate(event); 
+    }
+    
+    void OnDone( wxCommandEvent& event ) { closeWindow(); }
+    void OnDone(wxCloseEvent & event) { closeWindow(); }
+
+    int getPerWindowLen() {
+      return m_PeriodogramWindowSel->GetValue(); 
+    }
+
+    int getWfallWindowLen() {
+      return m_WaterfallWindowSel->GetValue(); 
+    }
+
+    double setBandSpread(double bandspread) {
+      double spval[] = {25, 50, 100, 200, 500, -1}; //spread in kHz
+      int selidx = -1;
+      int minidx = -1;
+      
+      int i;
+      for(i = 0; spval[i] > 0; i++) {
+	if(spval[i] == bandspread) selidx = i;
+	if(spval[i] < bandspread) minidx = i;
+      }
+
+      if(selidx == -1) {
+	if(minidx != -1) selidx = minidx;
+	else selidx = 0; 
+      }
+      m_BandSpreadChoice->SetSelection(selidx);
+
+      return spval[selidx]; 
+    }
+    
+    double getBandSpread() {
+      double spval[] = {25, 50, 100, 200, 500}; //spread in kHz
+      int selidx = m_BandSpreadChoice->GetSelection();
+      
+      if(selidx > 4) selidx = 4;
+
+      return 1.0e3 * spval[selidx]; 
+    }
+
+    void setFreqSpinner(double low, double high, double center)
+    {
+      m_cFreqSpin->SetRange(low, high);
+      m_cFreqSpin->SetValue(center);
+    }
+    
+    double setdBScale(double v) {
+      double spval[] = {1, 5, 10, 20, 0}; // range in dB / box
+      
+      int selidx = -1;
+      int minidx = -1;
+
+      int i;
+      for(i = 0; spval[i] > 0; i++) {
+	if(spval[i] == v) selidx = i;
+	if(spval[i] < v) minidx = i; 
+      }
+
+      if(selidx == -1) {
+	if(minidx != -1) selidx = minidx;
+	else selidx = 0; 
+      }
+
+      
+      m_dBScale->SetSelection(selidx);
+      return spval[selidx]; 
+    }
+    
+    double getdBScale() {
+      double spval[] = {1, 5, 10, 20}; // range in dB / box
+      int selidx = m_dBScale->GetSelection();
+      
+      if(selidx > 3) selidx = 3;
+      
+      return spval[selidx]; 
+    }
+
+    double setRefLevel(double v) {
+      m_RefLevel->SetValue(v);
+      return v; 
+    }
+    
+    double getRefLevel() {
+      return m_RefLevel->GetValue();
+    }
+    
+    void closeWindow() {
+      // close the config dialog.
+      if(IsModal()) {
+	EndModal(wxID_OK);
+      }
+      else {
+	SetReturnCode(wxID_OK);
+	this->Show(false);
+      }
+    }
+
+  private:
+    SoDaRadio_Top * radio_top; 
+  }; 
 }
 #endif // __SoDaRadio_Top__

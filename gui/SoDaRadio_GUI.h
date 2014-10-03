@@ -19,16 +19,16 @@
 #include <wx/settings.h>
 #include <wx/statusbr.h>
 #include <wx/panel.h>
-#include <wx/slider.h>
-#include <wx/sizer.h>
-#include <wx/statbox.h>
-#include <wx/stattext.h>
 #include <wx/notebook.h>
+#include <wx/sizer.h>
 #include <wx/choice.h>
-#include <wx/spinctrl.h>
-#include <wx/button.h>
+#include <wx/statbox.h>
+#include <wx/slider.h>
+#include <wx/stattext.h>
 #include <wx/checkbox.h>
+#include <wx/button.h>
 #include <wx/textctrl.h>
+#include <wx/spinctrl.h>
 #include <wx/gbsizer.h>
 #include <wx/frame.h>
 #include <wx/grid.h>
@@ -57,8 +57,6 @@ namespace SoDaRadio_GUI
 				ID_GOTOLOG,
 				ID_GOTOMSG,
 				ID_TOGGLETX,
-				WfallPanelID,
-				FFTPanelID,
 			};
 			
 			wxMenuBar* m_menubar1;
@@ -70,19 +68,7 @@ namespace SoDaRadio_GUI
 			wxStatusBar* m_ClueBar;
 			wxNotebook* SpectrumDisplay;
 			wxPanel* WaterFallPanel;
-			wxPanel* WfallPanel;
-			wxSlider* m_WaterfallWindowSel;
-			
-			wxSlider* m_WaterfallScrollSpeed;
-			wxPanel* FFTPanelTop;
 			wxPanel* FFTPanel;
-			wxSlider* m_PeriodogramWindowSel;
-			wxStaticText* m_staticText39;
-			wxChoice* m_BandSpreadChoice;
-			wxSpinCtrl* m_cFreqSpin;
-			wxButton* m_RX2CF;
-			wxChoice* m_dBScale;
-			wxSpinCtrl* m_RefLevel;
 			wxChoice* m_ModeBox;
 			wxChoice* m_AFBWChoice;
 			wxSlider* m_AFGain;
@@ -92,6 +78,7 @@ namespace SoDaRadio_GUI
 			wxCheckBox* m_TXRXLocked;
 			wxStaticText* m_RXFreqText;
 			wxButton* Tune;
+			wxButton* m_RX2CF;
 			wxTextCtrl* m_CWTextOutbound;
 			wxTextCtrl* m_CWTextEntry;
 			wxStaticText* m_MyGrid;
@@ -122,6 +109,7 @@ namespace SoDaRadio_GUI
 			wxStaticText* m_GPSLon;
 			
 			// Virtual event handlers, overide them in your derived class
+			virtual void OnOpenSpectConfig( wxMouseEvent& event ) { event.Skip(); }
 			virtual void OnOpenConfig( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnSaveConfig( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnSaveConfigAs( wxCommandEvent& event ) { event.Skip(); }
@@ -137,21 +125,15 @@ namespace SoDaRadio_GUI
 			virtual void OnSelectPage( wxNotebookEvent& event ) { event.Skip(); }
 			virtual void OnPaintWaterfall( wxPaintEvent& event ) { event.Skip(); }
 			virtual void OnWFallFreqSel( wxMouseEvent& event ) { event.Skip(); }
-			virtual void OnWindowLenUpdate( wxScrollEvent& event ) { event.Skip(); }
-			virtual void OnScrollSpeedUpdate( wxScrollEvent& event ) { event.Skip(); }
 			virtual void OnPaintPeriodogram( wxPaintEvent& event ) { event.Skip(); }
 			virtual void OnPeriodogramFreqSel( wxMouseEvent& event ) { event.Skip(); }
-			virtual void OnPerBandSpread( wxCommandEvent& event ) { event.Skip(); }
-			virtual void OnPerCFreqStep( wxSpinEvent& event ) { event.Skip(); }
-			virtual void OnPerRxToCentFreq( wxCommandEvent& event ) { event.Skip(); }
-			virtual void OnPerYScaleChoice( wxCommandEvent& event ) { event.Skip(); }
-			virtual void OnPerRefLevel( wxSpinEvent& event ) { event.Skip(); }
 			virtual void OnModeChoice( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnAFBWChoice( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnAFGainScroll( wxScrollEvent& event ) { event.Skip(); }
 			virtual void OnRFGainScroll( wxScrollEvent& event ) { event.Skip(); }
 			virtual void OnTXRXLock( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnTunePopup( wxCommandEvent& event ) { event.Skip(); }
+			virtual void OnPerRxToCentFreq( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnSendText( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnNewToGrid( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnNewToGridEnter( wxCommandEvent& event ) { event.Skip(); }
@@ -247,36 +229,41 @@ namespace SoDaRadio_GUI
 	};
 	
 	///////////////////////////////////////////////////////////////////////////////
-	/// Class m_ConfigSpectrum
+	/// Class m_SpectConfigDialog
 	///////////////////////////////////////////////////////////////////////////////
-	class m_ConfigSpectrum : public wxDialog 
+	class m_SpectConfigDialog : public wxDialog 
 	{
 		private:
 		
 		protected:
-			wxSpinCtrl* m_cFreqSpin;
-			wxButton* m_RX2CF;
 			wxChoice* m_BandSpreadChoice;
+			
+			wxSpinCtrl* m_cFreqSpin;
+			wxSlider* m_PeriodogramWindowSel;
 			wxChoice* m_dBScale;
 			wxSpinCtrl* m_RefLevel;
-			wxButton* m_SaveSpecSettings;
+			wxSlider* m_WaterfallWindowSel;
+			
+			wxSlider* m_WaterfallScrollSpeed;
 			
 			wxButton* m_OK;
 			
-			wxButton* m_CancelSpecSettings;
 			
 			// Virtual event handlers, overide them in your derived class
-			virtual void OnCFreqStep( wxSpinEvent& event ) { event.Skip(); }
-			virtual void OnRxToCentFreq( wxCommandEvent& event ) { event.Skip(); }
-			virtual void OnSet( wxCommandEvent& event ) { event.Skip(); }
-			virtual void OnOK( wxCommandEvent& event ) { event.Skip(); }
-			virtual void OnCancel( wxCommandEvent& event ) { event.Skip(); }
+			virtual void OnDone( wxCloseEvent& event ) { event.Skip(); }
+			virtual void OnPerBandSpread( wxCommandEvent& event ) { event.Skip(); }
+			virtual void OnPerCFreqStep( wxSpinEvent& event ) { event.Skip(); }
+			virtual void OnWindowLenUpdate( wxScrollEvent& event ) { event.Skip(); }
+			virtual void OnPerYScaleChoice( wxCommandEvent& event ) { event.Skip(); }
+			virtual void OnPerRefLevel( wxSpinEvent& event ) { event.Skip(); }
+			virtual void OnScrollSpeedUpdate( wxScrollEvent& event ) { event.Skip(); }
+			virtual void OnDone( wxCommandEvent& event ) { event.Skip(); }
 			
 		
 		public:
 			
-			m_ConfigSpectrum( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("Configure Spectrum Displays"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 423,200 ), long style = wxCLOSE_BOX|wxDEFAULT_DIALOG_STYLE );
-			~m_ConfigSpectrum();
+			m_SpectConfigDialog( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("Spectrum Display Settings"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( -1,-1 ), long style = wxCLOSE_BOX|wxDEFAULT_DIALOG_STYLE );
+			~m_SpectConfigDialog();
 		
 	};
 	

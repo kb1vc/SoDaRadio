@@ -88,12 +88,17 @@ namespace SoDaRadio_GUI {
     selected_marker = 0; 
 
     Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(XYPlot::OnMB1Down)); 
+    Connect(wxEVT_MIDDLE_UP, wxMouseEventHandler(XYPlot::OnMB2Up)); 
     Connect(wxEVT_PAINT, wxPaintEventHandler(XYPlot::OnPaint));
     Connect(wxEVT_SIZE, wxSizeEventHandler(XYPlot::OnSize));
   
     ReSize(); 
   }
 
+  void XYPlot::OnMB2Up(wxMouseEvent & event) {
+    radio->OnOpenSpectConfig(event); 
+  }
+  
   void XYPlot::OnMB1Down(wxMouseEvent & event) {
     int x, y;
     x = event.GetX();
@@ -157,8 +162,7 @@ namespace SoDaRadio_GUI {
     wxSize size = GetSize();
     int width = size.GetWidth();
     int height = size.GetHeight();
-  
-
+    
     // Draw the grid.
     DrawGrid(dc);
 

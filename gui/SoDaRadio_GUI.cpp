@@ -105,127 +105,13 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 	
 	SpectrumDisplay = new wxNotebook( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0 );
 	WaterFallPanel = new wxPanel( SpectrumDisplay, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
-	WaterFallPanel->SetMinSize( wxSize( 1000,250 ) );
+	SpectrumDisplay->AddPage( WaterFallPanel, wxT("Waterfall"), false );
+	FFTPanel = new wxPanel( SpectrumDisplay, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	SpectrumDisplay->AddPage( FFTPanel, wxT("Periodogram"), true );
 	
-	wxBoxSizer* bSizer441;
-	bSizer441 = new wxBoxSizer( wxHORIZONTAL );
+	bSizer51->Add( SpectrumDisplay, 1, wxEXPAND, 5 );
 	
-	WfallPanel = new wxPanel( WaterFallPanel, WfallPanelID, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
-	WfallPanel->SetMinSize( wxSize( 1000,250 ) );
-	
-	bSizer441->Add( WfallPanel, 9, wxEXPAND | wxALL, 5 );
-	
-	wxBoxSizer* bSizer74;
-	bSizer74 = new wxBoxSizer( wxVERTICAL );
-	
-	wxStaticBoxSizer* sbSizer36;
-	sbSizer36 = new wxStaticBoxSizer( new wxStaticBox( WaterFallPanel, wxID_ANY, wxT("Window Length") ), wxVERTICAL );
-	
-	m_WaterfallWindowSel = new wxSlider( WaterFallPanel, wxID_ANY, 4, 1, 25, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL|wxSL_LABELS );
-	m_WaterfallWindowSel->SetMinSize( wxSize( 100,-1 ) );
-	
-	sbSizer36->Add( m_WaterfallWindowSel, 0, wxALL, 5 );
-	
-	bSizer74->Add( sbSizer36, 1, wxEXPAND, 5 );
-	
-	
-	bSizer74->Add( 0, 0, 1, wxEXPAND, 5 );
-	
-	wxStaticBoxSizer* sbSizer351;
-	sbSizer351 = new wxStaticBoxSizer( new wxStaticBox( WaterFallPanel, wxID_ANY, wxT("Scroll Speed") ), wxVERTICAL );
-	
-	m_WaterfallScrollSpeed = new wxSlider( WaterFallPanel, wxID_ANY, 1, 4, 10, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL );
-	m_WaterfallScrollSpeed->SetMinSize( wxSize( 100,-1 ) );
-	
-	sbSizer351->Add( m_WaterfallScrollSpeed, 0, wxALL, 5 );
-	
-	bSizer74->Add( sbSizer351, 1, wxEXPAND, 5 );
-	
-	bSizer441->Add( bSizer74, 1, wxEXPAND, 5 );
-	
-	WaterFallPanel->SetSizer( bSizer441 );
-	WaterFallPanel->Layout();
-	bSizer441->Fit( WaterFallPanel );
-	SpectrumDisplay->AddPage( WaterFallPanel, wxT("Waterfall"), true );
-	FFTPanelTop = new wxPanel( SpectrumDisplay, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
-	FFTPanelTop->SetMinSize( wxSize( 1000,250 ) );
-	
-	wxBoxSizer* bSizer44;
-	bSizer44 = new wxBoxSizer( wxHORIZONTAL );
-	
-	FFTPanel = new wxPanel( FFTPanelTop, FFTPanelID, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
-	FFTPanel->SetMinSize( wxSize( 1000,250 ) );
-	
-	bSizer44->Add( FFTPanel, 9, wxEXPAND | wxALL, 5 );
-	
-	wxBoxSizer* bSizer73;
-	bSizer73 = new wxBoxSizer( wxVERTICAL );
-	
-	m_PeriodogramWindowSel = new wxSlider( FFTPanelTop, wxID_ANY, 20, 1, 100, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL|wxSL_LABELS );
-	m_PeriodogramWindowSel->SetMinSize( wxSize( 100,50 ) );
-	
-	bSizer73->Add( m_PeriodogramWindowSel, 0, wxALL, 5 );
-	
-	m_staticText39 = new wxStaticText( FFTPanelTop, wxID_ANY, wxT("Window Length"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE );
-	m_staticText39->Wrap( -1 );
-	bSizer73->Add( m_staticText39, 0, wxALL, 5 );
-	
-	bSizer44->Add( bSizer73, 1, wxEXPAND, 5 );
-	
-	FFTPanelTop->SetSizer( bSizer44 );
-	FFTPanelTop->Layout();
-	bSizer44->Fit( FFTPanelTop );
-	SpectrumDisplay->AddPage( FFTPanelTop, wxT("Periodogram"), false );
-	
-	bSizer51->Add( SpectrumDisplay, 1, wxEXPAND | wxALL, 5 );
-	
-	wxBoxSizer* bSizer45;
-	bSizer45 = new wxBoxSizer( wxVERTICAL );
-	
-	wxStaticBoxSizer* sbSizer32;
-	sbSizer32 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Band Spread") ), wxVERTICAL );
-	
-	wxString m_BandSpreadChoiceChoices[] = { wxT("25 kHz"), wxT("50 kHz"), wxT("100 kHz"), wxT("200 kHz"), wxT("500 kHz") };
-	int m_BandSpreadChoiceNChoices = sizeof( m_BandSpreadChoiceChoices ) / sizeof( wxString );
-	m_BandSpreadChoice = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_BandSpreadChoiceNChoices, m_BandSpreadChoiceChoices, 0 );
-	m_BandSpreadChoice->SetSelection( 1 );
-	sbSizer32->Add( m_BandSpreadChoice, 0, wxALL, 5 );
-	
-	bSizer45->Add( sbSizer32, 0, wxEXPAND, 5 );
-	
-	wxStaticBoxSizer* sbSizer18;
-	sbSizer18 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Center Frequency") ), wxVERTICAL );
-	
-	m_cFreqSpin = new wxSpinCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 10368000, 10368400, 10368100 );
-	sbSizer18->Add( m_cFreqSpin, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
-	
-	m_RX2CF = new wxButton( this, wxID_ANY, wxT("RX -> CFreq"), wxDefaultPosition, wxDefaultSize, 0 );
-	sbSizer18->Add( m_RX2CF, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
-	
-	bSizer45->Add( sbSizer18, 0, 0, 5 );
-	
-	wxStaticBoxSizer* sbSizer19;
-	sbSizer19 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Y Rng (dB/box)") ), wxVERTICAL );
-	
-	wxString m_dBScaleChoices[] = { wxT("1dB"), wxT("5dB"), wxT("10dB"), wxT("20dB") };
-	int m_dBScaleNChoices = sizeof( m_dBScaleChoices ) / sizeof( wxString );
-	m_dBScale = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_dBScaleNChoices, m_dBScaleChoices, 0 );
-	m_dBScale->SetSelection( 0 );
-	sbSizer19->Add( m_dBScale, 0, wxALL, 5 );
-	
-	bSizer45->Add( sbSizer19, 0, wxEXPAND, 5 );
-	
-	wxStaticBoxSizer* sbSizer191;
-	sbSizer191 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Y RefLevel (dB)") ), wxVERTICAL );
-	
-	m_RefLevel = new wxSpinCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, -150, 20, 50 );
-	sbSizer191->Add( m_RefLevel, 0, wxALL, 5 );
-	
-	bSizer45->Add( sbSizer191, 1, wxEXPAND, 5 );
-	
-	bSizer51->Add( bSizer45, 0, wxEXPAND, 5 );
-	
-	TopSizer->Add( bSizer51, 1, wxEXPAND, 5 );
+	TopSizer->Add( bSizer51, 5, wxEXPAND, 5 );
 	
 	wxBoxSizer* ControlSizer;
 	ControlSizer = new wxBoxSizer( wxHORIZONTAL );
@@ -310,7 +196,10 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 	Tune = new wxButton( this, wxID_ANY, wxT("Tune"), wxDefaultPosition, wxDefaultSize, 0 );
 	ControlSizer->Add( Tune, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 	
-	TopSizer->Add( ControlSizer, 0, 0, 5 );
+	m_RX2CF = new wxButton( this, wxID_ANY, wxT("RX -> CFreq"), wxDefaultPosition, wxDefaultSize, 0 );
+	ControlSizer->Add( m_RX2CF, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+	
+	TopSizer->Add( ControlSizer, 1, 0, 5 );
 	
 	wxBoxSizer* QSOSizer;
 	QSOSizer = new wxBoxSizer( wxHORIZONTAL );
@@ -541,12 +430,13 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 	
 	QSOSizer->Add( sbSizer29, 0, 0, 5 );
 	
-	TopSizer->Add( QSOSizer, 1, wxEXPAND, 5 );
+	TopSizer->Add( QSOSizer, 5, wxEXPAND, 5 );
 	
 	this->SetSizer( TopSizer );
 	this->Layout();
 	
 	// Connect Events
+	this->Connect( wxEVT_MIDDLE_UP, wxMouseEventHandler( SoDaRadioFrame::OnOpenSpectConfig ) );
 	this->Connect( OpenConfig->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnOpenConfig ) );
 	this->Connect( SaveConfig->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnSaveConfig ) );
 	this->Connect( SaveConfigAs->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnSaveConfigAs ) );
@@ -563,19 +453,14 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 	this->Connect( m_ToggleTX->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnQSOMenuSet ) );
 	this->Connect( Aboutitem->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnAbout ) );
 	this->Connect( UserGuideitem->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnUserGuide ) );
+	SpectrumDisplay->Connect( wxEVT_MIDDLE_UP, wxMouseEventHandler( SoDaRadioFrame::OnOpenSpectConfig ), NULL, this );
 	SpectrumDisplay->Connect( wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGED, wxNotebookEventHandler( SoDaRadioFrame::OnSelectPage ), NULL, this );
 	SpectrumDisplay->Connect( wxEVT_PAINT, wxPaintEventHandler( SoDaRadioFrame::OnPaintWaterfall ), NULL, this );
 	SpectrumDisplay->Connect( wxEVT_RIGHT_DCLICK, wxMouseEventHandler( SoDaRadioFrame::OnWFallFreqSel ), NULL, this );
-	m_WaterfallWindowSel->Connect( wxEVT_SCROLL_THUMBRELEASE, wxScrollEventHandler( SoDaRadioFrame::OnWindowLenUpdate ), NULL, this );
-	m_WaterfallScrollSpeed->Connect( wxEVT_SCROLL_THUMBRELEASE, wxScrollEventHandler( SoDaRadioFrame::OnScrollSpeedUpdate ), NULL, this );
-	FFTPanelTop->Connect( wxEVT_PAINT, wxPaintEventHandler( SoDaRadioFrame::OnPaintPeriodogram ), NULL, this );
-	FFTPanelTop->Connect( wxEVT_RIGHT_DCLICK, wxMouseEventHandler( SoDaRadioFrame::OnPeriodogramFreqSel ), NULL, this );
-	m_PeriodogramWindowSel->Connect( wxEVT_SCROLL_THUMBRELEASE, wxScrollEventHandler( SoDaRadioFrame::OnWindowLenUpdate ), NULL, this );
-	m_BandSpreadChoice->Connect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnPerBandSpread ), NULL, this );
-	m_cFreqSpin->Connect( wxEVT_COMMAND_SPINCTRL_UPDATED, wxSpinEventHandler( SoDaRadioFrame::OnPerCFreqStep ), NULL, this );
-	m_RX2CF->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnPerRxToCentFreq ), NULL, this );
-	m_dBScale->Connect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnPerYScaleChoice ), NULL, this );
-	m_RefLevel->Connect( wxEVT_COMMAND_SPINCTRL_UPDATED, wxSpinEventHandler( SoDaRadioFrame::OnPerRefLevel ), NULL, this );
+	WaterFallPanel->Connect( wxEVT_MIDDLE_UP, wxMouseEventHandler( SoDaRadioFrame::OnOpenSpectConfig ), NULL, this );
+	FFTPanel->Connect( wxEVT_MIDDLE_UP, wxMouseEventHandler( SoDaRadioFrame::OnOpenSpectConfig ), NULL, this );
+	FFTPanel->Connect( wxEVT_PAINT, wxPaintEventHandler( SoDaRadioFrame::OnPaintPeriodogram ), NULL, this );
+	FFTPanel->Connect( wxEVT_RIGHT_DCLICK, wxMouseEventHandler( SoDaRadioFrame::OnPeriodogramFreqSel ), NULL, this );
 	m_ModeBox->Connect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnModeChoice ), NULL, this );
 	m_AFBWChoice->Connect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnAFBWChoice ), NULL, this );
 	m_AFGain->Connect( wxEVT_SCROLL_TOP, wxScrollEventHandler( SoDaRadioFrame::OnAFGainScroll ), NULL, this );
@@ -598,6 +483,7 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 	m_RFGain->Connect( wxEVT_SCROLL_CHANGED, wxScrollEventHandler( SoDaRadioFrame::OnRFGainScroll ), NULL, this );
 	m_TXRXLocked->Connect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnTXRXLock ), NULL, this );
 	Tune->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnTunePopup ), NULL, this );
+	m_RX2CF->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnPerRxToCentFreq ), NULL, this );
 	m_CWTextEntry->Connect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( SoDaRadioFrame::OnSendText ), NULL, this );
 	m_ToGrid->Connect( wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler( SoDaRadioFrame::OnNewToGrid ), NULL, this );
 	m_ToGrid->Connect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( SoDaRadioFrame::OnNewToGridEnter ), NULL, this );
@@ -623,6 +509,7 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 SoDaRadioFrame::~SoDaRadioFrame()
 {
 	// Disconnect Events
+	this->Disconnect( wxEVT_MIDDLE_UP, wxMouseEventHandler( SoDaRadioFrame::OnOpenSpectConfig ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnOpenConfig ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnSaveConfig ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnSaveConfigAs ) );
@@ -639,19 +526,14 @@ SoDaRadioFrame::~SoDaRadioFrame()
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnQSOMenuSet ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnAbout ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnUserGuide ) );
+	SpectrumDisplay->Disconnect( wxEVT_MIDDLE_UP, wxMouseEventHandler( SoDaRadioFrame::OnOpenSpectConfig ), NULL, this );
 	SpectrumDisplay->Disconnect( wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGED, wxNotebookEventHandler( SoDaRadioFrame::OnSelectPage ), NULL, this );
 	SpectrumDisplay->Disconnect( wxEVT_PAINT, wxPaintEventHandler( SoDaRadioFrame::OnPaintWaterfall ), NULL, this );
 	SpectrumDisplay->Disconnect( wxEVT_RIGHT_DCLICK, wxMouseEventHandler( SoDaRadioFrame::OnWFallFreqSel ), NULL, this );
-	m_WaterfallWindowSel->Disconnect( wxEVT_SCROLL_THUMBRELEASE, wxScrollEventHandler( SoDaRadioFrame::OnWindowLenUpdate ), NULL, this );
-	m_WaterfallScrollSpeed->Disconnect( wxEVT_SCROLL_THUMBRELEASE, wxScrollEventHandler( SoDaRadioFrame::OnScrollSpeedUpdate ), NULL, this );
-	FFTPanelTop->Disconnect( wxEVT_PAINT, wxPaintEventHandler( SoDaRadioFrame::OnPaintPeriodogram ), NULL, this );
-	FFTPanelTop->Disconnect( wxEVT_RIGHT_DCLICK, wxMouseEventHandler( SoDaRadioFrame::OnPeriodogramFreqSel ), NULL, this );
-	m_PeriodogramWindowSel->Disconnect( wxEVT_SCROLL_THUMBRELEASE, wxScrollEventHandler( SoDaRadioFrame::OnWindowLenUpdate ), NULL, this );
-	m_BandSpreadChoice->Disconnect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnPerBandSpread ), NULL, this );
-	m_cFreqSpin->Disconnect( wxEVT_COMMAND_SPINCTRL_UPDATED, wxSpinEventHandler( SoDaRadioFrame::OnPerCFreqStep ), NULL, this );
-	m_RX2CF->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnPerRxToCentFreq ), NULL, this );
-	m_dBScale->Disconnect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnPerYScaleChoice ), NULL, this );
-	m_RefLevel->Disconnect( wxEVT_COMMAND_SPINCTRL_UPDATED, wxSpinEventHandler( SoDaRadioFrame::OnPerRefLevel ), NULL, this );
+	WaterFallPanel->Disconnect( wxEVT_MIDDLE_UP, wxMouseEventHandler( SoDaRadioFrame::OnOpenSpectConfig ), NULL, this );
+	FFTPanel->Disconnect( wxEVT_MIDDLE_UP, wxMouseEventHandler( SoDaRadioFrame::OnOpenSpectConfig ), NULL, this );
+	FFTPanel->Disconnect( wxEVT_PAINT, wxPaintEventHandler( SoDaRadioFrame::OnPaintPeriodogram ), NULL, this );
+	FFTPanel->Disconnect( wxEVT_RIGHT_DCLICK, wxMouseEventHandler( SoDaRadioFrame::OnPeriodogramFreqSel ), NULL, this );
 	m_ModeBox->Disconnect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnModeChoice ), NULL, this );
 	m_AFBWChoice->Disconnect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnAFBWChoice ), NULL, this );
 	m_AFGain->Disconnect( wxEVT_SCROLL_TOP, wxScrollEventHandler( SoDaRadioFrame::OnAFGainScroll ), NULL, this );
@@ -674,6 +556,7 @@ SoDaRadioFrame::~SoDaRadioFrame()
 	m_RFGain->Disconnect( wxEVT_SCROLL_CHANGED, wxScrollEventHandler( SoDaRadioFrame::OnRFGainScroll ), NULL, this );
 	m_TXRXLocked->Disconnect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnTXRXLock ), NULL, this );
 	Tune->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnTunePopup ), NULL, this );
+	m_RX2CF->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnPerRxToCentFreq ), NULL, this );
 	m_CWTextEntry->Disconnect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( SoDaRadioFrame::OnSendText ), NULL, this );
 	m_ToGrid->Disconnect( wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler( SoDaRadioFrame::OnNewToGrid ), NULL, this );
 	m_ToGrid->Disconnect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( SoDaRadioFrame::OnNewToGridEnter ), NULL, this );
@@ -849,103 +732,146 @@ m_QuitDialogConfig::~m_QuitDialogConfig()
 	m_QuitNoSave->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_QuitDialogConfig::OnIgnoreConfigChanges ), NULL, this );
 }
 
-m_ConfigSpectrum::m_ConfigSpectrum( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
+m_SpectConfigDialog::m_SpectConfigDialog( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
 {
 	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
 	
 	wxBoxSizer* bSizer37;
 	bSizer37 = new wxBoxSizer( wxVERTICAL );
 	
-	wxBoxSizer* bSizer39;
-	bSizer39 = new wxBoxSizer( wxHORIZONTAL );
+	wxBoxSizer* bSizer81;
+	bSizer81 = new wxBoxSizer( wxHORIZONTAL );
 	
-	wxStaticBoxSizer* sbSizer18;
-	sbSizer18 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Center Frequency") ), wxHORIZONTAL );
+	wxStaticBoxSizer* sbSizer32;
+	sbSizer32 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Band Spread") ), wxVERTICAL );
 	
-	m_cFreqSpin = new wxSpinCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 10368000, 10368200, 10368200 );
-	sbSizer18->Add( m_cFreqSpin, 0, wxALL, 5 );
-	
-	m_RX2CF = new wxButton( this, wxID_ANY, wxT("RX -> CenterFreq"), wxDefaultPosition, wxDefaultSize, 0 );
-	sbSizer18->Add( m_RX2CF, 0, wxALIGN_BOTTOM|wxALL, 5 );
-	
-	bSizer39->Add( sbSizer18, 1, wxEXPAND, 5 );
-	
-	wxStaticBoxSizer* BandSpreadSizer;
-	BandSpreadSizer = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Band Spread") ), wxVERTICAL );
-	
+	sbSizer32->SetMinSize( wxSize( 120,-1 ) ); 
 	wxString m_BandSpreadChoiceChoices[] = { wxT("25 kHz"), wxT("50 kHz"), wxT("100 kHz"), wxT("200 kHz"), wxT("500 kHz") };
 	int m_BandSpreadChoiceNChoices = sizeof( m_BandSpreadChoiceChoices ) / sizeof( wxString );
 	m_BandSpreadChoice = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_BandSpreadChoiceNChoices, m_BandSpreadChoiceChoices, 0 );
-	m_BandSpreadChoice->SetSelection( 0 );
-	BandSpreadSizer->Add( m_BandSpreadChoice, 0, wxALL, 5 );
+	m_BandSpreadChoice->SetSelection( 1 );
+	sbSizer32->Add( m_BandSpreadChoice, 0, wxALIGN_CENTER_HORIZONTAL, 5 );
 	
-	bSizer39->Add( BandSpreadSizer, 0, 0, 5 );
+	bSizer81->Add( sbSizer32, 0, wxEXPAND|wxTOP, 5 );
 	
-	bSizer37->Add( bSizer39, 1, wxEXPAND, 5 );
 	
-	wxBoxSizer* bSizer40;
-	bSizer40 = new wxBoxSizer( wxHORIZONTAL );
+	bSizer81->Add( 0, 0, 1, wxEXPAND, 5 );
+	
+	wxStaticBoxSizer* sbSizer18;
+	sbSizer18 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Center Frequency") ), wxVERTICAL );
+	
+	sbSizer18->SetMinSize( wxSize( 140,-1 ) ); 
+	m_cFreqSpin = new wxSpinCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 10368000, 10368400, 10368100 );
+	sbSizer18->Add( m_cFreqSpin, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+	
+	bSizer81->Add( sbSizer18, 0, wxEXPAND|wxTOP, 5 );
+	
+	bSizer37->Add( bSizer81, 0, wxEXPAND, 5 );
+	
+	wxStaticBoxSizer* sbPgSettingsSizer;
+	sbPgSettingsSizer = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Periodogram") ), wxHORIZONTAL );
+	
+	wxStaticBoxSizer* sbSizer371;
+	sbSizer371 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Window Length") ), wxVERTICAL );
+	
+	m_PeriodogramWindowSel = new wxSlider( this, wxID_ANY, 20, 1, 100, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL|wxSL_LABELS );
+	m_PeriodogramWindowSel->SetMinSize( wxSize( 100,50 ) );
+	
+	sbSizer371->Add( m_PeriodogramWindowSel, 0, wxALL, 5 );
+	
+	sbPgSettingsSizer->Add( sbSizer371, 1, wxEXPAND|wxTOP, 5 );
 	
 	wxStaticBoxSizer* sbSizer19;
-	sbSizer19 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Y Scale (dB/box)") ), wxVERTICAL );
+	sbSizer19 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Y Rng (dB/box)") ), wxVERTICAL );
 	
 	wxString m_dBScaleChoices[] = { wxT("1dB"), wxT("5dB"), wxT("10dB"), wxT("20dB") };
 	int m_dBScaleNChoices = sizeof( m_dBScaleChoices ) / sizeof( wxString );
 	m_dBScale = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_dBScaleNChoices, m_dBScaleChoices, 0 );
-	m_dBScale->SetSelection( 5 );
+	m_dBScale->SetSelection( 0 );
 	sbSizer19->Add( m_dBScale, 0, wxALL, 5 );
 	
-	bSizer40->Add( sbSizer19, 1, wxEXPAND, 5 );
+	sbPgSettingsSizer->Add( sbSizer19, 0, wxEXPAND|wxLEFT|wxRIGHT|wxTOP, 5 );
 	
-	wxStaticBoxSizer* sbSizer20;
-	sbSizer20 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Ref Level (Y Max) in dB") ), wxVERTICAL );
+	wxStaticBoxSizer* sbSizer191;
+	sbSizer191 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Y RefLevel (dB)") ), wxVERTICAL );
 	
-	m_RefLevel = new wxSpinCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, -100, 30, 0 );
-	sbSizer20->Add( m_RefLevel, 0, wxALL, 5 );
+	m_RefLevel = new wxSpinCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, -150, 40, 0 );
+	sbSizer191->Add( m_RefLevel, 0, wxALL, 5 );
 	
-	bSizer40->Add( sbSizer20, 1, wxEXPAND, 5 );
+	sbPgSettingsSizer->Add( sbSizer191, 1, wxEXPAND|wxTOP, 5 );
 	
-	bSizer37->Add( bSizer40, 1, wxEXPAND, 5 );
+	bSizer37->Add( sbPgSettingsSizer, 0, wxBOTTOM|wxEXPAND|wxTOP, 10 );
+	
+	wxStaticBoxSizer* sbWfSettingsSizer;
+	sbWfSettingsSizer = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Waterfall") ), wxHORIZONTAL );
+	
+	wxStaticBoxSizer* sbSizer36;
+	sbSizer36 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Window Length") ), wxVERTICAL );
+	
+	m_WaterfallWindowSel = new wxSlider( this, wxID_ANY, 4, 1, 25, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL|wxSL_LABELS );
+	m_WaterfallWindowSel->SetMinSize( wxSize( 100,-1 ) );
+	
+	sbSizer36->Add( m_WaterfallWindowSel, 0, wxALL, 5 );
+	
+	sbWfSettingsSizer->Add( sbSizer36, 1, wxEXPAND|wxTOP, 5 );
+	
+	
+	sbWfSettingsSizer->Add( 0, 0, 1, wxEXPAND, 5 );
+	
+	wxStaticBoxSizer* sbSizer351;
+	sbSizer351 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Scroll Speed") ), wxVERTICAL );
+	
+	m_WaterfallScrollSpeed = new wxSlider( this, wxID_ANY, 1, 4, 10, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL );
+	m_WaterfallScrollSpeed->SetMinSize( wxSize( 100,-1 ) );
+	
+	sbSizer351->Add( m_WaterfallScrollSpeed, 0, wxALL, 5 );
+	
+	sbWfSettingsSizer->Add( sbSizer351, 1, wxEXPAND|wxTOP, 5 );
+	
+	bSizer37->Add( sbWfSettingsSizer, 0, wxBOTTOM|wxEXPAND, 15 );
 	
 	wxBoxSizer* bSizer38;
 	bSizer38 = new wxBoxSizer( wxHORIZONTAL );
 	
-	m_SaveSpecSettings = new wxButton( this, wxID_ANY, wxT("Save"), wxDefaultPosition, wxDefaultSize, 0 );
-	bSizer38->Add( m_SaveSpecSettings, 0, wxALL, 5 );
+	
+	bSizer38->Add( 0, 0, 1, wxEXPAND, 5 );
+	
+	m_OK = new wxButton( this, wxID_ANY, wxT("Done"), wxDefaultPosition, wxDefaultSize, 0 );
+	bSizer38->Add( m_OK, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxBOTTOM|wxEXPAND, 15 );
 	
 	
 	bSizer38->Add( 0, 0, 1, wxEXPAND, 5 );
 	
-	m_OK = new wxButton( this, wxID_ANY, wxT("OK"), wxDefaultPosition, wxDefaultSize, 0 );
-	bSizer38->Add( m_OK, 0, wxALL, 5 );
-	
-	
-	bSizer38->Add( 0, 0, 1, wxEXPAND, 5 );
-	
-	m_CancelSpecSettings = new wxButton( this, wxID_ANY, wxT("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
-	bSizer38->Add( m_CancelSpecSettings, 0, wxALL, 5 );
-	
-	bSizer37->Add( bSizer38, 1, wxEXPAND, 5 );
+	bSizer37->Add( bSizer38, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5 );
 	
 	this->SetSizer( bSizer37 );
 	this->Layout();
+	bSizer37->Fit( this );
 	
 	// Connect Events
-	m_cFreqSpin->Connect( wxEVT_COMMAND_SPINCTRL_UPDATED, wxSpinEventHandler( m_ConfigSpectrum::OnCFreqStep ), NULL, this );
-	m_RX2CF->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_ConfigSpectrum::OnRxToCentFreq ), NULL, this );
-	m_SaveSpecSettings->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_ConfigSpectrum::OnSet ), NULL, this );
-	m_OK->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_ConfigSpectrum::OnOK ), NULL, this );
-	m_CancelSpecSettings->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_ConfigSpectrum::OnCancel ), NULL, this );
+	this->Connect( wxEVT_CLOSE_WINDOW, wxCloseEventHandler( m_SpectConfigDialog::OnDone ) );
+	m_BandSpreadChoice->Connect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( m_SpectConfigDialog::OnPerBandSpread ), NULL, this );
+	m_cFreqSpin->Connect( wxEVT_COMMAND_SPINCTRL_UPDATED, wxSpinEventHandler( m_SpectConfigDialog::OnPerCFreqStep ), NULL, this );
+	m_PeriodogramWindowSel->Connect( wxEVT_SCROLL_THUMBRELEASE, wxScrollEventHandler( m_SpectConfigDialog::OnWindowLenUpdate ), NULL, this );
+	m_dBScale->Connect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( m_SpectConfigDialog::OnPerYScaleChoice ), NULL, this );
+	m_RefLevel->Connect( wxEVT_COMMAND_SPINCTRL_UPDATED, wxSpinEventHandler( m_SpectConfigDialog::OnPerRefLevel ), NULL, this );
+	m_WaterfallWindowSel->Connect( wxEVT_SCROLL_THUMBRELEASE, wxScrollEventHandler( m_SpectConfigDialog::OnWindowLenUpdate ), NULL, this );
+	m_WaterfallScrollSpeed->Connect( wxEVT_SCROLL_THUMBRELEASE, wxScrollEventHandler( m_SpectConfigDialog::OnScrollSpeedUpdate ), NULL, this );
+	m_OK->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_SpectConfigDialog::OnDone ), NULL, this );
 }
 
-m_ConfigSpectrum::~m_ConfigSpectrum()
+m_SpectConfigDialog::~m_SpectConfigDialog()
 {
 	// Disconnect Events
-	m_cFreqSpin->Disconnect( wxEVT_COMMAND_SPINCTRL_UPDATED, wxSpinEventHandler( m_ConfigSpectrum::OnCFreqStep ), NULL, this );
-	m_RX2CF->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_ConfigSpectrum::OnRxToCentFreq ), NULL, this );
-	m_SaveSpecSettings->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_ConfigSpectrum::OnSet ), NULL, this );
-	m_OK->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_ConfigSpectrum::OnOK ), NULL, this );
-	m_CancelSpecSettings->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_ConfigSpectrum::OnCancel ), NULL, this );
+	this->Disconnect( wxEVT_CLOSE_WINDOW, wxCloseEventHandler( m_SpectConfigDialog::OnDone ) );
+	m_BandSpreadChoice->Disconnect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( m_SpectConfigDialog::OnPerBandSpread ), NULL, this );
+	m_cFreqSpin->Disconnect( wxEVT_COMMAND_SPINCTRL_UPDATED, wxSpinEventHandler( m_SpectConfigDialog::OnPerCFreqStep ), NULL, this );
+	m_PeriodogramWindowSel->Disconnect( wxEVT_SCROLL_THUMBRELEASE, wxScrollEventHandler( m_SpectConfigDialog::OnWindowLenUpdate ), NULL, this );
+	m_dBScale->Disconnect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( m_SpectConfigDialog::OnPerYScaleChoice ), NULL, this );
+	m_RefLevel->Disconnect( wxEVT_COMMAND_SPINCTRL_UPDATED, wxSpinEventHandler( m_SpectConfigDialog::OnPerRefLevel ), NULL, this );
+	m_WaterfallWindowSel->Disconnect( wxEVT_SCROLL_THUMBRELEASE, wxScrollEventHandler( m_SpectConfigDialog::OnWindowLenUpdate ), NULL, this );
+	m_WaterfallScrollSpeed->Disconnect( wxEVT_SCROLL_THUMBRELEASE, wxScrollEventHandler( m_SpectConfigDialog::OnScrollSpeedUpdate ), NULL, this );
+	m_OK->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_SpectConfigDialog::OnDone ), NULL, this );
 }
 
 m_TuningDialog::m_TuningDialog( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
