@@ -138,6 +138,10 @@ namespace SoDaRadio_GUI {
       }
     }
 
+    debugMsg("About to create the spectrum configuration dialog.\n");
+    // setup the spectrum configuration dialog
+    spect_config = new SpectConfigDialog(this, this);
+
     // setup the client socket trying once every second for 60 seconds before we give up
     soda_radio = new SoDa::UD::ClientSocket(sock_basename + "_cmd", 60);
     soda_fft = new SoDa::UD::ClientSocket(sock_basename + "_wfall", 60);
@@ -172,7 +176,8 @@ namespace SoDaRadio_GUI {
     // and init its controls
     cfreq_step = 25; 
     int xs, ys;
-    FFTPanel->GetSize(&xs, &ys);
+    SpectrumDisplay->GetSize(&xs, &ys);
+    ys -= 25; // correct for the height of the tab...
     debugMsg(boost::format("size of FFT panel %d x %d ") % xs % ys);
 
 
@@ -187,7 +192,7 @@ namespace SoDaRadio_GUI {
     pgram_plot->SetXTicTemplate(wxT("%4.1f"), 1e-3);
     
     debugMsg("Creating Waterfall Panel");
-    wfall_plot = new Waterfall(WfallPanel, this, wxID_ANY, 
+    wfall_plot = new Waterfall(WaterFallPanel, this, wxID_ANY, 
 			       wxDefaultPosition, wxSize(xs, ys), // wxDefaultSize, //
 			       Waterfall::DRAW_LABEL | 
 			       Waterfall::DRAW_TITLE 
@@ -215,7 +220,8 @@ namespace SoDaRadio_GUI {
 
     // setup the Log dialog
     logdialog = new LogDialog(this, this); 
-  
+
+    
     debugMsg("about to load configuration.");
     // load the configuration from a default file,
     // if available.

@@ -83,12 +83,17 @@ namespace SoDaRadio_GUI {
     ReSize();
   
     Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(Waterfall::OnMB1Down)); 
+    Connect(wxEVT_MIDDLE_UP, wxMouseEventHandler(Waterfall::OnMB2Up)); 
     Connect(wxEVT_PAINT, wxPaintEventHandler(Waterfall::OnPaint));
     Connect(wxEVT_SIZE, wxSizeEventHandler(Waterfall::OnSize));
 
     enable_draw_events = true; 
   }
 
+  void Waterfall::OnMB2Up(wxMouseEvent & event) {
+    radio->OnOpenSpectConfig(event);
+  }
+  
   void Waterfall::OnMB1Down(wxMouseEvent & event) {
     if(!enable_draw_events) return; 
     int x, y;

@@ -159,6 +159,7 @@ namespace SoDaRadio_GUI {
     void OnSize(wxSizeEvent & event); 
     void OnPaint(wxPaintEvent & event);
     void OnMB1Down(wxMouseEvent & event);
+    void OnMB2Up(wxMouseEvent & event);
 
     void ReSize();
 

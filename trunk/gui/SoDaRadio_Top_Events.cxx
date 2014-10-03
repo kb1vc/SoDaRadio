@@ -186,13 +186,13 @@ namespace SoDaRadio_GUI {
     if(SpectrumDisplay->GetSelection() == 0) {
       // this is the waterfall display
       SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::SPEC_AVG_WINDOW,
-			 m_WaterfallWindowSel->GetValue());
+			 spect_config->getWfallWindowLen());
       sendMsg(&ncmd);
     }
     else {
       // this is the periodogram display
       SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::SPEC_AVG_WINDOW,
-			 m_PeriodogramWindowSel->GetValue()); 
+			 spect_config->getPerWindowLen()); 
       sendMsg(&ncmd);
     }
   }
@@ -205,15 +205,32 @@ namespace SoDaRadio_GUI {
   {
   }
 
-  void SoDaRadio_Top::OnWindowLenUpdate( wxScrollEvent & event )
+  void SoDaRadio_Top::OnPerWindowLenUpdate( wxScrollEvent & event )
   {
     wxSlider * w = (wxSlider *) event.GetEventObject();
-    
-    SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::SPEC_AVG_WINDOW,
+
+    if(SpectrumDisplay->GetSelection() == 1)  {
+      SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::SPEC_AVG_WINDOW,
 		       w->GetValue()); 
-    sendMsg(&ncmd);
+      sendMsg(&ncmd);
+    }
   }
 
+  void SoDaRadio_Top::OnWfallWindowLenUpdate( wxScrollEvent & event )
+  {
+    wxSlider * w = (wxSlider *) event.GetEventObject();
+
+    if(SpectrumDisplay->GetSelection() == 0)  {
+      SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::SPEC_AVG_WINDOW,
+		       w->GetValue()); 
+      sendMsg(&ncmd);
+    }
+  }
+
+  void SoDaRadio_Top::OnOpenSpectConfig(wxMouseEvent & event) {
+    spect_config->Show();
+  }
+  
   void SoDaRadio_Top::OnScrollSpeedUpdate( wxScrollEvent & event) {
     wxSlider * w = (wxSlider *) event.GetEventObject();
     int val = (int) w->GetValue();
@@ -1081,7 +1098,8 @@ namespace SoDaRadio_GUI {
     xmax = spectrum_center_freq + (spectrum_bandspread / 2);
     ymax = spectrum_y_reflevel;
     ymin = ymax - 10.0 * spectrum_y_scale;
-    debugMsg("In UpdateAxes");
+    debugMsg(boost::format("In UpdateAxes with x = [%g,%g] y=[%g,%g]\n")
+	     % xmin % xmax % ymin % ymax);
     debugMsg(boost::format("pgram_plot = %p  wfall_plot = %p\n") % pgram_plot % wfall_plot);
     pgram_plot->SetScale(xmin, xmax, ymin, ymax);
     wfall_plot->SetScale(xmin, xmax);
@@ -1096,74 +1114,48 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::SetSpectrum(double bandspread)
   {
-    double spval[] = {25, 50, 100, 200, -1}; //spread in kHz
-    int selidx = 2;
-
-    int i;
-    for(i = 0; spval[i] > 0; i++) {
-      if(spval[i] == bandspread) selidx = i; 
-    }
-  
-    m_BandSpreadChoice->SetSelection(selidx);
-    spectrum_bandspread = spval[selidx];
+    spectrum_bandspread = spect_config->setBandSpread(bandspread);
+    debugMsg(boost::format("got bandspread = %g\n") % spectrum_bandspread); 
     UpdateAxes();
   }
 
   double SoDaRadio_Top::GetSpread()
   {
-    double spval[] = {25, 50, 100, 200, 500}; //spread in kHz
-    int selidx = m_BandSpreadChoice->GetSelection();
-
-    if(selidx > 4) selidx = 4;
-
-    return 1.0e3 * spval[selidx]; 
+    return spect_config->getBandSpread(); 
   }
 
   void SoDaRadio_Top::SetYScale(double v)
   {
-    double spval[] = {1, 5, 10, 20, 0}; // range in dB / box
-  
-    int selidx = 3;
-
-    int i;
-    for(i = 0; spval[i] > 0; i++) {
-      if(spval[i] == v) selidx = i; 
-    }
-
-    m_dBScale->SetSelection(selidx);
+    spect_config->setdBScale(v); 
   }
 
   double SoDaRadio_Top::GetYScale()
   {
-    double spval[] = {1, 5, 10, 20}; // range in dB / box
-    int selidx = m_dBScale->GetSelection();
-
-    if(selidx > 3) selidx = 3;
-
-    return spval[selidx]; 
+    return spect_config->getdBScale(); 
   }
 
   void SoDaRadio_Top::OnPerCFreqStep( wxSpinEvent & event)
   {
+    wxSpinCtrl * w = (wxSpinCtrl*) event.GetEventObject();
     // did it go up or down?
-    unsigned long new_cfreq = m_cFreqSpin->GetValue();
+    unsigned long new_cfreq = w->GetValue();
     if(new_cfreq != last_cfreq) {
       // take the difference and make new steps.
       unsigned long diff = new_cfreq - last_cfreq;
       last_cfreq += diff * cfreq_step;
-      unsigned long min = m_cFreqSpin->GetMin(); 
-      unsigned long max = m_cFreqSpin->GetMax();
+      unsigned long min = w->GetMin(); 
+      unsigned long max = w->GetMax();
       if(last_cfreq < min) last_cfreq = min;
       if(last_cfreq > max) last_cfreq = max;
       spectrum_center_freq = last_cfreq * 1e3;
       UpdateAxes();
-      m_cFreqSpin->SetValue(last_cfreq);
+      w->SetValue(last_cfreq);
     }
   }
 
   void SoDaRadio_Top::OnPerRefLevel( wxSpinEvent & event)
   {
-    float yref = m_RefLevel->GetValue();
+    float yref = spect_config->getRefLevel();
     if(yref != spectrum_y_reflevel) {
       spectrum_y_reflevel = yref;
       UpdateAxes();
@@ -1172,7 +1164,7 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnPerBandSpread(wxCommandEvent & event )
   {
-    float spread = GetSpread();
+    float spread = spect_config->getBandSpread();
     if(spread != spectrum_bandspread) {
       spectrum_bandspread = spread;
       UpdateAxes(); 
@@ -1181,21 +1173,12 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnPerYScaleChoice( wxCommandEvent & event)
   {
-    float yscale = GetYScale();
+    float yscale = spect_config->getdBScale();
     if(yscale != spectrum_y_scale) {
       spectrum_y_scale = yscale;
       UpdateAxes(); 
     }
   }
-
-  // void SoDaRadio_Top::OnPerCFreqSpin()
-  // {
-  //   double new_cfreq = m_cFreqSpin->GetValue() * 1e3;
-  //   if(new_cfreq != spectrum_center_freq) {
-  //     spectrum_center_freq = new_cfreq;
-  //     UpdateAxes();
-  //   }
-  // }
 
   void SoDaRadio_Top::OnPerRxToCentFreq( wxCommandEvent & event)
   {
@@ -1219,8 +1202,8 @@ namespace SoDaRadio_GUI {
 
     cfreq_step = 25; 
 
-    m_cFreqSpin->SetRange(spin_low, spin_high);
-    m_cFreqSpin->SetValue(spin_center);
+    spect_config->setFreqSpinner(spin_low, spin_high, spin_center);
+    
     last_cfreq = spin_center;
     spectrum_center_freq = last_cfreq * 1e3;
 
@@ -1230,39 +1213,16 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::SetPerVals(double cfreq, double reflevel, float yscale, float bspread)
   {
-    
-    m_cFreqSpin->SetRange(cfreq - (bspread * 0.5e-3), cfreq + (bspread * 0.5e-3));
-    m_cFreqSpin->SetValue(cfreq);
 
-    m_RefLevel->SetValue(reflevel);
-    if(bspread < 30e3) {
-      m_BandSpreadChoice->SetSelection(0);
-    }
-    else if(bspread < 70e3) {
-      m_BandSpreadChoice->SetSelection(1);
-    }
-    else if(bspread < 130e3) {
-      m_BandSpreadChoice->SetSelection(2);
-    }
-    else if(bspread < 230e3) {
-      m_BandSpreadChoice->SetSelection(3);
-    }
-    else {
-      m_BandSpreadChoice->SetSelection(4);
-    }
+    spect_config->setFreqSpinner(cfreq - (bspread * 0.5e-3),
+				 cfreq + (bspread * 0.5e-3),
+				 cfreq);
 
-    if(yscale < 1) {
-      m_dBScale->SetSelection(0);
-    }
-    else if(yscale < 7) {
-      m_dBScale->SetSelection(1);
-    }
-    else if(yscale < 12) {
-      m_dBScale->SetSelection(2);
-    }
-    else {
-      m_dBScale->SetSelection(3);
-    }
+    spect_config->setRefLevel(reflevel); 
+
+    spect_config->setBandSpread(bspread); 
+
+    spect_config->setdBScale(yscale); 
   }
 
   void SoDaRadio_Top::OnTunePopup( wxCommandEvent & event)
