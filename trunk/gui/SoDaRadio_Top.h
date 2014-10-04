@@ -51,6 +51,7 @@
 #include <wx/wx.h>
 #include <wx/string.h>
 #include <wx/wxchar.h>
+#include <wx/thread.h>
 
 namespace SoDaRadio_GUI {
   
@@ -87,6 +88,7 @@ namespace SoDaRadio_GUI {
     void OnSaveConfigAs( wxCommandEvent& event );
     void OnOpenLogfile( wxCommandEvent& event );
     void OnQuit( wxCommandEvent& event );
+    void OnClose( wxCloseEvent& event );
 
     void OnSetFromCall( wxCommandEvent& event); 
     void OnSetFromGrid( wxCommandEvent& event); 
@@ -114,6 +116,7 @@ namespace SoDaRadio_GUI {
     void OnWfallWindowLenUpdate(wxScrollEvent & event);
     void OnScrollSpeedUpdate(wxScrollEvent & event);
     void OnOpenSpectConfig(wxMouseEvent & event);
+    void OnMenuConfigSpect(wxCommandEvent & event);
     
     void OnTXOnOff( wxCommandEvent& event );
     void OnCWControl( wxCommandEvent& event );
@@ -154,7 +157,6 @@ namespace SoDaRadio_GUI {
     // CW stuff
     void sendCWText( const wxString & cwstr, int repeat_count = 1, bool append_cr = true);
     void sendCWMarker(int marker_id); 
-
 
     void UpdateRXFreq(double freq);
     void UpdateTXFreq(double freq);
@@ -208,6 +210,7 @@ namespace SoDaRadio_GUI {
     wxString getGPSUTC() { return GPS_UTC_Str; }
 
     void setSDRVersion(char * buf) {
+      wxMutexLocker lock(ctrl_mutex);
       strncpy(SDR_version_string, buf, 64);
     }
   
@@ -220,8 +223,37 @@ namespace SoDaRadio_GUI {
     
 
     void setRadioName(const wxString & mname) {
-      this->SetTitle(wxT("SoDa Radio ") + mname);
+      wxMutexLocker lock(ctrl_mutex);
+      wxString modelname = wxT("SoDa Radio ") + mname; 
+      this->SetTitle(modelname);
     }
+
+    void pendEvent(wxCommandEvent & event) {
+      wxMutexLocker lock(ctrl_mutex);
+      GetEventHandler()->AddPendingEvent(event); 
+    }
+
+    // start the listener thread
+    void startListener() {
+      // now launch it.
+      debugMsg("Launching listener thread.");
+      if(listener->Create() != wxTHREAD_NO_ERROR) {
+	wxLogError(wxT("Couldn't create radio listener thread...")); 
+      }
+      std::cerr << "created listener thread" << std::endl; 
+
+      debugMsg("Running listener thread.");
+      listener->Run(); 
+      
+      // ask 
+      SoDa::Command ncmd(SoDa::Command::GET, SoDa::Command::HWMB_REP);
+      sendMsg(&ncmd);
+      debugMsg("sent model ID request.\n");
+    }
+
+    // complete configuration
+    void configureRadio(SoDa::GuiParams & params);
+
   private:
     char SDR_version_string[64];
 
@@ -303,7 +335,11 @@ namespace SoDaRadio_GUI {
     void setSweepSpeed(double v) { sweep_speed = v; }
   
     // the listener thread
-    RadioListenerThread * listener; 
+    RadioListenerThread * listener;
+
+    // the mutex used to synchronize access between the GUI
+    // thread and the radio listener thread
+    wxMutex ctrl_mutex; 
   
     // helpful stuff
     wxColour default_button_bg_color;
@@ -598,19 +634,20 @@ namespace SoDaRadio_GUI {
       double spval[] = {25, 50, 100, 200, 500, -1}; //spread in kHz
       int selidx = -1;
       int minidx = -1;
-      
       int i;
+      
       for(i = 0; spval[i] > 0; i++) {
 	if(spval[i] == bandspread) selidx = i;
 	if(spval[i] < bandspread) minidx = i;
       }
-
+      
       if(selidx == -1) {
 	if(minidx != -1) selidx = minidx;
 	else selidx = 0; 
       }
       m_BandSpreadChoice->SetSelection(selidx);
 
+      std::cerr << boost::format(" returning %g\n") % spval[selidx]; 
       return spval[selidx]; 
     }
     
@@ -645,7 +682,6 @@ namespace SoDaRadio_GUI {
 	if(minidx != -1) selidx = minidx;
 	else selidx = 0; 
       }
-
       
       m_dBScale->SetSelection(selidx);
       return spval[selidx]; 

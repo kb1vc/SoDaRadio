@@ -86,6 +86,7 @@ namespace SoDaRadio_GUI {
     if(old_spect_buflen != spect_buflen) {
       while(!radio_gui->CreateSpectrumTrace(freq_buffer, spect_buffer, spect_buflen)) {
 	// the window hasn't been created yet... chill.
+	debugMsg("In create spectrum trace loop!  why?\n");
 	wxThread::Sleep(100); 
       }
       old_spect_buflen = spect_buflen; 
@@ -98,7 +99,7 @@ namespace SoDaRadio_GUI {
     hookSigSeg();
     
     //listen on the gui's command queue and on the fft queue.
-    bool exitflag = false;
+    exitflag = false;
 
     pid_t pid = getpid(); 
 
@@ -107,23 +108,33 @@ namespace SoDaRadio_GUI {
 
     ncmd = new SoDa::Command();
 
-    int dbgctr = 0; 
+    int dbgctr = 0;
+    int repctr = 0;
+    int specctr = 0;
+    
     while(!exitflag) {
-      bool didwork = false; 
+      bool didwork = false;
+      dbgctr++; 
+      if((dbgctr & 0xff) == 0) {
+	std::cerr << boost::format("dbg = %d rep = %d spec = %d\n")
+	  % dbgctr % repctr % specctr;
+      }
+	  
       int stat = cmd_q->get(ncmd, sizeof(SoDa::Command));
       if(stat > 0) {
 	if(ncmd->cmd == SoDa::Command::REP) execRepCommand(ncmd);
 	didwork = true;
+	repctr++; 
       }
 
       if(spect_buffer != NULL) {
 	stat = fft_q->get(spect_buffer, sizeof(float) * spect_buflen);
 	if(stat > 0) {
-	  // if((dbgctr & 0xff) == 0) std::cerr << "."; 
 	  wxCommandEvent event(wxEVT_COMMAND_MENU_SELECTED,
 			       SoDaRadio_Top::MSG_UPDATE_SPECTRUM);
-	  radio_gui->GetEventHandler()->AddPendingEvent(event); 
+	  radio_gui->pendEvent(event); 
 	  didwork = true;
+	  specctr++; 
 	}
 	else if(stat < 0) {
 	  std::cerr << "Error reading fft q." << std::endl; 
@@ -132,11 +143,15 @@ namespace SoDaRadio_GUI {
       if(!didwork) {
 	wxThread::Sleep(100);
       }
-
     }
 
     delete ncmd;   
-    std::cerr << "Radio listener thread has shut down." << std::endl; 
+    debugMsg("+++++++++++ Radio listener thread has shut down.\n");
+
+    if(TestDestroy()) {
+      debugMsg("TestDestroy returned true, calling Exit");
+      Exit();
+    }
     return NULL; 
   }
 
@@ -184,7 +199,7 @@ namespace SoDaRadio_GUI {
       {
 	wxCommandEvent event(wxEVT_COMMAND_MENU_SELECTED,
 			     SoDaRadio_Top::MSG_TERMINATE_TX);
-	radio_gui->GetEventHandler()->AddPendingEvent(event); 
+	radio_gui->pendEvent(event); 
       }
       break;
     case SoDa::Command::HWMB_REP:

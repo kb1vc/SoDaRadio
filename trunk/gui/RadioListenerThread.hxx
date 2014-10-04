@@ -49,10 +49,23 @@ namespace SoDaRadio_GUI {
 
     void * Entry();
 
+    void stop() {
+      if(IsPaused()) {
+	debugMsg("Waking thread to send it a STOP.");
+	// wake the thread up so we can kill it....
+	Resume(); 
+      }
+      debugMsg("++++++++++  Got stop command -- exiting ++++++++");
+      exitflag = true;
+    }
+
   private:
     void setupSpectrumDisplay();
     void setupFreqBuffer();
-    void execRepCommand(SoDa::Command * cmd); 
+    void execRepCommand(SoDa::Command * cmd);
+
+    bool exitflag; // Set to true when we want to terminate the application
+    
     SoDaRadio_Top * radio_gui;
     SoDa::UD::ClientSocket * cmd_q, * fft_q; 
     float * spect_buffer;

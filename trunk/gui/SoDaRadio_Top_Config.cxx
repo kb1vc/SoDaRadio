@@ -266,7 +266,10 @@ namespace SoDaRadio_GUI {
     int band_list_idx = 5000; 
     BOOST_FOREACH(SoDaRadio_BandSet::BandMapEntry b, bandset->band_map) {
       SoDaRadio_Band * v = b.second;
-      wxMenuItem * newItem = new wxMenuItem( m_bandSelect, band_list_idx, wxString(v->getName().c_str(), wxConvUTF8),
+      debugMsg(boost::format("Creating band menuitem with string [%s]")
+	       % v->getName().c_str()); 
+      wxMenuItem * newItem = new wxMenuItem( m_bandSelect, band_list_idx,
+					     wxString(v->getName().c_str(), wxConvUTF8),
 					     wxEmptyString, wxITEM_NORMAL); 
       m_bandSelect->Append(newItem);
       int id = newItem->GetId();

@@ -64,6 +64,18 @@ namespace SoDaRadio_GUI {
 :
     SoDaRadioFrame( parent ), SoDa::Debug("SoDaRadio_Top")
   {
+    // init all pointers to NULL;
+    pgram_plot = NULL;
+    pgram_trace = NULL;
+    wfall_plot = NULL;
+    tuner = NULL;
+    controls = NULL;
+    bandconf = NULL;
+    logdialog = NULL;
+    spect_config = NULL;
+    listener = NULL;
+    config_tree_alloc = config_tree = NULL; 
+    
     std::cerr << "got to top top" << std::endl; 
     // revision string is initially empty
     SDR_version_string[0] = '\000';
@@ -149,13 +161,6 @@ namespace SoDaRadio_GUI {
     // create the listener thread
     debugMsg("Creating listener thread.");
     listener = new RadioListenerThread(this);
-    // now launch it.
-    debugMsg("Launching listener thread.");
-    if(listener->Create() != wxTHREAD_NO_ERROR) {
-      wxLogError(wxT("Couldn't create radio listener thread...")); 
-    }
-
-    std::cerr << "created listener thread" << std::endl; 
   
     // what is the default button background color? 
     default_button_bg_color = m_PTT->GetBackgroundColour();
@@ -221,7 +226,23 @@ namespace SoDaRadio_GUI {
     // setup the Log dialog
     logdialog = new LogDialog(this, this); 
 
-    
+  
+    // Now connect up a few events
+    Connect(MSG_UPDATE_SPECTRUM, wxEVT_COMMAND_MENU_SELECTED,
+	    wxCommandEventHandler(SoDaRadio_Top::OnUpdateSpectrumPlot));
+    Connect(MSG_UPDATE_GPSLOC, wxEVT_COMMAND_MENU_SELECTED,
+	    wxCommandEventHandler(SoDaRadio_Top::OnUpdateGPSLoc));
+    Connect(MSG_UPDATE_GPSTIME, wxEVT_COMMAND_MENU_SELECTED,
+	    wxCommandEventHandler(SoDaRadio_Top::OnUpdateGPSTime));
+    Connect(MSG_TERMINATE_TX, wxEVT_COMMAND_MENU_SELECTED,
+	    wxCommandEventHandler(SoDaRadio_Top::OnTerminateTX));
+
+    // setup status bar -- hardwire the accelerators for now.
+    m_ClueBar->SetStatusText(wxT("^C Set To Call        ^G Set To Grid        ^L Enter Log Comment        ^X Enter CW Text"), 0);
+
+  }
+
+  void SoDaRadio_Top::configureRadio(SoDa::GuiParams & params) {
     debugMsg("about to load configuration.");
     // load the configuration from a default file,
     // if available.
@@ -243,29 +264,11 @@ namespace SoDaRadio_GUI {
     save_config_file_name = wxT("");
 
     debugMsg("loaded log file.");
-  
-    // Now connect up a few events
-    Connect(MSG_UPDATE_SPECTRUM, wxEVT_COMMAND_MENU_SELECTED,
-	    wxCommandEventHandler(SoDaRadio_Top::OnUpdateSpectrumPlot));
-    Connect(MSG_UPDATE_GPSLOC, wxEVT_COMMAND_MENU_SELECTED,
-	    wxCommandEventHandler(SoDaRadio_Top::OnUpdateGPSLoc));
-    Connect(MSG_UPDATE_GPSTIME, wxEVT_COMMAND_MENU_SELECTED,
-	    wxCommandEventHandler(SoDaRadio_Top::OnUpdateGPSTime));
-    Connect(MSG_TERMINATE_TX, wxEVT_COMMAND_MENU_SELECTED,
-	    wxCommandEventHandler(SoDaRadio_Top::OnTerminateTX));
-
-    // setup status bar -- hardwire the accelerators for now.
-    m_ClueBar->SetStatusText(wxT("^C Set To Call        ^G Set To Grid        ^L Enter Log Comment        ^X Enter CW Text"), 0);
-
-    debugMsg("Running listener thread.");
-    listener->Run(); 
-
-    SoDa::Command ncmd(SoDa::Command::GET, SoDa::Command::HWMB_REP);
-    sendMsg(&ncmd);
   }
-
+  
   bool SoDaRadio_Top::CreateSpectrumTrace(double * freqs, float * powers, unsigned int len)
   {
+    wxMutexLocker lock(ctrl_mutex);
     if(pgram_plot == NULL) return false; 
     if(wfall_plot == NULL) return false;
   
@@ -349,6 +352,7 @@ namespace SoDaRadio_GUI {
   
   void SoDaRadio_Top::setGPSLoc(double lat, double lon)
   {
+    wxMutexLocker lock(ctrl_mutex);
     std::string slat = (boost::format("%6.3f") % lat).str();
     std::string slon = (boost::format("%7.3f") % lon).str();
     wxString wxslat(slat.c_str(), wxConvUTF8);
@@ -368,12 +372,12 @@ namespace SoDaRadio_GUI {
     // now post the update
     wxCommandEvent event(wxEVT_COMMAND_MENU_SELECTED,
 			 SoDaRadio_Top::MSG_UPDATE_GPSLOC);
-    AddPendingEvent(event); 
+    pendEvent(event); 
   }
 
   void SoDaRadio_Top::setGPSTime(unsigned char h, unsigned char m, unsigned char s)
   {
-
+    wxMutexLocker lock(ctrl_mutex);
     std::string stim = (boost::format("%02d:%02d:%02d")
 			% ((unsigned int) h)
 			% ((unsigned int) m)
@@ -385,7 +389,7 @@ namespace SoDaRadio_GUI {
     // now post the update
     wxCommandEvent event(wxEVT_COMMAND_MENU_SELECTED,
 			 SoDaRadio_Top::MSG_UPDATE_GPSTIME);
-    AddPendingEvent(event); 
+    pendEvent(event); 
   
   }
 
