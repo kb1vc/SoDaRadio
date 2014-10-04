@@ -55,6 +55,10 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 	m_configureBand = new wxMenuItem( ConfigMenu, wxID_ANY, wxString( wxT("Configure Band") ) , wxEmptyString, wxITEM_NORMAL );
 	ConfigMenu->Append( m_configureBand );
 	
+	wxMenuItem* m_configSpect;
+	m_configSpect = new wxMenuItem( ConfigMenu, wxID_ANY, wxString( wxT("Configure Spectrum Display") ) , wxEmptyString, wxITEM_NORMAL );
+	ConfigMenu->Append( m_configSpect );
+	
 	m_menubar1->Append( ConfigMenu, wxT("Configure") );
 	
 	m_QSOMenu = new wxMenu();
@@ -166,38 +170,53 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 	
 	ControlSizer->Add( 20, 0, 0, wxEXPAND, 5 );
 	
-	wxStaticBoxSizer* sbSizer30;
-	sbSizer30 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("TX Frequency") ), wxVERTICAL );
+	wxStaticBoxSizer* sbTxFreq;
+	sbTxFreq = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("TX Frequency") ), wxVERTICAL );
 	
-	sbSizer30->SetMinSize( wxSize( 230,-1 ) ); 
+	sbTxFreq->SetMinSize( wxSize( 230,-1 ) ); 
 	m_TXFreqText = new wxStaticText( this, wxID_ANY, wxT("10,368.100 000"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT );
 	m_TXFreqText->Wrap( -1 );
 	m_TXFreqText->SetFont( wxFont( 20, 70, 90, 90, false, wxEmptyString ) );
 	
-	sbSizer30->Add( m_TXFreqText, 0, wxALL, 5 );
+	sbTxFreq->Add( m_TXFreqText, 0, wxALL, 5 );
 	
-	ControlSizer->Add( sbSizer30, 0, wxEXPAND, 5 );
+	ControlSizer->Add( sbTxFreq, 0, wxEXPAND, 5 );
 	
 	m_TXRXLocked = new wxCheckBox( this, wxID_ANY, wxT("TX=RX Lock"), wxDefaultPosition, wxDefaultSize, 0 );
 	ControlSizer->Add( m_TXRXLocked, 0, wxALL, 5 );
 	
-	wxStaticBoxSizer* sbSizer311;
-	sbSizer311 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("RX Frequency") ), wxVERTICAL );
+	wxStaticBoxSizer* sbRxFreq;
+	sbRxFreq = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("RX Frequency") ), wxVERTICAL );
 	
-	sbSizer311->SetMinSize( wxSize( 230,-1 ) ); 
+	sbRxFreq->SetMinSize( wxSize( 230,-1 ) ); 
 	m_RXFreqText = new wxStaticText( this, wxID_ANY, wxT("10,368.100 000"), wxDefaultPosition, wxDefaultSize, wxALIGN_LEFT );
 	m_RXFreqText->Wrap( -1 );
 	m_RXFreqText->SetFont( wxFont( 20, 70, 90, 90, false, wxEmptyString ) );
 	
-	sbSizer311->Add( m_RXFreqText, 0, wxALL, 5 );
+	sbRxFreq->Add( m_RXFreqText, 0, wxALL, 5 );
 	
-	ControlSizer->Add( sbSizer311, 0, wxEXPAND, 5 );
+	ControlSizer->Add( sbRxFreq, 0, wxEXPAND, 5 );
+	
+	wxBoxSizer* sTuneSpec;
+	sTuneSpec = new wxBoxSizer( wxHORIZONTAL );
 	
 	Tune = new wxButton( this, wxID_ANY, wxT("Tune"), wxDefaultPosition, wxDefaultSize, 0 );
-	ControlSizer->Add( Tune, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+	Tune->SetFont( wxFont( 20, 70, 90, 92, false, wxEmptyString ) );
+	
+	sTuneSpec->Add( Tune, 0, wxALL|wxEXPAND, 5 );
+	
+	wxBoxSizer* sSpec;
+	sSpec = new wxBoxSizer( wxVERTICAL );
 	
 	m_RX2CF = new wxButton( this, wxID_ANY, wxT("RX -> CFreq"), wxDefaultPosition, wxDefaultSize, 0 );
-	ControlSizer->Add( m_RX2CF, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+	sSpec->Add( m_RX2CF, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+	
+	m_ConfigSpectrum = new wxButton( this, wxID_ANY, wxT("Display..."), wxDefaultPosition, wxDefaultSize, 0 );
+	sSpec->Add( m_ConfigSpectrum, 0, wxALL, 5 );
+	
+	sTuneSpec->Add( sSpec, 1, wxEXPAND, 5 );
+	
+	ControlSizer->Add( sTuneSpec, 1, wxEXPAND, 5 );
 	
 	TopSizer->Add( ControlSizer, 1, 0, 5 );
 	
@@ -436,7 +455,7 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 	this->Layout();
 	
 	// Connect Events
-	this->Connect( wxEVT_MIDDLE_UP, wxMouseEventHandler( SoDaRadioFrame::OnOpenSpectConfig ) );
+	this->Connect( wxEVT_CLOSE_WINDOW, wxCloseEventHandler( SoDaRadioFrame::OnClose ) );
 	this->Connect( OpenConfig->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnOpenConfig ) );
 	this->Connect( SaveConfig->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnSaveConfig ) );
 	this->Connect( SaveConfigAs->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnSaveConfigAs ) );
@@ -446,6 +465,7 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 	this->Connect( SetMyGrid->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnSetFromGrid ) );
 	this->Connect( GPSOn->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnGPSOnSel ) );
 	this->Connect( m_configureBand->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnConfigBand ) );
+	this->Connect( m_configSpect->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnMenuConfigSpect ) );
 	this->Connect( m_SetToCall->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnQSOMenuSet ) );
 	this->Connect( m_SetToGrid->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnQSOMenuSet ) );
 	this->Connect( m_GoToComment->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnQSOMenuSet ) );
@@ -484,6 +504,7 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 	m_TXRXLocked->Connect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnTXRXLock ), NULL, this );
 	Tune->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnTunePopup ), NULL, this );
 	m_RX2CF->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnPerRxToCentFreq ), NULL, this );
+	m_ConfigSpectrum->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnMenuConfigSpect ), NULL, this );
 	m_CWTextEntry->Connect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( SoDaRadioFrame::OnSendText ), NULL, this );
 	m_ToGrid->Connect( wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler( SoDaRadioFrame::OnNewToGrid ), NULL, this );
 	m_ToGrid->Connect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( SoDaRadioFrame::OnNewToGridEnter ), NULL, this );
@@ -509,7 +530,7 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 SoDaRadioFrame::~SoDaRadioFrame()
 {
 	// Disconnect Events
-	this->Disconnect( wxEVT_MIDDLE_UP, wxMouseEventHandler( SoDaRadioFrame::OnOpenSpectConfig ) );
+	this->Disconnect( wxEVT_CLOSE_WINDOW, wxCloseEventHandler( SoDaRadioFrame::OnClose ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnOpenConfig ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnSaveConfig ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnSaveConfigAs ) );
@@ -519,6 +540,7 @@ SoDaRadioFrame::~SoDaRadioFrame()
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnSetFromGrid ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnGPSOnSel ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnConfigBand ) );
+	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnMenuConfigSpect ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnQSOMenuSet ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnQSOMenuSet ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnQSOMenuSet ) );
@@ -557,6 +579,7 @@ SoDaRadioFrame::~SoDaRadioFrame()
 	m_TXRXLocked->Disconnect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnTXRXLock ), NULL, this );
 	Tune->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnTunePopup ), NULL, this );
 	m_RX2CF->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnPerRxToCentFreq ), NULL, this );
+	m_ConfigSpectrum->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnMenuConfigSpect ), NULL, this );
 	m_CWTextEntry->Disconnect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( SoDaRadioFrame::OnSendText ), NULL, this );
 	m_ToGrid->Disconnect( wxEVT_COMMAND_TEXT_UPDATED, wxCommandEventHandler( SoDaRadioFrame::OnNewToGrid ), NULL, this );
 	m_ToGrid->Disconnect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( SoDaRadioFrame::OnNewToGridEnter ), NULL, this );

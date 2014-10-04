@@ -44,6 +44,7 @@ namespace SoDaRadio_GUI {
   
   void SoDaRadio_Top::OnAbout( wxCommandEvent& event )
   {
+    debugMsg("EV:OnAbout\n");
     AboutDialog * ad = new AboutDialog(this, SDR_version_string);
     ad->ShowModal(); 
   }
@@ -109,6 +110,7 @@ namespace SoDaRadio_GUI {
   
   void SoDaRadio_Top::OnOpenConfig( wxCommandEvent& event )
   {
+    debugMsg("EV:OnOpenConfig\n");
     wxString defaultDir = wxT("~/.SoDa");
     wxString defaultFilename = wxT("SoDa.soda_cfg");
     wxString wildcard = wxT("SoDa Config files (*.soda_cfg)|*.soda_cfg");
@@ -123,6 +125,7 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnSaveConfig( wxCommandEvent& event )
   {
+    debugMsg("EV:OnSaveConfig\n");
     if(save_config_file_name.length() == 0) {
       OnSaveConfigAs(event);
     }
@@ -133,6 +136,7 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnSaveConfigAs( wxCommandEvent& event )
   {
+    debugMsg("EV:OnSaveConfigAs\n");
     wxString defaultDir = wxT("~/.SoDaRadio");
     wxString defaultFilename = wxT("SoDa.soda_cfg");
     wxString wildcard = wxT("SoDa Config files (*.soda_cfg)|*.soda_cfg");
@@ -147,6 +151,7 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnOpenLogfile( wxCommandEvent& event )
   {
+    debugMsg("EV:OnOpenLogfile\n");
     wxString defaultDir = wxT("~/.SoDa");
     wxString defaultFilename = wxT("SoDa.soda_log");
     wxString wildcard = wxT("SoDa Log files (*.soda_log)|*.soda_log");
@@ -168,21 +173,35 @@ namespace SoDaRadio_GUI {
     return true; 
   }
 
-
-
-  void SoDaRadio_Top::OnQuit( wxCommandEvent& event )
+  void SoDaRadio_Top::OnClose( wxCloseEvent& event )
   {
+    debugMsg("EV:OnClose\n");
+    debugMsg("Closing logfile.");
     // ask the logger to write the final log
     logdialog->closeLog();
 
+    debugMsg("Sending Radio Server a STOP command.");
     // This will cause the radio server to abort as well. 
     SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::STOP, 0);
     sendMsg(&ncmd);
+
+    debugMsg("Stopping RadioListener thread.");
+    // stop the radio listener thread.
+    listener->stop();
+
+    debugMsg("Passing close event up the chain.");
+    event.Skip();
+  }
+
+  void SoDaRadio_Top::OnQuit( wxCommandEvent& event )
+  {
+    debugMsg("EV:OnQuit\n");
     Close(); 
   }
 
   void SoDaRadio_Top::OnSelectPage( wxNotebookEvent& event )
   {
+    debugMsg("EV:OnSelectPage\n");
     if(SpectrumDisplay->GetSelection() == 0) {
       // this is the waterfall display
       SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::SPEC_AVG_WINDOW,
@@ -199,14 +218,17 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnWFallFreqSel( wxMouseEvent& event )
   {
+    debugMsg("EV:OnWFallFreqSel\n");
   }
 
   void SoDaRadio_Top::OnPeriodogramFreqSel( wxMouseEvent& event )
   {
+    debugMsg("EV:OnPeriodogramFreqSel\n");
   }
 
   void SoDaRadio_Top::OnPerWindowLenUpdate( wxScrollEvent & event )
   {
+    debugMsg("EV:OnPerWindowLenUpdate\n");
     wxSlider * w = (wxSlider *) event.GetEventObject();
 
     if(SpectrumDisplay->GetSelection() == 1)  {
@@ -218,6 +240,7 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnWfallWindowLenUpdate( wxScrollEvent & event )
   {
+    debugMsg("EV:OnWfallWindowLenUpdate\n");
     wxSlider * w = (wxSlider *) event.GetEventObject();
 
     if(SpectrumDisplay->GetSelection() == 0)  {
@@ -227,11 +250,17 @@ namespace SoDaRadio_GUI {
     }
   }
 
+  void SoDaRadio_Top::OnMenuConfigSpect(wxCommandEvent & event) {
+    spect_config->Show();
+    debugMsg("EV:OnMenuConfigSpect\n");
+  }
   void SoDaRadio_Top::OnOpenSpectConfig(wxMouseEvent & event) {
     spect_config->Show();
+    debugMsg("EV:OnOpenSpectConfig\n");
   }
   
   void SoDaRadio_Top::OnScrollSpeedUpdate( wxScrollEvent & event) {
+    debugMsg("EV:OnScrollSpeedUpdate\n");
     wxSlider * w = (wxSlider *) event.GetEventObject();
     int val = (int) w->GetValue();
     debugMsg(boost::format("About to send a scroll speed message, param = %d.")
@@ -244,6 +273,7 @@ namespace SoDaRadio_GUI {
   
   void SoDaRadio_Top::OnTerminateTX( wxCommandEvent& event )
   {
+    debugMsg("EV:OnTerminateTX\n");
     // we got to the end of a CW string --
     // if we're transmitting, terminate TX mode... 
     if(tx_on) OnTXOnOff(event); 
@@ -251,6 +281,7 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnTXOnOff( wxCommandEvent& event )
   {
+    debugMsg("EV:OnTXOnOff\n");
     if(tx_on) {
       // set the label background color to GREY
       m_PTT->SetBackgroundColour(default_button_bg_color);
@@ -273,6 +304,7 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnSendText( wxCommandEvent & event)
   {
+    debugMsg("EV:OnSendText\n");
     wxTextCtrl * w = (wxTextCtrl *) event.GetEventObject();
 
     wxString cwstr = w->GetValue(); 
@@ -323,6 +355,7 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnCWControl( wxCommandEvent & event)
   {
+    debugMsg("EV:OnCWControl\n");
     wxButton * button = (wxButton *) event.GetEventObject();
     wxCommandEvent nullCE; 
     if(!dead_carrier) {  
@@ -402,6 +435,7 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnModeChoice( wxCommandEvent& event )
   {
+    debugMsg("EV:OnModeChoice\n");
     // m_ModeBox
     wxString mode_string = m_ModeBox->GetStringSelection();
 
@@ -446,6 +480,7 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnAFBWChoice( wxCommandEvent& event )
   {
+    debugMsg("EV:OnAFBWChoice\n");
     int sel = m_AFBWChoice->GetCurrentSelection();
     SoDa::Command::AudioFilterBW bw;
     switch (sel) {
@@ -471,6 +506,7 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnTXRXLock( wxCommandEvent& event )
   {
+    debugMsg("EV:OnTXRXLock\n");
     tx_rx_locked = m_TXRXLocked->GetValue();
   }
 
@@ -577,6 +613,7 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnCopyTXtoRX( wxCommandEvent& event )
   {
+    debugMsg("EV:OnCopyTXtoRX\n");
     last_rx_frequency = rx_frequency;
     UpdateRXFreq(tx_frequency);
   }
@@ -590,6 +627,7 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnCopyRXtoTX( wxCommandEvent& event )
   {
+    debugMsg("EV:OnCopyRXtoTX\n");
     last_tx_frequency = tx_frequency;
     UpdateTXFreq(rx_frequency);
   }
@@ -610,6 +648,7 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnLastTX( wxCommandEvent& event )
   {
+    debugMsg("EV:OnLastTX\n");
     UpdateTXFreq(last_tx_frequency);   
     CheckLockedTuning(false);
   }
@@ -623,6 +662,7 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnLastRX( wxCommandEvent& event )
   {
+    debugMsg("EV:OnLastRX\n");
     UpdateRXFreq(last_rx_frequency);
     CheckLockedTuning(true);
   }
@@ -644,6 +684,7 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnAFGainScroll(wxScrollEvent & event)
   {
+    debugMsg("EV:OnAFGainScroll\n");
     int igain = m_AFGain->GetValue();
     double dgain = ((double) igain) ;
     double gain = 50.0 * (log10(dgain) / log10(50.0)); 
@@ -653,6 +694,7 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnRFGainScroll(wxScrollEvent & event)
   {
+    debugMsg("EV:OnRFGainScroll\n");
     int igain = m_RFGain->GetValue(); 
     double gain = ((double) igain);
     SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::RX_RF_GAIN, gain);
@@ -662,6 +704,7 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnSetFromCall(wxCommandEvent & event)
   {
+    debugMsg("EV:OnSetFromCall\n");
     wxTextEntryDialog dialog(this,
 			     wxT("Enter This Station's Call Sign"),
 			     wxT("Station Call Sign"),
@@ -676,6 +719,7 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnSetFromGrid(wxCommandEvent & event)
   {
+    debugMsg("EV:OnSetFromGrid\n");
     wxTextEntryDialog dialog(this,
 			     wxT("Enter This Station's Current Grid Location"),
 			     wxT("Station QTH"),
@@ -702,6 +746,7 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnQSOMenuSet( wxCommandEvent & event)
   {
+    debugMsg("EV:OnQSOMenuSet\n");
     int id = event.GetId();
     if(id == ID_GOTOCALL) {
       m_ToCall->SetFocus();
@@ -724,12 +769,14 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnEditLog( wxCommandEvent& event)
   {
+    debugMsg("EV:OnEditLog\n");
     logdialog->Show();
     logdialog->scrollToBottom(); 
   }
 
   void SoDaRadio_Top::OnLogContact( wxCommandEvent& event )
   {
+    debugMsg("EV:OnLogContact\n");
     // print the date
     wxDateTime now = wxDateTime::Now();
 
@@ -845,6 +892,7 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnSaveComment( wxCommandEvent& event)
   {
+    debugMsg("EV:OnSaveComment\n");
     wxTextCtrl * w = (wxTextCtrl *) event.GetEventObject(); 
     logdialog->SaveComment(w->GetValue());
     w->SetValue(wxT(""));
@@ -975,6 +1023,7 @@ namespace SoDaRadio_GUI {
   
   void SoDaRadio_Top::OnBandSelect( wxCommandEvent& event)
   {
+    debugMsg("EV:OnBandSelect\n");
     // find out which choice we made.
     wxObject * m = event.GetEventObject();
     // OK... the event has the band that we selected... bumped up by 5000. 
@@ -989,6 +1038,7 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnConfigBand( wxCommandEvent& event)
   {
+    debugMsg("EV:OnConfigBand\n");
     // init the list of configured bands in the bandconf dialog
     bandconf->initBandList(bandset);
     bandconf->clearTextBoxes(); 
@@ -1004,6 +1054,7 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::setLOOffset(double v)
   {
+    wxMutexLocker lock(ctrl_mutex);
     actual_lo_base_freq = nominal_lo_base_freq + v; 
     tx_transverter_offset = actual_lo_base_freq * lo_multiplier; 
     rx_transverter_offset = actual_lo_base_freq * lo_multiplier;
@@ -1019,6 +1070,7 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnNewToCall( wxCommandEvent & event)
   {
+    debugMsg("EV:OnNewToCall\n");
     wxTextCtrl * w = (wxTextCtrl *) event.GetEventObject(); 
 
     to_callsign = w->GetValue();
@@ -1028,12 +1080,14 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnNewToGridEnter( wxCommandEvent & event)
   {
+    debugMsg("EV:OnNewToGridEnter\n");
     OnNewToGrid(event);
     m_ToCall->SetFocus();
   }
 
   void SoDaRadio_Top::OnNewToGrid( wxCommandEvent & event)
   {
+    debugMsg("EV:OnNewToGrid\n");
     wxTextCtrl * w = (wxTextCtrl *) event.GetEventObject(); 
     wxString wsgrid = w->GetValue();
 
@@ -1136,6 +1190,7 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnPerCFreqStep( wxSpinEvent & event)
   {
+    debugMsg("EV:OnPerCFreqStep\n");
     wxSpinCtrl * w = (wxSpinCtrl*) event.GetEventObject();
     // did it go up or down?
     unsigned long new_cfreq = w->GetValue();
@@ -1155,6 +1210,7 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnPerRefLevel( wxSpinEvent & event)
   {
+    debugMsg("EV:OnPerRefLevel\n");
     float yref = spect_config->getRefLevel();
     if(yref != spectrum_y_reflevel) {
       spectrum_y_reflevel = yref;
@@ -1164,6 +1220,7 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnPerBandSpread(wxCommandEvent & event )
   {
+    debugMsg("EV:OnPerBandSpread\n");
     float spread = spect_config->getBandSpread();
     if(spread != spectrum_bandspread) {
       spectrum_bandspread = spread;
@@ -1173,6 +1230,7 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnPerYScaleChoice( wxCommandEvent & event)
   {
+    debugMsg("EV:OnPerYScaleChoice\n");
     float yscale = spect_config->getdBScale();
     if(yscale != spectrum_y_scale) {
       spectrum_y_scale = yscale;
@@ -1182,6 +1240,7 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnPerRxToCentFreq( wxCommandEvent & event)
   {
+    debugMsg("EV:OnPerRxToCentFreq\n");
     double rxfreq = GetRXFreq();
 
     UpdateCenterFreq(rxfreq); 
@@ -1220,13 +1279,14 @@ namespace SoDaRadio_GUI {
 
     spect_config->setRefLevel(reflevel); 
 
-    spect_config->setBandSpread(bspread); 
+    spect_config->setBandSpread(bspread * 1.0e-3); 
 
     spect_config->setdBScale(yscale); 
   }
 
   void SoDaRadio_Top::OnTunePopup( wxCommandEvent & event)
   {
+    debugMsg("EV:OnTunePopup\n");
     // popup a modal tuning dialog.
     tuner->Show();
   }
@@ -1234,6 +1294,7 @@ namespace SoDaRadio_GUI {
   
   void SoDaRadio_Top::OnCtrlPopup( wxCommandEvent & event)
   {
+    debugMsg("EV:OnCtrlPopup\n");
     // popup a modal tuning dialog.
     controls->Show();
   }
@@ -1444,7 +1505,10 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnUpdateSpectrumPlot(wxCommandEvent & event)
   {
+    debugMsg("EV:OnUpdateSpectrumPlot\n");
+    std::cerr << ".";
     if(SpectrumDisplay->GetSelection() == 0) {
+      std::cerr << "\\";
       // update the waterfall
       if((wfall_plot != NULL) && (wfall_plot->IsShownOnScreen())) {
 	wfall_plot->DrawNew();
@@ -1452,12 +1516,14 @@ namespace SoDaRadio_GUI {
     }
     else if((pgram_trace != NULL) && (pgram_plot->IsShownOnScreen())) {
       // otherwise, update the periodogram
+      std::cerr << "^";
       pgram_plot->Draw();
     }
   }
 
   void SoDaRadio_Top::OnUpdateGPSLoc(wxCommandEvent & event)
   {
+    debugMsg("EV:OnUpdateGPSLoc\n");
     m_GPSGrid->SetLabel(GPS_Grid_Str); 
     m_GPSLat->SetLabel(GPS_Lat_Str); 
     m_GPSLon->SetLabel(GPS_Lon_Str); 
@@ -1465,11 +1531,13 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnUpdateGPSTime(wxCommandEvent & event)
   {
+    debugMsg("EV:OnUpdateGPSTime\n");
     m_UTC->SetLabel(GPS_UTC_Str); 
   }
 
 
   void SoDaRadio_Top::OnClrCWBuffer( wxCommandEvent& event) {
+    debugMsg("EV:OnClrCWBuffer\n");
     //  tell the radio to flush all outstanding CW text
     SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::TX_CW_FLUSHTEXT, 
 		       0);

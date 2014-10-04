@@ -79,6 +79,7 @@ namespace SoDaRadio_GUI
 			wxStaticText* m_RXFreqText;
 			wxButton* Tune;
 			wxButton* m_RX2CF;
+			wxButton* m_ConfigSpectrum;
 			wxTextCtrl* m_CWTextOutbound;
 			wxTextCtrl* m_CWTextEntry;
 			wxStaticText* m_MyGrid;
@@ -109,7 +110,7 @@ namespace SoDaRadio_GUI
 			wxStaticText* m_GPSLon;
 			
 			// Virtual event handlers, overide them in your derived class
-			virtual void OnOpenSpectConfig( wxMouseEvent& event ) { event.Skip(); }
+			virtual void OnClose( wxCloseEvent& event ) { event.Skip(); }
 			virtual void OnOpenConfig( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnSaveConfig( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnSaveConfigAs( wxCommandEvent& event ) { event.Skip(); }
@@ -119,9 +120,11 @@ namespace SoDaRadio_GUI
 			virtual void OnSetFromGrid( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnGPSOnSel( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnConfigBand( wxCommandEvent& event ) { event.Skip(); }
+			virtual void OnMenuConfigSpect( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnQSOMenuSet( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnAbout( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnUserGuide( wxCommandEvent& event ) { event.Skip(); }
+			virtual void OnOpenSpectConfig( wxMouseEvent& event ) { event.Skip(); }
 			virtual void OnSelectPage( wxNotebookEvent& event ) { event.Skip(); }
 			virtual void OnPaintWaterfall( wxPaintEvent& event ) { event.Skip(); }
 			virtual void OnWFallFreqSel( wxMouseEvent& event ) { event.Skip(); }

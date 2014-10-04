@@ -52,6 +52,9 @@ bool SoDaRadio_App::OnInit()
   SetTopWindow(top);
   std::cerr << "Set top widget window" << std::endl; 
   wxInitAllImageHandlers();
-  std::cerr << "Init handlers" << std::endl; 
+  std::cerr << "Init handlers" << std::endl;
+  // Now start the listener thread.
+  top->configureRadio(p);
+  top->startListener();
   return true; 
 }
