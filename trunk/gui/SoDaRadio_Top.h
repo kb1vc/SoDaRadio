@@ -173,7 +173,7 @@ namespace SoDaRadio_GUI {
     wxString getModeString() { return m_ModeBox->GetStringSelection(); }
 
     // message types. 
-    enum MSG_ID { MSG_UPDATE_SPECTRUM, MSG_HANDLE_CMD, MSG_UPDATE_GPSLOC, MSG_UPDATE_GPSTIME, MSG_TERMINATE_TX };
+    enum MSG_ID { MSG_UPDATE_SPECTRUM, MSG_HANDLE_CMD, MSG_UPDATE_GPSLOC, MSG_UPDATE_GPSTIME, MSG_TERMINATE_TX, MSG_UPDATE_MODELNAME };
     /** Constructor */
     SoDaRadio_Top( SoDa::GuiParams & parms, wxWindow* parent );
     // plot maintenance
@@ -194,8 +194,11 @@ namespace SoDaRadio_GUI {
     bool CreateSpectrumTrace(double * freqs, float * powers, unsigned int len);
 
     void setLOOffset(double v);
-  
-    double getTXOffset() { return tx_transverter_offset; }
+    
+    double getTXOffset() {
+      return tx_transverter_offset;
+    }
+    
     double getRXOffset() {
       return rx_transverter_offset;
     }
@@ -222,10 +225,18 @@ namespace SoDaRadio_GUI {
     void setupBandSelect(SoDaRadio_BandSet * bandset);
     
 
+    wxString radio_modelname;
+    
     void setRadioName(const wxString & mname) {
       wxMutexLocker lock(ctrl_mutex);
-      wxString modelname = wxT("SoDa Radio ") + mname; 
-      this->SetTitle(modelname);
+      radio_modelname = wxT("SoDa Radio ") + mname; 
+      wxCommandEvent event(wxEVT_COMMAND_MENU_SELECTED,
+			   SoDaRadio_Top::MSG_UPDATE_MODELNAME);
+      pendEvent(event); 
+    }
+
+    void OnUpdateModelName(wxCommandEvent & event) {
+      this->SetTitle(radio_modelname); 
     }
 
     void pendEvent(wxCommandEvent & event) {
@@ -240,7 +251,6 @@ namespace SoDaRadio_GUI {
       if(listener->Create() != wxTHREAD_NO_ERROR) {
 	wxLogError(wxT("Couldn't create radio listener thread...")); 
       }
-      std::cerr << "created listener thread" << std::endl; 
 
       debugMsg("Running listener thread.");
       listener->Run(); 
@@ -256,6 +266,61 @@ namespace SoDaRadio_GUI {
 
   private:
     char SDR_version_string[64];
+
+    void updateMarkers() {
+      double flo, fhi;
+      flo = fhi = rx_frequency;
+
+      double lo_off = 0.0;
+      double hi_off = 0.0; 
+      // what is AF bw?
+      switch (audio_filter) {
+      case SoDa::Command::BW_100:
+	lo_off = 400.0;
+	hi_off = 500.0; 
+	break; 
+      case SoDa::Command::BW_500:
+	lo_off = 400.0;
+	hi_off = 900.0; 
+	break; 
+      case SoDa::Command::BW_2000:
+	lo_off = 300.0;
+	hi_off = 2300.0; 
+	break; 
+      case SoDa::Command::BW_6000:
+	lo_off = 300.0;
+	hi_off = 6300.0; 
+	break; 
+      }
+      
+      
+      // is mode low or high?
+      if((modulation_type == SoDa::Command::CW_L) ||
+	 (modulation_type == SoDa::Command::LSB)) {
+	fhi = fhi - lo_off;
+	flo = flo - hi_off; 
+      }
+      else if((modulation_type == SoDa::Command::CW_U) ||
+	      (modulation_type == SoDa::Command::USB)) {
+	fhi = fhi + hi_off;
+	flo = flo + lo_off; 
+      }
+      else if(modulation_type == SoDa::Command::AM) {
+	flo = flo - hi_off; 
+	fhi = fhi + hi_off; 
+      } 
+      else if (modulation_type == SoDa::Command::NBFM) {
+	flo = flo - 6.25e3; 
+	fhi = fhi + 6.25e3; 
+      }
+      else if (modulation_type == SoDa::Command::WBFM) {
+	flo = flo - 20e3;
+	fhi = fhi + 20e3; 
+      }
+
+
+      wfall_plot->SetTuningMarkers(flo, fhi); 
+    }
 
     wxString GPS_Lat_Str; // (wxT("XXX"));
     wxString GPS_Lon_Str; // (wxT("XXX"));
@@ -285,6 +350,9 @@ namespace SoDaRadio_GUI {
     bool tx_on;
     bool cw_mode;
     bool cw_upper;
+    SoDa::Command::ModulationType modulation_type; 
+    SoDa::Command::AudioFilterBW audio_filter;
+    
     bool dead_carrier;
     wxString save_config_file_name;
     float tx_rf_outpower;
@@ -647,7 +715,6 @@ namespace SoDaRadio_GUI {
       }
       m_BandSpreadChoice->SetSelection(selidx);
 
-      std::cerr << boost::format(" returning %g\n") % spval[selidx]; 
       return spval[selidx]; 
     }
     

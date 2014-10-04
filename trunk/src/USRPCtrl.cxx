@@ -468,12 +468,8 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
     break; 
   case Command::TX_RF_GAIN:
     tx_rf_gain = tx_rf_gain_range.start() + cmd->dparms[0] * 0.01 * (tx_rf_gain_range.stop() - tx_rf_gain_range.start());
-    std::cerr << "TX gain set to " << tx_rf_gain << " power was " << cmd->dparms[0] << std::endl;
     tmp = cmd->dparms[0];
     debugMsg(boost::format("Setting TX gain to %lg from power %lg") % tx_rf_gain % tmp);
-    // debugMsg(boost::format("Set TX gain to %lg from power setting of %lg\n")
-    // 	     % tx_rf_gain % cmd->dparms[0]);
-
     if(tx_on) {
       usrp->set_tx_gain(tx_rf_gain);
       cmd_stream->put(new Command(Command::REP, Command::TX_RF_GAIN, 

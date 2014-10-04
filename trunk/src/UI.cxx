@@ -349,7 +349,6 @@ void SoDa::UI::sendFFT(SoDa::SoDaBuf * buf)
       std::complex<float> v = lo_spectrum[j];
       float mag = v.real() * v.real() + v.imag() * v.imag();
       if(mag > magmax) {
-	std::cerr << "magnitude peak at " << i << " mag = " << mag << std::endl; 
 	magmax = mag;
 	maxi = i; 
       }
@@ -357,7 +356,7 @@ void SoDa::UI::sendFFT(SoDa::SoDaBuf * buf)
     lo_check_mode = false;
     // send the report
     double freq = ((float) maxi) * lo_hz_per_bucket;
-    std::cerr << "offset = " << freq << std::endl; 
+    debugMsg(boost::format("offset = %g\n") % freq); 
     cmd_stream->put(new SoDa::Command(Command::REP, Command::LO_OFFSET,
 				      freq)); 
     cmd_stream->put(new SoDa::Command(Command::REP, Command::SPEC_RANGE_LOW,

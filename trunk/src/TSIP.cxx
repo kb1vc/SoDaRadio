@@ -64,9 +64,7 @@ Reader::Reader(const std::string & devname,
     parse_state = INIT_WAIT_FOR_NORMCHAR;
 
     // tell it to do an initial survey
-    std::cerr << "About to init survey" << std::endl;
     initializeSurvey(); 
-    std::cerr << "started survey" << std::endl;
     reader_open = true; 
   }
   catch ( const std::exception & e) {

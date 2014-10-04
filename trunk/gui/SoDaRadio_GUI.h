@@ -152,7 +152,7 @@ namespace SoDaRadio_GUI
 		
 		public:
 			
-			SoDaRadioFrame( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("SoDa Radio "), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 1280,750 ), long style = wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL );
+			SoDaRadioFrame( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("SoDa Radio "), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 1280,810 ), long style = wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL );
 			~SoDaRadioFrame();
 		
 	};

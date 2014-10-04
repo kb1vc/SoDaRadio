@@ -115,10 +115,6 @@ namespace SoDaRadio_GUI {
     while(!exitflag) {
       bool didwork = false;
       dbgctr++; 
-      if((dbgctr & 0xff) == 0) {
-	std::cerr << boost::format("dbg = %d rep = %d spec = %d\n")
-	  % dbgctr % repctr % specctr;
-      }
 	  
       int stat = cmd_q->get(ncmd, sizeof(SoDa::Command));
       if(stat > 0) {
