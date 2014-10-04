@@ -76,7 +76,6 @@ namespace SoDaRadio_GUI {
     listener = NULL;
     config_tree_alloc = config_tree = NULL; 
     
-    std::cerr << "got to top top" << std::endl; 
     // revision string is initially empty
     SDR_version_string[0] = '\000';
 
@@ -236,6 +235,8 @@ namespace SoDaRadio_GUI {
 	    wxCommandEventHandler(SoDaRadio_Top::OnUpdateGPSTime));
     Connect(MSG_TERMINATE_TX, wxEVT_COMMAND_MENU_SELECTED,
 	    wxCommandEventHandler(SoDaRadio_Top::OnTerminateTX));
+    Connect(MSG_UPDATE_MODELNAME, wxEVT_COMMAND_MENU_SELECTED,
+	    wxCommandEventHandler(SoDaRadio_Top::OnUpdateModelName));
 
     // setup status bar -- hardwire the accelerators for now.
     m_ClueBar->SetStatusText(wxT("^C Set To Call        ^G Set To Grid        ^L Enter Log Comment        ^X Enter CW Text"), 0);
@@ -268,6 +269,8 @@ namespace SoDaRadio_GUI {
   
   bool SoDaRadio_Top::CreateSpectrumTrace(double * freqs, float * powers, unsigned int len)
   {
+    // This method does NO wx GUI manipulations -- it is safe
+    // to call from a separate thread. 
     wxMutexLocker lock(ctrl_mutex);
     if(pgram_plot == NULL) return false; 
     if(wfall_plot == NULL) return false;
@@ -318,6 +321,10 @@ namespace SoDaRadio_GUI {
   
     m_RXFreqText->SetLabel(freqstring);
 
+    // update the waterfall/periodogram
+    debugMsg("Updating markers\n");
+    updateMarkers();
+    
     // and update the radio
     SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::RX_RETUNE_FREQ,
 		       applyRXTVOffset(rx_frequency));

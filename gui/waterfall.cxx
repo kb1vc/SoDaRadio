@@ -199,6 +199,9 @@ namespace SoDaRadio_GUI {
     dc.Blit(0, 0, width, spec_height, &bitmapDC, 0, obitpos);// bitmap_y_pos);
     bitmap_y_pos += bitmap_y_incr;
     if(bitmap_y_pos > spec_height) bitmap_y_pos = 0; 
+
+    DrawTuningMarkers(dc, 0, spec_height); 
+
   }
 
   void Waterfall::DrawSpectrum(wxDC & dc)
@@ -417,8 +420,20 @@ namespace SoDaRadio_GUI {
       dc.GetTextExtent(tlab, &w, &h);
       dc.DrawText(tlab, cpt.x - w/2, cpt.y + h/2); 
     }
+
   }
 
+  void Waterfall::DrawTuningMarkers(wxDC & dc, int yl, int yh)
+  {
+    // draw the tuning markers
+    dc.SetPen(*wxRED);
+    dc.SetBrush(*wxBLUE);
+    int xl, xh;
+    ScaleX(tuning_marker_high, xh); 
+    ScaleX(tuning_marker_low, xl); 
+    dc.DrawLine(xh, yl, xh, yh);
+    dc.DrawLine(xl, yl, xl, yh);
+  }
 
   void Waterfall::ReSize()
   {

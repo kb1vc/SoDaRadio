@@ -44,15 +44,10 @@ bool SoDaRadio_App::OnInit()
 {
   // get the args and argvs
   SoDa::GuiParams  p(argc, argv);
-  std::cerr << "About to create top object" << std::endl; 
   SoDaRadio_GUI::SoDaRadio_Top * top = new SoDaRadio_GUI::SoDaRadio_Top(p, (wxWindow*) NULL);
-  std::cerr << "Created top widget" << std::endl; 
   top->Show();
-  std::cerr << "Showed top widget" << std::endl; 
   SetTopWindow(top);
-  std::cerr << "Set top widget window" << std::endl; 
   wxInitAllImageHandlers();
-  std::cerr << "Init handlers" << std::endl;
   // Now start the listener thread.
   top->configureRadio(p);
   top->startListener();

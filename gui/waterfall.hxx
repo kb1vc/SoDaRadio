@@ -65,8 +65,8 @@ namespace SoDaRadio_GUI {
       power_buffer = power;
       freq_buffer = freqs;
     }
-  
-  
+
+    
     void SetTitle(const wxString & l) { title = l; Refresh(); }
     wxString & GetTitle() { return title; }
 
@@ -76,8 +76,19 @@ namespace SoDaRadio_GUI {
 	xmin = sxmin + center_freq;
 	xmax = sxmax + center_freq;
       }
+      tuning_marker_high = xmax;
+      tuning_marker_low = xmin; 
       Refresh(); 
     }
+
+    void SetTuningMarkers(double low, double high) {
+      tuning_marker_low = low;
+      tuning_marker_high = high;
+      Refresh();
+    }
+
+    void DrawTuningMarkers(wxDC & dc, int yl, int yh); 
+    
     void SetCenterFreqTemplate(const wxString & l, double scale_factor = 1.0)  {
       cf_template = l;
       cf_scalefactor = scale_factor;
@@ -96,6 +107,8 @@ namespace SoDaRadio_GUI {
 	xmin = sxmin + center_freq; 
 	xmax = sxmax + center_freq; 
       }
+      tuning_marker_low = xmin;
+      tuning_marker_high = xmax; 
       ReSize(); 
     }
 
@@ -152,6 +165,9 @@ namespace SoDaRadio_GUI {
     wxString cf_template;
     double cf_scalefactor; 
 
+    double tuning_marker_high; //< high frequency mark to show RX passband
+    double tuning_marker_low; //< high frequency mark to show RX passband
+    
     // dimensions
     // all derived from the widget size. 
     int width, height, graph_width, graph_height, spec_height;
