@@ -321,6 +321,10 @@ namespace SoDaRadio_GUI {
   
     m_RXFreqText->SetLabel(freqstring);
 
+    // update the center freq if we are tracking...
+    if(m_SpecTrack->GetValue()) {
+      UpdateCenterFreq(freq);
+    }
     // update the waterfall/periodogram
     debugMsg("Updating markers\n");
     updateMarkers();
