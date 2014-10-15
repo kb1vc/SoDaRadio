@@ -51,8 +51,8 @@ std::string findHome()
 #ifdef __linux__
   // This solution was suggested by an answer in
   // http://stackoverflow.com/questions/7051844/how-to-find-the-full-path-of-the-c-linux-program-from-within
-  char execution_path[PATH_MAX + 1] = {0}; 
-  readlink("/proc/self/exe", execution_path, PATH_MAX);
+  char execution_path[PATH_MAX + 1] = {0};
+  size_t v = readlink("/proc/self/exe", execution_path, PATH_MAX);
   // now trim the end of the path off, we just want the directory
   char * mydir = dirname(execution_path);
   return std::string(mydir); 

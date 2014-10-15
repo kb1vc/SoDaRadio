@@ -2,6 +2,9 @@
   Copyright (c) 2012, Matthew H. Reilly (kb1vc)
   All rights reserved.
 
+  FM modulator features based on code contributed by and 
+  Copyright (c) 2014, Aaron Yankey Antwi (aaronyan2001@gmail.com)
+
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions are
   met:
@@ -59,6 +62,11 @@ SoDa::AudioTX::AudioTX(Params * params, DatMBox * _tx_stream,
   //   pa_stream = _pa_stream;
   double srate = params->getAudioSampleRate();
 
+  // now setup the FM deviation
+  nbfm_deviation = 2.0 * M_PI * 2.5e3 / srate; // 2.5 kHz max deviation
+  wbfm_deviation = 2.0 * M_PI * 75.0e3 / srate; // 75 kHz max deviation
+  fm_phase = 0.0; 
+
   audio_ifc = _audio_ifc; 
   tx_stream_on = false;
 
@@ -68,7 +76,9 @@ SoDa::AudioTX::AudioTX(Params * params, DatMBox * _tx_stream,
   // create the Hilbert transformer
   hilbert = new SoDa::HilbertTransformer(audio_buffer_size);
 
-  mic_gain = 0.4; 
+  mic_gain = 0.4;
+
+  fm_mic_gain = 0.8;
 }
 
 void SoDa::AudioTX::run()
@@ -120,7 +130,12 @@ void SoDa::AudioTX::run()
 	else if(tx_mode == SoDa::Command::AM) {
 	  txbuf = modulateAM(audio_buf, audio_buffer_size, false, false); 
 	}
-
+	else if(tx_mode == SoDa::Command::NBFM) {
+	  txbuf = modulateFM(audio_buf, audio_buffer_size, nbfm_deviation);
+	}
+	else if(tx_mode == SoDa::Command::WBFM) {
+	  txbuf = modulateFM(audio_buf, audio_buffer_size, wbfm_deviation);
+	}
 	if(txbuf != NULL) {
 	  tx_stream->put(txbuf); 
 	}
@@ -170,6 +185,48 @@ SoDa::SoDaBuf * SoDa::AudioTX::modulateAM(float * audio_buf,
   /// pass the newly created and filled buffer back to the caller
   return txbuf; 
 }
+
+
+SoDa::SoDaBuf * SoDa::AudioTX::modulateFM(float *audio_buf, unsigned int len, double deviation)
+{
+  int i;
+  
+  for(i=0; i < audio_buffer_size; i++) {
+    double audio_amp = audio_buf[i] * fm_mic_gain;
+
+    // apply a little clipping here.. better to sound
+    // bad than to bleed into the neighboring channel.
+    if(fabs(audio_amp) > 1.0) {
+      audio_amp = (audio_amp > 0.0) ? 1.0 : -1.0; 
+    }
+      
+    fm_phase += deviation * audio_amp; 
+
+    while (fm_phase > (float)(M_PI))
+      fm_phase -= (float)(2.0 * M_PI);
+    while (fm_phase < (float)(-M_PI))
+      fm_phase += (float)(2.0 * M_PI);
+
+    double oq, oi; 
+    sincos(fm_phase, &oi, &oq);
+    audio_IQ_buf[i] = std::complex<float>(oi,oq);
+  }
+ 
+  SoDa::SoDaBuf * txbuf = tx_stream->alloc();
+  if(txbuf == NULL){
+    txbuf = new SoDaBuf(tx_buffer_size);
+  }
+
+  if(txbuf->getComplexLen() < tx_buffer_size){
+    throw(new SoDa::SoDaException("FM: Transmit signal buffer was a bad size.",this));
+  }
+  // Upsample the IQ audio (at 48KS/s) to the RF sample rate of 625 KS/s
+  interpolator->apply(audio_IQ_buf, txbuf->getComplexBuf());
+
+  // Pass the newly created and filled buffer back to the caller
+  return txbuf;
+}
+
 
 void SoDa::AudioTX::execSetCommand(SoDa::Command * cmd)
 {

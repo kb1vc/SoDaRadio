@@ -182,8 +182,18 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 	
 	ControlSizer->Add( sbTxFreq, 0, wxEXPAND, 5 );
 	
+	wxBoxSizer* bSizer71;
+	bSizer71 = new wxBoxSizer( wxVERTICAL );
+	
 	m_TXRXLocked = new wxCheckBox( this, wxID_ANY, wxT("TX=RX Lock"), wxDefaultPosition, wxDefaultSize, 0 );
-	ControlSizer->Add( m_TXRXLocked, 0, wxALL, 5 );
+	m_TXRXLocked->SetValue(true); 
+	bSizer71->Add( m_TXRXLocked, 0, wxALL, 5 );
+	
+	m_SpecTrack = new wxCheckBox( this, wxID_ANY, wxT("Spect. Track"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_SpecTrack->SetValue(true); 
+	bSizer71->Add( m_SpecTrack, 0, wxALL, 5 );
+	
+	ControlSizer->Add( bSizer71, 0, 0, 5 );
 	
 	wxStaticBoxSizer* sbRxFreq;
 	sbRxFreq = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("RX Frequency") ), wxVERTICAL );

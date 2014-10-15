@@ -76,6 +76,7 @@ namespace SoDaRadio_GUI
 			
 			wxStaticText* m_TXFreqText;
 			wxCheckBox* m_TXRXLocked;
+			wxCheckBox* m_SpecTrack;
 			wxStaticText* m_RXFreqText;
 			wxButton* Tune;
 			wxButton* m_RX2CF;

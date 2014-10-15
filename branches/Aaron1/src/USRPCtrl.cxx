@@ -405,7 +405,7 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
     debugMsg(boost::format("Got RX RETUNE request -- frequency %f diff = %f  last actual_rf %f  dsp %f\n")
 	     % freq % fdiff % last_rx_tune_result.actual_rf_freq % last_rx_tune_result.actual_dsp_freq);
 
-    if((fdiff < 300e3) && (fdiff > 50e3)) {
+    if((fdiff < 200e3) && (fdiff > 50e3)) {
       cmd_stream->put(new Command(Command::SET, Command::RX_LO3_FREQ, fdiff)); 
       cmd_stream->put(new Command(Command::REP, Command::RX_FE_FREQ, 
 				  last_rx_tune_result.actual_rf_freq - last_rx_tune_result.actual_dsp_freq));
