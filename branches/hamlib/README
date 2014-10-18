@@ -1,0 +1,129 @@
+SoDa -- A Software Defined Radio for the Ettus Research USRP
+
+Version 3.1
+
+fixed an unitialized variable that caused intermittent
+failure with units that were not B200 or B210.  URSPCtl
+would throw an exception complaining about the unavailability
+of a second transmit channel. 
+
+Note that there is STILL a problem with any of the File->Save...
+dialog boxes under Fedora... working on this.
+
+
+---------------
+
+Version 3.0
+
+See the blog entry for the B210 10GHz transverter. 
+
+Major changes to USRP server and GUI to support a minimal cost
+10GHz rig using the B210 and an external mixer. 
+
+Other changes for debugging (added Debug class and debugMsg). 
+Fixed a load configuration bug.
+
+--------------
+
+Version 2.2
+
+Minor updates to fix problems with unitialized data in 
+the USRPCtrl object. 
+
+Also fixed thread scheduling warning -- the program now works
+for users that don't have RTPRIO privs. 
+
+Thanks to an alert user for these reports. 
+
+Note that some UBUNTU users have found that they must set
+the UBUNTU_MENUPROXY to something in order to get pulldowns
+to display.  UBUNTU is getting a little annoying. 
+I do this (Ubuntu 12.04.4 LTS) with 
+export UBUNTU_MENUPROXY=libappmenu.so
+Others running Ubuntu 14.04 do this:
+export UBUNTU_MENUPROXY=0
+
+--------------
+
+Version 2.1
+
+This package builds two programs: 
+
+SoDaServer -- a multithreaded program that implements a software
+defined multimode VHF/UHF transciever.  
+
+SoDaRadio -- a GUI that offers a user interface to the controls
+for SoDaServer
+
+There are several improvements over versions 1.1 and 1.2. 
+Chief among these is a "band select" scheme that allows the
+user to define band segments, and transverter settings. 
+
+Before running this version, you should remove the file ~/.SoDaRadio/SoDa.soda_cfg as it is no longer compatible with version 2.0.  I really ought to fix that.
+
+
+See the INSTALL file for instructions on configuring, building 
+and installing SoDa
+
+
+---- 
+
+Prerequisites: 
+
+Boost version 1.33 or later -- current builds are against boost 1.55
+wxWidgets -- current build is against version 2.6
+libuhd -- builds against version 003.007
+fftw3 -- builds against version 3.3.0
+
+----
+
+INSTALL Quick Start  (X.x is the version that you just downloaded, 
+e.g. soda-X.x.tar.gz might be soda-2.2.tar.gz...)
+
+# unpack soda-X.x.tar.gz 
+tar xzvf soda-X.x.tar.gz
+cd soda-X.x
+mkdir build
+cd build
+../configure
+make
+make install
+
+----
+
+HOWTO 
+
+To start the radio, connect your Ettus USRP N2xx to 
+the host computer. (I'm assuming that your USRP has a
+WBX module.)  Connect an antenna to the TX/RX port.
+
+
+Then execute SoDaRadio
+
+(If you haven't installed SoDaRadio, but have built it, 
+you can start SoDaRadio from the build directory like this: 
+
+gui/SoDaRadio --server=src/SoDaRadio 
+
+)
+
+It should come up tuned to something like 162.55 or nearby. 
+
+Poke buttons.  Try things.  Don't hit the "TX" button unless
+you have something connected and the necessary license to operate
+in that band. 
+
+---- 
+
+PROBLEMS?
+
+If you have problems building, post a note in the forum 
+at https://sourceforge.net/p/sodaradio/discussion/general/
+
+If you find a bug, post a ticket at 
+https://sourceforge.net/p/sodaradio/tickets/
+
+If it works, post a note in the discussin forum.  
+
+73 -- es gl. 
+
