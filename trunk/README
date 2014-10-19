@@ -1,5 +1,37 @@
 SoDa -- A Software Defined Radio for the Ettus Research USRP
 
+Version 3.2
+
+Fixed a problem with startup failing because of a thread
+safety issue in wx.  
+
+Added FM modulation, courtesy of changes submitted by 
+Aaron Yankey Antwi.  
+
+Minor changes to ensure build compatibility with wx widgets
+version 3.x.  
+
+Modified (improved, I hope) behavior from waterfall plots
+and periodogram plots.  MB2 click on the plot window to bring
+up the settings dialog.  You can now change the speed of the
+waterfall update, and average over 1 to 40 or so spectrum samples.
+
+Added markers to waterfall plot showing passband of RX chain. (more or less). 
+
+
+Added the Debug base class to improve debug trace reporting. 
+
+Worked on problem with waterfall going "out of range" as the tuning
+changed. 
+
+Added "Track Frequency" button for the waterfall/periodogram
+
+Note that using WX version 3.0 fixes the problem with saving logs
+or the config file to a directory that starts with '.'. 
+
+
+---------------
+
 Version 3.1
 
 fixed an unitialized variable that caused intermittent

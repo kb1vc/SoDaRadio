@@ -36,6 +36,7 @@ extern "C" {
 }
 
 #include <iostream>
+#include <stdexcept>
 
 /**
  * Find the directory in which the calling program resides.
@@ -52,7 +53,11 @@ std::string findHome()
   // This solution was suggested by an answer in
   // http://stackoverflow.com/questions/7051844/how-to-find-the-full-path-of-the-c-linux-program-from-within
   char execution_path[PATH_MAX + 1] = {0}; 
-  readlink("/proc/self/exe", execution_path, PATH_MAX);
+  ssize_t st = readlink("/proc/self/exe", execution_path, PATH_MAX);
+  if(st < 0) {
+    // readlink got an error.... throw something
+    throw std::runtime_error("Couldn't open /proc/self/exe");
+  }
   // now trim the end of the path off, we just want the directory
   char * mydir = dirname(execution_path);
   return std::string(mydir); 
