@@ -9,7 +9,7 @@ Added FM modulation, courtesy of changes submitted by
 Aaron Yankey Antwi.  
 
 Minor changes to ensure build compatibility with wx widgets
-version 3.x.  
+version 3.x <and> version 2.8...  
 
 Modified (improved, I hope) behavior from waterfall plots
 and periodogram plots.  MB2 click on the plot window to bring
@@ -17,7 +17,6 @@ up the settings dialog.  You can now change the speed of the
 waterfall update, and average over 1 to 40 or so spectrum samples.
 
 Added markers to waterfall plot showing passband of RX chain. (more or less). 
-
 
 Added the Debug base class to improve debug trace reporting. 
 
@@ -28,6 +27,8 @@ Added "Track Frequency" button for the waterfall/periodogram
 
 Note that using WX version 3.0 fixes the problem with saving logs
 or the config file to a directory that starts with '.'. 
+
+Tested on B210, N200/WBX, Ubuntu, wx2.8.12 and wx3.0.1
 
 
 ---------------
