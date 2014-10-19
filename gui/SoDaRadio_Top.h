@@ -240,8 +240,7 @@ namespace SoDaRadio_GUI {
     }
 
     void pendEvent(wxCommandEvent & event) {
-      wxMutexLocker lock(ctrl_mutex);
-      GetEventHandler()->AddPendingEvent(event); 
+      GetEventHandler()->AddPendingEvent(event);
     }
 
     // start the listener thread
@@ -409,7 +408,7 @@ namespace SoDaRadio_GUI {
     // thread and the radio listener thread
     wxMutex ctrl_mutex; 
   
-    // helpful stuff
+    // helpful stuff 
     wxColour default_button_bg_color;
     void UpdateNavigation();
 	
