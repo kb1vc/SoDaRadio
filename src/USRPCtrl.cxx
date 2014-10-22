@@ -540,6 +540,10 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
   case Command::RX_ANT:
     usrp->set_rx_antenna(cmd->sparm);
     debugMsg(boost::format("Set RX antenna to %s") % cmd->sparm);
+    debugMsg(boost::format("Got RX antenna as [%s]\n") % usrp->get_rx_antenna());
+    BOOST_FOREACH(std::string an, usrp->get_rx_antennas()) {
+      std::cerr << boost::format("antenna choice -- [%s]\n") % an; 
+    }
     break; 
 
   case Command::TX_ANT:

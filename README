@@ -1,5 +1,19 @@
 SoDa -- A Software Defined Radio for the Ettus Research USRP
 
+============================================================
+BUG ALERT!
+
+Currently the RX path always comes in through the RX2 port, 
+regardless of the setting of the RX antenna choice in the 
+band configuration dialog.  
+
+I'm working the issue....  Sorry for the inconvenience.
+
+============================================================
+
+
+
+
 Version 3.2
 
 Fixed a problem with startup failing because of a thread
