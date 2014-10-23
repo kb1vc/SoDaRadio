@@ -3,12 +3,17 @@ AM_CPPFLAGS = -I$(top_srcdir)/src
 AM_BOOSTLIBFLAGS = ${BOOST_PROGRAM_OPTIONS_LIB} ${BOOST_THREAD_LIB} ${BOOST_DATE_TIME_LIB} ${BOOST_SYSTEM_LIB} 
 
 
-bin_PROGRAMS = FFT_Test Sockets_Test MultiMBox_Test SoDa_ThreadTest OSFilter_Test  TestServer ReSampler_Test TSIP_Test Audio_test Hilbert_Test FindHome_Test
+bin_PROGRAMS = FFT_Test Sockets_Test MultiMBox_Test SoDa_ThreadTest OSFilter_Test  TestServer ReSampler_Test TSIP_Test Audio_test Hilbert_Test FindHome_Test CommandInterp_Test
 
 
 Sockets_Test_SOURCES = Sockets_Test.cxx  ../src/IPSockets.cxx ../src/UDSockets.cxx ../src/IPSockets.hxx ../src/UDSockets.hxx
 Sockets_Test_CPPFLAGS = $(AM_CPPFLAGS)
 Sockets_Test_LDADD = $(AM_BOOSTLIBFLAGS)
+
+
+CommandInterp_Test_SOURCES = CommandInterp_Test.cxx  ../src/IPSockets.cxx ../src/UDSockets.cxx ../src/IPSockets.hxx ../src/UDSockets.hxx ../CommandInterpreter.hxx
+CommandInterp_Test_CPPFLAGS = $(AM_CPPFLAGS)
+CommandInterp_Test_LDADD = $(AM_BOOSTLIBFLAGS)
 
 SoDa_ThreadTest_SOURCES = SoDa_ThreadTest.cxx  ../src/SoDaBase.cxx ../src/Debug.cxx
 SoDa_ThreadTest_CPPFLAGS = $(AM_CPPFLAGS)

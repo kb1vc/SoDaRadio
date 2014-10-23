@@ -36,6 +36,7 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition.hpp>
+#include <boost/foreach.hpp>
 
 namespace SoDa {
   
@@ -77,6 +78,22 @@ namespace SoDa {
     void * mbox_tag; 
   };
 
+  /**
+   * baseclass for objects that subscribe to mailboxes but
+   * don't poll them.  Such subscribers can get a callback
+   * when a new message is appended to a subscription. 
+   */
+  class MBoxNotify {
+  public:
+    /**
+     * @brief this is a callback mechanism for objects that
+     * need notification that there is a message waiting for them.
+     * Note that this is called within the PUT operation, so the
+     * actual reading of the message should be deferred
+     */
+    virtual void notify() { }; 
+  };
+  
   template <typename T> class MultiMBox {
   public:
     MultiMBox(bool _keep_freelist = true) {
@@ -84,10 +101,10 @@ namespace SoDa {
       keep_freelist = _keep_freelist; 
     }
 
-    int subscribe() {
+    int subscribe(MBoxNotify * notify = NULL) {
       int subscriber_id = subscriber_count;
       subscriber_count++;
-      subscribers[subscriber_id] = new Subscriber; 
+      subscribers[subscriber_id] = new Subscriber(notify);
       return subscriber_id; 
     }
 
@@ -101,8 +118,12 @@ namespace SoDa {
 	Subscriber * s = subscribers[i];
 	boost::mutex::scoped_lock lock(s->postmutex); 
 	s->posted_list.push(m);
-	s->post_count++; 
-	s->postcond.notify_all(); 
+	s->post_count++;
+	if(s->notify != NULL) {
+	  s->notify->notify(); 
+	}
+	// wakeup waiters on the mutex....
+	s->postcond.notify_all();
       }
     }
 
@@ -209,17 +230,21 @@ namespace SoDa {
 
     class Subscriber {
     public:
-      Subscriber() { post_count = 0; } 
+      Subscriber(MBoxNotify * _notify = NULL) {
+	post_count = 0;
+	notify = _notify; 
+      } 
       std::queue<T *> posted_list;
       int post_count; 
       boost::mutex postmutex;
-      boost::condition postcond; 
+      boost::condition postcond;
+      MBoxNotify * notify; 
     };
     std::map<int, Subscriber *> subscribers;     
 
     std::queue<MBoxMessage *> free_list;
     boost::mutex free_lock; 
- 
+    std::queue<MBoxNotify *> notify_list; 
   }; 
 }
 
