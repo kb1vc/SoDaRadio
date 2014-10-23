@@ -74,7 +74,7 @@ namespace SoDaRadio_GUI {
    * @li the wxWidgets GUI event loop that dispatches user requests
    * through the SoDaRadio_Top thread.
    */
-  class SoDaRadio_Top : public SoDaRadioFrame, public SoDa::Debug
+  class SoDaRadio_Top : public SoDaRadioFrame, public SoDa::Debug, public SoDa::MBoxNotify
   {
     friend class TuningDialog;
     friend class ControlsDialog;
@@ -160,7 +160,14 @@ namespace SoDaRadio_GUI {
 
     void UpdateRXFreq(double freq);
     void UpdateTXFreq(double freq);
+
+    // mailbox notification event
+    void OnMailboxReady(wxCommandEvent & event);
+    
+    
   public:
+    // mailbox notification callback
+    void notify();
 
     double GetLOMult() { return lo_multiplier; }
     void SetLOMult(double v) { lo_multiplier = v; }

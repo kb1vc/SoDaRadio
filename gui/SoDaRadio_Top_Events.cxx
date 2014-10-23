@@ -1502,4 +1502,21 @@ namespace SoDaRadio_GUI {
 		       0);
     sendMsg(&ncmd); 
   }
+
+  /**
+   * @brief the top object is a mailbox notifiable object, this will queue a message
+   * callback. 
+   */
+  void SoDaRadio_Top::notify() {
+    std::cerr << "In NOTIFY!!!" << std::endl; 
+  }
+
+  /**
+   * @brief this is the event that causes us to check our mailbox and
+   * act on any incoming messages
+   */
+  void SoDaRadio_Top::OnMailboxReady(wxCommandEvent & event)
+  {
+    std::cerr << "In OnMailboxReady" << std::endl;
+  }
 }
