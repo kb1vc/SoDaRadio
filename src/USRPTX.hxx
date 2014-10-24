@@ -60,7 +60,7 @@ namespace SoDa {
      * @param _cmd_stream command stream
      *
      */
-    USRPTX(Params * params, uhd::usrp::multi_usrp::sptr usrp,
+    USRPTX(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
 	   DatMBox * _tx_stream, DatMBox * _cw_env_stream,
 	   CmdMBox * _cmd_stream);
     /**
@@ -68,12 +68,20 @@ namespace SoDa {
      */
     void run(); 
   private:
+
+    uhd::usrp::multi_usrp::sptr usrp; ///< the radio.
+    
     /**
      * @brief start/stop transmit stream
      * @param tx_on if true, go into transmit mode
      */
     void transmitSwitch(bool tx_on);
 
+    /**
+     * @brief setup transmit streamer.
+     */
+    void getTXStreamer();
+    
     /**
      * @brief execute GET commands from the command channel
      * @param cmd the incoming command
@@ -138,6 +146,7 @@ namespace SoDa {
     
     bool waiting_to_run_dry; ///< When set, we should send out a report when we run out of CW buffer
     
+    uhd::stream_args_t * stream_args;
     uhd::tx_streamer::sptr tx_bits; ///< USRP (UHD) transmit stream handle
     uhd::tx_metadata_t md; ///< metadata describing USRP transmit buffer
 

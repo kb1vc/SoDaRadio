@@ -356,6 +356,7 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::setRXAnt(std::string rx_ant_sel)
   {
+    debugMsg(boost::format("Sending RX ANT SEL message for ant [%s]\n") % rx_ant_sel); 
     SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::RX_ANT,
 		       rx_ant_sel);
     sendMsg(&ncmd);

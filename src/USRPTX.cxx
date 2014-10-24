@@ -36,13 +36,14 @@
 #include <fcntl.h>
 #include <stdio.h>
 
-SoDa::USRPTX::USRPTX(Params * params, uhd::usrp::multi_usrp::sptr usrp,
+SoDa::USRPTX::USRPTX(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
 		     DatMBox * _tx_stream, DatMBox * _cw_env_stream,
 		     CmdMBox * _cmd_stream) : SoDa::SoDaThread("USRPTX")
 {
   cmd_stream = _cmd_stream;
   tx_stream = _tx_stream;
-  cw_env_stream = _cw_env_stream; 
+  cw_env_stream = _cw_env_stream;
+  usrp = _usrp; 
 
   // subscribe to the command stream.
   cmd_subs = cmd_stream->subscribe();
@@ -56,19 +57,17 @@ SoDa::USRPTX::USRPTX(Params * params, uhd::usrp::multi_usrp::sptr usrp,
   LO_capable = false;
 
   // create the tx buffer streamers.
-  uhd::stream_args_t stream_args("fc32", "sc16");
-  stream_args.channels.push_back(0);
+  stream_args = new uhd::stream_args_t("fc32", "sc16");
+  stream_args->channels.push_back(0);
   if(usrp->get_tx_num_channels() > 1) {
     debugMsg("This radio is transverter LO capable");
     // use the second channel as a transverter LO
-    stream_args.channels.push_back(1);
+    stream_args->channels.push_back(1);
     LO_capable = true;
   }
   else {
     debugMsg("This radio is NOT transverter LO capable");
   }
-  
-  tx_bits = usrp->get_tx_stream(stream_args);
 
   // find out how to configure the transmitter
   tx_sample_rate = params->getTXRate();
@@ -107,7 +106,6 @@ SoDa::USRPTX::USRPTX(Params * params, uhd::usrp::multi_usrp::sptr usrp,
   }
   
   tx_enabled = false;
-  
 }
 
 
@@ -136,6 +134,7 @@ void SoDa::USRPTX::run()
       cmd_stream->free(cmd); 
     }
     else if(tx_enabled &&
+	    tx_bits &&
 	    (tx_modulation != SoDa::Command::CW_L) &&
 	    (tx_modulation != SoDa::Command::CW_U) &&
 	    (txbuf = tx_stream->get(tx_subs)) != NULL) {
@@ -149,6 +148,7 @@ void SoDa::USRPTX::run()
       tx_stream->free(txbuf);
     }
     else if(tx_enabled &&
+	    tx_bits &&
 	    ((tx_modulation != SoDa::Command::CW_L) ||
 	     (tx_modulation != SoDa::Command::CW_U)) &&
 	    ((cwenv = cw_env_stream->get(cw_subs)) != NULL)) {
@@ -162,6 +162,7 @@ void SoDa::USRPTX::run()
       didwork = true; 
     }
     else if(tx_enabled && 
+	    tx_bits &&
 	    ((tx_modulation != SoDa::Command::CW_L) ||
 	     (tx_modulation != SoDa::Command::CW_U)) &&
 	    ((cwenv = cw_env_stream->get(cw_subs)) == NULL)) {
@@ -175,7 +176,9 @@ void SoDa::USRPTX::run()
 	waiting_to_run_dry = false; 
       }
     }
-    else if(tx_enabled && beacon_mode) {
+    else if(tx_enabled &&
+	    tx_bits &&
+	    beacon_mode) {
       // modulate a carrier with a constant envelope
       doCW(cw_buf, beacon_env, tx_buffer_size);
       // now send it to the USRP
@@ -184,7 +187,8 @@ void SoDa::USRPTX::run()
       md.start_of_burst = false; 
       didwork = true; 
     }
-    else {
+    else if(tx_enabled && 
+	    tx_bits) {
       // all other cases -- we still want to send the LO buffer
       buffers[0] = zero_buf;
       tx_bits->send(buffers, tx_buffer_size, md);
@@ -224,6 +228,7 @@ void SoDa::USRPTX::transmitSwitch(bool tx_on)
     md.end_of_burst = false;
     md.has_time_spec = false; 
     tx_enabled = true; 
+    getTXStreamer();
   }
   else {
     if(!tx_enabled && !LO_enabled) return;
@@ -233,7 +238,18 @@ void SoDa::USRPTX::transmitSwitch(bool tx_on)
       tx_bits->send(zero_buf, 10, md);
     }
     tx_enabled = false;
+    if(tx_bits) {
+      tx_bits->~tx_streamer();
+    }
   }
+}
+
+void SoDa::USRPTX::getTXStreamer()
+{
+  if(tx_bits) {
+    tx_bits->~tx_streamer(); 
+  }
+  tx_bits = usrp->get_tx_stream(*stream_args); 
 }
 
 
