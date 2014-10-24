@@ -757,7 +757,6 @@ void SoDa::USRPCtrl::enableTransverterLO()
   tvrt_lo_mode = true;
   
   debugMsg(boost::format("LO frequency = %10lg power %g  number of channels = %d target_rf %g actual rf %g target dsp %g actual dsp %g\n")
-	     
 	     % usrp->get_tx_freq(1) % usrp->get_tx_gain(1) % usrp->get_tx_num_channels()
 	     % tres.target_rf_freq % tres.actual_rf_freq % tres.target_dsp_freq % tres.actual_dsp_freq);
 
