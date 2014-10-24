@@ -134,6 +134,7 @@ void SoDa::USRPTX::run()
       cmd_stream->free(cmd); 
     }
     else if(tx_enabled &&
+	    tx_bits &&
 	    (tx_modulation != SoDa::Command::CW_L) &&
 	    (tx_modulation != SoDa::Command::CW_U) &&
 	    (txbuf = tx_stream->get(tx_subs)) != NULL) {
@@ -147,6 +148,7 @@ void SoDa::USRPTX::run()
       tx_stream->free(txbuf);
     }
     else if(tx_enabled &&
+	    tx_bits &&
 	    ((tx_modulation != SoDa::Command::CW_L) ||
 	     (tx_modulation != SoDa::Command::CW_U)) &&
 	    ((cwenv = cw_env_stream->get(cw_subs)) != NULL)) {
@@ -160,6 +162,7 @@ void SoDa::USRPTX::run()
       didwork = true; 
     }
     else if(tx_enabled && 
+	    tx_bits &&
 	    ((tx_modulation != SoDa::Command::CW_L) ||
 	     (tx_modulation != SoDa::Command::CW_U)) &&
 	    ((cwenv = cw_env_stream->get(cw_subs)) == NULL)) {
@@ -174,6 +177,7 @@ void SoDa::USRPTX::run()
       }
     }
     else if(tx_enabled &&
+	    tx_bits &&
 	    beacon_mode) {
       // modulate a carrier with a constant envelope
       doCW(cw_buf, beacon_env, tx_buffer_size);
@@ -183,7 +187,8 @@ void SoDa::USRPTX::run()
       md.start_of_burst = false; 
       didwork = true; 
     }
-    else if(tx_enabled) {
+    else if(tx_enabled && 
+	    tx_bits) {
       // all other cases -- we still want to send the LO buffer
       buffers[0] = zero_buf;
       tx_bits->send(buffers, tx_buffer_size, md);
@@ -233,13 +238,15 @@ void SoDa::USRPTX::transmitSwitch(bool tx_on)
       tx_bits->send(zero_buf, 10, md);
     }
     tx_enabled = false;
-    tx_bits->~tx_streamer();
+    if(tx_bits) {
+      tx_bits->~tx_streamer();
+    }
   }
 }
 
 void SoDa::USRPTX::getTXStreamer()
 {
-  if(tx_bits != NULL) {
+  if(tx_bits) {
     tx_bits->~tx_streamer(); 
   }
   tx_bits = usrp->get_tx_stream(*stream_args); 
