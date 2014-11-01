@@ -44,6 +44,8 @@
 const unsigned int SoDa::USRPCtrl::TX_RELAY_CTL = 0x1000;
 const unsigned int SoDa::USRPCtrl::TX_RELAY_MON = 0x0800;
 
+const double SoDa::USRPCtrl::RX_DDC_OFFSET = 5.5e6; 
+
 // borrowed from uhd_usrp_probe print_tree function
 void dumpTree(const uhd::fs_path &path, uhd::property_tree::sptr tree){
     std::cout << path << std::endl;
@@ -274,7 +276,7 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
  
   if(sel == 'r') {
     // we round the target frequency to a point that puts the
-    // baseband between 80 and 220 KHz below the requested
+    // front end LO at least 1MHz below the target 
     // frequency. and an even 100kHz multiple. 
 
     // The nearest step of the integer-N synthesizer is at 143.75
@@ -285,31 +287,28 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
     /// earlier libraries will revert to fractional-N tuning and might
     /// see a rise in the noisefloor and perhaps some troublesome spurs
     /// at multiples of the reference frequency divided by the fractional divisor.
-    if(freq > 256e6) stepsize = 12.5e6;
-    else stepsize = 6.25e6; 
-    freq1stLO = floor(freq / stepsize) * stepsize;
-
-    //    if((freq - freq1stLO) < 1.0e6) freq1stLO += stepsize;
-
-    target_rx_freq = 100e3 * floor(freq / 100e3);
-    if((freq - target_rx_freq) < 80e3) target_rx_freq -= 100.0e3; 
-
-    uhd::tune_request_t rx_trequest(target_rx_freq, 100.0e3);
+    uhd::tune_request_t rx_trequest(target_rx_freq, RX_DDC_OFFSET);
     if(is_B2xx) {
-      rx_trequest = uhd::tune_request_t(target_rx_freq, -100.0e3);
+      rx_trequest = uhd::tune_request_t(target_rx_freq, -RX_DDC_OFFSET);
     }
     else {
+      rx_trequest.rf_freq = target_rx_freq - RX_DDC_OFFSET; 
+      rx_trequest.dsp_freq = RX_DDC_OFFSET;
+      rx_trequest.rf_freq_policy = uhd::tune_request_t::POLICY_MANUAL;
       rx_trequest.args = uhd::device_addr_t("mode_n=integer");
     }
     last_rx_tune_result = usrp->set_rx_freq(rx_trequest);
     last_rx_tune_result = checkLock(rx_trequest, 'r', last_rx_tune_result);
-    debugMsg(boost::format("RX Tune RF_actual %lf DDC = %lf tuned = %lf target = %lf request  rf = %lf request ddc = %lf\n")
+    char rfp = rx_trequest.rf_freq_policy;
+    char dspp = rx_trequest.dsp_freq_policy;
+    debugMsg(boost::format("RX Tune RF_actual %lf DDC = %lf tuned = %lf target = %lf request  rf = %lf request ddc = %lf  rf_policy = ")
 	     % last_rx_tune_result.actual_rf_freq
 	     % last_rx_tune_result.actual_dsp_freq
 	     % freq
-	     % target_rx_freq
+	     % rx_trequest.target_freq
 	     % rx_trequest.rf_freq
 	     % rx_trequest.dsp_freq);
+    std::cerr << rfp << " dsp policy " << dspp << std::endl;
   }
   else {
     // On the transmit side, we're using a minimal IF rate and
@@ -360,7 +359,7 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
   // a message to the USRPRX to tell it what its IF freq should be.
   if((sel == 'r') && set_if_freq) {
     cmd_stream->put(new Command(Command::SET, Command::RX_LO3_FREQ,
-				freq - target_rx_freq)); 
+				0.0)); 
   }
   else {
   }
@@ -398,20 +397,6 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
   double tmp;
   switch (cmd->target) {
   case Command::RX_RETUNE_FREQ:
-    last_rx_req_freq = cmd->dparms[0]; 
-    freq = cmd->dparms[0];
-    fdiff = freq - (last_rx_tune_result.actual_rf_freq - last_rx_tune_result.actual_dsp_freq);
-    
-    debugMsg(boost::format("Got RX RETUNE request -- frequency %f diff = %f  last actual_rf %f  dsp %f\n")
-	     % freq % fdiff % last_rx_tune_result.actual_rf_freq % last_rx_tune_result.actual_dsp_freq);
-
-    if((fdiff < 200e3) && (fdiff > 50e3)) {
-      cmd_stream->put(new Command(Command::SET, Command::RX_LO3_FREQ, fdiff)); 
-      cmd_stream->put(new Command(Command::REP, Command::RX_FE_FREQ, 
-				  last_rx_tune_result.actual_rf_freq - last_rx_tune_result.actual_dsp_freq));
-      break; 
-    }
-    // else -- treat this as a RX_TUNE_FREQ request.
   case Command::RX_TUNE_FREQ:    
   case Command::RX_FE_FREQ:
     last_rx_req_freq = cmd->dparms[0]; 

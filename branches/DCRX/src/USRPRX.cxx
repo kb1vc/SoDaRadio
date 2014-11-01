@@ -155,9 +155,6 @@ void SoDa::USRPRX::run()
       // support debug... 
       scount++;
       
-      // tune it down with the IF oscillator
-      doMixer(buf); 
-      
       // now put the baseband signal on the ring.
       rx_stream->put(buf);
     }
@@ -169,23 +166,6 @@ void SoDa::USRPRX::run()
   stopStream(); 
 }
 
-void SoDa::USRPRX::doMixer(SoDaBuf * inout)
-{
-  int i;
-  std::complex<float> o;
-  std::complex<float> * ioa = inout->getComplexBuf();
-  for(i = 0; i < inout->getComplexMaxLen(); i++) {
-    o = IF_osc.stepOscCF();
-    ioa[i] = ioa[i] * o; 
-  }
-}
-
-void SoDa::USRPRX::set3rdLOFreq(double IF_tuning)
-{
-  // calculate the advance of phase for the IF
-  // oscilator in terms of radians per sample
-  IF_osc.setPhaseIncr(IF_tuning * 2.0 * M_PI / rx_sample_rate);
-}
 
 void SoDa::USRPRX::execCommand(Command * cmd)
 {
@@ -227,8 +207,7 @@ void SoDa::USRPRX::execSetCommand(Command * cmd)
     rx_modulation = SoDa::Command::ModulationType(cmd->iparms[0]); 
     break; 
   case Command::RX_LO3_FREQ:
-    current_IF_tuning = cmd->dparms[0];
-    set3rdLOFreq(cmd->dparms[0]); 
+    // RX is direct conversion from USRP. 
     break;
   case SoDa::Command::TX_STATE: // SET TX_ON
     if(cmd->iparms[0] == 1) {
