@@ -74,15 +74,6 @@ namespace SoDa {
     void startStream();
     void stopStream(); 
 
-    /**
-     * @brief implement a complex down converter with complex multiplication
-     *
-     * This is a complex downconverter in the manner presented in Lyons pp 457-458
-     *
-     * @param inout the input/output RF buffer
-     */
-    void doMixer(SoDaBuf * inout);
-    void set3rdLOFreq(double IF_tuning);
 
     DatMBox * rx_stream;
     DatMBox * if_stream; 
@@ -105,7 +96,6 @@ namespace SoDa {
 
     // IF tuner
     QuadratureOscillator IF_osc;
-    double current_IF_tuning;
     double rx_sample_rate;
 
     // spectrum reporting

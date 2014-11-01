@@ -1,0 +1,5 @@
+This really didn't work out.  There are apparently
+some problematic DDC frequencies, especially above
+1MHz.  They manifest themselves as spurs spaced at 
+about 5kHz and about 2dB or more over the noise floor. 
+

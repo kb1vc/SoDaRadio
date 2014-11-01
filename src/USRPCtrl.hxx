@@ -118,7 +118,7 @@ namespace SoDa {
     /// @param set_if_freq if TRUE, tell the USRPRX thread to reset
     /// its front-end frequency so that it can adjust its own oscillator.
     void set1stLOFreq(double freq, char sel, bool set_if_freq = false);
-
+    static const double RX_DDC_OFFSET; ///< minimum distance between target rx freq and 1st LO
     
     CmdMBox * cmd_stream; ///< command stream channel
     unsigned int subid;   ///< subscriber ID for this thread's connection to the command channel
