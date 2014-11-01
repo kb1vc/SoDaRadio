@@ -37,7 +37,8 @@ bin_PROGRAMS = FFT_Test$(EXEEXT) Sockets_Test$(EXEEXT) \
 	MultiMBox_Test$(EXEEXT) SoDa_ThreadTest$(EXEEXT) \
 	OSFilter_Test$(EXEEXT) TestServer$(EXEEXT) \
 	ReSampler_Test$(EXEEXT) TSIP_Test$(EXEEXT) Audio_test$(EXEEXT) \
-	Hilbert_Test$(EXEEXT) FindHome_Test$(EXEEXT)
+	Hilbert_Test$(EXEEXT) FindHome_Test$(EXEEXT) \
+	RangeMap_test$(EXEEXT)
 subdir = exp
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -100,6 +101,11 @@ OSFilter_Test_OBJECTS = $(am_OSFilter_Test_OBJECTS)
 OSFilter_Test_DEPENDENCIES = $(am__DEPENDENCIES_2)
 OSFilter_Test_LINK = $(CXXLD) $(OSFilter_Test_CXXFLAGS) $(CXXFLAGS) \
 	$(OSFilter_Test_LDFLAGS) $(LDFLAGS) -o $@
+am_RangeMap_test_OBJECTS = RangeMap_test-RangeMap_test.$(OBJEXT)
+RangeMap_test_OBJECTS = $(am_RangeMap_test_OBJECTS)
+RangeMap_test_DEPENDENCIES = $(am__DEPENDENCIES_2)
+RangeMap_test_LINK = $(CXXLD) $(RangeMap_test_CXXFLAGS) $(CXXFLAGS) \
+	$(RangeMap_test_LDFLAGS) $(LDFLAGS) -o $@
 am_ReSampler_Test_OBJECTS = ReSampler_Test-ReSampler_Test.$(OBJEXT) \
 	../src/ReSampler_Test-ReSampler.$(OBJEXT) \
 	../src/ReSampler_Test-ReSamplers625x48.$(OBJEXT) \
@@ -149,15 +155,15 @@ LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 SOURCES = $(Audio_test_SOURCES) $(FFT_Test_SOURCES) \
 	$(FindHome_Test_SOURCES) $(Hilbert_Test_SOURCES) \
 	$(MultiMBox_Test_SOURCES) $(OSFilter_Test_SOURCES) \
-	$(ReSampler_Test_SOURCES) $(SoDa_ThreadTest_SOURCES) \
-	$(Sockets_Test_SOURCES) $(TSIP_Test_SOURCES) \
-	$(TestServer_SOURCES)
+	$(RangeMap_test_SOURCES) $(ReSampler_Test_SOURCES) \
+	$(SoDa_ThreadTest_SOURCES) $(Sockets_Test_SOURCES) \
+	$(TSIP_Test_SOURCES) $(TestServer_SOURCES)
 DIST_SOURCES = $(Audio_test_SOURCES) $(FFT_Test_SOURCES) \
 	$(FindHome_Test_SOURCES) $(Hilbert_Test_SOURCES) \
 	$(MultiMBox_Test_SOURCES) $(OSFilter_Test_SOURCES) \
-	$(ReSampler_Test_SOURCES) $(SoDa_ThreadTest_SOURCES) \
-	$(Sockets_Test_SOURCES) $(TSIP_Test_SOURCES) \
-	$(TestServer_SOURCES)
+	$(RangeMap_test_SOURCES) $(ReSampler_Test_SOURCES) \
+	$(SoDa_ThreadTest_SOURCES) $(Sockets_Test_SOURCES) \
+	$(TSIP_Test_SOURCES) $(TestServer_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -346,6 +352,11 @@ FindHome_Test_CPPFLAGS = $(AM_CPPFLAGS) -g -O1
 FindHome_Test_LDADD = $(AM_BOOSTLIBFLAGS) 
 FindHome_Test_CXXFLAGS = -g -O1
 FindHome_Test_LDFLAGS = -g -O1
+RangeMap_test_SOURCES = RangeMap_test.cxx  ../src/RangeMap.hxx
+RangeMap_test_CPPFLAGS = $(AM_CPPFLAGS) -g -O1 
+RangeMap_test_LDADD = $(AM_BOOSTLIBFLAGS) 
+RangeMap_test_CXXFLAGS = -g -O1
+RangeMap_test_LDFLAGS = -g -O1
 all: all-am
 
 .SUFFIXES:
@@ -467,6 +478,9 @@ MultiMBox_Test$(EXEEXT): $(MultiMBox_Test_OBJECTS) $(MultiMBox_Test_DEPENDENCIES
 OSFilter_Test$(EXEEXT): $(OSFilter_Test_OBJECTS) $(OSFilter_Test_DEPENDENCIES) $(EXTRA_OSFilter_Test_DEPENDENCIES) 
 	@rm -f OSFilter_Test$(EXEEXT)
 	$(OSFilter_Test_LINK) $(OSFilter_Test_OBJECTS) $(OSFilter_Test_LDADD) $(LIBS)
+RangeMap_test$(EXEEXT): $(RangeMap_test_OBJECTS) $(RangeMap_test_DEPENDENCIES) $(EXTRA_RangeMap_test_DEPENDENCIES) 
+	@rm -f RangeMap_test$(EXEEXT)
+	$(RangeMap_test_LINK) $(RangeMap_test_OBJECTS) $(RangeMap_test_LDADD) $(LIBS)
 ../src/ReSampler_Test-ReSampler.$(OBJEXT): ../src/$(am__dirstamp) \
 	../src/$(DEPDIR)/$(am__dirstamp)
 ../src/ReSampler_Test-ReSamplers625x48.$(OBJEXT):  \
@@ -575,6 +589,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Hilbert_Test-Hilbert_Test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/MultiMBox_Test-MultiMBox_Test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OSFilter_Test-OSFilter_Test.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/RangeMap_test-RangeMap_test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ReSampler_Test-ReSampler_Test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDa_ThreadTest-SoDa_ThreadTest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Sockets_Test-Sockets_Test.Po@am__quote@
@@ -820,6 +835,20 @@ OSFilter_Test-OSFilter_Test.obj: OSFilter_Test.cxx
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../src/OSFilter.cxx' object='../src/OSFilter_Test-OSFilter.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OSFilter_Test_CPPFLAGS) $(CPPFLAGS) $(OSFilter_Test_CXXFLAGS) $(CXXFLAGS) -c -o ../src/OSFilter_Test-OSFilter.obj `if test -f '../src/OSFilter.cxx'; then $(CYGPATH_W) '../src/OSFilter.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/OSFilter.cxx'; fi`
+
+RangeMap_test-RangeMap_test.o: RangeMap_test.cxx
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(RangeMap_test_CPPFLAGS) $(CPPFLAGS) $(RangeMap_test_CXXFLAGS) $(CXXFLAGS) -MT RangeMap_test-RangeMap_test.o -MD -MP -MF $(DEPDIR)/RangeMap_test-RangeMap_test.Tpo -c -o RangeMap_test-RangeMap_test.o `test -f 'RangeMap_test.cxx' || echo '$(srcdir)/'`RangeMap_test.cxx
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/RangeMap_test-RangeMap_test.Tpo $(DEPDIR)/RangeMap_test-RangeMap_test.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='RangeMap_test.cxx' object='RangeMap_test-RangeMap_test.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(RangeMap_test_CPPFLAGS) $(CPPFLAGS) $(RangeMap_test_CXXFLAGS) $(CXXFLAGS) -c -o RangeMap_test-RangeMap_test.o `test -f 'RangeMap_test.cxx' || echo '$(srcdir)/'`RangeMap_test.cxx
+
+RangeMap_test-RangeMap_test.obj: RangeMap_test.cxx
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(RangeMap_test_CPPFLAGS) $(CPPFLAGS) $(RangeMap_test_CXXFLAGS) $(CXXFLAGS) -MT RangeMap_test-RangeMap_test.obj -MD -MP -MF $(DEPDIR)/RangeMap_test-RangeMap_test.Tpo -c -o RangeMap_test-RangeMap_test.obj `if test -f 'RangeMap_test.cxx'; then $(CYGPATH_W) 'RangeMap_test.cxx'; else $(CYGPATH_W) '$(srcdir)/RangeMap_test.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/RangeMap_test-RangeMap_test.Tpo $(DEPDIR)/RangeMap_test-RangeMap_test.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='RangeMap_test.cxx' object='RangeMap_test-RangeMap_test.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(RangeMap_test_CPPFLAGS) $(CPPFLAGS) $(RangeMap_test_CXXFLAGS) $(CXXFLAGS) -c -o RangeMap_test-RangeMap_test.obj `if test -f 'RangeMap_test.cxx'; then $(CYGPATH_W) 'RangeMap_test.cxx'; else $(CYGPATH_W) '$(srcdir)/RangeMap_test.cxx'; fi`
 
 ReSampler_Test-ReSampler_Test.o: ReSampler_Test.cxx
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(ReSampler_Test_CPPFLAGS) $(CPPFLAGS) $(ReSampler_Test_CXXFLAGS) $(CXXFLAGS) -MT ReSampler_Test-ReSampler_Test.o -MD -MP -MF $(DEPDIR)/ReSampler_Test-ReSampler_Test.Tpo -c -o ReSampler_Test-ReSampler_Test.o `test -f 'ReSampler_Test.cxx' || echo '$(srcdir)/'`ReSampler_Test.cxx
