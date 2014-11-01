@@ -3,7 +3,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/src
 AM_BOOSTLIBFLAGS = ${BOOST_PROGRAM_OPTIONS_LIB} ${BOOST_THREAD_LIB} ${BOOST_DATE_TIME_LIB} ${BOOST_SYSTEM_LIB} 
 
 
-bin_PROGRAMS = FFT_Test Sockets_Test MultiMBox_Test SoDa_ThreadTest OSFilter_Test  TestServer ReSampler_Test TSIP_Test Audio_test Hilbert_Test FindHome_Test
+bin_PROGRAMS = FFT_Test Sockets_Test MultiMBox_Test SoDa_ThreadTest OSFilter_Test  TestServer ReSampler_Test TSIP_Test Audio_test Hilbert_Test FindHome_Test RangeMap_test
 
 
 Sockets_Test_SOURCES = Sockets_Test.cxx  ../src/IPSockets.cxx ../src/UDSockets.cxx ../src/IPSockets.hxx ../src/UDSockets.hxx
@@ -70,3 +70,10 @@ FindHome_Test_CPPFLAGS = $(AM_CPPFLAGS) -g -O1
 FindHome_Test_LDADD = $(AM_BOOSTLIBFLAGS) 
 FindHome_Test_CXXFLAGS = -g -O1
 FindHome_Test_LDFLAGS = -g -O1
+
+
+RangeMap_test_SOURCES = RangeMap_test.cxx  ../src/RangeMap.hxx
+RangeMap_test_CPPFLAGS = $(AM_CPPFLAGS) -g -O1 
+RangeMap_test_LDADD = $(AM_BOOSTLIBFLAGS) 
+RangeMap_test_CXXFLAGS = -g -O1
+RangeMap_test_LDFLAGS = -g -O1

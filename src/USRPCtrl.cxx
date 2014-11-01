@@ -155,6 +155,9 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
 
   // turn of the LO
   tvrt_lo_mode = false;
+
+  // if we are in integer-N mode, setup the step table.
+  initStepMap(); 
 }
 
 
@@ -277,30 +280,28 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
     // baseband between 80 and 220 KHz below the requested
     // frequency. and an even 100kHz multiple. 
 
-    // The nearest step of the integer-N synthesizer is at 143.75
-    // so that is the constant front-end RX frequency that we'll use.
-    double stepsize;
-    double freq1stLO;
     /// This code depends on the integer-N tuning features in libuhd 3.7
     /// earlier libraries will revert to fractional-N tuning and might
     /// see a rise in the noisefloor and perhaps some troublesome spurs
     /// at multiples of the reference frequency divided by the fractional divisor.
-    if(freq > 256e6) stepsize = 12.5e6;
-    else stepsize = 6.25e6; 
-    freq1stLO = floor(freq / stepsize) * stepsize;
-
-    //    if((freq - freq1stLO) < 1.0e6) freq1stLO += stepsize;
-
-    target_rx_freq = 100e3 * floor(freq / 100e3);
-    if((freq - target_rx_freq) < 80e3) target_rx_freq -= 100.0e3; 
-
-    uhd::tune_request_t rx_trequest(target_rx_freq, 100.0e3);
-    if(is_B2xx) {
-      rx_trequest = uhd::tune_request_t(target_rx_freq, -100.0e3);
-    }
-    else {
+    uhd::tune_request_t rx_trequest(freq); 
+    if(supports_IntN_Mode) {
+      rx_trequest.target_freq = freq;
+      rx_trequest.rf_freq = getNearestStep(target_rx_freq, 1.0e6);
+      rx_trequest.rf_freq_policy = uhd::tune_request_t::POLICY_MANUAL;
+      rx_trequest.dsp_freq_policy = uhd::tune_request_t::POLICY_AUTO;
       rx_trequest.args = uhd::device_addr_t("mode_n=integer");
     }
+    else {
+      // set the RF at least 80 kHz below the target
+      target_rx_freq = 100e3 * floor(freq / 100e3);
+      if((freq - target_rx_freq) < 80e3) target_rx_freq -= 100.0e3;
+      rx_trequest.target_freq = freq;
+      rx_trequest.rf_freq = target_rx_freq; 
+      rx_trequest.rf_freq_policy = uhd::tune_request_t::POLICY_MANUAL;
+      rx_trequest.dsp_freq_policy = uhd::tune_request_t::POLICY_AUTO;
+    }
+
     last_rx_tune_result = usrp->set_rx_freq(rx_trequest);
     last_rx_tune_result = checkLock(rx_trequest, 'r', last_rx_tune_result);
     debugMsg(boost::format("RX Tune RF_actual %lf DDC = %lf tuned = %lf target = %lf request  rf = %lf request ddc = %lf\n")
@@ -768,3 +769,94 @@ void SoDa::USRPCtrl::disableTransverterLO()
   usrp->set_tx_freq(100.0e6, 1);
 }
 
+double SoDa::USRPCtrl::getNearestStep(double freq, double offset)
+{
+  double ret = freq - offset;
+
+  // Without integer-N mode, this is a wash....
+  if(supports_IntN_Mode) {
+    if(lo_step_map.find(freq - offset) != lo_step_map.end()) {
+      ret = lo_step_map[freq - offset]; 
+    }
+  }
+  return ret; 
+}
+
+void SoDa::USRPCtrl::initStepMap()
+{
+  supports_IntN_Mode = false;
+
+  if(is_B2xx) return;
+
+  debugMsg("In initStepMap\n");
+  
+  // first, do we have this capability?
+  // pick a frequency halfway between the min and max freq for this MB.
+  double tf = (rx_rf_freq_range.stop() + rx_rf_freq_range.start()) * 0.5;
+  // Now bump it by some silly amount
+  tf += 123456.789;
+
+  debugMsg(boost::format("got tf = %g\n") % tf);
+  
+  // and tune with and without intN
+  uhd::tune_request_t tunreq_int(tf);
+  uhd::tune_request_t tunreq_frac(tf);
+  tunreq_int.args = uhd::device_addr_t("mode_n=integer");
+  uhd::tune_result_t tunres_int, tunres_frac;
+  tunres_int = usrp->set_rx_freq(tunreq_int); 
+  tunres_frac = usrp->set_rx_freq(tunreq_frac);
+  
+  // are there differences?
+  if(tunres_int.actual_rf_freq != tunres_frac.actual_rf_freq) {
+    supports_IntN_Mode = true;
+  }
+
+  debugMsg(boost::format("int rf = %g  frac rf = %g  tf = %g\n")
+	   % tunres_int.actual_rf_freq % tunres_frac.actual_rf_freq % tf);
+
+  if(supports_IntN_Mode) {
+    debugMsg("Supports INT_N tuning mode.\n");
+  }
+  else {
+    debugMsg("Does not support INT_N tuning mode.\n");
+  }
+  
+  // Now sweep from min to max freq, and find the steps along the way.
+  double ff_incr = 1.0e6; // start with a small step...
+  double r_st, r_en, target, target2;
+  r_st = rx_rf_freq_range.start();
+
+  // first find the first setting. 
+  uhd::tune_request_t treq(r_st);
+  treq.args = uhd::device_addr_t("mode_n=integer");
+  tunres_int = usrp->set_rx_freq(treq);
+  target = tunres_int.actual_rf_freq;
+
+  // now look through the range
+  for(double ff = target + ff_incr;
+      ff < rx_rf_freq_range.stop();
+      ff += ff_incr) {
+    uhd::tune_request_t treq(ff);
+    treq.args = uhd::device_addr_t("mode_n=integer");
+    tunres_int = usrp->set_rx_freq(treq);
+    if(target != tunres_int.actual_rf_freq) {
+      // we found a new one...
+      lo_step_map[SoDa::Range<double>(r_st, tunres_int.actual_rf_freq)] = target;
+      r_st = tunres_int.actual_rf_freq;
+      // ff_incr = (target - r_st) * 0.8;  // this is the step size... ? 
+      target = r_st;
+    }
+    // debugMsg(boost::format("ff = %g   rf = %g\n")
+    // 	     % ff % tunres_int.actual_rf_freq); 
+  }
+
+  if(getDebugLevel() > 2) {
+    typedef std::pair<SoDa::Range<double>, double> fmap_el;
+    BOOST_FOREACH( fmap_el const & el, lo_step_map) {
+      std::cerr << boost::format("Range: %g to %g --- Base: %g\n")
+	% el.first.getMin() % el.first.getMax() % el.second; 
+    }
+  }
+  
+  return; 
+}

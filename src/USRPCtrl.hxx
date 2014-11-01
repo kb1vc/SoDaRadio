@@ -41,6 +41,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "MultiMBox.hxx"
 #include "Command.hxx"
 #include "Params.hxx"
+#include "RangeMap.hxx"
+
 #include <uhd/utils/thread_priority.hpp>
 #include <uhd/utils/safe_main.hpp>
 #include <uhd/usrp/multi_usrp.hpp>
@@ -201,6 +203,18 @@ namespace SoDa {
     
     // enables verbose messages
     bool debug_mode; ///< print stuff when we are in debug mode
+
+    // integer tuning mode is helped by a map of LO capabilities.
+
+    /// @brief getNearestStep returns the nearest integer-N step
+    /// to the supplied frequency that is at least <offset> Hz below it.
+    /// @param freq -- target tuning frequency
+    /// @param offset -- returned frequency will be < freq - offset
+    double getNearestStep(double freq, double offset = 0.0); 
+    SoDa::RangeMap<double, double> lo_step_map; /// map from range to bottom of range...rx_rf
+    /// @brief initialize the step map by probing the LO tuning over the range
+    void initStepMap();
+    bool supports_IntN_Mode; 
   };
 }
 
