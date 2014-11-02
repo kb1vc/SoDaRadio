@@ -229,7 +229,7 @@ namespace SoDaRadio_GUI {
     // Now connect up a few events
     Connect(MSG_UPDATE_SPECTRUM, wxEVT_COMMAND_MENU_SELECTED,
 	    wxCommandEventHandler(SoDaRadio_Top::OnUpdateSpectrumPlot));
-    Connect(MSG_UPDATE_GPSLOC, wxEVT_COMMAND_MENU_SELECTED,
+    Connect(MSG_UPDATE_GPSLOC, wxEVT_COMMAND_MENU_SELECTED, 
 	    wxCommandEventHandler(SoDaRadio_Top::OnUpdateGPSLoc));
     Connect(MSG_UPDATE_GPSTIME, wxEVT_COMMAND_MENU_SELECTED,
 	    wxCommandEventHandler(SoDaRadio_Top::OnUpdateGPSTime));
@@ -237,10 +237,17 @@ namespace SoDaRadio_GUI {
 	    wxCommandEventHandler(SoDaRadio_Top::OnTerminateTX));
     Connect(MSG_UPDATE_MODELNAME, wxEVT_COMMAND_MENU_SELECTED,
 	    wxCommandEventHandler(SoDaRadio_Top::OnUpdateModelName));
+    Connect(MSG_UPDATE_ANTNAME, wxEVT_COMMAND_MENU_SELECTED,
+	    wxCommandEventHandler(SoDaRadio_Top::OnUpdateAntName));
 
+    
+    
     // setup status bar -- hardwire the accelerators for now.
+    int widths[] = {-2, -1, -1};
+    m_ClueBar->SetStatusWidths(3, widths);
     m_ClueBar->SetStatusText(wxT("^C Set To Call        ^G Set To Grid        ^L Enter Log Comment        ^X Enter CW Text"), 0);
 
+    setAntennaName(wxT("????"));
   }
 
   void SoDaRadio_Top::configureRadio(SoDa::GuiParams & params) {

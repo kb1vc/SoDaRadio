@@ -202,15 +202,17 @@ namespace SoDaRadio_GUI {
       debugMsg(boost::format("Got HWMB Report [%s]\n") % cmd->sparm); 
       radio_gui->setRadioName(wxString((char*) cmd->sparm, wxConvUTF8));
       debugMsg("Set the Radio Name field.\n");
-      break;  
+      break;
+    case SoDa::Command::RX_ANT:
+      debugMsg(boost::format("Got RX antenna report [%s]\n") % cmd->sparm);
+      radio_gui->setAntennaName(wxString((char*) cmd->sparm, wxConvUTF8));
+      break;
     default:
       break; 
     }
 
     if(check_buf_setup) {
-      debugMsg("Calling setupSpectrumDisplay\n");
       setupSpectrumDisplay();
-      debugMsg("Called setupSpectrumDisplay\n");
     }
   }
 }
