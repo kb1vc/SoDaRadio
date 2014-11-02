@@ -615,7 +615,10 @@ void SoDa::USRPCtrl::execGetCommand(Command * cmd)
 
   case Command::HWMB_REP:
     cmd_stream->put(new Command(Command::REP, Command::HWMB_REP,
-				motherboard_name));
+				(boost::format("%s\t%6.1f to %6.1f MHz")
+				 % motherboard_name
+				 % (rx_rf_freq_range.start() * 1e-6)
+				 % (rx_rf_freq_range.stop() * 1e-6)).str()));
     break; 
   default:
     break; 
