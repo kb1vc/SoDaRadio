@@ -173,7 +173,7 @@ namespace SoDaRadio_GUI {
     wxString getModeString() { return m_ModeBox->GetStringSelection(); }
 
     // message types. 
-    enum MSG_ID { MSG_UPDATE_SPECTRUM, MSG_HANDLE_CMD, MSG_UPDATE_GPSLOC, MSG_UPDATE_GPSTIME, MSG_TERMINATE_TX, MSG_UPDATE_MODELNAME };
+    enum MSG_ID { MSG_UPDATE_SPECTRUM, MSG_HANDLE_CMD, MSG_UPDATE_GPSLOC, MSG_UPDATE_GPSTIME, MSG_TERMINATE_TX, MSG_UPDATE_MODELNAME, MSG_UPDATE_ANTNAME };
     /** Constructor */
     SoDaRadio_Top( SoDa::GuiParams & parms, wxWindow* parent );
     // plot maintenance
@@ -223,7 +223,6 @@ namespace SoDaRadio_GUI {
     void SetConfigFileName(const wxString & fname); 
 
     void setupBandSelect(SoDaRadio_BandSet * bandset);
-    
 
     wxString radio_modelname;
     
@@ -237,6 +236,21 @@ namespace SoDaRadio_GUI {
 
     void OnUpdateModelName(wxCommandEvent & event) {
       this->SetTitle(radio_modelname); 
+    }
+
+    wxString rx_antenna_name;
+    
+    void setAntennaName(const wxString & name) {
+      wxMutexLocker lock(ctrl_mutex);
+      rx_antenna_name = name;
+      wxCommandEvent event(wxEVT_COMMAND_MENU_SELECTED,
+			   SoDaRadio_Top::MSG_UPDATE_ANTNAME);
+      pendEvent(event); 
+    }
+
+    void OnUpdateAntName(wxCommandEvent & event) {
+      wxString lab = wxT("RX_Ant: ") + rx_antenna_name;
+      m_ClueBar->SetStatusText(lab, 2);
     }
 
     void pendEvent(wxCommandEvent & event) {

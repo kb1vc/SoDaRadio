@@ -1,3 +1,5 @@
+SVN 119 (trunk) Added display of current RX antenna to status bar.
+
 SVN 116 (branch TuneStep)  Changed the RX tuning in this rev so that
 the integer-N mode picks the nearest integer-N frequency that is 1MHz
 below the target. (See USRPCtrl::getNearestStep() )  This is done 
