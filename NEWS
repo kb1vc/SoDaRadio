@@ -1,3 +1,5 @@
+SVN 120 (trunk) Added display of native RX freq range to top bar of the radio.
+
 SVN 119 (trunk) Added display of current RX antenna to status bar.
 
 SVN 116 (branch TuneStep)  Changed the RX tuning in this rev so that
