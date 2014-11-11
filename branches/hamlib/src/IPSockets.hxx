@@ -31,12 +31,14 @@
 #include "SoDaBase.hxx"
 #include "MultiMBox.hxx"
 #include "Command.hxx"
+#include "Debug.hxx"
 
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <stdio.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <string>
 
 namespace SoDa {
   namespace IP {
@@ -47,9 +49,41 @@ namespace SoDa {
 	timeout.tv_usec = 5; 
       }
 
-    
+      /** PUT a message into the socket where the SIZE
+       * of the message in an unsigned int at the very
+       * start of each packet.
+       *
+       * @param ptr pointer to a buffer
+       * @param size length of buffer in bytes
+       */
       int put(const void * ptr, unsigned int size);
+
+      /** Get a message from the socket where the SIZE
+       * of the message in an unsigned int at the very
+       * start of each packet.
+       *
+       * @param ptr pointer to a buffer
+       * @param size not-to-exceed length of buffer in bytes
+       */
       int get(void * ptr, unsigned int size);
+    
+      /**
+       * Write raw data to the socket, return the number
+       * of bytes written.
+       *
+       * @param ptr pointer to a buffer
+       * @param size length of buffer in bytes
+       */
+      int writeBuf(const void * ptr, unsigned int size);
+
+      /**
+       * Read raw data from the socket, return the number
+       * of bytes read.
+       *
+       * @param ptr pointer to a buffer
+       * @param size not-to-exceed length of buffer in bytes
+       */
+      int readBuf(void * ptr, unsigned int size);
     
       int server_socket, conn_socket, portnum;
       struct sockaddr_in server_address, client_address;
@@ -59,28 +93,79 @@ namespace SoDa {
       int loopWrite(int fd, const void * ptr, unsigned int nbytes);
     };
 
-    class ServerSocket : public NetSocket {
+    class ServerSocket : public NetSocket, public Debug {
     public:
-      ServerSocket(int portnum);
+      ServerSocket(int portnum, bool localhost_only=false);
       ~ServerSocket() { close(conn_socket);  close(server_socket); }
+
+      /**
+       * is this socket active?
+       * @return true if a client has connected to the socket
+       */
       bool isReady();
 
+      /** Get a message from the socket where the SIZE
+       * of the message in an unsigned int at the very
+       * start of each packet.
+       *
+       * @param ptr pointer to a buffer
+       * @param size not-to-exceed length of buffer in bytes
+       */
       int get(void *ptr, unsigned int size) {
 	int rv = NetSocket::get(ptr, size);
 	if(rv < 0) ready = false;
 	return rv; 
       }
+      
+      /** PUT a message into the socket where the SIZE
+       * of the message in an unsigned int at the very
+       * start of each packet.
+       *
+       * @param ptr pointer to a buffer
+       * @param size length of buffer in bytes
+       */
       int put(const void *ptr, unsigned int size) {
 	if(!ready) return 0; 
 	int rv = NetSocket::put(ptr, size);
 	if(rv < 0) ready = false;
 	return rv; 
       }
+
+      /**
+       * Read raw data from the socket, return the number
+       * of bytes read.
+       *
+       * @param ptr pointer to a buffer
+       * @param size not-to-exceed length of buffer in bytes
+       */
+      int readBuf(void *ptr, unsigned int size)
+      {
+	if(!ready) return 0;
+	int rv = NetSocket::readBuf(ptr, size);
+	if(rv < 0) ready = false;
+	return rv; 
+      }
+      
+      /**
+       * Write raw data to the socket, return the number
+       * of bytes written.
+       *
+       * @param ptr pointer to a buffer
+       * @param size length of buffer in bytes
+       */
+      int writeBuf(void *ptr, unsigned int size)
+      {
+	if(!ready) return 0;
+	int rv = NetSocket::writeBuf(ptr, size);
+	if(rv < 0) ready = false;
+	return rv; 
+      }
+      
     private:
       bool ready; 
     };
 
-    class ClientSocket : public NetSocket {
+    class ClientSocket : public NetSocket, public Debug {
     public:
       ClientSocket(const char * hostname, int portnum);
       ~ClientSocket() { close(conn_socket); }

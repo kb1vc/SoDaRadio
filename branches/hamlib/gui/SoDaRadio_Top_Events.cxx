@@ -975,6 +975,7 @@ namespace SoDaRadio_GUI {
     OnPerBandSpread(nullCE);
 
     // the the antenna
+    debugMsg(boost::format("Setting ant choice to [%s]\n") % band->rx_antenna_choice);
     setRXAnt(band->rx_antenna_choice);
 
     // set the transmit parameters

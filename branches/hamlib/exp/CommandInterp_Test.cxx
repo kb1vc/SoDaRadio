@@ -30,10 +30,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iostream>
 #include <boost/format.hpp>
  
-class MyTest {
+class MyTest { 
 public:
   
-  MyTest() {
+  MyTest() { 
     ci.setHandlerObj(this);
     ci.makeCommand(std::string("F"), std::string("set_freq"), &MyTest::setFreq);
     ci.makeCommand(std::string("f"), std::string("get_freq"), &MyTest::getFreq); 

@@ -34,11 +34,13 @@
 #include <boost/tokenizer.hpp>
 #include <boost/foreach.hpp>
 
+#include "Debug.hxx"
+
 namespace SoDa {
-  template<typename T> class Command {
+  template<typename T> class CICommand : public Debug {
   public:
-    Command(const std::string & _short, const std::string & _long,
-	    bool (T::* _func)(std::vector<std::string> & cmd_line)) {
+    CICommand(const std::string & _short, const std::string & _long,
+	      bool (T::* _func)(std::vector<std::string> & cmd_line)) : Debug("CommandParser") {
       short_c = _short;
       long_c = _long;
       func = _func;
@@ -48,6 +50,8 @@ namespace SoDa {
      * @brief parse the command (that has been tokenized by the Command Interpreter object. 
      */
     bool parse(std::vector<std::string> & cmd_line, T * obj) {
+      debugMsg(boost::format("command [%s] parsing command [%s]\n")
+	       % long_c % cmd_line[0]);
       if((cmd_line[0] == short_c) || (cmd_line[0] == long_c)) {
 	(obj->*func)(cmd_line); 
 	return true; 
@@ -83,7 +87,7 @@ namespace SoDa {
 
     void makeCommand(const std::string & _short, const std::string & _long, 
 		     bool (T::* _func)(std::vector<std::string> & cmd_line)) {
-      commands.push_back(new Command<T>(_short, _long, _func));
+      commands.push_back(new CICommand<T>(_short, _long, _func));
     }
 
     bool parse(std::string command) {
@@ -95,7 +99,7 @@ namespace SoDa {
       BOOST_FOREACH(const std::string & t, tokens) cmd_line.push_back(t); 
 
       // now go through the commands.
-      BOOST_FOREACH(Command<T> * cmd, commands) {
+      BOOST_FOREACH(CICommand<T> * cmd, commands) {
 	if(cmd->parse(cmd_line, obj)) return true;  
       }
 
@@ -103,7 +107,7 @@ namespace SoDa {
     }
 
   protected:
-    std::vector<Command<T> *> commands;
+    std::vector<CICommand<T> *> commands;
     T * obj; ///< the object that will handle all the commands. 
   };
 }

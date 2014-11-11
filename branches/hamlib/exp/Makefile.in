@@ -38,7 +38,7 @@ bin_PROGRAMS = FFT_Test$(EXEEXT) Sockets_Test$(EXEEXT) \
 	OSFilter_Test$(EXEEXT) TestServer$(EXEEXT) \
 	ReSampler_Test$(EXEEXT) TSIP_Test$(EXEEXT) Audio_test$(EXEEXT) \
 	Hilbert_Test$(EXEEXT) FindHome_Test$(EXEEXT) \
-	CommandInterp_Test$(EXEEXT)
+	RangeMap_test$(EXEEXT) CommandInterp_Test$(EXEEXT)
 subdir = exp
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -75,7 +75,8 @@ Audio_test_DEPENDENCIES = $(am__DEPENDENCIES_2)
 am_CommandInterp_Test_OBJECTS =  \
 	CommandInterp_Test-CommandInterp_Test.$(OBJEXT) \
 	../src/CommandInterp_Test-IPSockets.$(OBJEXT) \
-	../src/CommandInterp_Test-UDSockets.$(OBJEXT)
+	../src/CommandInterp_Test-UDSockets.$(OBJEXT) \
+	../src/CommandInterp_Test-Debug.$(OBJEXT)
 CommandInterp_Test_OBJECTS = $(am_CommandInterp_Test_OBJECTS)
 CommandInterp_Test_DEPENDENCIES = $(am__DEPENDENCIES_2)
 am_FFT_Test_OBJECTS = FFT_Test-FFT_Test.$(OBJEXT)
@@ -107,6 +108,11 @@ OSFilter_Test_OBJECTS = $(am_OSFilter_Test_OBJECTS)
 OSFilter_Test_DEPENDENCIES = $(am__DEPENDENCIES_2)
 OSFilter_Test_LINK = $(CXXLD) $(OSFilter_Test_CXXFLAGS) $(CXXFLAGS) \
 	$(OSFilter_Test_LDFLAGS) $(LDFLAGS) -o $@
+am_RangeMap_test_OBJECTS = RangeMap_test-RangeMap_test.$(OBJEXT)
+RangeMap_test_OBJECTS = $(am_RangeMap_test_OBJECTS)
+RangeMap_test_DEPENDENCIES = $(am__DEPENDENCIES_2)
+RangeMap_test_LINK = $(CXXLD) $(RangeMap_test_CXXFLAGS) $(CXXFLAGS) \
+	$(RangeMap_test_LDFLAGS) $(LDFLAGS) -o $@
 am_ReSampler_Test_OBJECTS = ReSampler_Test-ReSampler_Test.$(OBJEXT) \
 	../src/ReSampler_Test-ReSampler.$(OBJEXT) \
 	../src/ReSampler_Test-ReSamplers625x48.$(OBJEXT) \
@@ -123,7 +129,8 @@ SoDa_ThreadTest_OBJECTS = $(am_SoDa_ThreadTest_OBJECTS)
 SoDa_ThreadTest_DEPENDENCIES = $(am__DEPENDENCIES_2)
 am_Sockets_Test_OBJECTS = Sockets_Test-Sockets_Test.$(OBJEXT) \
 	../src/Sockets_Test-IPSockets.$(OBJEXT) \
-	../src/Sockets_Test-UDSockets.$(OBJEXT)
+	../src/Sockets_Test-UDSockets.$(OBJEXT) \
+	../src/Sockets_Test-Debug.$(OBJEXT)
 Sockets_Test_OBJECTS = $(am_Sockets_Test_OBJECTS)
 Sockets_Test_DEPENDENCIES = $(am__DEPENDENCIES_2)
 am_TSIP_Test_OBJECTS = TSIP_Test-TSIP_Test.$(OBJEXT) \
@@ -156,15 +163,17 @@ LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 SOURCES = $(Audio_test_SOURCES) $(CommandInterp_Test_SOURCES) \
 	$(FFT_Test_SOURCES) $(FindHome_Test_SOURCES) \
 	$(Hilbert_Test_SOURCES) $(MultiMBox_Test_SOURCES) \
-	$(OSFilter_Test_SOURCES) $(ReSampler_Test_SOURCES) \
-	$(SoDa_ThreadTest_SOURCES) $(Sockets_Test_SOURCES) \
-	$(TSIP_Test_SOURCES) $(TestServer_SOURCES)
+	$(OSFilter_Test_SOURCES) $(RangeMap_test_SOURCES) \
+	$(ReSampler_Test_SOURCES) $(SoDa_ThreadTest_SOURCES) \
+	$(Sockets_Test_SOURCES) $(TSIP_Test_SOURCES) \
+	$(TestServer_SOURCES)
 DIST_SOURCES = $(Audio_test_SOURCES) $(CommandInterp_Test_SOURCES) \
 	$(FFT_Test_SOURCES) $(FindHome_Test_SOURCES) \
 	$(Hilbert_Test_SOURCES) $(MultiMBox_Test_SOURCES) \
-	$(OSFilter_Test_SOURCES) $(ReSampler_Test_SOURCES) \
-	$(SoDa_ThreadTest_SOURCES) $(Sockets_Test_SOURCES) \
-	$(TSIP_Test_SOURCES) $(TestServer_SOURCES)
+	$(OSFilter_Test_SOURCES) $(RangeMap_test_SOURCES) \
+	$(ReSampler_Test_SOURCES) $(SoDa_ThreadTest_SOURCES) \
+	$(Sockets_Test_SOURCES) $(TSIP_Test_SOURCES) \
+	$(TestServer_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -310,10 +319,10 @@ top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = subdir-objects
 AM_CPPFLAGS = -I$(top_srcdir)/src
 AM_BOOSTLIBFLAGS = ${BOOST_PROGRAM_OPTIONS_LIB} ${BOOST_THREAD_LIB} ${BOOST_DATE_TIME_LIB} ${BOOST_SYSTEM_LIB} 
-Sockets_Test_SOURCES = Sockets_Test.cxx  ../src/IPSockets.cxx ../src/UDSockets.cxx ../src/IPSockets.hxx ../src/UDSockets.hxx
+Sockets_Test_SOURCES = Sockets_Test.cxx  ../src/IPSockets.cxx ../src/UDSockets.cxx ../src/IPSockets.hxx ../src/UDSockets.hxx ../src/Debug.cxx ../src/Debug.hxx
 Sockets_Test_CPPFLAGS = $(AM_CPPFLAGS)
 Sockets_Test_LDADD = $(AM_BOOSTLIBFLAGS)
-CommandInterp_Test_SOURCES = CommandInterp_Test.cxx  ../src/IPSockets.cxx ../src/UDSockets.cxx ../src/IPSockets.hxx ../src/UDSockets.hxx ../CommandInterpreter.hxx
+CommandInterp_Test_SOURCES = CommandInterp_Test.cxx  ../src/IPSockets.cxx ../src/UDSockets.cxx ../src/IPSockets.hxx ../src/UDSockets.hxx ../CommandInterpreter.hxx ../src/Debug.cxx ../src/Debug.hxx
 CommandInterp_Test_CPPFLAGS = $(AM_CPPFLAGS)
 CommandInterp_Test_LDADD = $(AM_BOOSTLIBFLAGS)
 SoDa_ThreadTest_SOURCES = SoDa_ThreadTest.cxx  ../src/SoDaBase.cxx ../src/Debug.cxx
@@ -356,6 +365,11 @@ FindHome_Test_CPPFLAGS = $(AM_CPPFLAGS) -g -O1
 FindHome_Test_LDADD = $(AM_BOOSTLIBFLAGS) 
 FindHome_Test_CXXFLAGS = -g -O1
 FindHome_Test_LDFLAGS = -g -O1
+RangeMap_test_SOURCES = RangeMap_test.cxx  ../src/RangeMap.hxx
+RangeMap_test_CPPFLAGS = $(AM_CPPFLAGS) -g -O1 
+RangeMap_test_LDADD = $(AM_BOOSTLIBFLAGS) 
+RangeMap_test_CXXFLAGS = -g -O1
+RangeMap_test_LDFLAGS = -g -O1
 all: all-am
 
 .SUFFIXES:
@@ -448,6 +462,8 @@ Audio_test$(EXEEXT): $(Audio_test_OBJECTS) $(Audio_test_DEPENDENCIES) $(EXTRA_Au
 	../src/$(DEPDIR)/$(am__dirstamp)
 ../src/CommandInterp_Test-UDSockets.$(OBJEXT): ../src/$(am__dirstamp) \
 	../src/$(DEPDIR)/$(am__dirstamp)
+../src/CommandInterp_Test-Debug.$(OBJEXT): ../src/$(am__dirstamp) \
+	../src/$(DEPDIR)/$(am__dirstamp)
 CommandInterp_Test$(EXEEXT): $(CommandInterp_Test_OBJECTS) $(CommandInterp_Test_DEPENDENCIES) $(EXTRA_CommandInterp_Test_DEPENDENCIES) 
 	@rm -f CommandInterp_Test$(EXEEXT)
 	$(CXXLINK) $(CommandInterp_Test_OBJECTS) $(CommandInterp_Test_LDADD) $(LIBS)
@@ -484,6 +500,9 @@ MultiMBox_Test$(EXEEXT): $(MultiMBox_Test_OBJECTS) $(MultiMBox_Test_DEPENDENCIES
 OSFilter_Test$(EXEEXT): $(OSFilter_Test_OBJECTS) $(OSFilter_Test_DEPENDENCIES) $(EXTRA_OSFilter_Test_DEPENDENCIES) 
 	@rm -f OSFilter_Test$(EXEEXT)
 	$(OSFilter_Test_LINK) $(OSFilter_Test_OBJECTS) $(OSFilter_Test_LDADD) $(LIBS)
+RangeMap_test$(EXEEXT): $(RangeMap_test_OBJECTS) $(RangeMap_test_DEPENDENCIES) $(EXTRA_RangeMap_test_DEPENDENCIES) 
+	@rm -f RangeMap_test$(EXEEXT)
+	$(RangeMap_test_LINK) $(RangeMap_test_OBJECTS) $(RangeMap_test_LDADD) $(LIBS)
 ../src/ReSampler_Test-ReSampler.$(OBJEXT): ../src/$(am__dirstamp) \
 	../src/$(DEPDIR)/$(am__dirstamp)
 ../src/ReSampler_Test-ReSamplers625x48.$(OBJEXT):  \
@@ -503,6 +522,8 @@ SoDa_ThreadTest$(EXEEXT): $(SoDa_ThreadTest_OBJECTS) $(SoDa_ThreadTest_DEPENDENC
 ../src/Sockets_Test-IPSockets.$(OBJEXT): ../src/$(am__dirstamp) \
 	../src/$(DEPDIR)/$(am__dirstamp)
 ../src/Sockets_Test-UDSockets.$(OBJEXT): ../src/$(am__dirstamp) \
+	../src/$(DEPDIR)/$(am__dirstamp)
+../src/Sockets_Test-Debug.$(OBJEXT): ../src/$(am__dirstamp) \
 	../src/$(DEPDIR)/$(am__dirstamp)
 Sockets_Test$(EXEEXT): $(Sockets_Test_OBJECTS) $(Sockets_Test_DEPENDENCIES) $(EXTRA_Sockets_Test_DEPENDENCIES) 
 	@rm -f Sockets_Test$(EXEEXT)
@@ -537,6 +558,7 @@ mostlyclean-compile:
 	-rm -f ../src/Audio_test-AudioPA.$(OBJEXT)
 	-rm -f ../src/Audio_test-Debug.$(OBJEXT)
 	-rm -f ../src/Audio_test-SoDaBase.$(OBJEXT)
+	-rm -f ../src/CommandInterp_Test-Debug.$(OBJEXT)
 	-rm -f ../src/CommandInterp_Test-IPSockets.$(OBJEXT)
 	-rm -f ../src/CommandInterp_Test-UDSockets.$(OBJEXT)
 	-rm -f ../src/Hilbert_Test-HilbertTransformer.$(OBJEXT)
@@ -549,6 +571,7 @@ mostlyclean-compile:
 	-rm -f ../src/ReSampler_Test-SoDaBase.$(OBJEXT)
 	-rm -f ../src/SoDa_ThreadTest-Debug.$(OBJEXT)
 	-rm -f ../src/SoDa_ThreadTest-SoDaBase.$(OBJEXT)
+	-rm -f ../src/Sockets_Test-Debug.$(OBJEXT)
 	-rm -f ../src/Sockets_Test-IPSockets.$(OBJEXT)
 	-rm -f ../src/Sockets_Test-UDSockets.$(OBJEXT)
 	-rm -f ../src/TSIP_Test-TSIP.$(OBJEXT)
@@ -568,6 +591,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/Audio_test-AudioPA.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/Audio_test-Debug.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/Audio_test-SoDaBase.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/CommandInterp_Test-Debug.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/CommandInterp_Test-IPSockets.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/CommandInterp_Test-UDSockets.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/Hilbert_Test-HilbertTransformer.Po@am__quote@
@@ -580,6 +604,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/ReSampler_Test-SoDaBase.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/SoDa_ThreadTest-Debug.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/SoDa_ThreadTest-SoDaBase.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/Sockets_Test-Debug.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/Sockets_Test-IPSockets.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/Sockets_Test-UDSockets.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/TSIP_Test-TSIP.Po@am__quote@
@@ -597,6 +622,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Hilbert_Test-Hilbert_Test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/MultiMBox_Test-MultiMBox_Test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OSFilter_Test-OSFilter_Test.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/RangeMap_test-RangeMap_test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ReSampler_Test-ReSampler_Test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDa_ThreadTest-SoDa_ThreadTest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Sockets_Test-Sockets_Test.Po@am__quote@
@@ -730,6 +756,20 @@ CommandInterp_Test-CommandInterp_Test.obj: CommandInterp_Test.cxx
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../src/UDSockets.cxx' object='../src/CommandInterp_Test-UDSockets.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(CommandInterp_Test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ../src/CommandInterp_Test-UDSockets.obj `if test -f '../src/UDSockets.cxx'; then $(CYGPATH_W) '../src/UDSockets.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/UDSockets.cxx'; fi`
+
+../src/CommandInterp_Test-Debug.o: ../src/Debug.cxx
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(CommandInterp_Test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ../src/CommandInterp_Test-Debug.o -MD -MP -MF ../src/$(DEPDIR)/CommandInterp_Test-Debug.Tpo -c -o ../src/CommandInterp_Test-Debug.o `test -f '../src/Debug.cxx' || echo '$(srcdir)/'`../src/Debug.cxx
+@am__fastdepCXX_TRUE@	$(am__mv) ../src/$(DEPDIR)/CommandInterp_Test-Debug.Tpo ../src/$(DEPDIR)/CommandInterp_Test-Debug.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../src/Debug.cxx' object='../src/CommandInterp_Test-Debug.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(CommandInterp_Test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ../src/CommandInterp_Test-Debug.o `test -f '../src/Debug.cxx' || echo '$(srcdir)/'`../src/Debug.cxx
+
+../src/CommandInterp_Test-Debug.obj: ../src/Debug.cxx
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(CommandInterp_Test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ../src/CommandInterp_Test-Debug.obj -MD -MP -MF ../src/$(DEPDIR)/CommandInterp_Test-Debug.Tpo -c -o ../src/CommandInterp_Test-Debug.obj `if test -f '../src/Debug.cxx'; then $(CYGPATH_W) '../src/Debug.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/Debug.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) ../src/$(DEPDIR)/CommandInterp_Test-Debug.Tpo ../src/$(DEPDIR)/CommandInterp_Test-Debug.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../src/Debug.cxx' object='../src/CommandInterp_Test-Debug.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(CommandInterp_Test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ../src/CommandInterp_Test-Debug.obj `if test -f '../src/Debug.cxx'; then $(CYGPATH_W) '../src/Debug.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/Debug.cxx'; fi`
 
 FFT_Test-FFT_Test.o: FFT_Test.cxx
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(FFT_Test_CPPFLAGS) $(CPPFLAGS) $(FFT_Test_CXXFLAGS) $(CXXFLAGS) -MT FFT_Test-FFT_Test.o -MD -MP -MF $(DEPDIR)/FFT_Test-FFT_Test.Tpo -c -o FFT_Test-FFT_Test.o `test -f 'FFT_Test.cxx' || echo '$(srcdir)/'`FFT_Test.cxx
@@ -885,6 +925,20 @@ OSFilter_Test-OSFilter_Test.obj: OSFilter_Test.cxx
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(OSFilter_Test_CPPFLAGS) $(CPPFLAGS) $(OSFilter_Test_CXXFLAGS) $(CXXFLAGS) -c -o ../src/OSFilter_Test-OSFilter.obj `if test -f '../src/OSFilter.cxx'; then $(CYGPATH_W) '../src/OSFilter.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/OSFilter.cxx'; fi`
 
+RangeMap_test-RangeMap_test.o: RangeMap_test.cxx
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(RangeMap_test_CPPFLAGS) $(CPPFLAGS) $(RangeMap_test_CXXFLAGS) $(CXXFLAGS) -MT RangeMap_test-RangeMap_test.o -MD -MP -MF $(DEPDIR)/RangeMap_test-RangeMap_test.Tpo -c -o RangeMap_test-RangeMap_test.o `test -f 'RangeMap_test.cxx' || echo '$(srcdir)/'`RangeMap_test.cxx
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/RangeMap_test-RangeMap_test.Tpo $(DEPDIR)/RangeMap_test-RangeMap_test.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='RangeMap_test.cxx' object='RangeMap_test-RangeMap_test.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(RangeMap_test_CPPFLAGS) $(CPPFLAGS) $(RangeMap_test_CXXFLAGS) $(CXXFLAGS) -c -o RangeMap_test-RangeMap_test.o `test -f 'RangeMap_test.cxx' || echo '$(srcdir)/'`RangeMap_test.cxx
+
+RangeMap_test-RangeMap_test.obj: RangeMap_test.cxx
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(RangeMap_test_CPPFLAGS) $(CPPFLAGS) $(RangeMap_test_CXXFLAGS) $(CXXFLAGS) -MT RangeMap_test-RangeMap_test.obj -MD -MP -MF $(DEPDIR)/RangeMap_test-RangeMap_test.Tpo -c -o RangeMap_test-RangeMap_test.obj `if test -f 'RangeMap_test.cxx'; then $(CYGPATH_W) 'RangeMap_test.cxx'; else $(CYGPATH_W) '$(srcdir)/RangeMap_test.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/RangeMap_test-RangeMap_test.Tpo $(DEPDIR)/RangeMap_test-RangeMap_test.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='RangeMap_test.cxx' object='RangeMap_test-RangeMap_test.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(RangeMap_test_CPPFLAGS) $(CPPFLAGS) $(RangeMap_test_CXXFLAGS) $(CXXFLAGS) -c -o RangeMap_test-RangeMap_test.obj `if test -f 'RangeMap_test.cxx'; then $(CYGPATH_W) 'RangeMap_test.cxx'; else $(CYGPATH_W) '$(srcdir)/RangeMap_test.cxx'; fi`
+
 ReSampler_Test-ReSampler_Test.o: ReSampler_Test.cxx
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(ReSampler_Test_CPPFLAGS) $(CPPFLAGS) $(ReSampler_Test_CXXFLAGS) $(CXXFLAGS) -MT ReSampler_Test-ReSampler_Test.o -MD -MP -MF $(DEPDIR)/ReSampler_Test-ReSampler_Test.Tpo -c -o ReSampler_Test-ReSampler_Test.o `test -f 'ReSampler_Test.cxx' || echo '$(srcdir)/'`ReSampler_Test.cxx
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/ReSampler_Test-ReSampler_Test.Tpo $(DEPDIR)/ReSampler_Test-ReSampler_Test.Po
@@ -1024,6 +1078,20 @@ Sockets_Test-Sockets_Test.obj: Sockets_Test.cxx
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../src/UDSockets.cxx' object='../src/Sockets_Test-UDSockets.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(Sockets_Test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ../src/Sockets_Test-UDSockets.obj `if test -f '../src/UDSockets.cxx'; then $(CYGPATH_W) '../src/UDSockets.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/UDSockets.cxx'; fi`
+
+../src/Sockets_Test-Debug.o: ../src/Debug.cxx
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(Sockets_Test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ../src/Sockets_Test-Debug.o -MD -MP -MF ../src/$(DEPDIR)/Sockets_Test-Debug.Tpo -c -o ../src/Sockets_Test-Debug.o `test -f '../src/Debug.cxx' || echo '$(srcdir)/'`../src/Debug.cxx
+@am__fastdepCXX_TRUE@	$(am__mv) ../src/$(DEPDIR)/Sockets_Test-Debug.Tpo ../src/$(DEPDIR)/Sockets_Test-Debug.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../src/Debug.cxx' object='../src/Sockets_Test-Debug.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(Sockets_Test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ../src/Sockets_Test-Debug.o `test -f '../src/Debug.cxx' || echo '$(srcdir)/'`../src/Debug.cxx
+
+../src/Sockets_Test-Debug.obj: ../src/Debug.cxx
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(Sockets_Test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ../src/Sockets_Test-Debug.obj -MD -MP -MF ../src/$(DEPDIR)/Sockets_Test-Debug.Tpo -c -o ../src/Sockets_Test-Debug.obj `if test -f '../src/Debug.cxx'; then $(CYGPATH_W) '../src/Debug.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/Debug.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) ../src/$(DEPDIR)/Sockets_Test-Debug.Tpo ../src/$(DEPDIR)/Sockets_Test-Debug.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../src/Debug.cxx' object='../src/Sockets_Test-Debug.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(Sockets_Test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ../src/Sockets_Test-Debug.obj `if test -f '../src/Debug.cxx'; then $(CYGPATH_W) '../src/Debug.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/Debug.cxx'; fi`
 
 TSIP_Test-TSIP_Test.o: TSIP_Test.cxx
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TSIP_Test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT TSIP_Test-TSIP_Test.o -MD -MP -MF $(DEPDIR)/TSIP_Test-TSIP_Test.Tpo -c -o TSIP_Test-TSIP_Test.o `test -f 'TSIP_Test.cxx' || echo '$(srcdir)/'`TSIP_Test.cxx

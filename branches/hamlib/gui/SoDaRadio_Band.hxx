@@ -149,8 +149,8 @@ public:
 
   
   void save(boost::property_tree::ptree * config_tree) {
-
     boost::property_tree::ptree band;
+    
     band.put("name", band_name);
     band.put("upper_band_edge", upper_band_edge);
     band.put("lower_band_edge", lower_band_edge);
@@ -319,3 +319,4 @@ private:
   std::map< std::string,  SoDaRadio_Band * >::iterator bli;
 }; 
 #endif
+

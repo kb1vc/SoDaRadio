@@ -119,6 +119,7 @@
 #include "AudioTX.hxx"
 #include "CWTX.hxx"
 #include "UI.hxx"
+#include "RigCtrl.hxx"
 #include "GPS_TSIPmon.hxx"
 #include "AudioPA.hxx"
 #include "AudioALSA.hxx"
@@ -172,7 +173,9 @@ int doWork(int argc, char * argv[])
   SoDa::AudioRX arx(&params, &rx_stream, &cmd_stream, &audio_ifc);
   SoDa::AudioTX atx(&params, &tx_stream, &cmd_stream, &audio_ifc);
 
-
+  /// doWork creates a thread to listen on a RigCtrl (hamlib) control port
+  /// (typically localhost:4532)
+  SoDa::RigCtrl rctl(&params, &cmd_stream, 4532);
   
   /// doWork creates the morse code (CW) tx handler thread @see SoDa::CWTX
   SoDa::CWTX cwtx(&params, &cwtxt_stream, &cw_env_stream, &cmd_stream); 
@@ -198,6 +201,7 @@ int doWork(int argc, char * argv[])
   arx.start();
   atx.start();
   cwtx.start();
+  rctl.start();
 
   // now the gps...
   d.debugMsg("Starting gps");
@@ -212,6 +216,7 @@ int doWork(int argc, char * argv[])
   atx.join();
   cwtx.join();
   gps.join();
+  rctl.join();
   d.debugMsg("Exit");
   
   // when we get here, we are done... (UI should not return until it gets an "exit/quit" command.)
