@@ -100,7 +100,7 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 	
 	this->SetMenuBar( m_menubar1 );
 	
-	m_ClueBar = this->CreateStatusBar( 2, wxST_SIZEGRIP, wxID_ANY );
+	m_ClueBar = this->CreateStatusBar( 3, wxST_SIZEGRIP, wxID_ANY );
 	wxBoxSizer* TopSizer;
 	TopSizer = new wxBoxSizer( wxVERTICAL );
 	

@@ -39,7 +39,15 @@
 #include <fcntl.h>
 #include <errno.h>
 
-SoDa::IP::ServerSocket::ServerSocket(int portnum)
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
+#include <boost/format.hpp>
+#include <cstdio>
+
+SoDa::IP::ServerSocket::ServerSocket(int portnum, bool localhost_only) :
+  SoDa::Debug((boost::format("Server:%d") % portnum).str())
 {
   int stat; 
   // create the socket. 
@@ -56,7 +64,12 @@ SoDa::IP::ServerSocket::ServerSocket(int portnum)
   // setup the server address
   bzero((char*) &server_address, sizeof(server_address));
   server_address.sin_family = AF_INET;
-  server_address.sin_addr.s_addr = INADDR_ANY;
+  if(localhost_only) {
+    server_address.sin_addr.s_addr = inet_addr("127.0.0.1");
+  }
+  else {
+    server_address.sin_addr.s_addr = INADDR_ANY;
+  }
   server_address.sin_port = htons(portnum);
 
   // now bind it
@@ -76,7 +89,8 @@ SoDa::IP::ServerSocket::ServerSocket(int portnum)
   ready = false; 
 }
 
-SoDa::IP::ClientSocket::ClientSocket(const char * hostname, int portnum)
+SoDa::IP::ClientSocket::ClientSocket(const char * hostname, int portnum) :
+  SoDa::Debug((boost::format("Client:%d") % portnum).str())
 {
   conn_socket = socket(AF_INET, SOCK_STREAM, 0);
   if(conn_socket < 0) {
@@ -112,12 +126,15 @@ bool SoDa::IP::ServerSocket::isReady()
   else {
     socklen_t ca_len = sizeof(client_address);
     // note that we've set the server_socket to non-block, so if nobody is here,
-    // we should get an EAGAIN or EWOULDBLOCK. 
+    // we should get an EAGAIN or EWOULDBLOCK.
+    debugMsg("About to call ACCEPT");
     int ns = accept(server_socket, (struct sockaddr *) & client_address, &ca_len);
     if(ns < 0) {
+      debugMsg("Nothing there.");
       ready = false; 
     }
     else {
+      debugMsg("Got Connection.");
       conn_socket = ns;
       int x = fcntl(conn_socket, F_GETFL, 0);
       fcntl(conn_socket, F_SETFL, x | O_NONBLOCK);
@@ -148,6 +165,7 @@ int SoDa::IP::NetSocket::loopWrite(int fd, const void * ptr, unsigned int nbytes
     }
   }
 }
+
 int SoDa::IP::NetSocket::put(const void * ptr, unsigned int size)
 {
   // we always put a buffer of bytes, preceded by a count of bytes to be sent.
@@ -218,5 +236,38 @@ int SoDa::IP::NetSocket::get(void * ptr, unsigned int size)
   }
 
   return size; 
+
+}
+
+
+int SoDa::IP::NetSocket::writeBuf(const void * ptr, unsigned int size)
+{
+  // This writes a raw buffer, without the length as a preamble
+  int stat;
+  
+  stat = loopWrite(conn_socket, ptr, size);
+
+  // return the number of bytes written (if stat > 0). 
+  return stat; 
+}
+
+int SoDa::IP::NetSocket::readBuf(void * ptr, unsigned int size)
+{
+  // this gets a raw buffer, without the length as a preamble
+
+  int stat;
+
+  stat = read(conn_socket, ptr, size);
+  if(stat <= 0) {
+    if((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
+      return 0; 
+    }
+    else {
+      perror("Oops -- socket get -- "); 
+      return stat;
+    }
+  }
+
+  return stat; 
 
 }

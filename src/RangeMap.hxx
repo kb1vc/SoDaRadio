@@ -1,3 +1,5 @@
+#ifndef RANGE_MAP_HDR
+#define RANGE_MAP_HDR
 /*
   Copyright (c) 2014, Matthew H. Reilly (kb1vc)
   All rights reserved.
@@ -26,43 +28,58 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "FindHome.hxx"
-extern "C" {
-#include <libgen.h>
-#include <unistd.h>
-#ifdef __linux__
-#include <linux/limits.h>
-#endif  
+///
+///  @file RangeMap.hxx
+///  @brief Specialization of the STL map container to support
+///  range-based lookups. 
+///
+///
+///  @author M. H. Reilly (kb1vc)
+///  @date   October, 2014
+///
+#include <map>
+
+namespace SoDa {
+  ///  @class Range -- a template class for mapping ranges to thingies
+  ///  This represents an open interval -- thanks to suggestions from
+  ///  http://stackoverflow.com/questions/1089192/c-stl-range-container
+  template <typename Tk> class Range {
+  public:
+    Range(Tk _min, Tk _max) {
+      min = _min;
+      max = _max; 
+    }
+
+    Range(Tk _c) {
+      min = _c;
+      max = _c;
+    }
+
+    Tk getMin() const { return min; }
+    Tk getMax() const { return max; }
+
+
+      
+  private:
+    Tk min, max; 
+  };
+
+  template <typename Tk> struct leftOfRange : public std::binary_function< Range<Tk>, Range<Tk>, bool>
+  {
+    bool operator() (Range<Tk> const & l,
+		     Range<Tk> const & r) const {
+      return ((l.getMin() < r.getMin()) && (l.getMax() <= r.getMin()));
+    }
+  };
+
+  template <typename Tk, typename Tv> class RangeMap : public std::map<Range<Tk>, Tv, leftOfRange<Tk> > {
+  public:
+    RangeMap() : std::map<Range<Tk>, Tv, leftOfRange<Tk> >() {
+    }
+    
+  protected:
+  }; 
 }
 
-#include <iostream>
-#include <stdexcept>
 
-/**
- * Find the directory in which the calling program resides.
- *
- * Note this feature relies on the existance of the procfs.
- * It works under Linux. I'm not sure what I'll do for other
- * operating systems.  
- *
- * @return string pointing to the program's directory. 
- */
-std::string findHome()
-{
-#ifdef __linux__
-  // This solution was suggested by an answer in
-  // http://stackoverflow.com/questions/7051844/how-to-find-the-full-path-of-the-c-linux-program-from-within
-  char execution_path[PATH_MAX + 1] = {0}; 
-  ssize_t st = readlink("/proc/self/exe", execution_path, PATH_MAX);
-  if(st < 0) {
-    // readlink got an error.... throw something
-    throw std::runtime_error("Couldn't open /proc/self/exe");
-  }
-  // now trim the end of the path off, we just want the directory
-  char * mydir = dirname(execution_path);
-  return std::string(mydir); 
-#elif __OSX__
-  // This code has not been tested. 
 #endif
-}
-

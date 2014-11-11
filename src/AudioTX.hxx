@@ -2,6 +2,9 @@
 Copyright (c) 2012,2013,2014 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
+  FM modulator features based on code contributed by and 
+  Copyright (c) 2014, Aaron Yankey Antwi (aaronyan2001@gmail.com)
+
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
 met:
@@ -93,6 +96,22 @@ namespace SoDa {
      * creates an IQ stream that is amplitude modulated
      */
     SoDa::SoDaBuf * modulateAM(float * audio_buf, unsigned int len, bool is_usb, bool is_lsb); 
+
+    /**
+     * @brief create a narrowband/wideband FM modulation envelope
+     *
+     * @param audio_buf the buffer of modulating audio info
+     * @param len the length of the audio buffer
+     * @param deviation the phase shift per audio sample for a maximum amplitude (1.0) input.
+     *
+     * Note that this modulator varies the mic gain to prevent over-deviation. 
+     */
+    SoDa::SoDaBuf * modulateFM(float * audio_buf, unsigned int len, double deviation);
+    double fm_phase;
+    double nbfm_deviation; ///< phase advance for 2.5kHz deviation.
+    double wbfm_deviation; ///< phase advance for 75kHz deviation
+    double fm_mic_gain; ///< separate gain control for FM deviation....
+
     
     DatMBox * tx_stream; ///< outbound RF stream to USRPTX transmit chain
     CmdMBox * cmd_stream; ///< command stream from UI and other units
