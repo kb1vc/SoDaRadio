@@ -32,6 +32,7 @@
 #include <uhd/utils/safe_main.hpp>
 #include <uhd/usrp/multi_usrp.hpp>
 #include <uhd/usrp/multi_usrp.hpp>
+#include <uhd/utils/msg.hpp>
 #include <uhd/types/tune_request.hpp>
 #include <uhd/types/tune_result.hpp>
 #include <boost/format.hpp>
@@ -44,6 +45,8 @@
 const unsigned int SoDa::USRPCtrl::TX_RELAY_CTL = 0x1000;
 const unsigned int SoDa::USRPCtrl::TX_RELAY_MON = 0x0800;
 
+SoDa::USRPCtrl * SoDa::USRPCtrl::singleton_ctrl_obj = NULL; 
+
 // borrowed from uhd_usrp_probe print_tree function
 void dumpTree(const uhd::fs_path &path, uhd::property_tree::sptr tree){
     std::cout << path << std::endl;
@@ -54,6 +57,13 @@ void dumpTree(const uhd::fs_path &path, uhd::property_tree::sptr tree){
 
 SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaThread("USRPCtrl")
 {
+  // point to myself.... 
+  SoDa::USRPCtrl::singleton_ctrl_obj = this;
+
+  // setup a normal message handler that doesn't babble
+  // so much. 
+  uhd::msg::register_handler(normal_message_handler);
+  
   // initialize variables
   last_rx_req_freq = 0.0; // at least this is a number...
   tx_on = false;
@@ -273,32 +283,35 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
   // 
   
   double target_rx_freq = freq;
-  
  
   if(sel == 'r') {
     // we round the target frequency to a point that puts the
-    // baseband between 80 and 220 KHz below the requested
-    // frequency. and an even 100kHz multiple. 
+    // baseband between 150 and 250 KHz below the requested
+    // frequency. and an even 100kHz multiple.
+
+    target_rx_freq = 100e3 * floor(freq / 100e3);
+    debugMsg(boost::format("freq = %lf 1st target = %lf\n") % freq % target_rx_freq);
+    while((freq - target_rx_freq) < 100e3) {
+      target_rx_freq -= 100.0e3;
+      debugMsg(boost::format("\tfreq = %lf new target = %lf\n") % freq % target_rx_freq);
+    }
 
     /// This code depends on the integer-N tuning features in libuhd 3.7
     /// earlier libraries will revert to fractional-N tuning and might
     /// see a rise in the noisefloor and perhaps some troublesome spurs
     /// at multiples of the reference frequency divided by the fractional divisor.
-    uhd::tune_request_t rx_trequest(freq); 
+    uhd::tune_request_t rx_trequest(target_rx_freq); 
     if(supports_IntN_Mode) {
-      rx_trequest.target_freq = freq;
+      rx_trequest.target_freq = target_rx_freq;
       rx_trequest.rf_freq = getNearestStep(target_rx_freq, 1.0e6);
       rx_trequest.rf_freq_policy = uhd::tune_request_t::POLICY_MANUAL;
       rx_trequest.dsp_freq_policy = uhd::tune_request_t::POLICY_AUTO;
       rx_trequest.args = uhd::device_addr_t("mode_n=integer");
     }
     else {
-      // set the RF at least 80 kHz below the target
-      target_rx_freq = 100e3 * floor(freq / 100e3);
-      if((freq - target_rx_freq) < 80e3) target_rx_freq -= 100.0e3;
-      rx_trequest.target_freq = freq;
+      rx_trequest.target_freq = target_rx_freq;
       rx_trequest.rf_freq = target_rx_freq; 
-      rx_trequest.rf_freq_policy = uhd::tune_request_t::POLICY_MANUAL;
+      rx_trequest.rf_freq_policy = uhd::tune_request_t::POLICY_AUTO;
       rx_trequest.dsp_freq_policy = uhd::tune_request_t::POLICY_AUTO;
     }
 
@@ -320,7 +333,6 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
     // unless we're on a B2xx -- in that case, we adjust the LO anyway.
     if(!tx_on && !is_B2xx) return;
 
-
     uhd::tune_request_t tx_request(freq);
     
     if(tvrt_lo_mode) {
@@ -330,7 +342,6 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
     else {
       tx_request.rf_freq_policy = uhd::tune_request_t::POLICY_AUTO;
     }
-
 
     debugMsg(boost::format("Tuning TX unit to new frequency %f (request = %f  (%f %f))\n")
 	     % freq % tx_request.target_freq % tx_request.rf_freq % tx_request.dsp_freq);
@@ -343,8 +354,6 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
 	     % last_tx_tune_result.actual_rf_freq
 	     % last_tx_tune_result.target_dsp_freq
 	     % last_tx_tune_result.actual_dsp_freq);
-
-
 
     last_tx_tune_result = checkLock(tx_request, 't', last_tx_tune_result);
     // tx_fe_subtree->access<bool>("enabled").set(last_tx_ena);
@@ -362,8 +371,6 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
   if((sel == 'r') && set_if_freq) {
     cmd_stream->put(new Command(Command::SET, Command::RX_LO3_FREQ,
 				freq - target_rx_freq)); 
-  }
-  else {
   }
 }
 
@@ -406,7 +413,7 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
     debugMsg(boost::format("Got RX RETUNE request -- frequency %f diff = %f  last actual_rf %f  dsp %f\n")
 	     % freq % fdiff % last_rx_tune_result.actual_rf_freq % last_rx_tune_result.actual_dsp_freq);
 
-    if((fdiff < 200e3) && (fdiff > 50e3)) {
+    if((fdiff < 200e3) && (fdiff > 100e3)) {
       cmd_stream->put(new Command(Command::SET, Command::RX_LO3_FREQ, fdiff)); 
       cmd_stream->put(new Command(Command::REP, Command::RX_FE_FREQ, 
 				  last_rx_tune_result.actual_rf_freq - last_rx_tune_result.actual_dsp_freq));
@@ -785,6 +792,39 @@ double SoDa::USRPCtrl::getNearestStep(double freq, double offset)
   return ret; 
 }
 
+void SoDa::USRPCtrl::freq_search_message_handler(uhd::msg::type_t type, const std::string & msg)
+{
+  switch (type) {
+  case uhd::msg::status:
+    // do nothing -- these are the rx freq setting complaints.
+    break; 
+  case uhd::msg::error:
+    std::cerr << "UHD ERROR: " << msg << std::flush;
+    break;
+  case uhd::msg::warning:
+    std::cerr << "UHD WARNING: " << msg << std::flush;
+    break;
+  default:
+    SoDa::USRPCtrl::singleton_ctrl_obj->debugMsg(msg);
+    break; 
+  }
+}
+
+void SoDa::USRPCtrl::normal_message_handler(uhd::msg::type_t type, const std::string & msg)
+{
+  switch (type) {
+  case uhd::msg::error:
+    std::cerr << "UHD ERROR: " << msg << std::flush;
+    break;
+  case uhd::msg::warning:
+    std::cerr << "UHD WARNING: " << msg << std::flush;
+    break;
+  default:
+    SoDa::USRPCtrl::singleton_ctrl_obj->debugMsg(msg);
+    break; 
+  }
+}
+
 void SoDa::USRPCtrl::initStepMap()
 {
   supports_IntN_Mode = false;
@@ -823,6 +863,11 @@ void SoDa::USRPCtrl::initStepMap()
   else {
     debugMsg("Does not support INT_N tuning mode.\n");
   }
+
+  // set the message handler for status messages to throw stuff away.
+  // the driver complains a lot about unsupported settings, but that
+  // is the whole point of this loop.... so....
+  uhd::msg::register_handler(freq_search_message_handler);
   
   // Now sweep from min to max freq, and find the steps along the way.
   double ff_incr = 1.0e6; // start with a small step...
@@ -853,6 +898,9 @@ void SoDa::USRPCtrl::initStepMap()
     // 	     % ff % tunres_int.actual_rf_freq); 
   }
 
+  // now go back to the normal handler. 
+  uhd::msg::register_handler(normal_message_handler);
+  
   if(getDebugLevel() > 2) {
     typedef std::pair<SoDa::Range<double>, double> fmap_el;
     BOOST_FOREACH( fmap_el const & el, lo_step_map) {

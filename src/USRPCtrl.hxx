@@ -49,6 +49,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <uhd/usrp/dboard_base.hpp>
 #include <uhd/types/tune_request.hpp>
 #include <uhd/types/tune_result.hpp>
+#include <uhd/utils/msg.hpp>
 
 namespace SoDa {
   ///  @class USRPCtrl
@@ -76,6 +77,19 @@ namespace SoDa {
     /// RX and TX processes to find the associated USRP widget.
     /// @return a pointer to the USRP radio object
     uhd::usrp::multi_usrp::sptr getUSRP() { return usrp; }
+
+    /// Temporary message handler, while we're looking for
+    /// "natural" front-end VCO settings.
+    static void freq_search_message_handler(uhd::msg::type_t type, const std::string & msg);
+
+    /// This is the more permanent message handler... 
+    static void normal_message_handler(uhd::msg::type_t type, const std::string & msg);
+
+    /// This is a singleton object -- the last (and only, we hope) such object
+    /// to be created sets a static pointer to itself.  This looks pretty gross, but
+    /// it is necessary to provide context to the error message handlers.
+    static SoDa::USRPCtrl * singleton_ctrl_obj;
+    
   private:
     Params * params;
 

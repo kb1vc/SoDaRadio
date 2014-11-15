@@ -181,7 +181,7 @@ namespace SoDaRadio_GUI {
     cfreq_step = 25; 
     int xs, ys;
     SpectrumDisplay->GetSize(&xs, &ys);
-    ys -= 25; // correct for the height of the tab...
+    ys -= 50; // correct for the height of the tab...
     debugMsg(boost::format("size of FFT panel %d x %d ") % xs % ys);
 
 
