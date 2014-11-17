@@ -101,6 +101,14 @@ void SoDa::USRPRX::run()
 
   bool exitflag = false;
 
+  // load up the free lists a little.
+  for(int i = 0; i < 5; i++) {
+    SoDaBuf * rbuf = new SoDaBuf(rx_buffer_size);
+    rx_stream->addToPool(rbuf); 
+    SoDaBuf * ibuf = new SoDaBuf(rx_buffer_size);
+    if_stream->addToPool(ibuf);
+  }
+
   while(!exitflag) {
     Command * cmd = cmd_stream->get(cmd_subs);
     if(cmd != NULL) {
@@ -151,14 +159,12 @@ void SoDa::USRPRX::run()
 	}
       }
 
-
       // support debug... 
       scount++;
       
+      // now put the baseband signal on the ring.
       // tune it down with the IF oscillator
       doMixer(buf); 
-      
-      // now put the baseband signal on the ring.
       rx_stream->put(buf);
     }
     else {
@@ -230,6 +236,20 @@ void SoDa::USRPRX::execSetCommand(Command * cmd)
     current_IF_tuning = cmd->dparms[0];
     set3rdLOFreq(cmd->dparms[0]); 
     break;
+  case SoDa::Command::RX_STATE: // SET RX_ON or OFF -- used by test equipment
+    if(cmd->iparms[0] == 0) {
+      stopStream();
+      enable_spectrum_report = false;
+      cmd_stream->put(new SoDa::Command(Command::REP, Command::RX_STATE, 0));
+      debugMsg("RX OFF\n");
+    }
+    else if(cmd->iparms[0] == 1) {
+      startStream();
+      enable_spectrum_report = true; 
+      cmd_stream->put(new SoDa::Command(Command::REP, Command::RX_STATE, 1));
+      debugMsg("RX ON\n");
+    }
+    break; 
   case SoDa::Command::TX_STATE: // SET TX_ON
     if(cmd->iparms[0] == 1) {
       if((rx_modulation == SoDa::Command::CW_L) || (rx_modulation == SoDa::Command::CW_U)) {

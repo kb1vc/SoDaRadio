@@ -30,9 +30,19 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 SoDa::Params::Params(int argc, char * argv[])
 {
-  namespace po = boost::program_options;
-  po::options_description desc("Allowed options");
-  desc.add_options()
+  initParseTable();
+  parseCommandLine(argc, argv);
+}
+
+SoDa::Params::Params()
+{
+  initParseTable();
+}
+
+void SoDa::Params::initParseTable()
+{
+  desc = new boost::program_options::options_description("Allowed options");
+  desc->add_options()
     ("help", "help message")
     ("uhdargs", po::value<std::string>(&uhd_args)->default_value(""),
      "multi uhd device address arguments")
@@ -43,13 +53,17 @@ SoDa::Params::Params(int argc, char * argv[])
     ("debug", po::value<unsigned int>(&debug_level)->default_value(0)->implicit_value(1),
      "Enable debug messages for value > 0.  Higher values may produce more detail.")
     ;
+}
 
-  po::store(po::parse_command_line(argc, argv, desc), pmap);
+void SoDa::Params::parseCommandLine(int argc, char * argv[])
+{
+  namespace po = boost::program_options;
+  po::store(po::parse_command_line(argc, argv, *desc), pmap);
   po::notify(pmap);
 
   // do we need a help message?
   if(pmap.count("help")) {
-    std::cout << "SoDa -- The 'SoD' stands for Software Defined. The 'a' doesn't stand for anything.   " << desc << std::endl;
+    std::cout << "SoDa -- The 'SoD' stands for Software Defined. The 'a' doesn't stand for anything.   " << *desc << std::endl;
     exit(-1); 
   }
   

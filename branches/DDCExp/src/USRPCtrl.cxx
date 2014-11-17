@@ -274,6 +274,29 @@ uhd::tune_result_t SoDa::USRPCtrl::checkLock(uhd::tune_request_t & req, char sel
   return ret; 
 }
 
+void SoDa::USRPCtrl::setRXDDCFreq(double freq)
+{
+  uhd::tune_request_t rx_trequest;
+
+  rx_trequest.target_freq = last_rx_tune_result.actual_rf_freq - freq;
+  rx_trequest.rf_freq = last_rx_tune_result.actual_rf_freq;
+  rx_trequest.dsp_freq = freq;
+  rx_trequest.rf_freq_policy = uhd::tune_request_t::POLICY_MANUAL;
+  rx_trequest.dsp_freq_policy = uhd::tune_request_t::POLICY_MANUAL;
+  if(supports_IntN_Mode) {
+    rx_trequest.args = uhd::device_addr_t("mode_n=integer");
+  }
+  last_rx_tune_result = usrp->set_rx_freq(rx_trequest);
+  last_rx_tune_result = checkLock(rx_trequest, 'r', last_rx_tune_result);
+  debugMsg(boost::format("RX DDC Tune RF_actual %lf DDC = %lf tuned = %lf target = %lf request  rf = %lf request ddc = %lf\n")
+	   % last_rx_tune_result.actual_rf_freq
+	   % last_rx_tune_result.actual_dsp_freq
+	   % freq
+	   % rx_trequest.target_freq
+	   % rx_trequest.rf_freq
+	   % rx_trequest.dsp_freq);
+}
+
 void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
 {
   // select "r" for rx and "t" for tx.
@@ -425,9 +448,16 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
     last_rx_req_freq = cmd->dparms[0]; 
     set1stLOFreq(cmd->dparms[0], 'r', cmd->target != Command::RX_TUNE_FREQ);
     cmd_stream->put(new Command(Command::REP, Command::RX_FE_FREQ, 
-			       last_rx_tune_result.actual_rf_freq - last_rx_tune_result.actual_dsp_freq)); 
+				last_rx_tune_result.actual_rf_freq - last_rx_tune_result.actual_dsp_freq));
+
     break;
 
+  case Command::RX_DDC_FREQ:
+    setRXDDCFreq(cmd->dparms[0]);
+    cmd_stream->put(new Command(Command::REP, Command::RX_DDC_FREQ, 
+				last_rx_tune_result.actual_rf_freq - last_rx_tune_result.actual_dsp_freq,
+				last_rx_tune_result.actual_dsp_freq)); 
+    break;
   case Command::LO_CHECK:
     if(cmd->dparms[0] == 0.0) {
       set1stLOFreq(last_rx_req_freq, 'r', false);

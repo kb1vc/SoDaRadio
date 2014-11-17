@@ -135,6 +135,9 @@ namespace SoDa {
     /// its front-end frequency so that it can adjust its own oscillator.
     void set1stLOFreq(double freq, char sel, bool set_if_freq = false);
 
+    /// Set the receiver DDC frequency, holding the current 1st LO frequency constant.
+    void setRXDDCFreq(double freq);
+
     
     CmdMBox * cmd_stream; ///< command stream channel
     unsigned int subid;   ///< subscriber ID for this thread's connection to the command channel

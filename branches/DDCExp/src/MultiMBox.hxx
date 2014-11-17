@@ -36,6 +36,7 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition.hpp>
+#include <boost/format.hpp>
 
 namespace SoDa {
   
@@ -44,21 +45,25 @@ namespace SoDa {
   public:
     MBoxMessage()
     {
-      reader_count = 0;
+      init();
     }
 
+    void init() {
+      setReaderCount(0);
+    }
+    
     void setReaderCount(unsigned int rc)
     {
       boost::mutex::scoped_lock lock(rc_mutex);
       reader_count = rc; 
     }
 
-    bool readyToDie() { return reader_count == 1; }
+    bool readyToDie() { return reader_count <= 1; }
     bool decReaderCount() { return reader_count--; }
 
     bool free(std::queue<MBoxMessage *> & free_list) {
       boost::mutex::scoped_lock lock(rc_mutex);
-      if(reader_count == 1) {
+      if(reader_count <= 1) {
 	reader_count = 0; 
 	free_list.push(this); 
       }
@@ -79,9 +84,12 @@ namespace SoDa {
 
   template <typename T> class MultiMBox {
   public:
-    MultiMBox(bool _keep_freelist = true) {
+    MultiMBox(bool _keep_freelist = true, const std::string & _name = std::string("Anon")) {
       subscriber_count = 0;
-      keep_freelist = _keep_freelist; 
+      allocation_count = 0;
+      free_count = 0;
+      keep_freelist = _keep_freelist;
+      name = _name;
     }
 
     int subscribe() {
@@ -95,8 +103,14 @@ namespace SoDa {
     
     void put(T * m) {
       int i;
-      m->setReaderCount(subscriber_count);
       m->setMBoxTag(this); 
+      if(subscriber_count == 0) {
+	free(m);
+	return; 
+      }
+      
+      m->setReaderCount(subscriber_count);
+
       for(i = 0; i < subscriber_count; i++) {
 	Subscriber * s = subscribers[i];
 	boost::mutex::scoped_lock lock(s->postmutex); 
@@ -116,15 +130,20 @@ namespace SoDa {
 
     void free(T * m) {
       if(m != NULL) {
-	if(keep_freelist && m->checkMBoxTag(this)) {
-	  if(m->readyToDie()) {
-	    boost::mutex::scoped_lock lock(free_lock); 
+	if(keep_freelist && (m->checkMBoxTag(this) || (getSubscriberCount() == 0))) {
+	  if(m->readyToDie() || (getSubscriberCount() == 0)) {
+	    boost::mutex::scoped_lock lock(free_lock);
+	    free_count++; 
 	    m->free(free_list);
 	  }
 	  else m->decReaderCount(); 
 	}
 	else {
-	  if(m->readyToDie()) delete m;
+	  if(m->readyToDie() || (getSubscriberCount() == 0)) {
+	    boost::mutex::scoped_lock lock(free_lock);
+	    delete m;
+	    free_count++; 
+	  }
 	  else m->decReaderCount(); 
 	}
       }
@@ -133,10 +152,13 @@ namespace SoDa {
     T * alloc()
     {
       T * ret = NULL;
-      boost::mutex::scoped_lock lock(free_lock); 
+      boost::mutex::scoped_lock lock(free_lock);
       if(!free_list.empty() && keep_freelist) {
 	ret = (T*) free_list.front();
 	free_list.pop();
+	ret->init();
+	ret->setMBoxTag(this);
+	allocation_count++; 
       }
 
       return ret; 
@@ -144,7 +166,7 @@ namespace SoDa {
 
     void addToPool(T * v) {
       if(keep_freelist) {
-	boost::mutex::scoped_lock lock(free_lock); 
+	boost::mutex::scoped_lock lock(free_lock);
 	free_list.push(v);
       }
     }
@@ -173,6 +195,9 @@ namespace SoDa {
       return max_len; 
     }
   private:
+
+    std::string name;
+    
     T * get_common(unsigned int subscriber_id, bool wait)
     {
       if(subscriber_id >= subscriber_count) {
@@ -204,6 +229,8 @@ namespace SoDa {
       return ret; 
     }
 
+    int allocation_count; 
+    int free_count; 
     unsigned int subscriber_count;
     bool keep_freelist; 
 

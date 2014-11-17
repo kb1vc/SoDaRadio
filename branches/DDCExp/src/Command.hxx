@@ -95,6 +95,14 @@ namespace SoDa {
        */
       RX_LO3_FREQ,
 
+      /**
+       * Tune the 2nd LO (FPGA DDC synthesizer) while holding
+       * the first LO (front end VCO freq) constant
+       *
+       * param is frequency as a double
+       */
+      RX_DDC_FREQ,
+      
       
       /**
        * Set the TX front end (1st LO, the 2nd IF LO), and the 3rd LO
