@@ -46,6 +46,7 @@ void SoDa::Command::initTables()
   target_map_s2v[std::string("TX_RETUNE_FREQ")] = TX_RETUNE_FREQ;
   target_map_s2v[std::string("RX_FE_FREQ")] = RX_FE_FREQ;
   target_map_s2v[std::string("TX_FE_FREQ")] = TX_FE_FREQ;
+  target_map_s2v[std::string("RX_DDC_FREQ")] = RX_DDC_FREQ;
   target_map_s2v[std::string("RX_LO3_FREQ")] = RX_LO3_FREQ;
   target_map_s2v[std::string("RX_SAMP_RATE")] = RX_SAMP_RATE;
   target_map_s2v[std::string("TX_SAMP_RATE")] = TX_SAMP_RATE;
@@ -94,6 +95,7 @@ void SoDa::Command::initTables()
   target_map_v2s[TX_RETUNE_FREQ] = new std::string("TX_RETUNE_FREQ");
   target_map_v2s[RX_FE_FREQ] = new std::string("RX_FE_FREQ");
   target_map_v2s[TX_FE_FREQ] = new std::string("TX_FE_FREQ");
+  target_map_v2s[RX_DDC_FREQ] = new std::string("RX_DDC_FREQ");
   target_map_v2s[RX_LO3_FREQ] = new std::string("RX_LO3_FREQ");
   target_map_v2s[RX_SAMP_RATE] = new std::string("RX_SAMP_RATE");
   target_map_v2s[TX_SAMP_RATE] = new std::string("TX_SAMP_RATE");

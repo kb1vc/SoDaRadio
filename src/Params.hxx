@@ -32,6 +32,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <boost/format.hpp>
 #include <boost/program_options.hpp>
 
+namespace po = boost::program_options;
+
 namespace SoDa {
   /**
    * This class handles command line parameters and built-ins. 
@@ -45,6 +47,23 @@ namespace SoDa {
      * @param argv pointer to list of parameter strings
      */
     Params(int argc, char * argv[]);
+
+    /**
+     * @brief Constructor
+     *
+     * This version doesn't parse the command line, it just
+     * builds the commands -- this allows subclassing of the
+     * params class for other users
+     */
+    Params();
+
+    /**
+     * @brief Parse the command line.  
+     *
+     * @param argc count of command line arguments
+     * @param argv pointer to list of parameter strings
+     */
+    void parseCommandLine(int argc, char * argv[]);
 
     /**
      * @brief return args that point to a particular USRP unit
@@ -105,8 +124,14 @@ namespace SoDa {
     std::string getGPSDev() { return "/dev/ttyGPS"; }
 
     unsigned int getDebugLevel() { return debug_level; }
-  private:
+
+  protected:
+    boost::program_options::options_description * desc;
     
+  private:
+
+    void initParseTable();
+
     boost::program_options::variables_map pmap;
 
     std::string uhd_args;

@@ -82,7 +82,7 @@ void SoDa::Spectrogram::apply_common(std::complex<float> * invec,
   for(j = 0; j < fft_len; j++) result[j] = 0.0;
   
   // accumulate FFT results over the length of the buffer.
-  for(i = 0; i < (inveclen + 1 - fft_len); i += (fft_len / 2)) {
+  for(i = 0; i < (inveclen - fft_len); i += (fft_len / 2)) {
     std::complex<float> *v = &(invec[i]);
 
     // window the input
