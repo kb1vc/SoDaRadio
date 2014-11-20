@@ -212,7 +212,7 @@ messages
 	    else if(ddc_freq_test > -0.1e6) {
 	      ddc_freq_test -= 10.0;	      
 	    }
-	    else if(ddc_freq_test > -1.0e6) {
+	    else if(ddc_freq_test > -10.0e6) {
 	      ddc_freq_test -= 1000.0;	      
 	    }
 	    else {
