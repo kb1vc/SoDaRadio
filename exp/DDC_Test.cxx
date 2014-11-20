@@ -56,9 +56,20 @@ namespace SoDa {
   public:
     ExpParams(int argc, char * argv[]) : Params() {
       desc->add_options()
-	("lo_freq", po::value<double>(&lo_base_freq)->default_value(157.0e6),
+	("lo_freq,l", po::value<double>(&lo_base_freq)->default_value(157.0e6),
 	 "Local Oscillator Frequency")
-	("file", po::value<std::string>(&out_filename)->default_value("sweep.dat"),
+
+	("start_freq,s", po::value<double>(&ddc_start_freq)->default_value(1.0),
+	 "DDC test frequency starting value (Hz)")
+	("end_freq,e", po::value<double>(&ddc_end_freq)->default_value(1.0e6),
+	 "DDC test frequency ending value (Hz)")
+	("ddc_step,i", po::value<double>(&ddc_freq_step)->default_value(-1.0),
+	 "DDC frequency step (Hz) -- if < 0, use 10/100/1000 stepping...")
+
+	("window_size,w", po::value<unsigned int>(&window_size)->default_value(64),
+	 "Number of FFT windows to average per result.")
+	
+	("file,f", po::value<std::string>(&out_filename)->default_value("sweep.dat"),
 	 "Output filename");
       
       parseCommandLine(argc, argv); 
@@ -69,7 +80,12 @@ namespace SoDa {
     
   private:
     double lo_base_freq;
-    std::string out_filename; 
+    std::string out_filename;
+
+  public:
+    double ddc_start_freq, ddc_end_freq, ddc_freq_step;
+    unsigned int window_size; 
+    
   };
   
   class DDCExp : public SoDaThread {
@@ -85,10 +101,11 @@ units
      * @param _cmd_stream data mailbox used to carry command, query, and report 
 messages
      */
-    DDCExp(ExpParams * params,
+    DDCExp(ExpParams * _params,
 	   DatMBox * _if_stream,
 	   CmdMBox * _cmd_stream) : SoDa::SoDaThread("DDCExp") {
 
+      params = _params;
       if_stream = _if_stream;
       if_subs = if_stream->subscribe();
      
@@ -116,8 +133,9 @@ messages
       of.open(datfile.c_str(), std::ios::out);
 
 
-      collect_count_limit = 72;
+
       ignore_count = 8;
+      collect_count_limit = ignore_count + params->window_size; 
       spectrum_acc_gain = 1.0 - (1.0 / ((float) (collect_count_limit - ignore_count)));
       
       writeHeader();
@@ -158,7 +176,7 @@ messages
 	switch (curstate) {
 	case INIT:
 	  if(got_new_ddc_freq) {
-	    ddc_freq_test = 0.0;
+	    ddc_freq_test = params->ddc_start_freq;
 	    got_new_ddc_freq = false; 
 	    cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_DDC_FREQ, ddc_freq_test));
 	    curstate = WAIT_FOR_FREQ;
@@ -203,7 +221,10 @@ messages
 	    writeResultDB();
 	    writeSummaryResult();
 	    // set a new frequency
-	    if(ddc_freq_test >  -10.0) {
+	    if(params->ddc_freq_step > 0.0) {
+	      ddc_freq_test -= params->ddc_freq_step; 
+	    }
+	    else if(ddc_freq_test >  -10.0) {
 	      ddc_freq_test -= 1.0;
 	    }
 	    else if(ddc_freq_test > -100.0) {
@@ -215,7 +236,8 @@ messages
 	    else if(ddc_freq_test > -10.0e6) {
 	      ddc_freq_test -= 1000.0;	      
 	    }
-	    else {
+
+	    if(ddc_freq_test > params->ddc_end_freq) {
 	      // do nothing -- we're on our way out.
 	      exitflag = true; 
 	    }
@@ -381,6 +403,8 @@ messages
     unsigned int if_subs;
     unsigned int cmd_subs;
 
+    SoDa::ExpParams * params;
+    
     Spectrogram * spect;
     unsigned int spectrogram_buckets;
     float * spectrum_buf;
