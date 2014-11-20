@@ -38,7 +38,7 @@ bin_PROGRAMS = FFT_Test$(EXEEXT) Sockets_Test$(EXEEXT) \
 	OSFilter_Test$(EXEEXT) TestServer$(EXEEXT) \
 	ReSampler_Test$(EXEEXT) TSIP_Test$(EXEEXT) Audio_test$(EXEEXT) \
 	Hilbert_Test$(EXEEXT) FindHome_Test$(EXEEXT) \
-	RangeMap_test$(EXEEXT) DDC_Test$(EXEEXT)
+	RangeMap_test$(EXEEXT) DDC_Test$(EXEEXT) DDC_Post$(EXEEXT)
 subdir = exp
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -72,6 +72,9 @@ am__DEPENDENCIES_1 =
 am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 Audio_test_DEPENDENCIES = $(am__DEPENDENCIES_2)
+am_DDC_Post_OBJECTS = DDC_Post-DDC_Post.$(OBJEXT)
+DDC_Post_OBJECTS = $(am_DDC_Post_OBJECTS)
+DDC_Post_DEPENDENCIES = $(am__DEPENDENCIES_2)
 am_DDC_Test_OBJECTS = DDC_Test-DDC_Test.$(OBJEXT) \
 	../src/DDC_Test-Command.$(OBJEXT) \
 	../src/DDC_Test-Params.$(OBJEXT) \
@@ -162,20 +165,20 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(Audio_test_SOURCES) $(DDC_Test_SOURCES) \
-	$(FFT_Test_SOURCES) $(FindHome_Test_SOURCES) \
-	$(Hilbert_Test_SOURCES) $(MultiMBox_Test_SOURCES) \
-	$(OSFilter_Test_SOURCES) $(RangeMap_test_SOURCES) \
-	$(ReSampler_Test_SOURCES) $(SoDa_ThreadTest_SOURCES) \
-	$(Sockets_Test_SOURCES) $(TSIP_Test_SOURCES) \
-	$(TestServer_SOURCES)
-DIST_SOURCES = $(Audio_test_SOURCES) $(DDC_Test_SOURCES) \
-	$(FFT_Test_SOURCES) $(FindHome_Test_SOURCES) \
-	$(Hilbert_Test_SOURCES) $(MultiMBox_Test_SOURCES) \
-	$(OSFilter_Test_SOURCES) $(RangeMap_test_SOURCES) \
-	$(ReSampler_Test_SOURCES) $(SoDa_ThreadTest_SOURCES) \
-	$(Sockets_Test_SOURCES) $(TSIP_Test_SOURCES) \
-	$(TestServer_SOURCES)
+SOURCES = $(Audio_test_SOURCES) $(DDC_Post_SOURCES) \
+	$(DDC_Test_SOURCES) $(FFT_Test_SOURCES) \
+	$(FindHome_Test_SOURCES) $(Hilbert_Test_SOURCES) \
+	$(MultiMBox_Test_SOURCES) $(OSFilter_Test_SOURCES) \
+	$(RangeMap_test_SOURCES) $(ReSampler_Test_SOURCES) \
+	$(SoDa_ThreadTest_SOURCES) $(Sockets_Test_SOURCES) \
+	$(TSIP_Test_SOURCES) $(TestServer_SOURCES)
+DIST_SOURCES = $(Audio_test_SOURCES) $(DDC_Post_SOURCES) \
+	$(DDC_Test_SOURCES) $(FFT_Test_SOURCES) \
+	$(FindHome_Test_SOURCES) $(Hilbert_Test_SOURCES) \
+	$(MultiMBox_Test_SOURCES) $(OSFilter_Test_SOURCES) \
+	$(RangeMap_test_SOURCES) $(ReSampler_Test_SOURCES) \
+	$(SoDa_ThreadTest_SOURCES) $(Sockets_Test_SOURCES) \
+	$(TSIP_Test_SOURCES) $(TestServer_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -372,6 +375,9 @@ RangeMap_test_LDFLAGS = -g -O1
 DDC_Test_SOURCES = DDC_Test.cxx  ../src/Command.cxx ../src/Params.cxx ../src/USRPCtrl.cxx ../src/USRPRX.cxx ../src/SoDaBase.cxx ../src/Debug.cxx ../src/Spectrogram.cxx
 DDC_Test_CPPFLAGS = $(AM_CPPFLAGS)
 DDC_Test_LDADD = $(AM_BOOSTLIBFLAGS)
+DDC_Post_SOURCES = DDC_Post.cxx 
+DDC_Post_CPPFLAGS = $(AM_CPPFLAGS)
+DDC_Post_LDADD = $(AM_BOOSTLIBFLAGS)
 all: all-am
 
 .SUFFIXES:
@@ -460,6 +466,9 @@ clean-binPROGRAMS:
 Audio_test$(EXEEXT): $(Audio_test_OBJECTS) $(Audio_test_DEPENDENCIES) $(EXTRA_Audio_test_DEPENDENCIES) 
 	@rm -f Audio_test$(EXEEXT)
 	$(CXXLINK) $(Audio_test_OBJECTS) $(Audio_test_LDADD) $(LIBS)
+DDC_Post$(EXEEXT): $(DDC_Post_OBJECTS) $(DDC_Post_DEPENDENCIES) $(EXTRA_DDC_Post_DEPENDENCIES) 
+	@rm -f DDC_Post$(EXEEXT)
+	$(CXXLINK) $(DDC_Post_OBJECTS) $(DDC_Post_LDADD) $(LIBS)
 ../src/DDC_Test-Command.$(OBJEXT): ../src/$(am__dirstamp) \
 	../src/$(DEPDIR)/$(am__dirstamp)
 ../src/DDC_Test-Params.$(OBJEXT): ../src/$(am__dirstamp) \
@@ -630,6 +639,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/TestServer-UDSockets.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/TestServer-UI.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Audio_test-Audio_test.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DDC_Post-DDC_Post.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DDC_Test-DDC_Test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FFT_Test-FFT_Test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FindHome_Test-FindHome_Test.Po@am__quote@
@@ -728,6 +738,20 @@ Audio_test-Audio_test.obj: Audio_test.cxx
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='../src/Debug.cxx' object='../src/Audio_test-Debug.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(Audio_test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ../src/Audio_test-Debug.obj `if test -f '../src/Debug.cxx'; then $(CYGPATH_W) '../src/Debug.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/Debug.cxx'; fi`
+
+DDC_Post-DDC_Post.o: DDC_Post.cxx
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(DDC_Post_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT DDC_Post-DDC_Post.o -MD -MP -MF $(DEPDIR)/DDC_Post-DDC_Post.Tpo -c -o DDC_Post-DDC_Post.o `test -f 'DDC_Post.cxx' || echo '$(srcdir)/'`DDC_Post.cxx
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/DDC_Post-DDC_Post.Tpo $(DEPDIR)/DDC_Post-DDC_Post.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='DDC_Post.cxx' object='DDC_Post-DDC_Post.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(DDC_Post_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o DDC_Post-DDC_Post.o `test -f 'DDC_Post.cxx' || echo '$(srcdir)/'`DDC_Post.cxx
+
+DDC_Post-DDC_Post.obj: DDC_Post.cxx
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(DDC_Post_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT DDC_Post-DDC_Post.obj -MD -MP -MF $(DEPDIR)/DDC_Post-DDC_Post.Tpo -c -o DDC_Post-DDC_Post.obj `if test -f 'DDC_Post.cxx'; then $(CYGPATH_W) 'DDC_Post.cxx'; else $(CYGPATH_W) '$(srcdir)/DDC_Post.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/DDC_Post-DDC_Post.Tpo $(DEPDIR)/DDC_Post-DDC_Post.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='DDC_Post.cxx' object='DDC_Post-DDC_Post.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(DDC_Post_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o DDC_Post-DDC_Post.obj `if test -f 'DDC_Post.cxx'; then $(CYGPATH_W) 'DDC_Post.cxx'; else $(CYGPATH_W) '$(srcdir)/DDC_Post.cxx'; fi`
 
 DDC_Test-DDC_Test.o: DDC_Test.cxx
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(DDC_Test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT DDC_Test-DDC_Test.o -MD -MP -MF $(DEPDIR)/DDC_Test-DDC_Test.Tpo -c -o DDC_Test-DDC_Test.o `test -f 'DDC_Test.cxx' || echo '$(srcdir)/'`DDC_Test.cxx

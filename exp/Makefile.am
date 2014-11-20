@@ -3,7 +3,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/src
 AM_BOOSTLIBFLAGS = ${BOOST_PROGRAM_OPTIONS_LIB} ${BOOST_THREAD_LIB} ${BOOST_DATE_TIME_LIB} ${BOOST_SYSTEM_LIB} 
 
 
-bin_PROGRAMS = FFT_Test Sockets_Test MultiMBox_Test SoDa_ThreadTest OSFilter_Test  TestServer ReSampler_Test TSIP_Test Audio_test Hilbert_Test FindHome_Test RangeMap_test DDC_Test
+bin_PROGRAMS = FFT_Test Sockets_Test MultiMBox_Test SoDa_ThreadTest OSFilter_Test  TestServer ReSampler_Test TSIP_Test Audio_test Hilbert_Test FindHome_Test RangeMap_test DDC_Test DDC_Post
 
 
 Sockets_Test_SOURCES = Sockets_Test.cxx  ../src/IPSockets.cxx ../src/UDSockets.cxx ../src/IPSockets.hxx ../src/UDSockets.hxx
@@ -81,3 +81,8 @@ RangeMap_test_LDFLAGS = -g -O1
 DDC_Test_SOURCES = DDC_Test.cxx  ../src/Command.cxx ../src/Params.cxx ../src/USRPCtrl.cxx ../src/USRPRX.cxx ../src/SoDaBase.cxx ../src/Debug.cxx ../src/Spectrogram.cxx
 DDC_Test_CPPFLAGS = $(AM_CPPFLAGS)
 DDC_Test_LDADD = $(AM_BOOSTLIBFLAGS)
+
+
+DDC_Post_SOURCES = DDC_Post.cxx 
+DDC_Post_CPPFLAGS = $(AM_CPPFLAGS)
+DDC_Post_LDADD = $(AM_BOOSTLIBFLAGS)

@@ -455,7 +455,7 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
   case Command::RX_DDC_FREQ:
     setRXDDCFreq(cmd->dparms[0]);
     cmd_stream->put(new Command(Command::REP, Command::RX_DDC_FREQ, 
-				last_rx_tune_result.actual_rf_freq - last_rx_tune_result.actual_dsp_freq,
+				last_rx_tune_result.actual_rf_freq,
 				last_rx_tune_result.actual_dsp_freq)); 
     break;
   case Command::LO_CHECK:
