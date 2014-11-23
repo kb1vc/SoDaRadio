@@ -69,6 +69,9 @@ namespace SoDa {
 	("window_size,w", po::value<unsigned int>(&window_size)->default_value(64),
 	 "Number of FFT windows to average per result.")
 	
+	("leader_count,c", po::value<unsigned int>(&leader_count)->default_value(8),
+	 "Number of Sample sets to ignore at the start of each frequency setting.")
+	
 	("file,f", po::value<std::string>(&out_filename)->default_value("sweep.dat"),
 	 "Output filename");
       
@@ -84,7 +87,8 @@ namespace SoDa {
 
   public:
     double ddc_start_freq, ddc_end_freq, ddc_freq_step;
-    unsigned int window_size; 
+    unsigned int window_size;
+    unsigned int leader_count;
     
   };
   
@@ -134,7 +138,7 @@ messages
 
 
 
-      ignore_count = 8;
+      ignore_count = params->leader_count;
       collect_count_limit = ignore_count + params->window_size; 
       spectrum_acc_gain = 1.0 - (1.0 / ((float) (collect_count_limit - ignore_count)));
       
@@ -144,11 +148,17 @@ messages
     void run() {
       bool exitflag = false;
 
+      // disable the receiver. 
+      cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_STATE, 0));
+
       usleep(5 * 1e6);
 
       // setup the intial freq
-      cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_FE_FREQ, cur_fe_freq));
+      // use RX_TUNE_FREQ to disable setting of the 3rd LO, which we'll do on our own.
+      cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_TUNE_FREQ, cur_fe_freq));
       cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_RF_GAIN, 100.0));
+      // disable the 3rd LO in the USRPRX 
+      cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_LO3_FREQ, 0.0));
 
       usleep(1e6);
       // enable the receiver. 
@@ -158,9 +168,14 @@ messages
       enum {INIT, WAIT_FOR_FREQ, COLLECT, WAIT_FOR_RXEND } curstate;
       curstate = INIT;
 
-      SoDaBuf * ifbuf; // this is the if buffer. 
-
+      SoDaBuf * ifbuf; // this is the if buffer.
+      
+      //cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_DRAIN_STREAM));
       cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_DDC_FREQ, 1.0));
+      // disable the 3rd LO in the USRPRX 
+      cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_LO3_FREQ, 0.0));
+      //      cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_DRAIN_STREAM));
+      cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_DRAIN_STREAM));
       
       while(!exitflag) {
 	Command * cmd;
@@ -176,9 +191,15 @@ messages
 	switch (curstate) {
 	case INIT:
 	  if(got_new_ddc_freq) {
-	    ddc_freq_test = params->ddc_start_freq;
+	    ddc_freq_test = -1.0 * params->ddc_start_freq;
 	    got_new_ddc_freq = false; 
 	    cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_DDC_FREQ, ddc_freq_test));
+	    // disable the 3rd LO in the USRPRX 
+	    cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_LO3_FREQ, 0.0));
+	    cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_STATE, 0));
+	    cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_DRAIN_STREAM));
+	    cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_STATE, 1));
+
 	    curstate = WAIT_FOR_FREQ;
 	    debugMsg("curstate = WAIT_FOR_FREQ\n");
 	  }
@@ -189,6 +210,7 @@ messages
 	    got_new_ddc_freq = false;
 	    collect_count = 0; 
 	    curstate = COLLECT;
+	    cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_DRAIN_STREAM));
 	    cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_STATE, 1));	    
 	    debugMsg("curstate = COLLECT\n");
 	  }
@@ -236,9 +258,12 @@ messages
 	    else if(ddc_freq_test > -10.0e6) {
 	      ddc_freq_test -= 1000.0;	      
 	    }
-
-	    if(ddc_freq_test > params->ddc_end_freq) {
+	    
+	    std::cerr << boost::format("New DDC frequency %g.\n") % ddc_freq_test;
+	    
+	    if(ddc_freq_test < (-1.0 * params->ddc_end_freq)) {
 	      // do nothing -- we're on our way out.
+	      std::cerr << boost::format("DDC frequency sweep completed.\n");
 	      exitflag = true; 
 	    }
 

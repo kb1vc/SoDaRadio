@@ -77,7 +77,10 @@ SoDa::USRPRX::USRPRX(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
   scount = 0;
 
   // enable spectrum reporting at startup
-  enable_spectrum_report = true; 
+  enable_spectrum_report = true;
+
+  // we process all incoming RX packets...
+  drain_stream = false; 
 }
 
 static void doFFTandDump(int fd, std::complex<float> * in, int len)
@@ -133,12 +136,27 @@ void SoDa::USRPRX::run()
       unsigned int coll_so_far = 0;
       uhd::rx_metadata_t md;
       std::complex<float> *dbuf = buf->getComplexBuf();
+      double first_timestamp = -1.0; 
       while(left != 0) {
 	unsigned int got = rx_bits->recv(&(dbuf[coll_so_far]), left, md);
+	if(first_timestamp < -0.5) {
+	  first_timestamp = md.time_spec.get_real_secs(); 
+	}
 	coll_so_far += got;
 	left -= got;
       }
 
+      if(drain_stream) {
+	if(first_timestamp < drain_time) {
+	  // free up the RX buffer
+	  rx_stream->free(buf); 
+	  // and continue;
+	  continue;
+	}
+	else {
+	  drain_stream = false; 
+	}
+      }
       // If the anybody cares, send the IF buffer out.
       // If the UI is listening, it will do an FFT on the buffer
       // and send the positive spectrum via the UI to any listener.
@@ -177,6 +195,10 @@ void SoDa::USRPRX::run()
 
 void SoDa::USRPRX::doMixer(SoDaBuf * inout)
 {
+  if(!enable_3rd_lo_mixer) {
+    return;
+  }
+
   int i;
   std::complex<float> o;
   std::complex<float> * ioa = inout->getComplexBuf();
@@ -190,7 +212,11 @@ void SoDa::USRPRX::set3rdLOFreq(double IF_tuning)
 {
   // calculate the advance of phase for the IF
   // oscilator in terms of radians per sample
+  enable_3rd_lo_mixer = (fabs(IF_tuning) > 1.0);
   IF_osc.setPhaseIncr(IF_tuning * 2.0 * M_PI / rx_sample_rate);
+
+  debugMsg(boost::format("New 3rd LO DDC freq = %g\n") % IF_tuning); 
+  std::cerr << boost::format("\n\n******\n\nNew 3rd LO DDC freq = %g\n***\n\n") % IF_tuning; 
 }
 
 void SoDa::USRPRX::execCommand(Command * cmd)
@@ -270,6 +296,10 @@ void SoDa::USRPRX::execSetCommand(Command * cmd)
       startStream();
       enable_spectrum_report = true;
     }
+    break;
+  case SoDa::Command::RX_DRAIN_STREAM:
+    drain_stream = true;
+    drain_time = usrp->get_time_now().get_real_secs();
     break; 
   default:
     break; 
