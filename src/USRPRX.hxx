@@ -107,7 +107,12 @@ namespace SoDa {
     QuadratureOscillator IF_osc;
     double current_IF_tuning;
     double rx_sample_rate;
+    bool enable_3rd_lo_mixer; ///< true iff the DDC freq is < 1.0 Hz.
 
+    // sometimes we need to drain the junk out.
+    bool drain_stream; ///< if true, discard all incoming packets with timestamp earlier than drain_time;
+    double drain_time; ///< drain all rx packets earlier than this time.
+    
     // spectrum reporting
     bool enable_spectrum_report; 
     

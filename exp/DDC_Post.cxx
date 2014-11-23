@@ -113,12 +113,18 @@ int main(int argc, char * argv[])
     outf.open(p.out_filename.c_str(), std::ios::out);
   }
 
+  if(!inf.is_open()) {
+    std::cerr << boost::format("Failed to open infile = %s\n") % p.in_filename;
+    exit(-1); 
+  }
+  
   double samp_freq = 625e3;
   float * inbuckets = NULL;
   float * sumbuckets = NULL;
   int inbucket_size = 0;
   int scan_count = 0;
 
+  int loop_count = 0; 
   while(!inf.eof()) {
     double f_1stlo, f_ddc;
     int pts;
@@ -135,8 +141,14 @@ int main(int argc, char * argv[])
       for(int i = 0; i < (1 + pts/p.new_bucket_width); i++) sumbuckets[i] = 0.0; 
     }
 
+    if(inf.eof()) continue; 
+
+    loop_count++;
+    
     inf.read((char*) inbuckets, sizeof(float) * pts);
 
+    if(inf.eof()) continue; 
+    
     if((f_ddc < p.fddc_min) || (f_ddc > p.fddc_max)) continue;
     
     // now dump the buckets
@@ -168,7 +180,7 @@ int main(int argc, char * argv[])
     }
 
     scan_count++; 
-    // have we accumulated N scans worth
+    // have we accumulated N scans worth ? 
     float fbucket = samp_freq / ((float) sbi);
     if(scan_count == p.scan_target) {
       for(int i = 0; i < sbi; i++) {

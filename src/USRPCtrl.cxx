@@ -426,6 +426,7 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
     std::cerr << "execSetCommand got a non-set command!  " << cmd->toString() << std::endl;
     return; 
   }
+
   double tmp;
   switch (cmd->target) {
   case Command::RX_RETUNE_FREQ:

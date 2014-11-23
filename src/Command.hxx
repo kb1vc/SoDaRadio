@@ -403,7 +403,20 @@ namespace SoDa {
        *
        * forms: SET, REP
        */
-      TVRT_LO_CONFIG, 
+      TVRT_LO_CONFIG,
+
+      /**
+       * On receipt of a RX_DRAIN_STREAM command, the USRPRX
+       * unit will capture the "current" time and disable
+       * processing and forwarding of any RX blocks who's
+       * timestamp is prior to the current time. 
+       *
+       * no param
+       *
+       * forms: SET
+       */
+      RX_DRAIN_STREAM, 
+      
       
       /**
        * No comment
