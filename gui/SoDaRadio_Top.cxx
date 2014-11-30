@@ -248,6 +248,9 @@ namespace SoDaRadio_GUI {
     m_ClueBar->SetStatusText(wxT("^C Set To Call        ^G Set To Grid        ^L Enter Log Comment        ^X Enter CW Text"), 0);
 
     setAntennaName(wxT("????"));
+
+    /// setup the log window.  Pop it up on request.
+    log_window = new wxLogWindow(NULL, wxT("SoDa Message Log"), false);    
   }
 
   void SoDaRadio_Top::configureRadio(SoDa::GuiParams & params) {

@@ -683,6 +683,18 @@ namespace SoDaRadio_GUI {
     sendMsg(&ncmd); 
   }
 
+  void SoDaRadio_Top::OnStatusLog(wxCommandEvent & event)
+  {
+    wxMenuItem * mi = (wxMenuItem *) event.GetEventObject();
+    if(event.IsChecked()) {
+      std::cerr << "Showing the log file" << std::endl; 
+      log_window->Show(true);
+    }
+    else {
+      std::cerr << "Hiding the log file" << std::endl; 
+      log_window->Show(false);
+    }
+  }
 
   void SoDaRadio_Top::OnSetFromCall(wxCommandEvent & event)
   {
@@ -1084,6 +1096,7 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::SetRXFreqFromDisp(double freq)
   {
+    wxLogMessage(wxT("in SetRXFreqFromDisp with freq = %g\n"), freq);
     last_rx_frequency = rx_frequency;
     // adjust freq based on mode
     if(cw_mode) {

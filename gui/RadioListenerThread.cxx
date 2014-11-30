@@ -182,9 +182,11 @@ namespace SoDaRadio_GUI {
       break;
     case SoDa::Command::GPS_LOCK:
       if(cmd->iparms[0] != 0) {
+	wxLogMessage(wxT("GPS is LOCKED"));
 	std::cerr << "GPS is LOCKED" << std::endl; 
       }
       else {
+	wxLogMessage(wxT("GPS is UNLOCKED"));
 	std::cerr << "GPS is UNLOCKED" << std::endl; 
       }
       break;
@@ -207,6 +209,12 @@ namespace SoDaRadio_GUI {
       debugMsg(boost::format("Got RX antenna report [%s]\n") % cmd->sparm);
       radio_gui->setAntennaName(wxString((char*) cmd->sparm, wxConvUTF8));
       break;
+    case SoDa::Command::STATUS_MESSAGE:
+      std::cerr << boost::format("RadioListener got a status message with [%s]\n")
+	% cmd->sparm; 
+      wxLogMessage(wxT("STATUS_MESSAGE"));
+      
+      break; 
     default:
       break; 
     }

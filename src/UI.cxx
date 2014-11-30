@@ -180,6 +180,9 @@ void SoDa::UI::run()
 
     while((ring_cmd = cmd_stream->get(cmd_subs)) != NULL) {
       if(ring_cmd->cmd == SoDa::Command::REP) {
+	if(ring_cmd->target == SoDa::Command::STATUS_MESSAGE) {
+	  std::cerr << boost::format("About to send a status message [%s]\n") % ring_cmd->sparm; 
+	}
 	server_socket->put(ring_cmd, sizeof(SoDa::Command));
       }
       execCommand(ring_cmd); 

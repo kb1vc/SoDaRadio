@@ -88,9 +88,12 @@ else
 fi],
 [AC_MSG_RESULT(yes)])
 
+
 #
 # Locate uhd, if wanted
 #
+
+
 if test -n "${uhd_places}"
 then
 	# check the user supplied or any other more or less 'standard' place:
@@ -107,9 +110,23 @@ then
         CPPFLAGS="$CPPFLAGS -I${UHD_HOME}/include"
   fi
 
-  AC_CHECK_FILE([${UHD_HOME}/lib/libuhd.so], [uhd_cv_libuhd=yes], [uhd_cv_libuhd=no])
+
+  # we have a problem with lib and lib64 dependencies..
+  AC_MSG_CHECKING(in lib)
+  AC_CHECK_FILE([${UHD_HOME}/lib/libuhd.so],
+	[uhd_cv_libuhd=yes; uhd_cv_libuhd64=no],
+	[uhd_cv_libuhd=no; uhd_cv_libuhd64=no])
+
+  AC_CHECK_FILE([${UHD_HOME}/lib64/libuhd.so],
+  	[uhd_cv_libuhd=yes; uhd_cv_libuhd64=yes],
+	[uhd_cv_libuhd64=no])
+
+
   AC_CHECK_FILE([${UHD_HOME}/include/uhd/device.hpp], [uhd_cv_uhd_h=yes], [uhd_cv_uhd_h=no])
 
+  
+
+  AC_MSG_CHECKING(if this is a lib64 install)
   if test "$uhd_cv_libuhd" = "yes" && test "$uhd_cv_uhd_h" = "yes"
   then
     #
@@ -117,7 +134,14 @@ then
     #
     m4_ifblank([$1],[
                 CPPFLAGS="$CPPFLAGS -I${UHD_HOME}/include"
-                LDFLAGS="$LDFLAGS -L${UHD_HOME}/lib"
+		if test "$uhd_cv_libuhd64" = "yes"
+		then
+		    AC_MSG_RESULT(yes)
+		    LDFLAGS="$LDFLAGS -L${UHD_HOME}/lib64"
+		else
+		    AC_MSG_RESULT(no)
+		    LDFLAGS="$LDFLAGS -L${UHD_HOME}/lib"
+                fi
                 LIBS="-luhd $LIBS"
                 AC_DEFINE([HAVE_UHD], [1],
                           [Define to 1 if you have `uhd' library (-luhd)])

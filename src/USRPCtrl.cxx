@@ -112,17 +112,23 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
     usrp->set_rx_subdev_spec(std::string("A:A"), 0);
     if(is_B210) {
       debugMsg("Setup two subdevices -- TVRT_LO Capable");
+      cmd_stream->put(new Command(Command::REP, Command::STATUS_MESSAGE,
+				"Setup two subdevice -- TVRT_LO Capable"));
       usrp->set_tx_subdev_spec(std::string("A:A A:B"), 0);
       tvrt_lo_capable = true;
     }
     else {
       debugMsg("Setup one subdevice -- NOT TVRT_LO Capable");
+      cmd_stream->put(new Command(Command::REP, Command::STATUS_MESSAGE,
+				"Setup one subdevice -- NOT TVRT_LO Capable"));
       usrp->set_tx_subdev_spec(std::string("A:A"), 0);
       tvrt_lo_capable = false;
     }
   }
   else {
     debugMsg("Setup one subdevice -- NOT TVRT_LO Capable");
+    cmd_stream->put(new Command(Command::REP, Command::STATUS_MESSAGE,
+				"Setup one subdevice -- NOT TVRT_LO Capable"));
     tvrt_lo_capable = false;
   }
 
@@ -203,7 +209,11 @@ void SoDa::USRPCtrl::run()
   unsigned int cmds_processed = 0;
   unsigned int loopcount = 0; 
   while(!exitflag) {
-    loopcount++; 
+    if((loopcount & 0xf) == 0) {
+      cmd_stream->put(new Command(Command::REP, Command::STATUS_MESSAGE,
+				  "this is a test!"));
+    }
+    loopcount++;
     Command * cmd = cmd_stream->get(subid);
     if(cmd == NULL) {
       boost::this_thread::sleep(boost::posix_time::milliseconds(50));
