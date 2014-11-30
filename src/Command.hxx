@@ -331,7 +331,7 @@ namespace SoDa {
       /**
        * Report the SDR (SoDa server program) version info
        *
-       * no param
+       * string param
        *
        * forms: REP
        */
@@ -349,7 +349,7 @@ namespace SoDa {
       /**
        * Report the motherboard name (the model name of the USRP)
        *
-       * no param
+       * rep -- string param
        *
        * forms: GET, REP
        */
@@ -395,7 +395,17 @@ namespace SoDa {
        *
        * forms: SET, REP
        */
-      TVRT_LO_CONFIG, 
+      TVRT_LO_CONFIG,
+
+      /** 
+       * The STATUS_MESSAGE carries a payload of up to 64 characters.
+       * These will be displayed in a log window for the GUI.
+       *
+       * param char[64]
+       *
+       * forms: REP
+       */
+      STATUS_MESSAGE, 
       
       /**
        * No comment
