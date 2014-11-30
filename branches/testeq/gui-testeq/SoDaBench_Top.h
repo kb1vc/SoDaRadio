@@ -65,15 +65,11 @@ namespace SoDaBench_GUI {
    * @li the wxWidgets GUI event loop that dispatches user requests
    * through the SoDaBench_Top thread.
    */
-  class SpectrumAnalyzerDialog;
-  class SweeperDialog;
   class BenchListenerThread;
-  class SoDaBench_Top : public SoDaBenchFrame, public SoDaRadio_GUI::GraphClient
+  class SoDaBench_Top : public SoDaBench_GUI::SoDaBenchFrame, public SoDaRadio_GUI::GraphClient
   {
   public:
     SoDaBench_Top(SoDa::GuiParams & params, wxWindow * parent);
-    friend class SweeperDialog;
-    friend class SpectrumAnalyzerDialog;
 
     SoDa::UD::ClientSocket * GetCmdQueue() { return soda_bench; }
     SoDa::UD::ClientSocket * GetFFTQueue() { return soda_fft; }
@@ -97,8 +93,10 @@ namespace SoDaBench_GUI {
     void OnAbout( wxCommandEvent & event);
     void OnUserGuide( wxCommandEvent & event);
 
-    void OnInstSel( wxCommandEvent & event);
-
+    void OnOutputPowerSel(wxScrollEvent & event);
+    void OnFreqEnter(wxCommandEvent & event);
+    void OnFreqRangeSel(wxCommandEvent & event);
+      
     void unsupportedEvent(const std::string & str);
 
     SoDaRadio_GUI::XYPlot * pgram_plot;
@@ -106,6 +104,22 @@ namespace SoDaBench_GUI {
     // the trace
     SoDaRadio_GUI::XYPlot::Trace * pgram_trace; 
 
+    /// enables/disables controls based on the type of USRP we're connected to.
+    void configureHardware(int rx_chan, int tx_chan,
+			   double rx_min_freq, double rx_max_freq,
+			   double tx_min_freq, double tx_max_freq);
+    int num_tx_channels, num_rx_channels;
+
+    void setFreqSetting(wxTextCtrl * fv, wxChoice * unit, double freq);
+    double getFreqSetting(wxTextCtrl * fv, wxChoice * unit);
+    
+    void sendSweepCommand();
+    
+    double start_freq; //< sweep start frequency for output A and B
+    double stop_freq; //< sweep stop frequency for output A and B
+    double step_freq; //< the frequency step size
+    double step_time; //< the frequency dwell time
+    
   protected:
     std::string SDR_version_string; 
     
@@ -114,11 +128,6 @@ namespace SoDaBench_GUI {
     bool debug_mode; 
     void setupServer();
     void initListener();
-
-    SpectrumAnalyzerDialog * spec_analyzer_a; 
-    SpectrumAnalyzerDialog * spec_analyzer_b; 
-    SweeperDialog * sweeper_a; 
-    SweeperDialog * sweeper_b;
 
     SoDa::UD::ClientSocket * soda_bench;
     SoDa::UD::ClientSocket * soda_fft;
@@ -160,24 +169,5 @@ namespace SoDaBench_GUI {
     SoDaBench_Top * bench; 
   };
 
-  class SweeperDialog : public m_SweeperDialog {
-  public:
-  SweeperDialog(wxWindow * parent, const std::string & TX_channel, SoDaBench_Top * _bench) : m_SweeperDialog(parent) {
-      bench = _bench;
-      tx_channel = TX_channel;
-    }
-    SoDaBench_Top * bench;
-    std::string tx_channel; 
-  };
-
-  class SpectrumAnalyzerDialog : public m_SpectrumAnalyzerDialog {
-  public:
-  SpectrumAnalyzerDialog(wxWindow * parent, const std::string & RX_channel, SoDaBench_Top * _bench) : m_SpectrumAnalyzerDialog(parent) {
-      bench = _bench;
-      rx_channel = RX_channel; 
-    }
-    SoDaBench_Top * bench;
-    std::string rx_channel;
-  }; 
 }  
 #endif // __SoDaBench_Top__

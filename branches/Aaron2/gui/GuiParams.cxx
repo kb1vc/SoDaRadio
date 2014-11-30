@@ -1,5 +1,9 @@
 /*
-  Copyright (c) 2013, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2013,2014 Matthew H. Reilly (kb1vc)
+
+  Tracker changes (interface to hamlib and gpredict)
+  Copyright (c) 2014, Aaron Yankey Antwi (aaronyan2001@gmail.com)
+
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -46,7 +50,8 @@ SoDa::GuiParams::GuiParams(int argc, wxChar ** wxargv)
      )
     ("log", po::value<std::string>(&log_filename)->default_value("SoDa.soda_log"),
      "Log filename")
-    ;
+    ("with-tracking", po::value<bool>(&with_tracking)->default_value(false),
+     "Enable autotuning with gpredict or any Hamlib compliant tracker. Please install 'socat' for this functionality"); 
 
   po::store(po::parse_command_line(argc, argv, desc), pmap);
   po::notify(pmap);
@@ -56,6 +61,13 @@ SoDa::GuiParams::GuiParams(int argc, wxChar ** wxargv)
     std::cout << "SoDa -- The 'SoD' stands for Software Defined. The 'a' doesn't stand for anything.   " << desc << std::endl;
     exit(-1); 
   }
+
+  if(with_tracking) {
+    std::cerr << "*******************************IMPORTANT*****************************************************************" << std::endl;
+    std::cerr << "SoDa is enabled with tracking. Please make sure you have 'socat' installed and run the following command: " << std::endl
+	      << "'socat TCP-LISTEN:4532 UNIX-CONNECT:/tmp/SoDa_tracker &' " << std::endl << "Before running gpredict " << std::endl
+	      << "*******************************IMPORTANT*****************************************************************"<< std::endl;
+  }	
 }
 
 char ** SoDa::GuiParams::convertWXargs2Cargs(int argc, wxChar ** argv)

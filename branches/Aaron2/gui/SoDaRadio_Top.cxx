@@ -1,7 +1,8 @@
 /*
-  Copyright (c) 2012,2013,2014 Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012, 2014,Matthew H. Reilly (kb1vc)
+  Copyright (c) 2014, Aaron Yankey A. (aaronyan2001@gmail.com)
   All rights reserved.
-
+ 
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions are
   met:
@@ -43,9 +44,7 @@ extern "C" {
  * @brief The toplevel methods for the SoDaRadio GUI
  *
  * @author Matt Reilly (kb1vc)
- */
-
-namespace SoDaRadio_GUI {
+	 */ namespace SoDaRadio_GUI {
   /**
    * The SoDaRadio object
    *
@@ -94,14 +93,13 @@ namespace SoDaRadio_GUI {
 
     // setup the comm channel.
     std::string sock_basename = params.getServerSocketBasename(); 
-
     // fix a problem with UBUNTU menu proxy... .
     char mproxyfix[] = "UBUNTU_MENUPROXY=";
     putenv(mproxyfix);
     if(server != "None") {
       if(fork()) {
 	int stat;
-	char * argv[5];
+	char * argv[6];
 	// coercion to char* (as opposed to const char*) is to get around
 	// a compiler finickyness around conversions from const char** to const* char* or whatever.
 	// sigh.
@@ -112,12 +110,11 @@ namespace SoDaRadio_GUI {
 	if(uhd_args != "") {
 	  argv[3] = (char*) "--uhdargs";
 	  argv[4] = (char*) uhd_args.c_str();
-	  argv[5] = NULL; 
+	argv[5] =NULL;
 	}
 	else {
 	  argv[3] = NULL;
 	}
-
 	stat = execv(argv[0], argv); 
 	// stat = execl(server_commandline_string.c_str(), server.c_str(), "--uds_name",
 	//       sock_basename.c_str(), (char*) 0);
@@ -133,15 +130,25 @@ namespace SoDaRadio_GUI {
     // setup the client socket trying once every second for 60 seconds before we give up
     soda_radio = new SoDa::UD::ClientSocket(sock_basename + "_cmd", 60);
     soda_fft = new SoDa::UD::ClientSocket(sock_basename + "_wfall", 60);
-
+  /*******************************Tracker***********************************************/
+    //Check if tracking is enabled
+    with_Tracking = params.withTracking();
+    if(with_Tracking==true)
+    {
+	std::cerr << "Tracking Enabled"<<std::endl;
+  soda_tracker = new SoDa::UD::TrackerSocket(sock_basename + "tracker");
+  rc = new SoDa::UD::TrackerSocket::RadioCommand();
+    }
+  /*******************************Tracker**********************************************/
+	   
     // create the listener thread
     if(debug_mode || 1) {
-      std::cerr << "Creating listener thread." << std::endl;
+      std::cerr <<std::endl<< "Creating listener thread." << std::endl;
     }
     listener = new RadioListenerThread(this);
     // now launch it.
     if(debug_mode) {
-      std::cerr << "Launching listener thread." << std::endl;
+      std::cerr <<std::endl<<"Launching listener thread." << std::endl;
     }
     if(listener->Create() != wxTHREAD_NO_ERROR) {
       wxLogError(wxT("Couldn't create radio listener thread...")); 
@@ -158,7 +165,7 @@ namespace SoDaRadio_GUI {
   
 
     config_tree = NULL;
-    from_callsign = wxT("");
+    from_callsign = wxT("9GA22");
     from_grid = wxT("");  
     to_callsign = wxT("");
     to_grid = wxT("");  
@@ -200,7 +207,6 @@ namespace SoDaRadio_GUI {
 
     // setup the tuner
     tuner = new TuningDialog(this, this);
-
     // setup the controls dialog  
     tx_rf_outpower = 20.0;
     controls = new ControlsDialog(this, this);
@@ -249,12 +255,15 @@ namespace SoDaRadio_GUI {
     Connect(MSG_TERMINATE_TX, wxEVT_COMMAND_MENU_SELECTED,
 	    wxCommandEventHandler(SoDaRadio_Top::OnTerminateTX));
 
-    // setup status bar -- hardwire the accelerators for now.
-    m_ClueBar->SetStatusText(wxT("^C Set To Call        ^G Set To Grid        ^L Enter Log Comment        ^X Enter CW Text"), 0);
+
 
     sendMsg(new SoDa::Command(SoDa::Command::GET, SoDa::Command::HWMB_REP)); 
   }
-
+  
+  
+  
+ /*************************************Method definitions*************************************************************/ 
+  
   bool SoDaRadio_Top::CreateSpectrumTrace(double * freqs, float * powers, unsigned int len)
   {
     if(pgram_plot == NULL) return false; 
@@ -276,6 +285,7 @@ namespace SoDaRadio_GUI {
 
   wxString freq2wxString(double freq)
   {
+	  
     int GHz = floor(freq / 1e9);
     int MHz = floor((freq - ((double)GHz) * 1e9) / 1e6);
     int KHz = floor((freq - ((double)GHz) * 1e9 - ((double) MHz) * 1e6) / 1e3);
@@ -295,40 +305,64 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::UpdateRXFreq(double freq)
   {
-    // update the rx frequency field and all display markers.
-    rx_frequency = freq;
 
+    rx_frequency = freq;
     // update the tuner
     tuner->newRXFreq();
   
     // now udpate the display
-    wxString freqstring = freq2wxString(freq);
-  
+    wxString freqstring = freq2wxString((double)freq);
     m_RXFreqText->SetLabel(freqstring);
-
     // and update the radio
     SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::RX_RETUNE_FREQ,
 		       applyRXTVOffset(rx_frequency));
     sendMsg(&ncmd);
 
   }
+  /***********************************Tracker*********************************************/
+ void SoDaRadio_Top::GetTracker()
+  {
+	  rc = soda_tracker->getTracker();
+	  switch(rc->vfo)
+	  {
+
+		case 0://get TX
+			if(rc->txfreq > 60000000)//Must be greater than 60Mhz
+			{
+				CallAfter(&SoDaRadio_Top::UpdateTXFreq,(double)rc->txfreq);
+			}
+			else exit(1);
+			break;
+
+		case 1://get Rx
+			if(rc->rxfreq > 60000000){//Must be greater than 60Mhz
+				if(rc->fromDisplay)
+					rc->rxfreq = rc->fromDisplayFreq;
+				CallAfter(&SoDaRadio_Top::UpdateRXFreq,(double)rc->rxfreq);
+	  }
+			else exit(1);
+			break;
+} 
+}
+  /***********************************Tracker*********************************************/
+
+
 
   void SoDaRadio_Top::UpdateTXFreq(double freq)
   {
-    // update the tx frequency field and all display markers.
     tx_frequency = freq;
 
     // update the tuner
     tuner->newTXFreq(); 
   
     // now udpate the display
-    wxString freqstring = freq2wxString(freq); 
+    wxString freqstring = freq2wxString((double)freq);
     m_TXFreqText->SetLabel(freqstring);
-
-    // and update the radio
+    
     SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::TX_RETUNE_FREQ,
 		       applyTXTVOffset(tx_frequency));
     sendMsg(&ncmd);
+   rc->txfreq = freq;
   }
 
   void SoDaRadio_Top::setRXAnt(std::string rx_ant_sel)
@@ -337,7 +371,8 @@ namespace SoDaRadio_GUI {
 		       rx_ant_sel);
     sendMsg(&ncmd);
   }
-  
+
+
   void SoDaRadio_Top::setGPSLoc(double lat, double lon)
   {
     std::string slat = (boost::format("%6.3f") % lat).str();
@@ -379,6 +414,8 @@ namespace SoDaRadio_GUI {
     AddPendingEvent(event); 
   
   }
+
+
 
   TuningDialog::TuningDialog(wxWindow * parent, SoDaRadio_Top * radio) :
     m_TuningDialog(parent)

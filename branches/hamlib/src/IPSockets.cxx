@@ -127,10 +127,8 @@ bool SoDa::IP::ServerSocket::isReady()
     socklen_t ca_len = sizeof(client_address);
     // note that we've set the server_socket to non-block, so if nobody is here,
     // we should get an EAGAIN or EWOULDBLOCK.
-    debugMsg("About to call ACCEPT");
     int ns = accept(server_socket, (struct sockaddr *) & client_address, &ca_len);
     if(ns < 0) {
-      debugMsg("Nothing there.");
       ready = false; 
     }
     else {
@@ -258,6 +256,7 @@ int SoDa::IP::NetSocket::readBuf(void * ptr, unsigned int size)
   int stat;
 
   stat = read(conn_socket, ptr, size);
+  if(stat == 0) return -1;
   if(stat <= 0) {
     if((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
       return 0; 

@@ -98,6 +98,9 @@ namespace SoDa {
       std::vector< std::string > cmd_line; 
       BOOST_FOREACH(const std::string & t, tokens) cmd_line.push_back(t); 
 
+      // if there are no tokens, punt.
+      if(cmd_line.size() < 1) return false;
+      
       // now go through the commands.
       BOOST_FOREACH(CICommand<T> * cmd, commands) {
 	if(cmd->parse(cmd_line, obj)) return true;  

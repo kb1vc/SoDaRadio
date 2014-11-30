@@ -52,6 +52,7 @@
 #include <wx/string.h>
 #include <wx/wxchar.h>
 #include <wx/thread.h>
+#include <wx/log.h>
 
 namespace SoDaRadio_GUI {
   
@@ -93,7 +94,10 @@ namespace SoDaRadio_GUI {
     void OnSetFromCall( wxCommandEvent& event); 
     void OnSetFromGrid( wxCommandEvent& event); 
     void OnConfigBand( wxCommandEvent& event);
-    void OnBandSelect( wxCommandEvent& event); 
+    void OnBandSelect( wxCommandEvent& event);
+    void OnStatusLog( wxCommandEvent & event);
+    /// loging facility
+    wxLogWindow * log_window;
 
     void OnQSOMenuSet( wxCommandEvent & event);
   
@@ -171,6 +175,7 @@ namespace SoDaRadio_GUI {
     void SetCurrentBand(SoDaRadio_Band * band); 
 
     wxString getModeString() { return m_ModeBox->GetStringSelection(); }
+
 
     // message types. 
     enum MSG_ID { MSG_UPDATE_SPECTRUM, MSG_HANDLE_CMD, MSG_UPDATE_GPSLOC, MSG_UPDATE_GPSTIME, MSG_TERMINATE_TX, MSG_UPDATE_MODELNAME, MSG_UPDATE_ANTNAME };
@@ -278,6 +283,7 @@ namespace SoDaRadio_GUI {
     void configureRadio(SoDa::GuiParams & params);
 
   private:
+    
     char SDR_version_string[64];
 
     void updateMarkers() {
@@ -529,7 +535,8 @@ namespace SoDaRadio_GUI {
       m_ExtRefEn->SetValue(v);
       OnExtRefEna(nullCE);
     }
-  
+
+    
   private:
     // Tuner structures. 
     std::map<wxWindow *, TunerDigit *> rx_tuner, tx_tuner;

@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012, 2014,Matthew H. Reilly (kb1vc), Aaron Yankey Antwi <aaronyan2001@gmail.com>
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <boost/format.hpp>
-
+#include <wx/event.h>
 namespace SoDaRadio_GUI {
 
   RadioListenerThread::RadioListenerThread(SoDaRadio_Top * _radio_gui)
@@ -51,7 +51,6 @@ namespace SoDaRadio_GUI {
     spectrum_step_freq = spectrum_low_freq = spectrum_hi_freq = 0.0; 
     freq_buffer = new double[spect_buflen];
     spect_buffer = new float[spect_buflen]; 
-
   }
 
   void RadioListenerThread::setupFreqBuffer()
@@ -91,6 +90,11 @@ namespace SoDaRadio_GUI {
     }
   }
 
+  void RadioListenerThread::GetTracker(){
+    if(radio_gui->with_Tracking && radio_gui->soda_tracker->isReady())
+      radio_gui->GetTracker();
+  }
+
   void * RadioListenerThread::Entry()
   {
     //listen on the gui's command queue and on the fft queue.
@@ -117,16 +121,21 @@ namespace SoDaRadio_GUI {
 	if(stat > 0) {
 	  wxCommandEvent event(wxEVT_COMMAND_MENU_SELECTED,
 			       SoDaRadio_Top::MSG_UPDATE_SPECTRUM);
-	  radio_gui->AddPendingEvent(event); 
+	  radio_gui->GetEventHandler()->AddPendingEvent(event); 
 	  didwork = true;
 	}
 	else if(stat < 0) {
-	  std::cerr << "Error reading fft q." << std::endl; 
+	  std::cerr << "Error reading fft." << std::endl; 
 	}
       }
       if(!didwork) {
 	wxThread::Sleep(100);
       }
+      //Start from here if not connected: Prevents freezing of the gui
+      if(!radio_gui->soda_tracker->tReady)
+	{
+	  GetTracker();	
+	}
     }
 
     delete ncmd;   
@@ -178,13 +187,18 @@ namespace SoDaRadio_GUI {
       {
 	wxCommandEvent event(wxEVT_COMMAND_MENU_SELECTED,
 			     SoDaRadio_Top::MSG_TERMINATE_TX);
-	radio_gui->AddPendingEvent(event); 
+	radio_gui->GetEventHandler()->AddPendingEvent(event); 
       }
       break;
     case SoDa::Command::HWMB_REP:
       radio_gui->setRadioName(wxString((char*) cmd->sparm, wxConvUTF8));
       break;  
     default:
+      //Start from here if  connected: Prevents freezing of the gui
+      if(radio_gui->soda_tracker->tReady)
+	{
+	  GetTracker();	
+	}
       break; 
     }
 

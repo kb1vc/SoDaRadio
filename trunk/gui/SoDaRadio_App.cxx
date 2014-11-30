@@ -28,7 +28,7 @@
 #include "SoDaRadio_App.hxx"
 #include "SoDaRadio_Top.h"
 #include "GuiParams.hxx"
-
+#include <wx/log.h>
 
 IMPLEMENT_APP(SoDaRadio_App)
 
@@ -51,5 +51,6 @@ bool SoDaRadio_App::OnInit()
   // Now start the listener thread.
   top->configureRadio(p);
   top->startListener();
+  wxLogMessage(wxT("Hello world\n"));
   return true; 
 }

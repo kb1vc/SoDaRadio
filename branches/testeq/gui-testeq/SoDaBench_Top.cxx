@@ -73,9 +73,6 @@ namespace SoDaBench_GUI {
 
     debug_mode = false;
 
-    sweeper_a = sweeper_b = NULL;
-    spec_analyzer_a = spec_analyzer_b = NULL; 
-
     // startup the server
     setupServer(); 
 
@@ -210,40 +207,6 @@ namespace SoDaBench_GUI {
   }
 
 
-  void SoDaBench_Top::OnInstSel( wxCommandEvent & event)
-  {
-    wxCheckBox * w = (wxCheckBox*) event.GetEventObject();
-    if(w == m_SAA) {
-      if(spec_analyzer_a == NULL) {
-	spec_analyzer_a = new SpectrumAnalyzerDialog(this, std::string("A"), this);
-	SoDa::Command sa_on(SoDa::Command::SET, SoDa::Command::SPEC_ENA_A); 
-	sendMsg(&sa_on); 
-      }
-      spec_analyzer_a->Show();
-    }
-    else if(w == m_SAB) {
-      if(spec_analyzer_b == NULL) {
-	spec_analyzer_b = new SpectrumAnalyzerDialog(this, std::string("B"), this);
-      }
-      spec_analyzer_b->Show();
-    }
-    else if(w == m_SweepA) {
-      if(sweeper_a == NULL) {
-	sweeper_a = new SweeperDialog(this, std::string("A"), this);
-      }
-      sweeper_a->Show();
-    }
-    else if(w == m_SweepB) {
-      if(sweeper_b == NULL) {
-	sweeper_b = new SweeperDialog(this, std::string("B"), this);
-      }
-      sweeper_b->Show();
-    }
-      
-    
-  }
-
-
   bool SoDaBench_Top::CreateSpectrumTrace(double * freqs, float * powers, unsigned int len)
   {
     if(pgram_plot == NULL) return false; 
@@ -255,5 +218,122 @@ namespace SoDaBench_GUI {
     pgram_plot->AddTrace(0, t1, pgram_trace);
     return true; 
   }
+
+
+  void SoDaBench_Top::configureHardware(int rx_chan, int tx_chan,
+			   double rx_min_freq, double rx_max_freq,
+			   double tx_min_freq, double tx_max_freq)
+  {
+    // what kind of widget are we?
+    num_tx_channels = tx_chan;
+    num_rx_channels = rx_chan;
+
+    if(num_tx_channels < 2) {
+      // disable the sweeper output B.
+      m_RFOutEna_B->Enable(false);
+      m_OutPowerSliderB->Enable(false);
+    }
+  }
+
+  void SoDaBench_Top::OnOutputPowerSel(wxScrollEvent & event) {
+    // which channel?
+    wxSlider * sl = (wxSlider *) event.GetEventObject();
+    double val = sl->GetValue();
+    if(sl == m_OutPowerSliderA) {
+      SoDa::Command opowA(SoDa::Command::SET, SoDa::Command::TX_RF_GAIN, val); 
+      sendMsg(&opowA); 
+    }
+    else {
+      SoDa::Command opowB(SoDa::Command::SET, SoDa::Command::TX_RF_CHAN_GAIN, val, 2.0); 
+      sendMsg(&opowB); 
+    }
+  }
+
+  double SoDaBench_Top::getFreqSetting(wxTextCtrl * fv, wxChoice * unit) {
+    double mul = 1.0; 
+    wxString ustr = unit->GetStringSelection();
+    if(ustr == wxT("kHz")) mul = 1.0e3;
+    else if(ustr == wxT("MHz")) mul = 1.0e6;
+    else if(ustr == wxT("GHz")) mul = 1.0e9;
+
+    wxString sfreq = fv->GetValue();
+    double freq;
+    if(!sfreq.ToDouble(&freq)) {
+      freq = 1.0;
+      setFreqSetting(fv, unit, freq * mul);
+    }
+
+    freq = freq * mul;
+    
+    if(freq < 0.0) {
+      freq = -1.0 * freq; 
+      setFreqSetting(fv, unit, freq); 
+    }
+    
+    return freq; 
+  }
+
+  void SoDaBench_Top::setFreqSetting(wxTextCtrl * fv, wxChoice * unit, double freq) {
+    double mul = 1.0; 
+    wxString ustr = unit->GetStringSelection();
+    if(ustr == wxT("kHz")) mul = 1.0e3;
+    else if(ustr == wxT("MHz")) mul = 1.0e6;
+    else if(ustr == wxT("GHz")) mul = 1.0e9;
+
+    wxString sfreq = wxString::Format(wxT("%f"), freq / mul);
+
+    fv->SetValue(sfreq);
+  }
   
+  void SoDaBench_Top::OnFreqEnter(wxCommandEvent & event) {
+    // which widget was it?
+    wxObject * w = event.GetEventObject();
+
+    double center_freq, span_freq; 
+    
+    
+    if ((w == m_SpanFreqBox) || (w == m_CenterFreqBox) ||
+	(w == m_SpanUnits) || (w == m_CenterUnits)) {
+      center_freq = getFreqSetting(m_CenterFreqBox, m_CenterUnits);
+      span_freq = getFreqSetting(m_SpanFreqBox, m_SpanUnits);
+      
+      start_freq = center_freq - (span_freq * 0.5);
+      stop_freq = center_freq + (span_freq * 0.5);
+      if(start_freq < 0.0) start_freq = 0.0; 
+      setFreqSetting(m_StartFreqBox, m_StartUnits, start_freq);
+      setFreqSetting(m_StopFreqBox, m_StopUnits, stop_freq);
+
+    }
+    else if ((w == m_StartFreqBox) || (w == m_StopFreqBox) ||
+	     (w == m_StartUnits) || (w == m_StopUnits)) {
+      start_freq = getFreqSetting(m_StartFreqBox, m_StartUnits);
+      stop_freq = getFreqSetting(m_StopFreqBox, m_StopUnits);
+      // set the center and span
+      center_freq = (stop_freq + start_freq) * 0.5;
+      span_freq = (stop_freq - start_freq);
+      setFreqSetting(m_CenterFreqBox, m_CenterUnits, center_freq); 
+      setFreqSetting(m_SpanFreqBox, m_SpanUnits, span_freq); 
+    }
+
+    if(start_freq < stop_freq) {
+      m_StartFreqBox->SetBackgroundColour(*wxWHITE);
+      m_StopFreqBox->SetBackgroundColour(*wxWHITE);
+      sendSweepCommand();       
+    }
+    else {
+      m_StartFreqBox->SetBackgroundColour(*wxRED);
+      m_StopFreqBox->SetBackgroundColour(*wxRED);
+    }
+
+  }
+
+  void SoDaBench_Top::OnFreqRangeSel(wxCommandEvent & event) {
+    OnFreqEnter(event); 
+  }
+
+  void SoDaBench_Top::sendSweepCommand()
+  {
+    std::cerr << boost::format("Send Sweep command from %g to %g with step %g and dwell time %g\n")
+	     % start_freq % stop_freq % step_freq % step_time; 
+  }
 }

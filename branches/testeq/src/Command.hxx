@@ -154,17 +154,34 @@ namespace SoDa {
       TX_ANT, 
 
       /**
-       * Set the RX front end attenuator/amp
+       * Set the RX front end attenuator/amp for the first RX channel
        *
        * gain param is a double 0.0 < gain < 40.0
        */
       RX_RF_GAIN,
+
+      /**
+       * Set the RX front end attenuator/amp for the specified RX channel
+       *
+       * gain param is a double 0.0 < gain < 40.0
+       * chan param is a double that gets converted to an int. 
+       */
+      RX_RF_CHAN_GAIN,
+      
       /**
        * Set the TX final amplifier
        *
        * gain param is a double 0.0 < gain < 100.0
        */
       TX_RF_GAIN,
+
+      /**
+       * Set the TX final amplifier for the specified TX channel
+       *
+       * gain param is a double 0.0 < gain < 100.0
+       * chan param is a double that gets converted to an int. 
+       */
+      TX_RF_CHAN_GAIN,
 
       /**
        * RX audio gain setting

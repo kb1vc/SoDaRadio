@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////
-// C++ code generated with wxFormBuilder (version Dec 21 2009)
+// C++ code generated with wxFormBuilder (version Jul  5 2013)
 // http://www.wxformbuilder.org/
 //
 // PLEASE DO "NOT" EDIT THIS FILE!
@@ -120,6 +120,7 @@ namespace SoDaRadio_GUI
 			virtual void OnSetFromCall( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnSetFromGrid( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnGPSOnSel( wxCommandEvent& event ) { event.Skip(); }
+			virtual void OnStatusLog( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnConfigBand( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnMenuConfigSpect( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnQSOMenuSet( wxCommandEvent& event ) { event.Skip(); }
@@ -202,7 +203,7 @@ namespace SoDaRadio_GUI
 		
 		public:
 			
-			m_AboutDialog( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxEmptyString, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 626,768 ), long style = wxDEFAULT_DIALOG_STYLE );
+			m_AboutDialog( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxEmptyString, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 626,900 ), long style = wxDEFAULT_DIALOG_STYLE );
 			~m_AboutDialog();
 		
 	};

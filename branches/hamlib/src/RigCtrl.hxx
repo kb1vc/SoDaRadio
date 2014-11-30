@@ -105,7 +105,11 @@ namespace SoDa {
     /// @brief process the commands on the local cmd_stream.
     /// @return true if at least one command was processed. 
     bool processBusCommands(); 
-    
+
+    bool exit_flag; ///< when set, it is time to terminate this thread.
+    /// @brief handle SET commands from the command bus. 
+    void execSetCommand(Command * cmd);
+        
     Params * params; ///< parameters for the parent program
 
     CmdMBox * cmd_stream; ///< the SoDa command stream that we listen on.

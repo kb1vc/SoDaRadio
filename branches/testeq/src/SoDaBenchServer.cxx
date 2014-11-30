@@ -169,7 +169,7 @@ int doWork(int argc, char * argv[])
   cmd_stream.put(new SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_BEACON, 1)); 
   cmd_stream.put(new SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_STATE, 1));
   cmd_stream.put(new SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_RF_GAIN, 100.0));
-  cmd_stream.put(new SoDa::Command(SoDa::Command::SET, SoDa::Command::START_TX_SWEEP, 432.3e6, 432.304e6,0.0, 20000.0));
+  cmd_stream.put(new SoDa::Command(SoDa::Command::SET, SoDa::Command::START_TX_SWEEP, 432.3e6, 432.304e6,50.0, 20000.0));
 
   // usleep(1000000);
   // cmd_stream.put(new SoDa::Command(SoDa::Command::SET, SoDa::Command::STOP_TX_SWEEP));

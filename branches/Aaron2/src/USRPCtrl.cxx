@@ -286,7 +286,7 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
       rx_trequest = uhd::tune_request_t(target_rx_freq, -100.0e3);
     }
     else {
-      rx_trequest.args = uhd::device_addr_t("mode_n=integer");
+      //rx_trequest.args = uhd::device_addr_t("mode_n=integer");
     }
     last_rx_tune_result = usrp->set_rx_freq(rx_trequest);
     last_rx_tune_result = checkLock(rx_trequest, 'r', last_rx_tune_result);

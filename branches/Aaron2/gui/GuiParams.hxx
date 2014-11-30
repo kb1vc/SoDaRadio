@@ -1,5 +1,9 @@
 /*
 Copyright (c) 2013, Matthew H. Reilly (kb1vc)
+
+Tracker changes (interface to hamlib and gpredict)
+Copyright (c) 2014, Aaron Yankey Antwi (aaronyan2001@gmail.com)
+
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -43,12 +47,15 @@ namespace SoDa {
     std::string getLogFileName() { return log_filename; }
     std::string getConfigFileName() { return config_filename; }
     std::string getUHDArgs() { return uhd_args; }
+    bool withTracking() { return with_tracking; }
   private:
     // this is really quite gross -- wxApp is not very nice about this. 
     char ** convertWXargs2Cargs(int argc, wxChar ** argv);
     
     boost::program_options::variables_map pmap;
 
+    bool with_tracking; ///< if true, the tracking listener is active.
+    
     std::string server_name;     ///< Where do we find the server?
     // message socket params
     std::string server_sock_basename; 

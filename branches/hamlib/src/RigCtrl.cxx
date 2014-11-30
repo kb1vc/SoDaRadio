@@ -49,6 +49,8 @@ SoDa::RigCtrl::RigCtrl(Params * params, CmdMBox * _cmd_stream, unsigned int port
   net_buf_ptr = network_buffer;
   net_buf_left = net_buffer_length;
 
+  exit_flag = false;
+  
   initCommandInterp();   
 }
 
@@ -66,21 +68,24 @@ bool SoDa::RigCtrl::getNetCommands()
   // only one command per incoming packet.  Parsing is up to us.
   // So, we keep a buffer of incoming data.  As each buffer comes in,
   // we scan it for '\n' to mark the end of a command.  Then we
-  // put a pointer to each command on the current command queue
-  unsigned long nbp = (unsigned long) net_buf_ptr; 
-  debugMsg(boost::format("In getNetCommands -- net_buf_ptr = %lx net_buf_left = %d\n")
-	   % nbp % net_buf_left);
+  // pass each terminated command to the command interpreter (in processNetCommands)
+  unsigned long nbp = (unsigned long) net_buf_ptr;
   int stat = server_socket->readBuf(net_buf_ptr, net_buf_left);
-  debugMsg(boost::format("readBuf returned stat = %d\n") % stat);
   if(stat > 0) {
     net_buf_left -= stat;
     net_buf_ptr += stat;
     *net_buf_ptr = '\000';
+    std::cerr << boost::format("getNetCommands Returning buffer [%s]\n") % network_buffer; 
     return true; 
   }
   else {
     return false; 
   }
+}
+
+void SoDa::RigCtrl::execSetCommand(SoDa::Command * cmd)
+{
+  if(cmd->target == SoDa::Command::STOP) exit_flag = true;
 }
 
 bool SoDa::RigCtrl::processBusCommands()
@@ -105,10 +110,17 @@ bool SoDa::RigCtrl::processNetCommands()
 
   bool flag = false; 
   debugMsg(boost::format("got command buffer [%s]\n") % network_buffer);
-  for(char * bp = cmd_buf;
+  char * bp;
+  for(bp = cmd_buf;
       bp <= end_of_buf; 
       bp++) {
-    if((*bp == '\000') || (*bp == '\r') || (*bp == '\n')) {
+    if(*bp == '\000') break;
+    // telnet lines (and perhaps things from hamlib clients) end with crlf
+    // eat the cr
+    if(*bp == '\r') {
+      *bp = ' ';
+    }
+    else if(*bp == '\n') {
       // end of command -- parse it.
       *bp = '\000';
       if(strlen(cur_cmd) != 0) {
@@ -127,16 +139,28 @@ bool SoDa::RigCtrl::processNetCommands()
   // now move all the leftovers down to the
   // start of the buffer.
   net_buf_left = net_buffer_length;
-  char * bufp; 
-  for(bufp = network_buffer;
-      cur_cmd <= end_of_buf;
-      bufp++, cur_cmd++) {
-    *bufp = *cur_cmd;
-    net_buf_left--;
+  char * bufp;
+  if(*bp == '\000') {
+    // no rump buffer.
+    net_buf_ptr = network_buffer;
+  }
+  else {
+    for(bufp = network_buffer;
+	(cur_cmd <= end_of_buf) && (*cur_cmd != '\000');
+	bufp++, cur_cmd++) {
+      *bufp = *cur_cmd;
+      net_buf_left--;
+    }
+    // now the buffer has whatever rump command is left in it.
+    net_buf_ptr = bufp + 1;
   }
 
-  // now the buffer has whatever rump command is left in it.
-  net_buf_ptr = bufp + 1;
+  if(net_buf_left == 0) {
+    // this is broken -- someone is sending junk...
+    net_buf_ptr = network_buffer;
+    net_buf_left = net_buffer_length;
+    network_buffer[0] = '\000';
+  }
 
   return flag; 
 }
@@ -145,7 +169,7 @@ void SoDa::RigCtrl::run()
 {
   std::cerr << boost::format("RigCtrl has started server_socket = %p.\n") % server_socket; 
   // do the actual work.
-  while(1) {
+  while(!exit_flag) {
     // did we do any work this time around? 
     bool didwork = false;
 
@@ -162,6 +186,8 @@ void SoDa::RigCtrl::run()
 
     if(!didwork) usleep(100000);
   }
+
+  delete server_socket;
 }
 
 

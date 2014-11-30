@@ -1,5 +1,6 @@
 /*
-  Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2014, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2014, Aaron Yankey Antwi (aaronyan2001@gmail.com)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -30,7 +31,6 @@
 #define RadioLISTENER_THREAD_HDR
 #include "../src/UDSockets.hxx"
 #include "../src/Command.hxx"
-
 #include <wx/wx.h>
 #include <wx/thread.h>
 
@@ -53,6 +53,8 @@ namespace SoDaRadio_GUI {
     double * freq_buffer;
     int spect_buflen, old_spect_buflen;
     float spectrum_low_freq, spectrum_hi_freq, spectrum_step_freq; 
+     wxEvtHandler * wx;
+    void GetTracker();
   }; 
 }
 

@@ -52,7 +52,9 @@ void SoDa::Command::initTables()
   target_map_s2v[std::string("RX_ANT")] = RX_ANT;
   target_map_s2v[std::string("TX_ANT")] = TX_ANT;
   target_map_s2v[std::string("RX_RF_GAIN")] = RX_RF_GAIN;
+  target_map_s2v[std::string("RX_RF_CHAN_GAIN")] = RX_RF_CHAN_GAIN;
   target_map_s2v[std::string("TX_RF_GAIN")] = TX_RF_GAIN;
+  target_map_s2v[std::string("TX_RF_CHAN_GAIN")] = TX_RF_CHAN_GAIN;
   target_map_s2v[std::string("RX_AF_GAIN")] = RX_AF_GAIN;
   target_map_s2v[std::string("RX_AF_SIDETONE_GAIN")] = RX_AF_SIDETONE_GAIN;
   target_map_s2v[std::string("TX_AF_GAIN")] = TX_AF_GAIN;
@@ -114,7 +116,9 @@ void SoDa::Command::initTables()
   target_map_v2s[RX_ANT] = new std::string("RX_ANT");
   target_map_v2s[TX_ANT] = new std::string("TX_ANT");
   target_map_v2s[RX_RF_GAIN] = new std::string("RX_RF_GAIN");
+  target_map_v2s[RX_RF_CHAN_GAIN] = new std::string("RX_RF_CHAN_GAIN");
   target_map_v2s[TX_RF_GAIN] = new std::string("TX_RF_GAIN");
+  target_map_v2s[TX_RF_CHAN_GAIN] = new std::string("TX_RF_CHAN_GAIN");
   target_map_v2s[RX_AF_GAIN] = new std::string("RX_AF_GAIN");
   target_map_v2s[RX_AF_SIDETONE_GAIN] = new std::string("RX_AF_SIDETONE_GAIN");
   target_map_v2s[TX_AF_GAIN] = new std::string("TX_AF_GAIN");

@@ -139,7 +139,7 @@ namespace SoDa {
       // now loop
       double freq;
       while(1) {
-	for(freq = 51.3176e6; freq < 6000.0e6; freq += 10.0e6) {
+	for(freq = 51.3176e6; freq < 2000.0e6; freq +=47.0e6) {
 	  if(exitflag) return; 
 	  // tune to the new freq
 	  tune(freq);

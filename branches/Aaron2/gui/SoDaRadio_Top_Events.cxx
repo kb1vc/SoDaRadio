@@ -1,5 +1,6 @@
 /*
   Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2014, Aaron Yankey A. (aaronyan2001@gmail.com)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -40,7 +41,6 @@
 #include <sys/types.h>
 
 namespace SoDaRadio_GUI {
-  
   void SoDaRadio_Top::OnAbout( wxCommandEvent& event )
   {
     AboutDialog * ad = new AboutDialog(this, SDR_version_string);
@@ -111,7 +111,7 @@ namespace SoDaRadio_GUI {
     wxString defaultDir = wxT("~/.SoDa");
     wxString defaultFilename = wxT("SoDa.soda_cfg");
     wxString wildcard = wxT("SoDa Config files (*.soda_cfg)|*.soda_cfg");
-    wxFileDialog dialog(this, wxT("Load Configuration File"), defaultDir, defaultFilename, wildcard, wxOPEN);
+    wxFileDialog dialog(this, wxT("Load Configuration File"), defaultDir, defaultFilename, wildcard, wxFD_OPEN);
   
 
     if (dialog.ShowModal() == wxID_OK) {
@@ -135,7 +135,7 @@ namespace SoDaRadio_GUI {
     wxString defaultDir = wxT("~/.SoDa");
     wxString defaultFilename = wxT("SoDa.soda_cfg");
     wxString wildcard = wxT("SoDa Config files (*.soda_cfg)|*.soda_cfg");
-    wxFileDialog dialog(this, wxT("Save to Selected Configuration File"), defaultDir, defaultFilename, wildcard, wxSAVE);
+    wxFileDialog dialog(this, wxT("Save to Selected Configuration File"), defaultDir, defaultFilename, wildcard, wxFD_SAVE);
 
     if (dialog.ShowModal() == wxID_OK) {
       wxString fname = dialog.GetPath();
@@ -149,7 +149,7 @@ namespace SoDaRadio_GUI {
     wxString defaultDir = wxT("~/.SoDa");
     wxString defaultFilename = wxT("SoDa.soda_log");
     wxString wildcard = wxT("SoDa Log files (*.soda_log)|*.soda_log");
-    wxFileDialog dialog(this, wxT("Open/Create Log File"), defaultDir, defaultFilename, wildcard, wxSAVE);
+    wxFileDialog dialog(this, wxT("Open/Create Log File"), defaultDir, defaultFilename, wildcard, wxFD_SAVE);
 
     if (dialog.ShowModal() == wxID_OK) {
       log_file_name = dialog.GetPath();
@@ -432,7 +432,7 @@ namespace SoDaRadio_GUI {
       if(rx_frequency != tx_frequency) {
 	if(rx_updatep) {
 	  // we already updated the rx register.. now do tx.
-	  UpdateTXFreq(rx_frequency);
+	  
 	}
 	else {
 	  // we already updated the Tx register.. now do rx.
@@ -497,6 +497,7 @@ namespace SoDaRadio_GUI {
 
   void TuningDialog::OnTuningDone(wxCommandEvent & event)
   {
+    radio_top->UpdateCenterFreq(radio_top->rx_frequency);
     // close the tuning dialog.
     if(IsModal()) {
       EndModal(wxID_OK);
@@ -877,9 +878,6 @@ namespace SoDaRadio_GUI {
     m_ModeBox->SetStringSelection(wxString::FromUTF8(band->default_mode.c_str()));
     OnModeChoice(nullCE);
 
-    // update the spectrum freq.
-    UpdateCenterFreq(band->last_rx_freq * 1e6);
-    OnPerBandSpread(nullCE);
 
     // the the antenna
     setRXAnt(band->rx_antenna_choice);
@@ -888,6 +886,9 @@ namespace SoDaRadio_GUI {
     controls->setTXPower(band->tx_rf_outpower);
     tx_rx_locked = band->tx_rx_locked;
     OnTXRXLock(nullCE);
+    // update the spectrum freq.
+    UpdateCenterFreq(band->last_rx_freq * 1e6);
+    OnPerBandSpread(nullCE);
     
     // now the af gain params
     // these are the gain controls.
@@ -903,6 +904,7 @@ namespace SoDaRadio_GUI {
     // now -- set the last tx/rx/freq
     UpdateRXFreq(band->last_rx_freq * 1e6);
     UpdateTXFreq(band->last_tx_freq * 1e6);
+    //UpdateCenterFreq(band->last_rx_freq * 1e6);
   }
   
   void SoDaRadio_Top::OnBandSelect( wxCommandEvent& event)
@@ -1001,6 +1003,13 @@ namespace SoDaRadio_GUI {
     if(tx_rx_locked) {
       UpdateTXFreq(freq);
     }
+//Tracking 
+if(with_Tracking){
+    //Inform the tracker of the new frequency
+    rc->fromDisplay = true;
+    rc->fromDisplayFreq= (double) freq;
+}
+    UpdateCenterFreq(freq); 
   }
 
   void SoDaRadio_Top::UpdateNavigation()
@@ -1459,4 +1468,4 @@ namespace SoDaRadio_GUI {
 		       0);
     sendMsg(&ncmd); 
   }
-}
+ }

@@ -28,7 +28,6 @@
 
 #include "UI.hxx"
 
-#define FFT_SEND_THRESHOLD 8
 
 SoDa::UI::UI(Params * params, CmdMBox * _cwtxt_stream,
 	     DatMBox * _rx_stream, DatMBox * _if_stream, 
@@ -84,7 +83,10 @@ SoDa::UI::UI(Params * params, CmdMBox * _cwtxt_stream,
     log_spectrum[i] = -200.0; 
   }
 
-  fft_send_counter = 0; 
+  fft_send_counter = 0;
+  fft_update_interval = 4;
+  new_spectrum_setting = true;
+  fft_acc_gain = 0.9;
   // we are not yet in lo check mode
   lo_check_mode = false;
 }
@@ -242,9 +244,22 @@ void SoDa::UI::execSetCommand(Command * cmd)
   // when we get a SET SPEC_CENTER_FREQ
   switch(cmd->target) {
   case SoDa::Command::SPEC_CENTER_FREQ:
-    spectrum_center_freq = cmd->dparms[0]; 
+    spectrum_center_freq = cmd->dparms[0];
+    new_spectrum_setting = true;
     reportSpectrumCenterFreq();
     break;
+  case SoDa::Command::SPEC_AVG_WINDOW:
+    fft_acc_gain = 1.0 - (1.0 / ((double) cmd->iparms[0]));
+    new_spectrum_setting = true;
+    break; 
+  case SoDa::Command::SPEC_UPDATE_RATE:
+    fft_update_interval = 11 - cmd->iparms[0];
+    if(fft_update_interval < 1) fft_update_interval = 1;
+    if(fft_update_interval > 12) fft_update_interval = 12;
+    new_spectrum_setting = true;
+    debugMsg(boost::format("Updated SPEC_UPDATE_RATE = %d -> interval = %d\n")
+	     % cmd->iparms[0] % fft_update_interval);
+    break; 
   default:
     break; 
   }
@@ -275,7 +290,6 @@ void SoDa::UI::execRepCommand(Command * cmd)
 
 static unsigned int dbgctrfft = 0;
 static bool first_ready = true;
-static float fft_acc_gain = 0.0;
 static bool calc_max_first = true;
 
 void SoDa::UI::sendFFT(SoDa::SoDaBuf * buf)
@@ -291,15 +305,16 @@ void SoDa::UI::sendFFT(SoDa::SoDaBuf * buf)
   
   // Do an FFT on the buffer
   // Note that we'll only send over on buffer every
-  // 20 times that we're called -- this will keep
+  // fft_update_interval times that we're called -- this will keep
   // the IP traffic to something reasonable. 
   if(lo_check_mode) {
     lo_spectrogram->apply_acc(buf->getComplexBuf(), buf->getComplexLen(), lo_spectrum, (fft_send_counter == 0) ? 0.0 : 0.1);
   }
   else {
-    spectrogram->apply_acc(buf->getComplexBuf(), buf->getComplexLen(), spectrum, fft_acc_gain);
+    spectrogram->apply_acc(buf->getComplexBuf(), buf->getComplexLen(), spectrum,
+			   (new_spectrum_setting) ? 0.0 : fft_acc_gain);
   }
-  fft_acc_gain = 1.0;
+  new_spectrum_setting = false; 
   calc_max_first = false; 
 
   float * slice;
@@ -323,7 +338,7 @@ void SoDa::UI::sendFFT(SoDa::SoDaBuf * buf)
     }
   }
 
-  if(lo_check_mode && (fft_send_counter >= FFT_SEND_THRESHOLD)) {
+  if(lo_check_mode && (fft_send_counter >= 8)) {
     // scan the buffer. Then find the peak.
     // scan from lo_spectrum midpoint minus 2KHz to plus 2KHz
     float magmax = 0.0;
@@ -334,7 +349,6 @@ void SoDa::UI::sendFFT(SoDa::SoDaBuf * buf)
       std::complex<float> v = lo_spectrum[j];
       float mag = v.real() * v.real() + v.imag() * v.imag();
       if(mag > magmax) {
-	std::cerr << "magnitude peak at " << i << " mag = " << mag << std::endl; 
 	magmax = mag;
 	maxi = i; 
       }
@@ -342,7 +356,7 @@ void SoDa::UI::sendFFT(SoDa::SoDaBuf * buf)
     lo_check_mode = false;
     // send the report
     double freq = ((float) maxi) * lo_hz_per_bucket;
-    std::cerr << "offset = " << freq << std::endl; 
+    debugMsg(boost::format("offset = %g\n") % freq); 
     cmd_stream->put(new SoDa::Command(Command::REP, Command::LO_OFFSET,
 				      freq)); 
     cmd_stream->put(new SoDa::Command(Command::REP, Command::SPEC_RANGE_LOW,
@@ -353,14 +367,13 @@ void SoDa::UI::sendFFT(SoDa::SoDaBuf * buf)
     cmd_stream->put(new SoDa::Command(Command::SET, Command::LO_CHECK,
 				      0.0)); 
   }
-  else if((fft_send_counter >= FFT_SEND_THRESHOLD) && (slice != NULL)) {
+  else if((fft_send_counter >= fft_update_interval) && (slice != NULL)) {
     // send the buffer over to the XY plotter.
     for(int i = 0; i < required_spect_buckets; i++) {
       log_spectrum[i] = 10.0 * log10(slice[i] * 0.05); 
     }
     wfall_socket->put(log_spectrum, sizeof(float) * required_spect_buckets);
     fft_send_counter = 0;
-    fft_acc_gain = 0.05;
     calc_max_first = true; 
     float maxmag = 0.0;
     int bigidx = -1; 
