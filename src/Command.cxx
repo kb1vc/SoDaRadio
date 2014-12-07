@@ -90,6 +90,7 @@ void SoDa::Command::initTables()
   target_map_s2v[std::string("RX_DRAIN_STREAM")] = RX_DRAIN_STREAM;
 
   target_map_s2v[std::string("STOP")] = STOP;
+  target_map_s2v[std::string("STATUS_MESSAGE")] = STATUS_MESSAGE;
   
   target_map_v2s[RX_TUNE_FREQ] = new std::string("RX_TUNE_FREQ");
   target_map_v2s[TX_TUNE_FREQ] = new std::string("TX_TUNE_FREQ");
@@ -140,6 +141,7 @@ void SoDa::Command::initTables()
   target_map_v2s[RX_DRAIN_STREAM] = new std::string("RX_DRAIN_STREAM");
   
   target_map_v2s[STOP] = new std::string("STOP");
+  target_map_v2s[STATUS_MESSAGE] = new std::string("STATUS_MESSAGE");
 }
 
 SoDa::Command * SoDa::Command::parseCommandString(std::string str)

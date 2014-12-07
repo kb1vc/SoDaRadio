@@ -1,0 +1,1 @@
+../configure --with-wxdir=/proj/wx/bin --with-wx-prefix=/proj/wx
