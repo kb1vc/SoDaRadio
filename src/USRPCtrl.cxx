@@ -160,6 +160,10 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
   // Note that there are no GPIOs available for the B2xx right now.
   initControlGPIO();
 
+  std::cerr << "WARNING!! RX DC CORRECTION IS DISABLED!!!!" << std::endl; 
+  // turn off DC correction
+  usrp->set_rx_dc_offset(false);
+  
   // turn off the transmitter
   setTXEna(false);
 
