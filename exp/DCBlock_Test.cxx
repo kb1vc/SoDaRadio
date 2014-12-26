@@ -66,7 +66,7 @@ template<typename Tv, typename Ta> void doTest(Tv * ref_in, Tv * in, Tv * out, c
   block->apply(in, out, len);
 }
 
-int main(int argc, char * argv[])
+int doTest1(int argc, char * argv[])
 {
   // Test out the DCBlock (DC offset removal) module
   int i;
@@ -112,3 +112,68 @@ int main(int argc, char * argv[])
 
 }
 
+int doTest2(int argc, char * argv[])
+{
+  // drive the filter with varying frequencies from 1Hz to 1MHz...
+  // measure the phase and amplitude response.
+  //
+  float alpha; 
+  if(argc < 2) {
+    alpha = 0.99; 
+  }
+  else {
+    alpha = atof(argv[1]);
+  }
+  std::cout << boost::format("# DC block test alpha = %f\n") % alpha;
+  std::cout << "# freq (Hz)  gain (dB)   phase shift (rad)\n"; 
+  int i;
+  std::complex<float> ctest_in[VECLEN], ctest_offset_in[VECLEN], ctest_out[VECLEN];
+  SoDa::DCBlock<std::complex<float>, float> cblock(alpha);
+  
+  // assume a 1.0 MHz sample rate. 
+  double mults[] = {1.0, 2.0, 3.0, 5.0, 7.0, 8.0, 9.0, 0.0}; 
+  for(double basefreq = 1.0e-2; basefreq < 0.99e6; basefreq *= 10.0) {
+    int fi; 
+    for(fi = 0; mults[fi] != 0.0; fi++) {
+      double freq = basefreq * mults[fi];
+      
+      float ang = 0.0;
+      float anginc = 2.0 * M_PI * freq / 1.0e6 ;
+  
+      // fill in the input vectors  
+      for(i = 0; i < VECLEN; i++) {
+	ctest_in[i] = std::complex<float>(cos(ang), sin(ang));
+	ang += anginc;
+	if(ang > M_PI) ang = ang - 2.0 * M_PI; 
+      }
+
+     
+      cblock.apply(ctest_in, ctest_out, VECLEN); 
+
+      // now plot the phase and amplitude for this frequency.
+      float ampsq_sum = 0.0;
+      float phase_sum = 0.0;
+      float divisor = ((float) (VECLEN / 2)); 
+      for(i = VECLEN / 2; i < VECLEN; i++) {
+	ampsq_sum += ctest_out[i].real() * ctest_out[i].real() + ctest_out[i].imag() * ctest_out[i].imag();
+	float p1 = atan2(ctest_in[i].imag(), ctest_in[i].real());
+	float p2 = atan2(ctest_out[i].imag(), ctest_out[i].real());
+	float phdiff = p1 - p2;
+	if(phdiff > M_PI) phdiff - 2.0 * M_PI; 
+	if(phdiff <  -M_PI) phdiff + 2.0 * M_PI; 
+	phase_sum = phdiff; 
+      }
+
+      float phase = phase_sum / divisor;
+      float logamp = 10.0 * log10(ampsq_sum / divisor); 
+      std::cout << boost::format("%12.9g %g %5.3f\n") % freq % logamp % phase; 
+
+    }
+  }
+}
+
+
+int main(int argc, char * argv[])
+{
+  doTest2(argc, argv); 
+}

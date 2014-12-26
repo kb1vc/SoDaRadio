@@ -80,7 +80,11 @@ SoDa::USRPRX::USRPRX(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
   enable_spectrum_report = true;
 
   // we process all incoming RX packets...
-  drain_stream = false; 
+  drain_stream = false;
+
+  // setup the dc blocking filter
+  dc_block = new SoDa::DCBlock<std::complex<float>, float>(0.99);
+  
 }
 
 static void doFFTandDump(int fd, std::complex<float> * in, int len)
@@ -157,6 +161,10 @@ void SoDa::USRPRX::run()
 	  drain_stream = false; 
 	}
       }
+
+      // remove any DC bias
+      dc_block->apply(dbuf, rx_buffer_size); 
+      
       // If the anybody cares, send the IF buffer out.
       // If the UI is listening, it will do an FFT on the buffer
       // and send the positive spectrum via the UI to any listener.

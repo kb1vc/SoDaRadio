@@ -33,6 +33,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Command.hxx"
 #include "Params.hxx"
 #include "UI.hxx"
+#include "DCBlock.hxx"
 #include "QuadratureOscillator.hxx"
 #include <uhd/usrp/multi_usrp.hpp>
 #include <uhd/stream.hpp>
@@ -103,6 +104,9 @@ namespace SoDa {
     // pointer to user interface box -- we send it FFT snapshots
     UI * ui;
 
+    // DC Blocking filter
+    SoDa::DCBlock<std::complex<float>, float> * dc_block; 
+    
     // IF tuner
     QuadratureOscillator IF_osc;
     double current_IF_tuning;

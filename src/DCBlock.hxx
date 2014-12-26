@@ -64,7 +64,7 @@ namespace SoDa {
      *
      * @param _alpha As _alpha approaches 1.0, the width of the filter becomes narrower. 
      */
-    DCBlock(Ta _alpha) { 
+    DCBlock(const Ta _alpha) { 
       alpha = _alpha;
       Dm1 = Tv(0.0);
     }
@@ -81,12 +81,25 @@ namespace SoDa {
     unsigned int apply(Tv * inbuf, Tv * outbuf, int len) {
       Tv D0;
       int i;
-      std::cerr << Dm1 << std::endl;
       for(i = 0; i < len; i++) {
 	D0 = inbuf[i] + alpha * Dm1;
 	outbuf[i] = D0 - Dm1;
 	Dm1 = D0; 
       }
+    }
+
+    /**
+     * Perform a DC block
+     *
+     * Use form (d) from the Lyons paper
+     * This is a wrapper for apply(in, out, len) to indicate
+     * that an in-place operation is provided.
+     *
+     * @param inoutbuf input buffer of type T
+     * @param len length of the buffer.
+     */
+    unsigned int apply(Tv * inoutbuf, int len) {
+      apply(inoutbuf, inoutbuf, len); 
     }
 
   public:
