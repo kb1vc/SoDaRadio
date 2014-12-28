@@ -210,6 +210,8 @@ am_USRP2_Cordic_Model_OBJECTS =  \
 	../src/USRP2_Cordic_Model-Spectrogram.$(OBJEXT)
 USRP2_Cordic_Model_OBJECTS = $(am_USRP2_Cordic_Model_OBJECTS)
 USRP2_Cordic_Model_DEPENDENCIES = $(am__DEPENDENCIES_2)
+USRP2_Cordic_Model_LINK = $(CXXLD) $(USRP2_Cordic_Model_CXXFLAGS) \
+	$(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -505,6 +507,7 @@ DCBlock_Test_LDADD = $(AM_BOOSTLIBFLAGS)
 USRP2_Cordic_Model_SOURCES = USRP2_Cordic_Model.cxx  ../src/Spectrogram.cxx ../src/Spectrogram.hxx ../src/DCBlock.hxx 
 USRP2_Cordic_Model_CPPFLAGS = $(AM_CPPFLAGS) 
 USRP2_Cordic_Model_LDADD = $(AM_BOOSTLIBFLAGS) 
+USRP2_Cordic_Model_CXXFLAGS = $(AM_CXXFLAGS) -O4
 all: all-am
 
 .SUFFIXES:
@@ -726,7 +729,7 @@ TestServer$(EXEEXT): $(TestServer_OBJECTS) $(TestServer_DEPENDENCIES) $(EXTRA_Te
 
 USRP2_Cordic_Model$(EXEEXT): $(USRP2_Cordic_Model_OBJECTS) $(USRP2_Cordic_Model_DEPENDENCIES) $(EXTRA_USRP2_Cordic_Model_DEPENDENCIES) 
 	@rm -f USRP2_Cordic_Model$(EXEEXT)
-	$(AM_V_CXXLD)$(CXXLINK) $(USRP2_Cordic_Model_OBJECTS) $(USRP2_Cordic_Model_LDADD) $(LIBS)
+	$(AM_V_CXXLD)$(USRP2_Cordic_Model_LINK) $(USRP2_Cordic_Model_OBJECTS) $(USRP2_Cordic_Model_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -1476,32 +1479,32 @@ TestServer-TestServer.obj: TestServer.cxx
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TestServer_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ../src/TestServer-Debug.obj `if test -f '../src/Debug.cxx'; then $(CYGPATH_W) '../src/Debug.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/Debug.cxx'; fi`
 
 USRP2_Cordic_Model-USRP2_Cordic_Model.o: USRP2_Cordic_Model.cxx
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(USRP2_Cordic_Model_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT USRP2_Cordic_Model-USRP2_Cordic_Model.o -MD -MP -MF $(DEPDIR)/USRP2_Cordic_Model-USRP2_Cordic_Model.Tpo -c -o USRP2_Cordic_Model-USRP2_Cordic_Model.o `test -f 'USRP2_Cordic_Model.cxx' || echo '$(srcdir)/'`USRP2_Cordic_Model.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(USRP2_Cordic_Model_CPPFLAGS) $(CPPFLAGS) $(USRP2_Cordic_Model_CXXFLAGS) $(CXXFLAGS) -MT USRP2_Cordic_Model-USRP2_Cordic_Model.o -MD -MP -MF $(DEPDIR)/USRP2_Cordic_Model-USRP2_Cordic_Model.Tpo -c -o USRP2_Cordic_Model-USRP2_Cordic_Model.o `test -f 'USRP2_Cordic_Model.cxx' || echo '$(srcdir)/'`USRP2_Cordic_Model.cxx
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/USRP2_Cordic_Model-USRP2_Cordic_Model.Tpo $(DEPDIR)/USRP2_Cordic_Model-USRP2_Cordic_Model.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='USRP2_Cordic_Model.cxx' object='USRP2_Cordic_Model-USRP2_Cordic_Model.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(USRP2_Cordic_Model_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o USRP2_Cordic_Model-USRP2_Cordic_Model.o `test -f 'USRP2_Cordic_Model.cxx' || echo '$(srcdir)/'`USRP2_Cordic_Model.cxx
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(USRP2_Cordic_Model_CPPFLAGS) $(CPPFLAGS) $(USRP2_Cordic_Model_CXXFLAGS) $(CXXFLAGS) -c -o USRP2_Cordic_Model-USRP2_Cordic_Model.o `test -f 'USRP2_Cordic_Model.cxx' || echo '$(srcdir)/'`USRP2_Cordic_Model.cxx
 
 USRP2_Cordic_Model-USRP2_Cordic_Model.obj: USRP2_Cordic_Model.cxx
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(USRP2_Cordic_Model_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT USRP2_Cordic_Model-USRP2_Cordic_Model.obj -MD -MP -MF $(DEPDIR)/USRP2_Cordic_Model-USRP2_Cordic_Model.Tpo -c -o USRP2_Cordic_Model-USRP2_Cordic_Model.obj `if test -f 'USRP2_Cordic_Model.cxx'; then $(CYGPATH_W) 'USRP2_Cordic_Model.cxx'; else $(CYGPATH_W) '$(srcdir)/USRP2_Cordic_Model.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(USRP2_Cordic_Model_CPPFLAGS) $(CPPFLAGS) $(USRP2_Cordic_Model_CXXFLAGS) $(CXXFLAGS) -MT USRP2_Cordic_Model-USRP2_Cordic_Model.obj -MD -MP -MF $(DEPDIR)/USRP2_Cordic_Model-USRP2_Cordic_Model.Tpo -c -o USRP2_Cordic_Model-USRP2_Cordic_Model.obj `if test -f 'USRP2_Cordic_Model.cxx'; then $(CYGPATH_W) 'USRP2_Cordic_Model.cxx'; else $(CYGPATH_W) '$(srcdir)/USRP2_Cordic_Model.cxx'; fi`
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/USRP2_Cordic_Model-USRP2_Cordic_Model.Tpo $(DEPDIR)/USRP2_Cordic_Model-USRP2_Cordic_Model.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='USRP2_Cordic_Model.cxx' object='USRP2_Cordic_Model-USRP2_Cordic_Model.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(USRP2_Cordic_Model_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o USRP2_Cordic_Model-USRP2_Cordic_Model.obj `if test -f 'USRP2_Cordic_Model.cxx'; then $(CYGPATH_W) 'USRP2_Cordic_Model.cxx'; else $(CYGPATH_W) '$(srcdir)/USRP2_Cordic_Model.cxx'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(USRP2_Cordic_Model_CPPFLAGS) $(CPPFLAGS) $(USRP2_Cordic_Model_CXXFLAGS) $(CXXFLAGS) -c -o USRP2_Cordic_Model-USRP2_Cordic_Model.obj `if test -f 'USRP2_Cordic_Model.cxx'; then $(CYGPATH_W) 'USRP2_Cordic_Model.cxx'; else $(CYGPATH_W) '$(srcdir)/USRP2_Cordic_Model.cxx'; fi`
 
 ../src/USRP2_Cordic_Model-Spectrogram.o: ../src/Spectrogram.cxx
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(USRP2_Cordic_Model_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ../src/USRP2_Cordic_Model-Spectrogram.o -MD -MP -MF ../src/$(DEPDIR)/USRP2_Cordic_Model-Spectrogram.Tpo -c -o ../src/USRP2_Cordic_Model-Spectrogram.o `test -f '../src/Spectrogram.cxx' || echo '$(srcdir)/'`../src/Spectrogram.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(USRP2_Cordic_Model_CPPFLAGS) $(CPPFLAGS) $(USRP2_Cordic_Model_CXXFLAGS) $(CXXFLAGS) -MT ../src/USRP2_Cordic_Model-Spectrogram.o -MD -MP -MF ../src/$(DEPDIR)/USRP2_Cordic_Model-Spectrogram.Tpo -c -o ../src/USRP2_Cordic_Model-Spectrogram.o `test -f '../src/Spectrogram.cxx' || echo '$(srcdir)/'`../src/Spectrogram.cxx
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) ../src/$(DEPDIR)/USRP2_Cordic_Model-Spectrogram.Tpo ../src/$(DEPDIR)/USRP2_Cordic_Model-Spectrogram.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='../src/Spectrogram.cxx' object='../src/USRP2_Cordic_Model-Spectrogram.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(USRP2_Cordic_Model_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ../src/USRP2_Cordic_Model-Spectrogram.o `test -f '../src/Spectrogram.cxx' || echo '$(srcdir)/'`../src/Spectrogram.cxx
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(USRP2_Cordic_Model_CPPFLAGS) $(CPPFLAGS) $(USRP2_Cordic_Model_CXXFLAGS) $(CXXFLAGS) -c -o ../src/USRP2_Cordic_Model-Spectrogram.o `test -f '../src/Spectrogram.cxx' || echo '$(srcdir)/'`../src/Spectrogram.cxx
 
 ../src/USRP2_Cordic_Model-Spectrogram.obj: ../src/Spectrogram.cxx
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(USRP2_Cordic_Model_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ../src/USRP2_Cordic_Model-Spectrogram.obj -MD -MP -MF ../src/$(DEPDIR)/USRP2_Cordic_Model-Spectrogram.Tpo -c -o ../src/USRP2_Cordic_Model-Spectrogram.obj `if test -f '../src/Spectrogram.cxx'; then $(CYGPATH_W) '../src/Spectrogram.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/Spectrogram.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(USRP2_Cordic_Model_CPPFLAGS) $(CPPFLAGS) $(USRP2_Cordic_Model_CXXFLAGS) $(CXXFLAGS) -MT ../src/USRP2_Cordic_Model-Spectrogram.obj -MD -MP -MF ../src/$(DEPDIR)/USRP2_Cordic_Model-Spectrogram.Tpo -c -o ../src/USRP2_Cordic_Model-Spectrogram.obj `if test -f '../src/Spectrogram.cxx'; then $(CYGPATH_W) '../src/Spectrogram.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/Spectrogram.cxx'; fi`
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) ../src/$(DEPDIR)/USRP2_Cordic_Model-Spectrogram.Tpo ../src/$(DEPDIR)/USRP2_Cordic_Model-Spectrogram.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='../src/Spectrogram.cxx' object='../src/USRP2_Cordic_Model-Spectrogram.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(USRP2_Cordic_Model_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ../src/USRP2_Cordic_Model-Spectrogram.obj `if test -f '../src/Spectrogram.cxx'; then $(CYGPATH_W) '../src/Spectrogram.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/Spectrogram.cxx'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(USRP2_Cordic_Model_CPPFLAGS) $(CPPFLAGS) $(USRP2_Cordic_Model_CXXFLAGS) $(CXXFLAGS) -c -o ../src/USRP2_Cordic_Model-Spectrogram.obj `if test -f '../src/Spectrogram.cxx'; then $(CYGPATH_W) '../src/Spectrogram.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/Spectrogram.cxx'; fi`
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique

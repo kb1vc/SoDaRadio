@@ -99,3 +99,4 @@ DCBlock_Test_LDADD = $(AM_BOOSTLIBFLAGS)
 USRP2_Cordic_Model_SOURCES = USRP2_Cordic_Model.cxx  ../src/Spectrogram.cxx ../src/Spectrogram.hxx ../src/DCBlock.hxx 
 USRP2_Cordic_Model_CPPFLAGS = $(AM_CPPFLAGS) 
 USRP2_Cordic_Model_LDADD = $(AM_BOOSTLIBFLAGS) 
+USRP2_Cordic_Model_CXXFLAGS = $(AM_CXXFLAGS) -O4
