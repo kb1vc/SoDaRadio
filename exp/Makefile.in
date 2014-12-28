@@ -83,7 +83,8 @@ bin_PROGRAMS = FFT_Test$(EXEEXT) Sockets_Test$(EXEEXT) \
 	ReSampler_Test$(EXEEXT) TSIP_Test$(EXEEXT) Audio_test$(EXEEXT) \
 	Hilbert_Test$(EXEEXT) FindHome_Test$(EXEEXT) \
 	RangeMap_test$(EXEEXT) DDC_Test$(EXEEXT) DDC_Post$(EXEEXT) \
-	DDC_Analyze$(EXEEXT) DCBlock_Test$(EXEEXT)
+	DDC_Analyze$(EXEEXT) DCBlock_Test$(EXEEXT) \
+	USRP2_Cordic_Model$(EXEEXT)
 subdir = exp
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/depcomp
@@ -204,6 +205,11 @@ am_TestServer_OBJECTS = TestServer-TestServer.$(OBJEXT) \
 	../src/TestServer-Debug.$(OBJEXT)
 TestServer_OBJECTS = $(am_TestServer_OBJECTS)
 TestServer_DEPENDENCIES = $(am__DEPENDENCIES_2)
+am_USRP2_Cordic_Model_OBJECTS =  \
+	USRP2_Cordic_Model-USRP2_Cordic_Model.$(OBJEXT) \
+	../src/USRP2_Cordic_Model-Spectrogram.$(OBJEXT)
+USRP2_Cordic_Model_OBJECTS = $(am_USRP2_Cordic_Model_OBJECTS)
+USRP2_Cordic_Model_DEPENDENCIES = $(am__DEPENDENCIES_2)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -256,7 +262,7 @@ SOURCES = $(Audio_test_SOURCES) $(DCBlock_Test_SOURCES) \
 	$(OSFilter_Test_SOURCES) $(RangeMap_test_SOURCES) \
 	$(ReSampler_Test_SOURCES) $(SoDa_ThreadTest_SOURCES) \
 	$(Sockets_Test_SOURCES) $(TSIP_Test_SOURCES) \
-	$(TestServer_SOURCES)
+	$(TestServer_SOURCES) $(USRP2_Cordic_Model_SOURCES)
 DIST_SOURCES = $(Audio_test_SOURCES) $(DCBlock_Test_SOURCES) \
 	$(DDC_Analyze_SOURCES) $(DDC_Post_SOURCES) $(DDC_Test_SOURCES) \
 	$(FFT_Test_SOURCES) $(FindHome_Test_SOURCES) \
@@ -264,7 +270,7 @@ DIST_SOURCES = $(Audio_test_SOURCES) $(DCBlock_Test_SOURCES) \
 	$(OSFilter_Test_SOURCES) $(RangeMap_test_SOURCES) \
 	$(ReSampler_Test_SOURCES) $(SoDa_ThreadTest_SOURCES) \
 	$(Sockets_Test_SOURCES) $(TSIP_Test_SOURCES) \
-	$(TestServer_SOURCES)
+	$(TestServer_SOURCES) $(USRP2_Cordic_Model_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -496,6 +502,9 @@ DDC_Analyze_LDADD = $(AM_BOOSTLIBFLAGS)
 DCBlock_Test_SOURCES = DCBlock_Test.cxx  ../src/DCBlock.hxx
 DCBlock_Test_CPPFLAGS = $(AM_CPPFLAGS) 
 DCBlock_Test_LDADD = $(AM_BOOSTLIBFLAGS) 
+USRP2_Cordic_Model_SOURCES = USRP2_Cordic_Model.cxx  ../src/Spectrogram.cxx ../src/Spectrogram.hxx ../src/DCBlock.hxx 
+USRP2_Cordic_Model_CPPFLAGS = $(AM_CPPFLAGS) 
+USRP2_Cordic_Model_LDADD = $(AM_BOOSTLIBFLAGS) 
 all: all-am
 
 .SUFFIXES:
@@ -712,6 +721,12 @@ TSIP_Test$(EXEEXT): $(TSIP_Test_OBJECTS) $(TSIP_Test_DEPENDENCIES) $(EXTRA_TSIP_
 TestServer$(EXEEXT): $(TestServer_OBJECTS) $(TestServer_DEPENDENCIES) $(EXTRA_TestServer_DEPENDENCIES) 
 	@rm -f TestServer$(EXEEXT)
 	$(AM_V_CXXLD)$(CXXLINK) $(TestServer_OBJECTS) $(TestServer_LDADD) $(LIBS)
+../src/USRP2_Cordic_Model-Spectrogram.$(OBJEXT):  \
+	../src/$(am__dirstamp) ../src/$(DEPDIR)/$(am__dirstamp)
+
+USRP2_Cordic_Model$(EXEEXT): $(USRP2_Cordic_Model_OBJECTS) $(USRP2_Cordic_Model_DEPENDENCIES) $(EXTRA_USRP2_Cordic_Model_DEPENDENCIES) 
+	@rm -f USRP2_Cordic_Model$(EXEEXT)
+	$(AM_V_CXXLD)$(CXXLINK) $(USRP2_Cordic_Model_OBJECTS) $(USRP2_Cordic_Model_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -753,6 +768,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/TestServer-Spectrogram.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/TestServer-UDSockets.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/TestServer-UI.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/USRP2_Cordic_Model-Spectrogram.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Audio_test-Audio_test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DCBlock_Test-DCBlock_Test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DDC_Analyze-DDC_Analyze.Po@am__quote@
@@ -769,6 +785,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Sockets_Test-Sockets_Test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TSIP_Test-TSIP_Test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TestServer-TestServer.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/USRP2_Cordic_Model-USRP2_Cordic_Model.Po@am__quote@
 
 .cxx.o:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
@@ -1457,6 +1474,34 @@ TestServer-TestServer.obj: TestServer.cxx
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='../src/Debug.cxx' object='../src/TestServer-Debug.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TestServer_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ../src/TestServer-Debug.obj `if test -f '../src/Debug.cxx'; then $(CYGPATH_W) '../src/Debug.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/Debug.cxx'; fi`
+
+USRP2_Cordic_Model-USRP2_Cordic_Model.o: USRP2_Cordic_Model.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(USRP2_Cordic_Model_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT USRP2_Cordic_Model-USRP2_Cordic_Model.o -MD -MP -MF $(DEPDIR)/USRP2_Cordic_Model-USRP2_Cordic_Model.Tpo -c -o USRP2_Cordic_Model-USRP2_Cordic_Model.o `test -f 'USRP2_Cordic_Model.cxx' || echo '$(srcdir)/'`USRP2_Cordic_Model.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/USRP2_Cordic_Model-USRP2_Cordic_Model.Tpo $(DEPDIR)/USRP2_Cordic_Model-USRP2_Cordic_Model.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='USRP2_Cordic_Model.cxx' object='USRP2_Cordic_Model-USRP2_Cordic_Model.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(USRP2_Cordic_Model_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o USRP2_Cordic_Model-USRP2_Cordic_Model.o `test -f 'USRP2_Cordic_Model.cxx' || echo '$(srcdir)/'`USRP2_Cordic_Model.cxx
+
+USRP2_Cordic_Model-USRP2_Cordic_Model.obj: USRP2_Cordic_Model.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(USRP2_Cordic_Model_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT USRP2_Cordic_Model-USRP2_Cordic_Model.obj -MD -MP -MF $(DEPDIR)/USRP2_Cordic_Model-USRP2_Cordic_Model.Tpo -c -o USRP2_Cordic_Model-USRP2_Cordic_Model.obj `if test -f 'USRP2_Cordic_Model.cxx'; then $(CYGPATH_W) 'USRP2_Cordic_Model.cxx'; else $(CYGPATH_W) '$(srcdir)/USRP2_Cordic_Model.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/USRP2_Cordic_Model-USRP2_Cordic_Model.Tpo $(DEPDIR)/USRP2_Cordic_Model-USRP2_Cordic_Model.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='USRP2_Cordic_Model.cxx' object='USRP2_Cordic_Model-USRP2_Cordic_Model.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(USRP2_Cordic_Model_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o USRP2_Cordic_Model-USRP2_Cordic_Model.obj `if test -f 'USRP2_Cordic_Model.cxx'; then $(CYGPATH_W) 'USRP2_Cordic_Model.cxx'; else $(CYGPATH_W) '$(srcdir)/USRP2_Cordic_Model.cxx'; fi`
+
+../src/USRP2_Cordic_Model-Spectrogram.o: ../src/Spectrogram.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(USRP2_Cordic_Model_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ../src/USRP2_Cordic_Model-Spectrogram.o -MD -MP -MF ../src/$(DEPDIR)/USRP2_Cordic_Model-Spectrogram.Tpo -c -o ../src/USRP2_Cordic_Model-Spectrogram.o `test -f '../src/Spectrogram.cxx' || echo '$(srcdir)/'`../src/Spectrogram.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) ../src/$(DEPDIR)/USRP2_Cordic_Model-Spectrogram.Tpo ../src/$(DEPDIR)/USRP2_Cordic_Model-Spectrogram.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='../src/Spectrogram.cxx' object='../src/USRP2_Cordic_Model-Spectrogram.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(USRP2_Cordic_Model_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ../src/USRP2_Cordic_Model-Spectrogram.o `test -f '../src/Spectrogram.cxx' || echo '$(srcdir)/'`../src/Spectrogram.cxx
+
+../src/USRP2_Cordic_Model-Spectrogram.obj: ../src/Spectrogram.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(USRP2_Cordic_Model_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ../src/USRP2_Cordic_Model-Spectrogram.obj -MD -MP -MF ../src/$(DEPDIR)/USRP2_Cordic_Model-Spectrogram.Tpo -c -o ../src/USRP2_Cordic_Model-Spectrogram.obj `if test -f '../src/Spectrogram.cxx'; then $(CYGPATH_W) '../src/Spectrogram.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/Spectrogram.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) ../src/$(DEPDIR)/USRP2_Cordic_Model-Spectrogram.Tpo ../src/$(DEPDIR)/USRP2_Cordic_Model-Spectrogram.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='../src/Spectrogram.cxx' object='../src/USRP2_Cordic_Model-Spectrogram.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(USRP2_Cordic_Model_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ../src/USRP2_Cordic_Model-Spectrogram.obj `if test -f '../src/Spectrogram.cxx'; then $(CYGPATH_W) '../src/Spectrogram.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/Spectrogram.cxx'; fi`
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
