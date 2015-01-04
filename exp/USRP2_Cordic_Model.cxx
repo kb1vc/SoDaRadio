@@ -67,10 +67,12 @@ public:
        "minimum frequency setting for DDC CORDIC")
       ("max", po::value<float>(&max_freq)->default_value(20.0e6),
        "maximum frequency setting for DDC CORDIC")
-      ("incr", po::value<float>(&freq_incr)->default_value(10.0e3),
+      ("incr", po::value<double>(&freq_incr)->default_value(10.0e3),
        "CORDIC oscillator setting stepsize")
       ("corr", po::value<bool>(&corr_ena)->default_value(true),
        "Enable correlation test -- better resolution near the carrier.")
+      ("cgraph", po::value<bool>(&corr_graph_ena)->default_value(false),
+       "Enable plot of correlation results for each frequency.  Otherwise, write \"sweet spots\" only.")
       ("spect", po::value<bool>(&spect_ena)->default_value(false),
        "Enable spectrum test -- lotsa bits, useful insight.")
       ("loglen", po::value<unsigned int>(&log_samp_len)->default_value(15),
@@ -90,6 +92,8 @@ public:
       exit(-1); 
     }
 
+    if(!spect_ena) en_surface_plot = false; 
+
     if(log_samp_len < 15) log_samp_len = 15; 
     char espc = en_surface_plot ? 'T' : 'F'; 
     char cec = corr_ena ? 'T' : 'F'; 
@@ -100,11 +104,12 @@ public:
 public:
   std::string basename; 
   bool en_surface_plot;
-  bool corr_ena; 
+  bool corr_ena;
+  bool corr_graph_ena; 
   bool spect_ena; 
   float min_freq;
   float max_freq;
-  float freq_incr;
+  double freq_incr;
   unsigned int log_samp_len; 
 }; 
 
@@ -276,20 +281,34 @@ private:
 
 class CorrTest {
 public:
-  CorrTest(int inlen, const std::string basename) {
-    dc_close = new   SoDa::DCBlock<std::complex<double>, double>(0.999);
-    dc_far = new   SoDa::DCBlock<std::complex<double>, double>(0.9999);
+  CorrTest(int inlen, const std::string basename, bool _write_graph) {
+
+    write_graph = _write_graph;
+    
+    dc_close = new   SoDa::DCBlock<std::complex<double>, double>(0.9999); // HPF w cutoff at 2.2kHz
+    dc_far = new   SoDa::DCBlock<std::complex<double>, double>(0.999); // HPF w/cutoff at 17kHz
 
     std::string cfname = basename + std::string(".cdat");
-    cf.open(cfname.c_str());
+    if(write_graph) {
+      cf.open(cfname.c_str());
+      cf << "# CORDIC Freq    phase_incr  RMS Power Above 2.2kHz  RMS Power above 17kHz " << std::endl;
+      cf.flush();
+    }
+    
+    // std::string swname = basename + std::string(".sweet");
+    // sw.open(swname.c_str());
+    // sw << "# Sweet Spot List -- CORDIC Freq, RMS Power close+far(CL) far(FA)" << std::endl;
 
     dv = new std::complex<double>[inlen]; 
     dv_close_out = new std::complex<double>[inlen]; 
-    dv_far_out = new std::complex<double>[inlen]; 
+    dv_far_out = new std::complex<double>[inlen];
   }
 
   ~CorrTest() {
-    cf.close(); 
+    if(write_graph) {
+      cf.close();
+    }
+    // sw.close(); 
   }
 
   void apply(float fr, int phase_add, std::complex<double> * v, int inlen) __attribute__ ((noinline)) {
@@ -341,12 +360,17 @@ public:
     }
 
     rms_cl = rms_cl / ((double) j); 
-    rms_fa = rms_fa / ((double) j); 
-    cf << boost::format("%12.9g %d %g %g\n") % fr % phase_add % rms_cl % rms_fa;
+    rms_fa = rms_fa / ((double) j);
+    if(write_graph) {
+      cf << boost::format("%12.9g %d %g %g\n") % fr % phase_add % rms_cl % rms_fa;
+    }
     
   }
 
+  bool write_graph; 
+    
   std::ofstream cf; 
+  std::ofstream sw; 
   SoDa::DCBlock<std::complex<double>, double> * dc_close;
   SoDa::DCBlock<std::complex<double>, double> * dc_far;
   std::complex<double> * dv; 
@@ -477,7 +501,7 @@ int main(int argc, char * argv[])
 
   CorrTest * corr_test;
   if(params.corr_ena) {
-    corr_test = new CorrTest(samp_vec_len, params.basename);
+    corr_test = new CorrTest(samp_vec_len, params.basename, params.corr_graph_ena);
   }
   
   // Let's sweep from -20MHz to 20MHz and see what kind of quality we've got.
@@ -486,25 +510,20 @@ int main(int argc, char * argv[])
   std::cerr << boost::format("min_freq = %g  max_freq = %g  freq_incr = %g\n")
     % params.min_freq % params.max_freq % params.freq_incr;
   
-  for(float freq = params.min_freq; freq <= params.max_freq; freq += params.freq_incr) {
+  for(double freq = params.min_freq; freq <= params.max_freq; freq += params.freq_incr) {
     // for(float freq = -2.0e6; freq < 2.15e6; freq += 100e3) {
     // The first conversion runs at 100 MHz?  I think...
-    double dff = ((double) freq) / 100.0e6;
-    long int lpa = (long int) floor(dff * ((double) 0x7fffffff));
-    phase_add = (int) (lpa >> 32L);
-    int opa = (int) floor(freq * ((float) 0x7fffff) / 100e6);
-    std::cout << boost::format("# phase_add %d 0x%x   old %d 0x%x\n")
-      % phase_add % phase_add % opa % opa; 
+    phase_add = (int) floor(freq * ((float) 0x7fffffff) / 50e6);
     // was    phase_add = (int) floor(freq * ((float) 0x) / 100e6); 
     for(int samps = 0; samps < samp_vec_len; samps++) {
       // phase input to cordic is top 24 bits of the phase accumulator
       int cord_phase = phase >> 8; 
-      cord.doStep(xi, yi, phase, xo, yo, zo);
+      cord.doStep(xi, yi, cord_phase, xo, yo, zo);
       if(params.spect_ena) {
 	float msin = ((float) yo) / ((float) 0x7fffff);
 	float mcos = ((float) xo) / ((float) 0x7fffff);
-	std::cout << boost::format("%d %d %d %d %d %d  %lg %lg\n")
-	  % sampcount % phase % xi % yi % xo % yo % msin % mcos;
+	// std::cout << boost::format("%d %d %d %d %d %d  %lg %lg\n")
+	//   % sampcount % phase % xi % yi % xo % yo % msin % mcos;
 	svec[samps] = std::complex<float>(mcos, msin);
       }
 
@@ -517,7 +536,7 @@ int main(int argc, char * argv[])
       phase += phase_add;
       sampcount++;
     }
-    exit(-1); 
+
     std::cout << boost::format("%12.9g\n") % freq;
     // now test the vector
     if(params.spect_ena) {
@@ -527,5 +546,13 @@ int main(int argc, char * argv[])
       corr_test->apply(freq, phase_add, dvec, samp_vec_len); 
     }
   }
+
+  if(params.spect_ena) {
+    delete spec_test;
+  }
+  if(params.corr_ena) {
+    delete corr_test;
+  }
 }
+
 		 
