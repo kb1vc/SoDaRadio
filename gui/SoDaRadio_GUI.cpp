@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////
-// C++ code generated with wxFormBuilder (version Dec 21 2009)
+// C++ code generated with wxFormBuilder (version Jul  5 2013)
 // http://www.wxformbuilder.org/
 //
 // PLEASE DO "NOT" EDIT THIS FILE!
@@ -36,7 +36,7 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 	Quit = new wxMenuItem( FileMenu, wxID_ANY, wxString( wxT("Quit") ) , wxEmptyString, wxITEM_NORMAL );
 	FileMenu->Append( Quit );
 	
-	m_menubar1->Append( FileMenu, wxT("&File") );
+	m_menubar1->Append( FileMenu, wxT("&File") ); 
 	
 	ConfigMenu = new wxMenu();
 	wxMenuItem* SetMyCallsign;
@@ -59,7 +59,7 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 	m_configSpect = new wxMenuItem( ConfigMenu, wxID_ANY, wxString( wxT("Configure Spectrum Display") ) , wxEmptyString, wxITEM_NORMAL );
 	ConfigMenu->Append( m_configSpect );
 	
-	m_menubar1->Append( ConfigMenu, wxT("Configure") );
+	m_menubar1->Append( ConfigMenu, wxT("Configure") ); 
 	
 	m_QSOMenu = new wxMenu();
 	wxMenuItem* m_SetToCall;
@@ -82,10 +82,10 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 	m_ToggleTX = new wxMenuItem( m_QSOMenu, ID_TOGGLETX, wxString( wxT("Toggle TX Switch") ) + wxT('\t') + wxT("Ctrl+T"), wxEmptyString, wxITEM_NORMAL );
 	m_QSOMenu->Append( m_ToggleTX );
 	
-	m_menubar1->Append( m_QSOMenu, wxT("QSO Actions") );
+	m_menubar1->Append( m_QSOMenu, wxT("QSO Actions") ); 
 	
 	m_bandSelect = new wxMenu();
-	m_menubar1->Append( m_bandSelect, wxT("Select Band") );
+	m_menubar1->Append( m_bandSelect, wxT("Select Band") ); 
 	
 	HelpMenu = new wxMenu();
 	wxMenuItem* Aboutitem;
@@ -96,7 +96,7 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 	UserGuideitem = new wxMenuItem( HelpMenu, wxID_ANY, wxString( wxT("User's Guide") ) , wxEmptyString, wxITEM_NORMAL );
 	HelpMenu->Append( UserGuideitem );
 	
-	m_menubar1->Append( HelpMenu, wxT("Help") );
+	m_menubar1->Append( HelpMenu, wxT("Help") ); 
 	
 	this->SetMenuBar( m_menubar1 );
 	
@@ -551,11 +551,11 @@ SoDaRadioFrame::~SoDaRadioFrame()
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnGPSOnSel ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnConfigBand ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnMenuConfigSpect ) );
-	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnQSOMenuSet ) );
-	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnQSOMenuSet ) );
-	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnQSOMenuSet ) );
-	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnQSOMenuSet ) );
-	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnQSOMenuSet ) );
+	this->Disconnect( ID_GOTOCALL, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnQSOMenuSet ) );
+	this->Disconnect( ID_GOTOGRID, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnQSOMenuSet ) );
+	this->Disconnect( ID_GOTOLOG, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnQSOMenuSet ) );
+	this->Disconnect( ID_GOTOMSG, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnQSOMenuSet ) );
+	this->Disconnect( ID_TOGGLETX, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnQSOMenuSet ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnAbout ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnUserGuide ) );
 	SpectrumDisplay->Disconnect( wxEVT_MIDDLE_UP, wxMouseEventHandler( SoDaRadioFrame::OnOpenSpectConfig ), NULL, this );
@@ -610,6 +610,7 @@ SoDaRadioFrame::~SoDaRadioFrame()
 	m_LogCommentBox->Disconnect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( SoDaRadioFrame::OnSaveComment ), NULL, this );
 	CtrlPopup->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnCtrlPopup ), NULL, this );
 	m_PTT->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnTXOnOff ), NULL, this );
+	
 }
 
 m_LogDialog::m_LogDialog( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
@@ -681,6 +682,7 @@ m_LogDialog::~m_LogDialog()
 	// Disconnect Events
 	m_LogGrid->Disconnect( wxEVT_GRID_CELL_CHANGE, wxGridEventHandler( m_LogDialog::OnLogCellChange ), NULL, this );
 	m_LogOK->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_LogDialog::OnLogOK ), NULL, this );
+	
 }
 
 m_AboutDialog::m_AboutDialog( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
@@ -722,6 +724,7 @@ m_AboutDialog::~m_AboutDialog()
 {
 	// Disconnect Events
 	m_AboutOK->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_AboutDialog::OnAboutOK ), NULL, this );
+	
 }
 
 m_QuitDialogConfig::m_QuitDialogConfig( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
@@ -763,6 +766,7 @@ m_QuitDialogConfig::~m_QuitDialogConfig()
 	// Disconnect Events
 	m_QuitNSave->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_QuitDialogConfig::SaveConfigChanges ), NULL, this );
 	m_QuitNoSave->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_QuitDialogConfig::OnIgnoreConfigChanges ), NULL, this );
+	
 }
 
 m_SpectConfigDialog::m_SpectConfigDialog( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
@@ -905,6 +909,7 @@ m_SpectConfigDialog::~m_SpectConfigDialog()
 	m_WaterfallWindowSel->Disconnect( wxEVT_SCROLL_THUMBRELEASE, wxScrollEventHandler( m_SpectConfigDialog::OnWindowLenUpdate ), NULL, this );
 	m_WaterfallScrollSpeed->Disconnect( wxEVT_SCROLL_THUMBRELEASE, wxScrollEventHandler( m_SpectConfigDialog::OnScrollSpeedUpdate ), NULL, this );
 	m_OK->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_SpectConfigDialog::OnDone ), NULL, this );
+	
 }
 
 m_TuningDialog::m_TuningDialog( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
@@ -1495,6 +1500,7 @@ m_TuningDialog::~m_TuningDialog()
 	m_ExtRefEn->Disconnect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( m_TuningDialog::OnExtRefEna ), NULL, this );
 	m_ReSyncUWLO->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_TuningDialog::OnTransvLOCal ), NULL, this );
 	m_TuneDone->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_TuningDialog::OnTuningDone ), NULL, this );
+	
 }
 
 m_ControlsDialog::m_ControlsDialog( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
@@ -1618,6 +1624,7 @@ m_ControlsDialog::~m_ControlsDialog()
 	m_CWSpeed->Disconnect( wxEVT_SCROLL_THUMBRELEASE, wxScrollEventHandler( m_ControlsDialog::OnCWSpeed ), NULL, this );
 	m_CWSpeed->Disconnect( wxEVT_SCROLL_CHANGED, wxScrollEventHandler( m_ControlsDialog::OnCWSpeed ), NULL, this );
 	m_CtrlDone->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_ControlsDialog::OnCtrlDone ), NULL, this );
+	
 }
 
 m_NewConfigDialog::m_NewConfigDialog( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
@@ -1679,6 +1686,7 @@ m_NewConfigDialog::~m_NewConfigDialog()
 	// Disconnect Events
 	m_CreateConfigDefault->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_NewConfigDialog::OnCreateConfigDefault ), NULL, this );
 	m_NoThanksCreateConfigDefault->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_NewConfigDialog::OnDismissCreateConfigDefault ), NULL, this );
+	
 }
 
 m_BandConfigDialog::m_BandConfigDialog( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
@@ -1905,6 +1913,7 @@ m_BandConfigDialog::~m_BandConfigDialog()
 	m_LOGenMode->Disconnect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( m_BandConfigDialog::OnTransverterModeSel ), NULL, this );
 	m_BandCancel->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_BandConfigDialog::OnBandCancel ), NULL, this );
 	m_BandOK->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_BandConfigDialog::OnBandOK ), NULL, this );
+	
 }
 
 m_BandConfigProblem::m_BandConfigProblem( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
@@ -1936,4 +1945,5 @@ m_BandConfigProblem::~m_BandConfigProblem()
 {
 	// Disconnect Events
 	m_button38->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_BandConfigProblem::OnBandErrorOK ), NULL, this );
+	
 }

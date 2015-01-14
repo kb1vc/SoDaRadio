@@ -35,8 +35,8 @@ class SoDaRadio_App : public wxApp
 {
 public:
   SoDaRadio_App();
-  virtual ~SoDaRadio_App();
-  virtual bool OnInit(); 
+  ~SoDaRadio_App();
+  bool OnInit(); 
 };
 
 DECLARE_APP(SoDaRadio_App); 

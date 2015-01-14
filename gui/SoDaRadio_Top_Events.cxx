@@ -29,11 +29,7 @@
 #include "SoDaRadio_Top.h"
 #include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
-#include <wx/string.h>
 #include <wx/wx.h>
-#include <wx/textdlg.h>
-#include <wx/filedlg.h>
-#include <wx/colour.h>
 #include "../src/Command.hxx"
 #include "Navigation.hxx"
 #include <math.h>
@@ -133,16 +129,20 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnSaveConfigAs( wxCommandEvent& event )
   {
-    wxString defaultDir = wxT("~/.SoDaRadio");
-    wxString defaultFilename = wxT("SoDa.soda_cfg");
-    wxString wildcard = wxT("SoDa Config files (*.soda_cfg)|*.soda_cfg");
-    wxFileDialog dialog(this, wxT("Save to Selected Configuration File"), defaultDir, defaultFilename, wildcard, wxFD_SAVE);
+    std::cerr << "Got to \"OnSaveConfigAs\"" << std::endl; 
 
-    if (dialog.ShowModal() == wxID_OK) {
-      wxString fname = dialog.GetPath();
+    std::cerr << "About to show save_config_as dialog" << std::endl; 
+
+    if (save_config_dialog->Show() == wxID_OK) {
+      std::cerr << "About to get path." << std::endl; 
+      wxString fname = save_config_dialog->GetPath();
+      std::cerr << "got the path: " << fname << std::endl; 
       save_config_file_name = fname; 
       SaveSoDaConfig(fname);
     }
+
+    std::cerr << "Show modal returned ." << std::endl;
+
   }
 
   void SoDaRadio_Top::OnOpenLogfile( wxCommandEvent& event )

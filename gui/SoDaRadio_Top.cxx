@@ -88,6 +88,19 @@ namespace SoDaRadio_GUI {
 
     debugMsg(boost::format("Debug level set to %d") % getDebugLevel());
 
+    // setup the save config dialog -- we need to create one 
+    // gtk file dialog before the fork, as there is a bug in the GTK 
+    // implementations of gtk_file_chooser_dialog_new.. a mystery to me. 
+    debugMsg((boost::format("creating save config dialog with this = %p.\n") % this).str());
+    save_config_dialog = new wxFileDialog(this,
+					  wxT("Save to Selected Configuration File"),
+					  wxT("~/.SoDaRadio"),
+					  wxT("SoDa.soda_cfg"),					     
+					  wxT("SoDa Config files (*.soda_cfg)|*.soda_cfg"),
+					  wxFD_SAVE | wxFD_CHANGE_DIR);
+    debugMsg("created save config dialog.");    
+    
+    
     // we don't have a "current band" yet.
     current_band = NULL;
     
@@ -97,6 +110,7 @@ namespace SoDaRadio_GUI {
     // this program, unless an alternate server image was specified. 
     std::string myhome = findHome();
 
+    
     // Now start the server
     std::string server = params.getServerName();
     std::string server_commandline_string; 
@@ -149,6 +163,8 @@ namespace SoDaRadio_GUI {
       }
     }
 
+  
+    
     debugMsg("About to create the spectrum configuration dialog.\n");
     // setup the spectrum configuration dialog
     spect_config = new SpectConfigDialog(this, this);

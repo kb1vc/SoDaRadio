@@ -86,6 +86,11 @@ namespace SoDaRadio_GUI {
     void OnOpenConfig( wxCommandEvent& event );
     void OnSaveConfig( wxCommandEvent& event );
     void OnSaveConfigAs( wxCommandEvent& event );
+
+    // the save dialog
+    wxFileDialog * save_config_dialog;
+
+
     void OnOpenLogfile( wxCommandEvent& event );
     void OnQuit( wxCommandEvent& event );
     void OnClose( wxCloseEvent& event );
