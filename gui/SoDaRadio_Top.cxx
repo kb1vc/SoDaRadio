@@ -145,9 +145,10 @@ namespace SoDaRadio_GUI {
 	  wxString((boost::format(" --debug %d") % getDebugLevel()).str().c_str(), wxConvUTF8);
       }
 
-      std::cerr << "About to execute [" << scmd << "]" << std::endl;       
-      wxExecute(scmd);
+      debugMsg(boost::format("About to execute [%s]\n") % scmd.mb_str());
 
+      // this appears to be "safe" wrt wxwidgets and the gtk stuff behind it.
+      wxExecute(scmd);
     }
 
   
