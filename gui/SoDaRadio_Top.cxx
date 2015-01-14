@@ -110,7 +110,6 @@ namespace SoDaRadio_GUI {
     // this program, unless an alternate server image was specified. 
     std::string myhome = findHome();
 
-    
     // Now start the server
     std::string server = params.getServerName();
     std::string server_commandline_string; 
@@ -122,45 +121,33 @@ namespace SoDaRadio_GUI {
       server_commandline_string = server; 
     }
 
-
     // setup the comm channel.
     std::string sock_basename = params.getServerSocketBasename(); 
 
     // fix a problem with UBUNTU menu proxy... .
     char mproxyfix[] = "UBUNTU_MENUPROXY=";
     putenv(mproxyfix);
-    if(server != "None") {
-      if(fork()) {
-	int stat;
-	char * argv[8];
-	// coercion to char* (as opposed to const char*) is to get around
-	// a compiler finickyness around conversions from const char** to const* char* or whatever.
-	// sigh.
-	argv[0] = (char*) server_commandline_string.c_str();
-	argv[1] = (char*) "--uds_name";
-	argv[2] = (char*) sock_basename.c_str();
-	std::string uhd_args = params.getUHDArgs();
-	int argctr = 3;
-	if(uhd_args != "") {
-	  argv[argctr++] = (char*) "--uhdargs";
-	  argv[argctr++] = (char*) uhd_args.c_str();
-	}
 
-	if(getDebugLevel()) {
-	  argv[argctr++] = (char*) "--debug";
-	  argv[argctr++] = (char*) (boost::format("%d") % getDebugLevel()).str().c_str();
-	}
-	argv[argctr] = NULL; 
-	stat = execv(argv[0], argv); 
-	// stat = execl(server_commandline_string.c_str(), server.c_str(), "--uds_name",
-	//       sock_basename.c_str(), (char*) 0);
-	if(stat < 0) {
-	  std::cerr << boost::format("Couldn't start SoDaServer. Got error [%s]. Is \"%s\" missing?\n")
-	    % strerror(errno)
-	    % server_commandline_string;
-	  exit(stat);
-	}
+    // Note that earlier versions used fork/execv but this really screws up 
+    // gtk for reasons that are not obvious.  (The file chooser gets very very 
+    // sluggish.)
+    if(server != "None") {
+      // use wxExecute 
+      wxString scmd = wxString(server_commandline_string.c_str(), wxConvUTF8) +  wxT(" --uds_name ") + wxString(sock_basename.c_str(), wxConvUTF8);
+
+      std::string uhd_args = params.getUHDArgs();
+      if(uhd_args != "") {
+	scmd = scmd + wxT(" --uhdargs ") + wxString(uhd_args.c_str(), wxConvUTF8);
       }
+
+      if(getDebugLevel()) {
+	scmd = scmd + 
+	  wxString((boost::format(" --debug %d") % getDebugLevel()).str().c_str(), wxConvUTF8);
+      }
+
+      std::cerr << "About to execute [" << scmd << "]" << std::endl;       
+      wxExecute(scmd);
+
     }
 
   
@@ -176,7 +163,7 @@ namespace SoDaRadio_GUI {
     // create the listener thread
     debugMsg("Creating listener thread.");
     listener = new RadioListenerThread(this);
-  
+
     // what is the default button background color? 
     default_button_bg_color = m_PTT->GetBackgroundColour();
   
