@@ -1,3 +1,5 @@
+SVN 143 (trunk) Fixed numerous thread/fork related problems in the GUI. 
+
 SVN 120 (trunk) Added display of native RX freq range to top bar of the radio.
 
 SVN 119 (trunk) Added display of current RX antenna to status bar.
