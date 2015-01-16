@@ -1,4 +1,8 @@
-Version 3.4 (SVN143) (trunk) Fixed numerous thread/fork related problems in the GUI. Replaced fork/execv in SoDaRadio with call to wxExecute.
+Version 3.4 (SVN 145) fixed problem where boost libraries are installed
+in an architecture-specific directory on Ubuntu 14.  Tested on Fedora 21
+and Ubuntu 14.04
+
+(SVN143) (trunk) Fixed numerous thread/fork related problems in the GUI. Replaced fork/execv in SoDaRadio with call to wxExecute.
 
 
 SVN 120 (trunk) Added display of native RX freq range to top bar of the radio.
