@@ -1,5 +1,14 @@
 SoDa -- A Software Defined Radio for the Ettus Research USRP
 
+Version 3.4
+
+Fixed a bug in the way the GUI started up.  Original code used
+fork/execv which confused GTK and wxWidgets and other components.
+Switched to the "official" wxExecute scheme.
+
+Fixed a bug in the build process where configure did not find the
+boost libraries on Ubuntu 14.x systems. 
+
 Version 3.3
 
 Fixed a problem with the antenna selection.  TX/RX can only 
