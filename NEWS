@@ -1,4 +1,5 @@
-SVN 143 (trunk) Fixed numerous thread/fork related problems in the GUI. 
+Version 3.4 (SVN143) (trunk) Fixed numerous thread/fork related problems in the GUI. Replaced fork/execv in SoDaRadio with call to wxExecute.
+
 
 SVN 120 (trunk) Added display of native RX freq range to top bar of the radio.
 
