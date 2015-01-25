@@ -33,10 +33,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <boost/program_options.hpp>
 #include <wx/app.h>
 
+extern "C" {
+#include <stdlib.h>
+}
+
 namespace SoDa {
-  class GuiParams {
+  class BaseGuiParams {
   public:
-    GuiParams(int argc, wxChar ** argv);
+    BaseGuiParams(int argc, wxChar ** argv, 
+		  const std::string def_sock_basename, 
+		  const std::string config_filename = std::string(""), 
+		  const std::string log_filename = std::string(""));
 
     std::string getServerSocketBasename() { return server_sock_basename; }
     std::string getServerName() { return server_name; }
@@ -59,6 +66,24 @@ namespace SoDa {
     unsigned int debug_level; ///< 0 => no debug messages .. more detail with higher values
   };
 
+  class RadioGuiParams : public BaseGuiParams {
+  public:
+    RadioGuiParams(int argc, wxChar ** argv) : 
+      BaseGuiParams(argc, argv, 
+		    std::string("/tmp/SoDa_"),
+		    getenv("HOME") + std::string("/.SoDaRadio/SoDa.soda_cfg"), 
+		    std::string("SoDa.soda_log")) {
+    }
+  }; 
+
+  class SNAGuiParams : public BaseGuiParams {
+  public:
+    SNAGuiParams(int argc, wxChar ** argv) : 
+      BaseGuiParams(argc, argv,
+		    std::string("/tmp/SoDaSNA_"),
+		    getenv("HOME") + std::string("/.SoDaRadio/SoDaSNA.cfg")) {
+    }
+  }; 
 }
 
 

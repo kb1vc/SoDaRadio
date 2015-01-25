@@ -60,7 +60,7 @@ namespace SoDaRadio_GUI {
    * @li the wxWidgets GUI event loop that dispatches user requests
    * through the SoDaRadio_Top thread.
    */
-  SoDaRadio_Top::SoDaRadio_Top( SoDa::RadioGuiParams & params,  wxWindow* parent )
+  SoDaRadio_Top::SoDaRadio_Top( SoDa::GuiParams & params,  wxWindow* parent )
 :
     SoDaRadioFrame( parent ), SoDa::Debug("SoDaRadio_Top")
   {
@@ -182,6 +182,7 @@ namespace SoDaRadio_GUI {
 
     // create the periodogram plot
     // and init its controls
+    cfreq_step = 25; 
     int xs, ys;
     SpectrumDisplay->GetSize(&xs, &ys);
     ys -= 50; // correct for the height of the tab...
@@ -253,7 +254,7 @@ namespace SoDaRadio_GUI {
     setAntennaName(wxT("????"));
   }
 
-  void SoDaRadio_Top::configureRadio(SoDa::RadioGuiParams & params) {
+  void SoDaRadio_Top::configureRadio(SoDa::GuiParams & params) {
     debugMsg("about to load configuration.");
     // load the configuration from a default file,
     // if available.

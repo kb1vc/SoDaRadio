@@ -28,28 +28,42 @@
 
 #include "GuiParams.hxx"
 
-SoDa::GuiParams::GuiParams(int argc, wxChar ** wxargv)
+SoDa::BaseGuiParams::BaseGuiParams(int argc, wxChar ** wxargv,
+				   const std::string def_base_sockname, 
+				   const std::string def_config_filename,
+				   const std::string def_log_filename)
 {
   char ** argv = convertWXargs2Cargs(argc, wxargv);
   namespace po = boost::program_options;
   po::options_description desc("Allowed options");
+
   desc.add_options()
     ("help", "help message")
     ("server", po::value<std::string>(&server_name)->default_value("SoDaServer"),
      "Name/path to SoDaServer program. Normally found in the directory containing SoDaRadio")
     ("uhdargs", po::value<std::string>(&uhd_args)->default_value(""),
      "multi uhd device address arguments -- 'type=b200' selects a B2xx unit in preference over an N2xx device")
-    ("uds_name", po::value<std::string>(&server_sock_basename)->default_value("/tmp/SoDa_"),
+    ("uds_name", po::value<std::string>(&server_sock_basename)->default_value(def_base_sockname),
      "unix domain socket name for server to UI client message channels")
-    ("config", po::value<std::string>(&config_filename)->default_value(""),
-     "Configuration file with initial settings. Otherwise SoDaRadio will look in ${HOME}/.SoDaRadio/SoDa.soda_cfg"
-     )
-    ("log", po::value<std::string>(&log_filename)->default_value("SoDa.soda_log"),
-     "Log filename")
     ("debug", po::value<unsigned int>(&debug_level)->default_value(0)->implicit_value(1),
      "Enable debug messages for value > 0.  Higher values may produce more detail.")
     ;
 
+  
+  if(def_config_filename != "") {
+    desc.add_options()("config", po::value<std::string>(&config_filename)->default_value(def_config_filename),
+		       "Configuration file with initial settings"
+		       );
+  }
+
+  if(def_log_filename != "") {
+    desc.add_options()("log", po::value<std::string>(&log_filename)->default_value(def_log_filename),
+		       "log filename"
+		       );
+  }
+
+
+  
   po::store(po::parse_command_line(argc, argv, desc), pmap);
   po::notify(pmap);
 
@@ -60,7 +74,7 @@ SoDa::GuiParams::GuiParams(int argc, wxChar ** wxargv)
   }
 }
 
-char ** SoDa::GuiParams::convertWXargs2Cargs(int argc, wxChar ** argv)
+char ** SoDa::BaseGuiParams::convertWXargs2Cargs(int argc, wxChar ** argv)
 {
   char ** ret;
   ret = new char*[argc];

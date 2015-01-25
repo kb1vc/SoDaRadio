@@ -83,7 +83,7 @@ bin_PROGRAMS = FFT_Test$(EXEEXT) Sockets_Test$(EXEEXT) \
 	OSFilter_Test$(EXEEXT) TestServer$(EXEEXT) \
 	ReSampler_Test$(EXEEXT) TSIP_Test$(EXEEXT) Audio_test$(EXEEXT) \
 	Hilbert_Test$(EXEEXT) FindHome_Test$(EXEEXT) \
-	RangeMap_test$(EXEEXT)
+	RangeMap_test$(EXEEXT) InterpTable_Test$(EXEEXT)
 subdir = exp
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/depcomp
@@ -136,6 +136,12 @@ Hilbert_Test_OBJECTS = $(am_Hilbert_Test_OBJECTS)
 Hilbert_Test_DEPENDENCIES = $(am__DEPENDENCIES_2)
 Hilbert_Test_LINK = $(CXXLD) $(Hilbert_Test_CXXFLAGS) $(CXXFLAGS) \
 	$(Hilbert_Test_LDFLAGS) $(LDFLAGS) -o $@
+am_InterpTable_Test_OBJECTS =  \
+	InterpTable_Test-InterpTable_Test.$(OBJEXT)
+InterpTable_Test_OBJECTS = $(am_InterpTable_Test_OBJECTS)
+InterpTable_Test_DEPENDENCIES = $(am__DEPENDENCIES_2)
+InterpTable_Test_LINK = $(CXXLD) $(InterpTable_Test_CXXFLAGS) \
+	$(CXXFLAGS) $(InterpTable_Test_LDFLAGS) $(LDFLAGS) -o $@
 am_MultiMBox_Test_OBJECTS = MultiMBox_Test-MultiMBox_Test.$(OBJEXT) \
 	../src/MultiMBox_Test-SoDaBase.$(OBJEXT) \
 	../src/MultiMBox_Test-Debug.$(OBJEXT)
@@ -232,16 +238,18 @@ am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
 SOURCES = $(Audio_test_SOURCES) $(FFT_Test_SOURCES) \
 	$(FindHome_Test_SOURCES) $(Hilbert_Test_SOURCES) \
-	$(MultiMBox_Test_SOURCES) $(OSFilter_Test_SOURCES) \
-	$(RangeMap_test_SOURCES) $(ReSampler_Test_SOURCES) \
-	$(SoDa_ThreadTest_SOURCES) $(Sockets_Test_SOURCES) \
-	$(TSIP_Test_SOURCES) $(TestServer_SOURCES)
+	$(InterpTable_Test_SOURCES) $(MultiMBox_Test_SOURCES) \
+	$(OSFilter_Test_SOURCES) $(RangeMap_test_SOURCES) \
+	$(ReSampler_Test_SOURCES) $(SoDa_ThreadTest_SOURCES) \
+	$(Sockets_Test_SOURCES) $(TSIP_Test_SOURCES) \
+	$(TestServer_SOURCES)
 DIST_SOURCES = $(Audio_test_SOURCES) $(FFT_Test_SOURCES) \
 	$(FindHome_Test_SOURCES) $(Hilbert_Test_SOURCES) \
-	$(MultiMBox_Test_SOURCES) $(OSFilter_Test_SOURCES) \
-	$(RangeMap_test_SOURCES) $(ReSampler_Test_SOURCES) \
-	$(SoDa_ThreadTest_SOURCES) $(Sockets_Test_SOURCES) \
-	$(TSIP_Test_SOURCES) $(TestServer_SOURCES)
+	$(InterpTable_Test_SOURCES) $(MultiMBox_Test_SOURCES) \
+	$(OSFilter_Test_SOURCES) $(RangeMap_test_SOURCES) \
+	$(ReSampler_Test_SOURCES) $(SoDa_ThreadTest_SOURCES) \
+	$(Sockets_Test_SOURCES) $(TSIP_Test_SOURCES) \
+	$(TestServer_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -465,6 +473,11 @@ RangeMap_test_CPPFLAGS = $(AM_CPPFLAGS) -g -O1
 RangeMap_test_LDADD = $(AM_BOOSTLIBFLAGS) 
 RangeMap_test_CXXFLAGS = -g -O1
 RangeMap_test_LDFLAGS = -g -O1
+InterpTable_Test_SOURCES = InterpTable_Test.cxx  ../src/InterpTable.hxx
+InterpTable_Test_CPPFLAGS = $(AM_CPPFLAGS) -g -O1 
+InterpTable_Test_LDADD = $(AM_BOOSTLIBFLAGS) 
+InterpTable_Test_CXXFLAGS = -g -O1
+InterpTable_Test_LDFLAGS = -g -O1
 all: all-am
 
 .SUFFIXES:
@@ -583,6 +596,10 @@ FindHome_Test$(EXEEXT): $(FindHome_Test_OBJECTS) $(FindHome_Test_DEPENDENCIES) $
 Hilbert_Test$(EXEEXT): $(Hilbert_Test_OBJECTS) $(Hilbert_Test_DEPENDENCIES) $(EXTRA_Hilbert_Test_DEPENDENCIES) 
 	@rm -f Hilbert_Test$(EXEEXT)
 	$(AM_V_CXXLD)$(Hilbert_Test_LINK) $(Hilbert_Test_OBJECTS) $(Hilbert_Test_LDADD) $(LIBS)
+
+InterpTable_Test$(EXEEXT): $(InterpTable_Test_OBJECTS) $(InterpTable_Test_DEPENDENCIES) $(EXTRA_InterpTable_Test_DEPENDENCIES) 
+	@rm -f InterpTable_Test$(EXEEXT)
+	$(AM_V_CXXLD)$(InterpTable_Test_LINK) $(InterpTable_Test_OBJECTS) $(InterpTable_Test_LDADD) $(LIBS)
 ../src/MultiMBox_Test-SoDaBase.$(OBJEXT): ../src/$(am__dirstamp) \
 	../src/$(DEPDIR)/$(am__dirstamp)
 ../src/MultiMBox_Test-Debug.$(OBJEXT): ../src/$(am__dirstamp) \
@@ -689,6 +706,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FFT_Test-FFT_Test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FindHome_Test-FindHome_Test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Hilbert_Test-Hilbert_Test.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/InterpTable_Test-InterpTable_Test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/MultiMBox_Test-MultiMBox_Test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OSFilter_Test-OSFilter_Test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/RangeMap_test-RangeMap_test.Po@am__quote@
@@ -867,6 +885,20 @@ Hilbert_Test-Hilbert_Test.obj: Hilbert_Test.cxx
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='../src/SoDaBase.cxx' object='../src/Hilbert_Test-SoDaBase.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(Hilbert_Test_CPPFLAGS) $(CPPFLAGS) $(Hilbert_Test_CXXFLAGS) $(CXXFLAGS) -c -o ../src/Hilbert_Test-SoDaBase.obj `if test -f '../src/SoDaBase.cxx'; then $(CYGPATH_W) '../src/SoDaBase.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/SoDaBase.cxx'; fi`
+
+InterpTable_Test-InterpTable_Test.o: InterpTable_Test.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(InterpTable_Test_CPPFLAGS) $(CPPFLAGS) $(InterpTable_Test_CXXFLAGS) $(CXXFLAGS) -MT InterpTable_Test-InterpTable_Test.o -MD -MP -MF $(DEPDIR)/InterpTable_Test-InterpTable_Test.Tpo -c -o InterpTable_Test-InterpTable_Test.o `test -f 'InterpTable_Test.cxx' || echo '$(srcdir)/'`InterpTable_Test.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/InterpTable_Test-InterpTable_Test.Tpo $(DEPDIR)/InterpTable_Test-InterpTable_Test.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='InterpTable_Test.cxx' object='InterpTable_Test-InterpTable_Test.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(InterpTable_Test_CPPFLAGS) $(CPPFLAGS) $(InterpTable_Test_CXXFLAGS) $(CXXFLAGS) -c -o InterpTable_Test-InterpTable_Test.o `test -f 'InterpTable_Test.cxx' || echo '$(srcdir)/'`InterpTable_Test.cxx
+
+InterpTable_Test-InterpTable_Test.obj: InterpTable_Test.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(InterpTable_Test_CPPFLAGS) $(CPPFLAGS) $(InterpTable_Test_CXXFLAGS) $(CXXFLAGS) -MT InterpTable_Test-InterpTable_Test.obj -MD -MP -MF $(DEPDIR)/InterpTable_Test-InterpTable_Test.Tpo -c -o InterpTable_Test-InterpTable_Test.obj `if test -f 'InterpTable_Test.cxx'; then $(CYGPATH_W) 'InterpTable_Test.cxx'; else $(CYGPATH_W) '$(srcdir)/InterpTable_Test.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/InterpTable_Test-InterpTable_Test.Tpo $(DEPDIR)/InterpTable_Test-InterpTable_Test.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='InterpTable_Test.cxx' object='InterpTable_Test-InterpTable_Test.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(InterpTable_Test_CPPFLAGS) $(CPPFLAGS) $(InterpTable_Test_CXXFLAGS) $(CXXFLAGS) -c -o InterpTable_Test-InterpTable_Test.obj `if test -f 'InterpTable_Test.cxx'; then $(CYGPATH_W) 'InterpTable_Test.cxx'; else $(CYGPATH_W) '$(srcdir)/InterpTable_Test.cxx'; fi`
 
 MultiMBox_Test-MultiMBox_Test.o: MultiMBox_Test.cxx
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(MultiMBox_Test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT MultiMBox_Test-MultiMBox_Test.o -MD -MP -MF $(DEPDIR)/MultiMBox_Test-MultiMBox_Test.Tpo -c -o MultiMBox_Test-MultiMBox_Test.o `test -f 'MultiMBox_Test.cxx' || echo '$(srcdir)/'`MultiMBox_Test.cxx

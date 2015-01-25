@@ -74,10 +74,7 @@ namespace SoDaRadio_GUI {
    * @li the wxWidgets GUI event loop that dispatches user requests
    * through the SoDaRadio_Top thread.
    */
-  class SoDaRadio_Top : 
-    public SoDaRadioFrame, 
-    public SoDa::Debug, 
-    public SoDaRadio_GUI::XYPlotClient 
+  class SoDaRadio_Top : public SoDaRadioFrame, public SoDa::Debug
   {
     friend class TuningDialog;
     friend class ControlsDialog;
@@ -183,16 +180,10 @@ namespace SoDaRadio_GUI {
     // message types. 
     enum MSG_ID { MSG_UPDATE_SPECTRUM, MSG_HANDLE_CMD, MSG_UPDATE_GPSLOC, MSG_UPDATE_GPSTIME, MSG_TERMINATE_TX, MSG_UPDATE_MODELNAME, MSG_UPDATE_ANTNAME };
     /** Constructor */
-    SoDaRadio_Top( SoDa::RadioGuiParams & parms, wxWindow* parent );
+    SoDaRadio_Top( SoDa::GuiParams & parms, wxWindow* parent );
     // plot maintenance
     void UpdateAxes(); 
 
-    // define pure virtual from XYPlotClient 
-    void MB1ClickEvent(double freq, double mag) { SetRXFreqFromDisp(freq); }  
-    void MB2ClickEvent(double freq, double mag) { 
-      wxMouseEvent nev; 
-      OnOpenSpectConfig(nev); 
-    }
     void SetRXFreqFromDisp(double freq);
 	
     double spectrum_center_freq;
@@ -289,7 +280,7 @@ namespace SoDaRadio_GUI {
     }
 
     // complete configuration
-    void configureRadio(SoDa::RadioGuiParams & params);
+    void configureRadio(SoDa::GuiParams & params);
 
   private:
     char SDR_version_string[64];

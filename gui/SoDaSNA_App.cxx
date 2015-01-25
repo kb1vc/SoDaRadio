@@ -25,26 +25,26 @@
   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#include "SoDaRadio_App.hxx"
-#include "SoDaRadio_Top.h"
+#include "SoDaSNA_App.hxx"
+#include "SoDaSNA_Top.h"
 #include "GuiParams.hxx"
 
 
-IMPLEMENT_APP(SoDaRadio_App)
+IMPLEMENT_APP(SoDaSNA_App)
 
-SoDaRadio_App::SoDaRadio_App()
+SoDaSNA_App::SoDaSNA_App()
 {
 }
 
-SoDaRadio_App::~SoDaRadio_App()
+SoDaSNA_App::~SoDaSNA_App()
 {
 }
 
-bool SoDaRadio_App::OnInit()
+bool SoDaSNA_App::OnInit()
 {
   // get the args and argvs
-  SoDa::RadioGuiParams  p(argc, argv);
-  SoDaRadio_GUI::SoDaRadio_Top * top = new SoDaRadio_GUI::SoDaRadio_Top(p, (wxWindow*) NULL);
+  SoDa::SNAGuiParams  p(argc, argv);
+  SoDaSNA_GUI::SoDaSNA_Top * top = new SoDaSNA_GUI::SoDaSNA_Top(p, (wxWindow*) NULL);
   top->Show();
   SetTopWindow(top);
   wxInitAllImageHandlers();

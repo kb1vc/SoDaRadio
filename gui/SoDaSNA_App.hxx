@@ -1,3 +1,6 @@
+#ifndef SODA_SNA_MAIN_HDR
+#define SODA_SNA_MAIN_HDR
+
 /*
   Copyright (c) 2012,2013,2014 Matthew H. Reilly (kb1vc)
   All rights reserved.
@@ -25,31 +28,17 @@
   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#include "SoDaRadio_App.hxx"
-#include "SoDaRadio_Top.h"
-#include "GuiParams.hxx"
 
+#include <wx/wx.h>
 
-IMPLEMENT_APP(SoDaRadio_App)
-
-SoDaRadio_App::SoDaRadio_App()
+class SoDaSNA_App : public wxApp
 {
-}
+public:
+  SoDaSNA_App();
+  ~SoDaSNA_App();
+  bool OnInit(); 
+};
 
-SoDaRadio_App::~SoDaRadio_App()
-{
-}
+DECLARE_APP(SoDaSNA_App); 
 
-bool SoDaRadio_App::OnInit()
-{
-  // get the args and argvs
-  SoDa::RadioGuiParams  p(argc, argv);
-  SoDaRadio_GUI::SoDaRadio_Top * top = new SoDaRadio_GUI::SoDaRadio_Top(p, (wxWindow*) NULL);
-  top->Show();
-  SetTopWindow(top);
-  wxInitAllImageHandlers();
-  // Now start the listener thread.
-  top->configureRadio(p);
-  top->startListener();
-  return true; 
-}
+#endif

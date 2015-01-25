@@ -35,12 +35,24 @@
 
 namespace SoDaRadio_GUI {
   using namespace std;
-  class SoDaRadio_Top;
+
+  /**
+   * @brief Client class for xyplot users 
+   *
+   * This is a less awkward way of providing callbacks on 
+   * MB click events
+   */
+  class XYPlotClient {
+  public:
+    // no constructor necessary. 
+    virtual void MB1ClickEvent(double freq, double mag) { return; }
+    virtual void MB2ClickEvent(double freq, double mag) { return; }
+  };
 
   class XYPlot : public wxPanel
   {
   public:
-    XYPlot(wxPanel * parent, SoDaRadio_Top * _radio, int id,
+    XYPlot(wxPanel * parent, XYPlotClient * _client, int id,
 	   const wxPoint & pos = wxDefaultPosition,
 	   const wxSize & size = wxDefaultSize,
 	   const int flags = 0xff
@@ -51,7 +63,38 @@ namespace SoDaRadio_GUI {
     static const int DRAW_LEGEND = 0x4;
     static const int DRAW_TITLE = 0x8;
     static const int DRAW_VERT_MARKER_BANDS = 0x10;
-  
+
+    // the x axis label mode -- absolute or center-relative
+    enum X_LABEL_MODE { ABSOLUTE, CENTER_RELATIVE };
+    void SetXLabelMode(X_LABEL_MODE m = CENTER_RELATIVE) { cur_x_label_mode = m; }
+
+    // grid size and position
+    void SetGridOffsets(int top_offset, 
+			int bot_offset, 
+			int left_offset, 
+			int right_offset) {
+      grid_top_offset = top_offset; 
+      grid_bot_offset = bot_offset; 
+      grid_left_offset = left_offset;
+      grid_right_offset = right_offset; 
+    }
+
+    void GetGridOffsets(int & top_offset, 
+			int & bot_offset, 
+			int & left_offset, 
+			int & right_offset) {
+      top_offset = grid_top_offset; 
+      bot_offset = grid_bot_offset; 
+      left_offset = grid_left_offset;
+      right_offset = grid_right_offset; 
+    }
+  private:
+    int grid_top_offset;
+    int grid_bot_offset;
+    int grid_left_offset;
+    int grid_right_offset; 
+
+  public:
     class Trace {
     public:
       Trace(double * xlocs, float * ylocs, int _len,
@@ -96,7 +139,6 @@ namespace SoDaRadio_GUI {
       wxColor color;
       wxPen pen; 
     };
-
 
   
     void AddTrace(int trace_ID, const wxColour & color, Trace * xytp);
@@ -154,6 +196,7 @@ namespace SoDaRadio_GUI {
     }
   
     void Draw();
+    
   private:
 
     void OnSize(wxSizeEvent & event); 
@@ -176,7 +219,7 @@ namespace SoDaRadio_GUI {
     void PrintXY(wxString & str, double x, double y);
   
     wxPanel * m_parent;
-    SoDaRadio_Top * radio; 
+    XYPlotClient * client; 
 
     wxString title, xlabel, ylabel;
     wxString x_template, xc_template, y_template;
@@ -207,6 +250,8 @@ namespace SoDaRadio_GUI {
     // the currently selected marker
     int selected_marker; 
 
+    // the x axis label mode -- absolute or center-relative
+    X_LABEL_MODE cur_x_label_mode;
   };
 }
 #endif

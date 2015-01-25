@@ -29,7 +29,7 @@
 #include "xyplot.hxx"
 #include <wx/print.h>
 #include <wx/dcbuffer.h>
-#include "SoDaRadio_Top.h"
+
 
 using namespace std;
 
@@ -42,9 +42,12 @@ namespace SoDaRadio_GUI {
 
   // this was (TRACE_MARKER_Y_OFFSET + 3 * TRACE_MARKER_Y_INCR)
 #define GRID_TOP_OFFSET 10
-#define XLABEL_Y_OFFSET 12
+#define XLABEL_Y_OFFSET 20
 #define CENTER_FREQ_Y_OFFSET 5
-#define GRID_BOT_OFFSET (XLABEL_Y_OFFSET + 18)
+#define GRID_BOT_OFFSET 30
+
+#define GRID_RIGHT_OFFSET 60
+#define GRID_LEFT_OFFSET 40
 
 #define YLABEL_X_OFFSET 12
 
@@ -60,7 +63,7 @@ namespace SoDaRadio_GUI {
     str.Printf(marker_template, x * marker_x_scalefactor, y * marker_y_scalefactor); 
   }
 
-  XYPlot::XYPlot(wxPanel * parent, SoDaRadio_Top * _radio, int id,
+  XYPlot::XYPlot(wxPanel * parent, XYPlotClient * _client, int id,
 		 const wxPoint & pos,
 		 const wxSize & size,
 		 const int flags
@@ -68,7 +71,7 @@ namespace SoDaRadio_GUI {
     : wxPanel(parent, id, pos, size, wxSUNKEN_BORDER)
   {
     m_parent = parent;
-    radio = _radio;
+    client = _client;
 
     xlabel = wxT("");
     ylabel = wxT("");
@@ -91,16 +94,20 @@ namespace SoDaRadio_GUI {
     Connect(wxEVT_MIDDLE_UP, wxMouseEventHandler(XYPlot::OnMB2Up)); 
     Connect(wxEVT_PAINT, wxPaintEventHandler(XYPlot::OnPaint));
     Connect(wxEVT_SIZE, wxSizeEventHandler(XYPlot::OnSize));
+
+    grid_top_offset = GRID_TOP_OFFSET;
+    grid_bot_offset = GRID_BOT_OFFSET;
+    grid_left_offset = GRID_LEFT_OFFSET;
+    grid_right_offset = GRID_RIGHT_OFFSET;
   
     ReSize(); 
+
+    cur_x_label_mode = CENTER_RELATIVE; 
   }
 
   void XYPlot::OnMB2Up(wxMouseEvent & event) {
-    radio->OnOpenSpectConfig(event); 
-  }
-  
-  void XYPlot::OnMB1Down(wxMouseEvent & event) {
-    int x, y;
+    if(client == NULL) return; 
+    int x, y; 
     x = event.GetX();
     y = event.GetY();
     bool refresh_required = false; 
@@ -108,7 +115,26 @@ namespace SoDaRadio_GUI {
     if((x > ll.x) && (x < ur.x) && (y < ll.y) && (y > ur.y)) {
       double fx, fy;
       UnScaleXY(wxPoint(x, y), fx, fy);
-      radio->SetRXFreqFromDisp(fx); 
+      client->MB2ClickEvent(fx, fy);
+    }
+    else {
+      client->MB2ClickEvent(0.0, 0.0);
+    }
+
+    event.Skip(); 
+  }
+  
+  void XYPlot::OnMB1Down(wxMouseEvent & event) {
+    int x, y;
+    if(client == NULL) return;     
+    x = event.GetX();
+    y = event.GetY();
+    bool refresh_required = false; 
+
+    if((x > ll.x) && (x < ur.x) && (y < ll.y) && (y > ur.y)) {
+      double fx, fy;
+      UnScaleXY(wxPoint(x, y), fx, fy);
+      client->MB1ClickEvent(fx, fy);
     }
     if (refresh_required) Refresh(); 
     event.Skip(); 
@@ -124,7 +150,8 @@ namespace SoDaRadio_GUI {
     dc.SetPen(*wxMEDIUM_GREY_PEN);
     dc.SetBrush(*wxBLACK_BRUSH);
 
-    dc.DrawRectangle(3, 3, width-6, height-6);
+    //    dc.DrawRectangle(3, 3, width-6, height-6);
+    dc.DrawRectangle(0, 0, width, height);    
 
     // draw vertical marks.
     int i, j;
@@ -310,15 +337,9 @@ namespace SoDaRadio_GUI {
   
     // Draw the xlabel
     cpt.x = (ll.x + ur.x) / 2;
-    cpt.y = height - XLABEL_Y_OFFSET; 
+    cpt.y = ll.y + XLABEL_Y_OFFSET; 
     dc.GetTextExtent(xlabel, &w, &h);
     dc.DrawText(xlabel, cpt.x - w/2, cpt.y); 
-
-    // Draw the ylabel
-    cpt.y = (ll.y + ur.y) / 2;
-    cpt.x = ll.x - YLABEL_X_OFFSET; 
-    dc.GetTextExtent(ylabel, &w, &h);
-    dc.DrawRotatedText(ylabel, cpt.x - h/2, cpt.y + w/2, 90); 
 
     double v, vincr;
     wxString tlab;
@@ -334,22 +355,34 @@ namespace SoDaRadio_GUI {
 
     for(i = 0; i < 11; i++, v += vincr) {
       cpt.x = ll.x + X_BOXTIC(i);
+      bool dotext = false;
       if(i == 5) {
 	tlab.Printf(xc_template, v * x_scalefactor);
+	dotext = true; 
       }
-      else {
+      else if(cur_x_label_mode == CENTER_RELATIVE) {
+	std::cerr << "CR" << std::endl; 
 	tlab.Printf(x_template, (v - vmid) * x_scalefactor);
+	dotext = true; 
       }
-      tlab = tlab.Trim(true).Trim(false);
-      dc.GetTextExtent(tlab, &w, &h);
-      dc.DrawText(tlab, cpt.x - w/2, cpt.y + h/2); 
+      else if((i == 0) || (i == 10)) {
+	tlab.Printf(xc_template, v * x_scalefactor);
+	dotext = true; 
+      }
+      if(dotext) {
+	tlab = tlab.Trim(true).Trim(false);
+	dc.GetTextExtent(tlab, &w, &h);
+	dc.DrawText(tlab, cpt.x - w/2, cpt.y + h/2); 
+      }
     }
 
     // Draw the Y values up the axis.
     v = ymin;
     vincr = (ymax - ymin) / 10.0;
-    cpt.x = ur.x + 3;
-    cpt.y = ll.y; 
+    cpt.y = ll.y;
+    int min_ylab_x = 1000; 
+#if 0
+    cpt.x = ur.x + 3;    
     for(i = 0; i < 11; i++, v += vincr) {
       cpt.y = ll.y - Y_BOXTIC(i);
       tlab.Printf(y_template, v * y_scalefactor);
@@ -357,7 +390,26 @@ namespace SoDaRadio_GUI {
       dc.GetTextExtent(tlab, &w, &h);
       dc.DrawText(tlab, cpt.x, cpt.y - h / 2); 
     }
+#else
+    cpt.x = ll.x - 5; 
+    for(i = 0; i < 11; i++, v += vincr) {
+      cpt.y = ll.y - Y_BOXTIC(i);
+      tlab.Printf(y_template, v * y_scalefactor);
+      tlab = tlab.Trim(true).Trim(false);
+      dc.GetTextExtent(tlab, &w, &h);
+      int xpos = cpt.x - w; 
+      dc.DrawText(tlab, xpos, cpt.y - h / 2); 
+      if(xpos < min_ylab_x) min_ylab_x = xpos;
+    }
+#endif
 
+
+    // Draw the ylabel
+    cpt.y = (ll.y + ur.y) / 2;
+    cpt.x = min_ylab_x - YLABEL_X_OFFSET; 
+    dc.GetTextExtent(ylabel, &w, &h);
+    dc.DrawRotatedText(ylabel, cpt.x - h/2, cpt.y + w/2, 90); 
+    
     // Draw the keys.
     cpt.x = ll.x;
     cpt.y = ur.y;
@@ -446,11 +498,11 @@ namespace SoDaRadio_GUI {
     width = size.GetWidth();
     height = size.GetHeight();
 
-    ll.x = 40; 
-    ur.x = width - 60; 
+    ll.x = grid_left_offset; 
+    ur.x = width - grid_right_offset; 
 
-    ur.y = GRID_TOP_OFFSET;
-    ll.y = height - GRID_BOT_OFFSET;
+    ur.y = grid_top_offset;
+    ll.y = height - grid_bot_offset;
 
 
     graph_width = ur.x - ll.x; 

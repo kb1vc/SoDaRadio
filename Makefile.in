@@ -109,8 +109,8 @@ build_triplet = @build@
 host_triplet = @host@
 DIST_COMMON = $(top_srcdir)/doxygen_aminclude.am INSTALL NEWS README \
 	AUTHORS ChangeLog $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
-	$(top_srcdir)/configure $(am__configure_deps) COPYING TODO \
-	compile config.guess config.sub depcomp install-sh missing
+	$(top_srcdir)/configure $(am__configure_deps) COPYING compile \
+	config.guess config.sub depcomp install-sh missing
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_boost_asio.m4 \

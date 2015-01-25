@@ -241,6 +241,7 @@ namespace SoDaRadio_GUI {
   void SoDaRadio_Top::OnMenuConfigSpect(wxCommandEvent & event) {
     spect_config->Show();
   }
+
   void SoDaRadio_Top::OnOpenSpectConfig(wxMouseEvent & event) {
     spect_config->Show();
   }
