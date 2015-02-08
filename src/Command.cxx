@@ -86,6 +86,12 @@ void SoDa::Command::initTables()
   target_map_s2v[std::string("TVRT_LO_DISABLE")] = TVRT_LO_DISABLE;
   target_map_s2v[std::string("TVRT_LO_CONFIG")] = TVRT_LO_CONFIG;
 
+  target_map_s2v[std::string("SNA_SCAN_START")] = SNA_SCAN_START;
+  target_map_s2v[std::string("SNA_SCAN_REPORT")] = SNA_SCAN_REPORT;
+  target_map_s2v[std::string("SNA_SCAN_END")] = SNA_SCAN_END;
+  target_map_s2v[std::string("SNAI_SCAN_READY")] = SNAI_SCAN_READY;
+
+
   target_map_s2v[std::string("STOP")] = STOP;
   target_map_s2v[std::string("STATUS_MESSAGE")] = STATUS_MESSAGE;
   
@@ -133,6 +139,12 @@ void SoDa::Command::initTables()
   target_map_v2s[TVRT_LO_ENABLE] = new std::string("TVRT_LO_ENABLE");
   target_map_v2s[TVRT_LO_DISABLE] = new std::string("TVRT_LO_DISABLE");
   target_map_v2s[TVRT_LO_CONFIG] = new std::string("TVRT_LO_CONFIG");
+
+  target_map_v2s[SNA_SCAN_START] = new std::string("SNA_SCAN_START");
+  target_map_v2s[SNA_SCAN_REPORT] = new std::string("SNA_SCAN_REPORT");
+  target_map_v2s[SNA_SCAN_END] = new std::string("SNA_SCAN_END");
+  target_map_v2s[SNAI_SCAN_READY] = new std::string("SNAI_SCAN_READY");
+  
   target_map_v2s[STOP] = new std::string("STOP");
   target_map_v2s[STATUS_MESSAGE] = new std::string("STATUS_MESSAGE");
 }

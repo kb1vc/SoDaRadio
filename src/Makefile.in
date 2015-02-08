@@ -78,7 +78,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = SoDaServer$(EXEEXT)
+bin_PROGRAMS = SoDaServer$(EXEEXT) SoDaSNAServer$(EXEEXT)
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/depcomp
@@ -102,6 +102,25 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
+am_SoDaSNAServer_OBJECTS = SoDaSNAServer-Params.$(OBJEXT) \
+	SoDaSNAServer-SoDaSNAServer.$(OBJEXT) \
+	SoDaSNAServer-SoDaBase.$(OBJEXT) \
+	SoDaSNAServer-UDSockets.$(OBJEXT) \
+	SoDaSNAServer-USRPCtrl.$(OBJEXT) \
+	SoDaSNAServer-USRPSNACtrl.$(OBJEXT) \
+	SoDaSNAServer-USRPSNARX.$(OBJEXT) \
+	SoDaSNAServer-USRPSNATX.$(OBJEXT) \
+	SoDaSNAServer-Command.$(OBJEXT) SoDaSNAServer-Debug.$(OBJEXT) \
+	SoDaSNAServer-SimpleUI.$(OBJEXT)
+SoDaSNAServer_OBJECTS = $(am_SoDaSNAServer_OBJECTS)
+am__DEPENDENCIES_1 =
+am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+SoDaSNAServer_DEPENDENCIES = $(am__DEPENDENCIES_2)
+SoDaSNAServer_LINK = $(CXXLD) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) \
+	$(SoDaSNAServer_LDFLAGS) $(LDFLAGS) -o $@
 am_SoDaServer_OBJECTS = SoDaServer-Params.$(OBJEXT) \
 	SoDaServer-SoDaServer.$(OBJEXT) SoDaServer-SoDaBase.$(OBJEXT) \
 	SoDaServer-USRPCtrl.$(OBJEXT) SoDaServer-USRPRX.$(OBJEXT) \
@@ -116,13 +135,9 @@ am_SoDaServer_OBJECTS = SoDaServer-Params.$(OBJEXT) \
 	SoDaServer-CWGenerator.$(OBJEXT) SoDaServer-TSIP.$(OBJEXT) \
 	SoDaServer-GPS_TSIPmon.$(OBJEXT) \
 	SoDaServer-UDSockets.$(OBJEXT) SoDaServer-AudioALSA.$(OBJEXT) \
-	SoDaServer-AudioPA.$(OBJEXT) SoDaServer-Debug.$(OBJEXT)
+	SoDaServer-AudioPA.$(OBJEXT) SoDaServer-Debug.$(OBJEXT) \
+	SoDaServer-SimpleUI.$(OBJEXT)
 SoDaServer_OBJECTS = $(am_SoDaServer_OBJECTS)
-am__DEPENDENCIES_1 =
-am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 SoDaServer_DEPENDENCIES = $(am__DEPENDENCIES_2)
 SoDaServer_LINK = $(CXXLD) $(SoDaServer_CXXFLAGS) $(CXXFLAGS) \
 	$(SoDaServer_LDFLAGS) $(LDFLAGS) -o $@
@@ -171,8 +186,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(SoDaServer_SOURCES)
-DIST_SOURCES = $(SoDaServer_SOURCES)
+SOURCES = $(SoDaSNAServer_SOURCES) $(SoDaServer_SOURCES)
+DIST_SOURCES = $(SoDaSNAServer_SOURCES) $(SoDaServer_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -348,11 +363,16 @@ top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = subdir-objects
 AM_CPPFLAGS = -I$(top_srcdir)/src ${BOOST_CPPFLAGS}
 AM_BOOSTLIBFLAGS = ${BOOST_LDFLAGS} ${BOOST_PROGRAM_OPTIONS_LIB} ${BOOST_THREAD_LIB} ${BOOST_DATE_TIME_LIB} ${BOOST_SYSTEM_LIB} ${BOOST_FILESYSTEM_LIB} ${BOOST_SERIALIZATION_LIB} ${BOOST_REGEX_LIB}
-SoDaServer_SOURCES = Params.cxx  SoDaServer.cxx SoDaBase.cxx USRPCtrl.cxx USRPRX.cxx USRPTX.cxx CWTX.cxx AudioRX.cxx AudioTX.cxx UI.cxx Command.cxx OSFilter.cxx HilbertTransformer.cxx  ReSampler.cxx ReSamplers625x48.cxx Spectrogram.cxx CWGenerator.cxx TSIP.cxx GPS_TSIPmon.cxx UDSockets.cxx AudioRX.hxx AudioTX.hxx Command.hxx CWGenerator.hxx CWTX.hxx GPS_TSIPmon.hxx HilbertTransformer.hxx IPSockets.hxx  MultiMBox.hxx OSFilter.hxx Params.hxx QuadratureOscillator.hxx ReSampler.hxx ReSamplers625x48.hxx SoDaBase.hxx SoDa_filter_tables.hxx SoDa_tx_filter_tables.hxx Spectrogram.hxx TSIP.hxx UDSockets.hxx UI.hxx USRPCtrl.hxx USRPRX.hxx USRPTX.hxx  AudioALSA.hxx AudioALSA.cxx AudioIfc.hxx MedianFilter.hxx AudioPA.hxx AudioPA.cxx Debug.hxx Debug.cxx RangeMap.hxx
+SoDaServer_SOURCES = Params.cxx  SoDaServer.cxx SoDaBase.cxx USRPCtrl.cxx USRPRX.cxx USRPTX.cxx CWTX.cxx AudioRX.cxx AudioTX.cxx UI.cxx Command.cxx OSFilter.cxx HilbertTransformer.cxx  ReSampler.cxx ReSamplers625x48.cxx Spectrogram.cxx CWGenerator.cxx TSIP.cxx GPS_TSIPmon.cxx UDSockets.cxx AudioRX.hxx AudioTX.hxx Command.hxx CWGenerator.hxx CWTX.hxx GPS_TSIPmon.hxx HilbertTransformer.hxx IPSockets.hxx  MultiMBox.hxx OSFilter.hxx Params.hxx QuadratureOscillator.hxx ReSampler.hxx ReSamplers625x48.hxx SoDaBase.hxx SoDa_filter_tables.hxx SoDa_tx_filter_tables.hxx Spectrogram.hxx TSIP.hxx UDSockets.hxx UI.hxx USRPCtrl.hxx USRPRX.hxx USRPTX.hxx  AudioALSA.hxx AudioALSA.cxx AudioIfc.hxx MedianFilter.hxx AudioPA.hxx AudioPA.cxx Debug.hxx Debug.cxx RangeMap.hxx SimpleUI.hxx SimpleUI.cxx
 SoDaServer_CPPFLAGS = $(AM_CPPFLAGS)  -g
 SoDaServer_LDADD = $(AM_BOOSTLIBFLAGS)  -lrt
 SoDaServer_CXXFLAGS = -g
 SoDaServer_LDFLAGS = -g 
+SoDaSNAServer_SOURCES = Params.cxx SoDaSNAServer.cxx SoDaBase.cxx UDSockets.cxx USRPCtrl.cxx USRPSNACtrl.cxx USRPSNARX.cxx USRPSNATX.cxx Command.cxx Command.hxx IPSockets.hxx MultiMBox.hxx Params.hxx SoDaBase.hxx UDSockets.hxx USRPCtrl.hxx USRPSNACtrl.hxx USRPSNARX.hxx USRPSNATX.hxx  Debug.hxx Debug.cxx RangeMap.hxx SimpleUI.hxx SimpleUI.cxx
+SoDaSNAServer_CPPFLAGS = $(AM_CPPFLAGS)  -g
+SoDaSNAServer_LDADD = $(AM_BOOSTLIBFLAGS)  -lrt
+SoDaSNAServer_CXXFLAGS = -g
+SoDaSNAServer_LDFLAGS = -g 
 all: all-am
 
 .SUFFIXES:
@@ -430,6 +450,10 @@ uninstall-binPROGRAMS:
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
 
+SoDaSNAServer$(EXEEXT): $(SoDaSNAServer_OBJECTS) $(SoDaSNAServer_DEPENDENCIES) $(EXTRA_SoDaSNAServer_DEPENDENCIES) 
+	@rm -f SoDaSNAServer$(EXEEXT)
+	$(AM_V_CXXLD)$(SoDaSNAServer_LINK) $(SoDaSNAServer_OBJECTS) $(SoDaSNAServer_LDADD) $(LIBS)
+
 SoDaServer$(EXEEXT): $(SoDaServer_OBJECTS) $(SoDaServer_DEPENDENCIES) $(EXTRA_SoDaServer_DEPENDENCIES) 
 	@rm -f SoDaServer$(EXEEXT)
 	$(AM_V_CXXLD)$(SoDaServer_LINK) $(SoDaServer_OBJECTS) $(SoDaServer_LDADD) $(LIBS)
@@ -440,6 +464,17 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaSNAServer-Command.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaSNAServer-Debug.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaSNAServer-Params.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaSNAServer-SimpleUI.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaSNAServer-SoDaBase.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaSNAServer-SoDaSNAServer.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaSNAServer-UDSockets.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaSNAServer-USRPCtrl.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaSNAServer-USRPSNACtrl.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaSNAServer-USRPSNARX.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaSNAServer-USRPSNATX.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaServer-AudioALSA.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaServer-AudioPA.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaServer-AudioRX.Po@am__quote@
@@ -454,6 +489,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaServer-Params.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaServer-ReSampler.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaServer-ReSamplers625x48.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaServer-SimpleUI.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaServer-SoDaBase.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaServer-SoDaServer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaServer-Spectrogram.Po@am__quote@
@@ -479,6 +515,160 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+
+SoDaSNAServer-Params.o: Params.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -MT SoDaSNAServer-Params.o -MD -MP -MF $(DEPDIR)/SoDaSNAServer-Params.Tpo -c -o SoDaSNAServer-Params.o `test -f 'Params.cxx' || echo '$(srcdir)/'`Params.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/SoDaSNAServer-Params.Tpo $(DEPDIR)/SoDaSNAServer-Params.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='Params.cxx' object='SoDaSNAServer-Params.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -c -o SoDaSNAServer-Params.o `test -f 'Params.cxx' || echo '$(srcdir)/'`Params.cxx
+
+SoDaSNAServer-Params.obj: Params.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -MT SoDaSNAServer-Params.obj -MD -MP -MF $(DEPDIR)/SoDaSNAServer-Params.Tpo -c -o SoDaSNAServer-Params.obj `if test -f 'Params.cxx'; then $(CYGPATH_W) 'Params.cxx'; else $(CYGPATH_W) '$(srcdir)/Params.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/SoDaSNAServer-Params.Tpo $(DEPDIR)/SoDaSNAServer-Params.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='Params.cxx' object='SoDaSNAServer-Params.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -c -o SoDaSNAServer-Params.obj `if test -f 'Params.cxx'; then $(CYGPATH_W) 'Params.cxx'; else $(CYGPATH_W) '$(srcdir)/Params.cxx'; fi`
+
+SoDaSNAServer-SoDaSNAServer.o: SoDaSNAServer.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -MT SoDaSNAServer-SoDaSNAServer.o -MD -MP -MF $(DEPDIR)/SoDaSNAServer-SoDaSNAServer.Tpo -c -o SoDaSNAServer-SoDaSNAServer.o `test -f 'SoDaSNAServer.cxx' || echo '$(srcdir)/'`SoDaSNAServer.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/SoDaSNAServer-SoDaSNAServer.Tpo $(DEPDIR)/SoDaSNAServer-SoDaSNAServer.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='SoDaSNAServer.cxx' object='SoDaSNAServer-SoDaSNAServer.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -c -o SoDaSNAServer-SoDaSNAServer.o `test -f 'SoDaSNAServer.cxx' || echo '$(srcdir)/'`SoDaSNAServer.cxx
+
+SoDaSNAServer-SoDaSNAServer.obj: SoDaSNAServer.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -MT SoDaSNAServer-SoDaSNAServer.obj -MD -MP -MF $(DEPDIR)/SoDaSNAServer-SoDaSNAServer.Tpo -c -o SoDaSNAServer-SoDaSNAServer.obj `if test -f 'SoDaSNAServer.cxx'; then $(CYGPATH_W) 'SoDaSNAServer.cxx'; else $(CYGPATH_W) '$(srcdir)/SoDaSNAServer.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/SoDaSNAServer-SoDaSNAServer.Tpo $(DEPDIR)/SoDaSNAServer-SoDaSNAServer.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='SoDaSNAServer.cxx' object='SoDaSNAServer-SoDaSNAServer.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -c -o SoDaSNAServer-SoDaSNAServer.obj `if test -f 'SoDaSNAServer.cxx'; then $(CYGPATH_W) 'SoDaSNAServer.cxx'; else $(CYGPATH_W) '$(srcdir)/SoDaSNAServer.cxx'; fi`
+
+SoDaSNAServer-SoDaBase.o: SoDaBase.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -MT SoDaSNAServer-SoDaBase.o -MD -MP -MF $(DEPDIR)/SoDaSNAServer-SoDaBase.Tpo -c -o SoDaSNAServer-SoDaBase.o `test -f 'SoDaBase.cxx' || echo '$(srcdir)/'`SoDaBase.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/SoDaSNAServer-SoDaBase.Tpo $(DEPDIR)/SoDaSNAServer-SoDaBase.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='SoDaBase.cxx' object='SoDaSNAServer-SoDaBase.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -c -o SoDaSNAServer-SoDaBase.o `test -f 'SoDaBase.cxx' || echo '$(srcdir)/'`SoDaBase.cxx
+
+SoDaSNAServer-SoDaBase.obj: SoDaBase.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -MT SoDaSNAServer-SoDaBase.obj -MD -MP -MF $(DEPDIR)/SoDaSNAServer-SoDaBase.Tpo -c -o SoDaSNAServer-SoDaBase.obj `if test -f 'SoDaBase.cxx'; then $(CYGPATH_W) 'SoDaBase.cxx'; else $(CYGPATH_W) '$(srcdir)/SoDaBase.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/SoDaSNAServer-SoDaBase.Tpo $(DEPDIR)/SoDaSNAServer-SoDaBase.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='SoDaBase.cxx' object='SoDaSNAServer-SoDaBase.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -c -o SoDaSNAServer-SoDaBase.obj `if test -f 'SoDaBase.cxx'; then $(CYGPATH_W) 'SoDaBase.cxx'; else $(CYGPATH_W) '$(srcdir)/SoDaBase.cxx'; fi`
+
+SoDaSNAServer-UDSockets.o: UDSockets.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -MT SoDaSNAServer-UDSockets.o -MD -MP -MF $(DEPDIR)/SoDaSNAServer-UDSockets.Tpo -c -o SoDaSNAServer-UDSockets.o `test -f 'UDSockets.cxx' || echo '$(srcdir)/'`UDSockets.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/SoDaSNAServer-UDSockets.Tpo $(DEPDIR)/SoDaSNAServer-UDSockets.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='UDSockets.cxx' object='SoDaSNAServer-UDSockets.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -c -o SoDaSNAServer-UDSockets.o `test -f 'UDSockets.cxx' || echo '$(srcdir)/'`UDSockets.cxx
+
+SoDaSNAServer-UDSockets.obj: UDSockets.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -MT SoDaSNAServer-UDSockets.obj -MD -MP -MF $(DEPDIR)/SoDaSNAServer-UDSockets.Tpo -c -o SoDaSNAServer-UDSockets.obj `if test -f 'UDSockets.cxx'; then $(CYGPATH_W) 'UDSockets.cxx'; else $(CYGPATH_W) '$(srcdir)/UDSockets.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/SoDaSNAServer-UDSockets.Tpo $(DEPDIR)/SoDaSNAServer-UDSockets.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='UDSockets.cxx' object='SoDaSNAServer-UDSockets.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -c -o SoDaSNAServer-UDSockets.obj `if test -f 'UDSockets.cxx'; then $(CYGPATH_W) 'UDSockets.cxx'; else $(CYGPATH_W) '$(srcdir)/UDSockets.cxx'; fi`
+
+SoDaSNAServer-USRPCtrl.o: USRPCtrl.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -MT SoDaSNAServer-USRPCtrl.o -MD -MP -MF $(DEPDIR)/SoDaSNAServer-USRPCtrl.Tpo -c -o SoDaSNAServer-USRPCtrl.o `test -f 'USRPCtrl.cxx' || echo '$(srcdir)/'`USRPCtrl.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/SoDaSNAServer-USRPCtrl.Tpo $(DEPDIR)/SoDaSNAServer-USRPCtrl.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='USRPCtrl.cxx' object='SoDaSNAServer-USRPCtrl.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -c -o SoDaSNAServer-USRPCtrl.o `test -f 'USRPCtrl.cxx' || echo '$(srcdir)/'`USRPCtrl.cxx
+
+SoDaSNAServer-USRPCtrl.obj: USRPCtrl.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -MT SoDaSNAServer-USRPCtrl.obj -MD -MP -MF $(DEPDIR)/SoDaSNAServer-USRPCtrl.Tpo -c -o SoDaSNAServer-USRPCtrl.obj `if test -f 'USRPCtrl.cxx'; then $(CYGPATH_W) 'USRPCtrl.cxx'; else $(CYGPATH_W) '$(srcdir)/USRPCtrl.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/SoDaSNAServer-USRPCtrl.Tpo $(DEPDIR)/SoDaSNAServer-USRPCtrl.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='USRPCtrl.cxx' object='SoDaSNAServer-USRPCtrl.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -c -o SoDaSNAServer-USRPCtrl.obj `if test -f 'USRPCtrl.cxx'; then $(CYGPATH_W) 'USRPCtrl.cxx'; else $(CYGPATH_W) '$(srcdir)/USRPCtrl.cxx'; fi`
+
+SoDaSNAServer-USRPSNACtrl.o: USRPSNACtrl.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -MT SoDaSNAServer-USRPSNACtrl.o -MD -MP -MF $(DEPDIR)/SoDaSNAServer-USRPSNACtrl.Tpo -c -o SoDaSNAServer-USRPSNACtrl.o `test -f 'USRPSNACtrl.cxx' || echo '$(srcdir)/'`USRPSNACtrl.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/SoDaSNAServer-USRPSNACtrl.Tpo $(DEPDIR)/SoDaSNAServer-USRPSNACtrl.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='USRPSNACtrl.cxx' object='SoDaSNAServer-USRPSNACtrl.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -c -o SoDaSNAServer-USRPSNACtrl.o `test -f 'USRPSNACtrl.cxx' || echo '$(srcdir)/'`USRPSNACtrl.cxx
+
+SoDaSNAServer-USRPSNACtrl.obj: USRPSNACtrl.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -MT SoDaSNAServer-USRPSNACtrl.obj -MD -MP -MF $(DEPDIR)/SoDaSNAServer-USRPSNACtrl.Tpo -c -o SoDaSNAServer-USRPSNACtrl.obj `if test -f 'USRPSNACtrl.cxx'; then $(CYGPATH_W) 'USRPSNACtrl.cxx'; else $(CYGPATH_W) '$(srcdir)/USRPSNACtrl.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/SoDaSNAServer-USRPSNACtrl.Tpo $(DEPDIR)/SoDaSNAServer-USRPSNACtrl.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='USRPSNACtrl.cxx' object='SoDaSNAServer-USRPSNACtrl.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -c -o SoDaSNAServer-USRPSNACtrl.obj `if test -f 'USRPSNACtrl.cxx'; then $(CYGPATH_W) 'USRPSNACtrl.cxx'; else $(CYGPATH_W) '$(srcdir)/USRPSNACtrl.cxx'; fi`
+
+SoDaSNAServer-USRPSNARX.o: USRPSNARX.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -MT SoDaSNAServer-USRPSNARX.o -MD -MP -MF $(DEPDIR)/SoDaSNAServer-USRPSNARX.Tpo -c -o SoDaSNAServer-USRPSNARX.o `test -f 'USRPSNARX.cxx' || echo '$(srcdir)/'`USRPSNARX.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/SoDaSNAServer-USRPSNARX.Tpo $(DEPDIR)/SoDaSNAServer-USRPSNARX.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='USRPSNARX.cxx' object='SoDaSNAServer-USRPSNARX.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -c -o SoDaSNAServer-USRPSNARX.o `test -f 'USRPSNARX.cxx' || echo '$(srcdir)/'`USRPSNARX.cxx
+
+SoDaSNAServer-USRPSNARX.obj: USRPSNARX.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -MT SoDaSNAServer-USRPSNARX.obj -MD -MP -MF $(DEPDIR)/SoDaSNAServer-USRPSNARX.Tpo -c -o SoDaSNAServer-USRPSNARX.obj `if test -f 'USRPSNARX.cxx'; then $(CYGPATH_W) 'USRPSNARX.cxx'; else $(CYGPATH_W) '$(srcdir)/USRPSNARX.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/SoDaSNAServer-USRPSNARX.Tpo $(DEPDIR)/SoDaSNAServer-USRPSNARX.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='USRPSNARX.cxx' object='SoDaSNAServer-USRPSNARX.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -c -o SoDaSNAServer-USRPSNARX.obj `if test -f 'USRPSNARX.cxx'; then $(CYGPATH_W) 'USRPSNARX.cxx'; else $(CYGPATH_W) '$(srcdir)/USRPSNARX.cxx'; fi`
+
+SoDaSNAServer-USRPSNATX.o: USRPSNATX.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -MT SoDaSNAServer-USRPSNATX.o -MD -MP -MF $(DEPDIR)/SoDaSNAServer-USRPSNATX.Tpo -c -o SoDaSNAServer-USRPSNATX.o `test -f 'USRPSNATX.cxx' || echo '$(srcdir)/'`USRPSNATX.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/SoDaSNAServer-USRPSNATX.Tpo $(DEPDIR)/SoDaSNAServer-USRPSNATX.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='USRPSNATX.cxx' object='SoDaSNAServer-USRPSNATX.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -c -o SoDaSNAServer-USRPSNATX.o `test -f 'USRPSNATX.cxx' || echo '$(srcdir)/'`USRPSNATX.cxx
+
+SoDaSNAServer-USRPSNATX.obj: USRPSNATX.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -MT SoDaSNAServer-USRPSNATX.obj -MD -MP -MF $(DEPDIR)/SoDaSNAServer-USRPSNATX.Tpo -c -o SoDaSNAServer-USRPSNATX.obj `if test -f 'USRPSNATX.cxx'; then $(CYGPATH_W) 'USRPSNATX.cxx'; else $(CYGPATH_W) '$(srcdir)/USRPSNATX.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/SoDaSNAServer-USRPSNATX.Tpo $(DEPDIR)/SoDaSNAServer-USRPSNATX.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='USRPSNATX.cxx' object='SoDaSNAServer-USRPSNATX.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -c -o SoDaSNAServer-USRPSNATX.obj `if test -f 'USRPSNATX.cxx'; then $(CYGPATH_W) 'USRPSNATX.cxx'; else $(CYGPATH_W) '$(srcdir)/USRPSNATX.cxx'; fi`
+
+SoDaSNAServer-Command.o: Command.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -MT SoDaSNAServer-Command.o -MD -MP -MF $(DEPDIR)/SoDaSNAServer-Command.Tpo -c -o SoDaSNAServer-Command.o `test -f 'Command.cxx' || echo '$(srcdir)/'`Command.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/SoDaSNAServer-Command.Tpo $(DEPDIR)/SoDaSNAServer-Command.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='Command.cxx' object='SoDaSNAServer-Command.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -c -o SoDaSNAServer-Command.o `test -f 'Command.cxx' || echo '$(srcdir)/'`Command.cxx
+
+SoDaSNAServer-Command.obj: Command.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -MT SoDaSNAServer-Command.obj -MD -MP -MF $(DEPDIR)/SoDaSNAServer-Command.Tpo -c -o SoDaSNAServer-Command.obj `if test -f 'Command.cxx'; then $(CYGPATH_W) 'Command.cxx'; else $(CYGPATH_W) '$(srcdir)/Command.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/SoDaSNAServer-Command.Tpo $(DEPDIR)/SoDaSNAServer-Command.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='Command.cxx' object='SoDaSNAServer-Command.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -c -o SoDaSNAServer-Command.obj `if test -f 'Command.cxx'; then $(CYGPATH_W) 'Command.cxx'; else $(CYGPATH_W) '$(srcdir)/Command.cxx'; fi`
+
+SoDaSNAServer-Debug.o: Debug.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -MT SoDaSNAServer-Debug.o -MD -MP -MF $(DEPDIR)/SoDaSNAServer-Debug.Tpo -c -o SoDaSNAServer-Debug.o `test -f 'Debug.cxx' || echo '$(srcdir)/'`Debug.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/SoDaSNAServer-Debug.Tpo $(DEPDIR)/SoDaSNAServer-Debug.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='Debug.cxx' object='SoDaSNAServer-Debug.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -c -o SoDaSNAServer-Debug.o `test -f 'Debug.cxx' || echo '$(srcdir)/'`Debug.cxx
+
+SoDaSNAServer-Debug.obj: Debug.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -MT SoDaSNAServer-Debug.obj -MD -MP -MF $(DEPDIR)/SoDaSNAServer-Debug.Tpo -c -o SoDaSNAServer-Debug.obj `if test -f 'Debug.cxx'; then $(CYGPATH_W) 'Debug.cxx'; else $(CYGPATH_W) '$(srcdir)/Debug.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/SoDaSNAServer-Debug.Tpo $(DEPDIR)/SoDaSNAServer-Debug.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='Debug.cxx' object='SoDaSNAServer-Debug.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -c -o SoDaSNAServer-Debug.obj `if test -f 'Debug.cxx'; then $(CYGPATH_W) 'Debug.cxx'; else $(CYGPATH_W) '$(srcdir)/Debug.cxx'; fi`
+
+SoDaSNAServer-SimpleUI.o: SimpleUI.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -MT SoDaSNAServer-SimpleUI.o -MD -MP -MF $(DEPDIR)/SoDaSNAServer-SimpleUI.Tpo -c -o SoDaSNAServer-SimpleUI.o `test -f 'SimpleUI.cxx' || echo '$(srcdir)/'`SimpleUI.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/SoDaSNAServer-SimpleUI.Tpo $(DEPDIR)/SoDaSNAServer-SimpleUI.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='SimpleUI.cxx' object='SoDaSNAServer-SimpleUI.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -c -o SoDaSNAServer-SimpleUI.o `test -f 'SimpleUI.cxx' || echo '$(srcdir)/'`SimpleUI.cxx
+
+SoDaSNAServer-SimpleUI.obj: SimpleUI.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -MT SoDaSNAServer-SimpleUI.obj -MD -MP -MF $(DEPDIR)/SoDaSNAServer-SimpleUI.Tpo -c -o SoDaSNAServer-SimpleUI.obj `if test -f 'SimpleUI.cxx'; then $(CYGPATH_W) 'SimpleUI.cxx'; else $(CYGPATH_W) '$(srcdir)/SimpleUI.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/SoDaSNAServer-SimpleUI.Tpo $(DEPDIR)/SoDaSNAServer-SimpleUI.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='SimpleUI.cxx' object='SoDaSNAServer-SimpleUI.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -c -o SoDaSNAServer-SimpleUI.obj `if test -f 'SimpleUI.cxx'; then $(CYGPATH_W) 'SimpleUI.cxx'; else $(CYGPATH_W) '$(srcdir)/SimpleUI.cxx'; fi`
 
 SoDaServer-Params.o: Params.cxx
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaServer_CPPFLAGS) $(CPPFLAGS) $(SoDaServer_CXXFLAGS) $(CXXFLAGS) -MT SoDaServer-Params.o -MD -MP -MF $(DEPDIR)/SoDaServer-Params.Tpo -c -o SoDaServer-Params.o `test -f 'Params.cxx' || echo '$(srcdir)/'`Params.cxx
@@ -801,6 +991,20 @@ SoDaServer-Debug.obj: Debug.cxx
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='Debug.cxx' object='SoDaServer-Debug.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaServer_CPPFLAGS) $(CPPFLAGS) $(SoDaServer_CXXFLAGS) $(CXXFLAGS) -c -o SoDaServer-Debug.obj `if test -f 'Debug.cxx'; then $(CYGPATH_W) 'Debug.cxx'; else $(CYGPATH_W) '$(srcdir)/Debug.cxx'; fi`
+
+SoDaServer-SimpleUI.o: SimpleUI.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaServer_CPPFLAGS) $(CPPFLAGS) $(SoDaServer_CXXFLAGS) $(CXXFLAGS) -MT SoDaServer-SimpleUI.o -MD -MP -MF $(DEPDIR)/SoDaServer-SimpleUI.Tpo -c -o SoDaServer-SimpleUI.o `test -f 'SimpleUI.cxx' || echo '$(srcdir)/'`SimpleUI.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/SoDaServer-SimpleUI.Tpo $(DEPDIR)/SoDaServer-SimpleUI.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='SimpleUI.cxx' object='SoDaServer-SimpleUI.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaServer_CPPFLAGS) $(CPPFLAGS) $(SoDaServer_CXXFLAGS) $(CXXFLAGS) -c -o SoDaServer-SimpleUI.o `test -f 'SimpleUI.cxx' || echo '$(srcdir)/'`SimpleUI.cxx
+
+SoDaServer-SimpleUI.obj: SimpleUI.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaServer_CPPFLAGS) $(CPPFLAGS) $(SoDaServer_CXXFLAGS) $(CXXFLAGS) -MT SoDaServer-SimpleUI.obj -MD -MP -MF $(DEPDIR)/SoDaServer-SimpleUI.Tpo -c -o SoDaServer-SimpleUI.obj `if test -f 'SimpleUI.cxx'; then $(CYGPATH_W) 'SimpleUI.cxx'; else $(CYGPATH_W) '$(srcdir)/SimpleUI.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/SoDaServer-SimpleUI.Tpo $(DEPDIR)/SoDaServer-SimpleUI.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='SimpleUI.cxx' object='SoDaServer-SimpleUI.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaServer_CPPFLAGS) $(CPPFLAGS) $(SoDaServer_CXXFLAGS) $(CXXFLAGS) -c -o SoDaServer-SimpleUI.obj `if test -f 'SimpleUI.cxx'; then $(CYGPATH_W) 'SimpleUI.cxx'; else $(CYGPATH_W) '$(srcdir)/SimpleUI.cxx'; fi`
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique

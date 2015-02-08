@@ -406,6 +406,60 @@ namespace SoDa {
        * forms: REP
        */
       STATUS_MESSAGE, 
+
+      /**
+       * SNA commands -- 
+       *
+       * SNA_SCAN_START -- from the GUI to the SNA control process
+       *
+       * param double start-freq in hz
+       * param double end-freq in hz
+       * param double step-between-freqs hz
+       * param double time-per-step in seconds
+       *
+       * forms: SET (from GUI/UI) 
+       */
+      SNA_SCAN_START, 
+
+      /**
+       * SNA commands -- 
+       *
+       * SNA_SCAN_REPORT -- from the SNA RX to the GUI
+       *
+       * param double rx-freq in hz
+       * param double sample-magnitude in v^2
+       *
+       * RX sends when the sample interval has passed and a good
+       * sample has been collected. 
+       * On reciept, SNA control moves to the next freq step. 
+       *
+       * formst: REP (from RX/UI to GUI and control)
+       */
+      SNA_SCAN_REPORT, 
+
+      /**
+       * SNA commands -- 
+       *
+       * SNA_SCAN_END -- from the SNA control process to the GUI
+       *
+       * formst: REP (from Control to GUI)
+       *
+       */
+      SNA_SCAN_END, 
+
+      /**
+       * SNA internal commands -- from the control to the tx/rx units
+       *
+       * SNAI_SCAN_READY
+       *
+       * param double start_time
+       * param double end_time
+       * param double test_freq
+       *
+       * forms: SET (from Ctrl to TX and RX units.)
+       */
+      SNAI_SCAN_READY, 
+      
       
       /**
        * No comment

@@ -31,23 +31,20 @@
 
 SoDa::UI::UI(Params * params, CmdMBox * _cwtxt_stream,
 	     DatMBox * _rx_stream, DatMBox * _if_stream, 
-	     CmdMBox * _cmd_stream, CmdMBox * _gps_stream) : SoDa::SoDaThread("UI")
+	     CmdMBox * _cmd_stream, CmdMBox * _gps_stream) : 
+  SoDa::SimpleUI(params, _cmd_stream) 
 {
   // connect to our message streams.
   cwtxt_stream = _cwtxt_stream;
   rx_stream = _rx_stream;
   if_stream = _if_stream; 
-  cmd_stream = _cmd_stream; 
   gps_stream = _gps_stream; 
 
-  // subscribe to them.
-  cmd_subs = cmd_stream->subscribe();
   gps_subs = gps_stream->subscribe();
   if_subs = if_stream->subscribe(); 
 
   // create the network ports
-  // This UI object is a server.
-  server_socket = new SoDa::UD::ServerSocket(params->getServerSocketBasename() + "_cmd");
+  // This UI object has a waterfall slot
   wfall_socket = new SoDa::UD::ServerSocket(params->getServerSocketBasename() + "_wfall");
 
   baseband_rx_freq = 144e6; // just a filler to avoid divide by zero. 
@@ -105,7 +102,6 @@ void SoDa::UI::updateSpectrumState()
 
 SoDa::UI::~UI()
 {
-  delete server_socket;
   delete wfall_socket; 
 }
 

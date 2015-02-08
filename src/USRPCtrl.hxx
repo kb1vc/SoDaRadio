@@ -90,7 +90,7 @@ namespace SoDa {
     /// it is necessary to provide context to the error message handlers.
     static SoDa::USRPCtrl * singleton_ctrl_obj;
     
-  private:
+  protected:
     Params * params;
 
     /// The B200 and B210 need some special handling, as they
