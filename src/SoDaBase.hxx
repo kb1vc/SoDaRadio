@@ -378,7 +378,9 @@ namespace SoDa {
 		<< "\n-----------"
 		<< "\n-----------"
 		<< std::endl;
-      exit(-1);
+      // resignal
+      signal(sig, SIG_DFL);
+      kill(getpid(), SIGSEGV);
     }
 
     void hookSigSeg() {

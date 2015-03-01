@@ -59,7 +59,8 @@ SoDa::USRPTX::USRPTX(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
   // create the tx buffer streamers.
   stream_args = new uhd::stream_args_t("fc32", "sc16");
   stream_args->channels.push_back(0);
-  if(usrp->get_tx_num_channels() > 1) {
+  if(0 && (usrp->get_tx_num_channels() > 1)) {
+    // disable this for now... there appears to be a bug in the b210 support in 3.8.1
     debugMsg("This radio is transverter LO capable");
     // use the second channel as a transverter LO
     stream_args->channels.push_back(1);
@@ -108,19 +109,24 @@ SoDa::USRPTX::USRPTX(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
   tx_enabled = false;
 }
 
-
 void SoDa::USRPTX::run()
 {
   uhd::set_thread_priority_safe(); 
   // now do the event loop.  we watch
   // for commands and responses on the command stream.
   // and we watch for data in the input buffer. 
-  
+
+  // get the tx streamer 
+  debugMsg("Creating tx streamer.\n");
+  getTXStreamer();  
+  debugMsg("Created tx streamer.\n");
+
   bool exitflag = false;
   SoDaBuf * txbuf, * cwenv;
   Command * cmd; 
   std::vector<std::complex<float> *> buffers(LO_capable ? 2 : 1);
 
+  int debug_ctr = 0; 
   while(!exitflag) {
     bool didwork = false; 
     if(LO_capable && LO_enabled && LO_configured) buffers[1] = const_buf;
@@ -152,7 +158,7 @@ void SoDa::USRPTX::run()
 	    ((tx_modulation != SoDa::Command::CW_L) ||
 	     (tx_modulation != SoDa::Command::CW_U)) &&
 	    ((cwenv = cw_env_stream->get(cw_subs)) != NULL)) {
-      // modulate a carrier with a constant envelope
+      // modulate a carrier with a cw message
       doCW(cw_buf, cwenv->getFloatBuf(), cwenv->getComplexLen());
       // now send it to the USRP
       buffers[0] = cw_buf;
@@ -199,6 +205,8 @@ void SoDa::USRPTX::run()
       usleep(100);
     }
   }
+
+  debugMsg("Leaving\n");
 }
 
 void SoDa::USRPTX::doCW(std::complex<float> * out, float * envelope, unsigned int env_len)
@@ -228,7 +236,6 @@ void SoDa::USRPTX::transmitSwitch(bool tx_on)
     md.end_of_burst = false;
     md.has_time_spec = false; 
     tx_enabled = true; 
-    getTXStreamer();
   }
   else {
     if(!tx_enabled && !LO_enabled) return;
@@ -238,17 +245,11 @@ void SoDa::USRPTX::transmitSwitch(bool tx_on)
       tx_bits->send(zero_buf, 10, md);
     }
     tx_enabled = false;
-    if(tx_bits) {
-      tx_bits->~tx_streamer();
-    }
   }
 }
 
 void SoDa::USRPTX::getTXStreamer()
 {
-  if(tx_bits) {
-    tx_bits->~tx_streamer(); 
-  }
   tx_bits = usrp->get_tx_stream(*stream_args); 
 }
 
@@ -266,8 +267,10 @@ void SoDa::USRPTX::execSetCommand(Command * cmd)
     }
     break; 
   case Command::TX_STATE:
-    // TX_STATE must be 3 to turn the transmitter on. 
-    if(cmd->iparms[0] != 1) {
+    // TX_STATE must be 3 to turn the transmitter on.
+    // bit 1 of the command indicates that CTRL has already done the
+    // setup for TX <-> RX mode transitions.
+    if((cmd->iparms[0] & 0x2) != 0) {  
       transmitSwitch(cmd->iparms[0] == 3);
       cmd_stream->put(new Command(Command::REP, Command::TX_STATE, tx_enabled ? 1 : 0));
     }

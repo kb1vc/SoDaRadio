@@ -74,10 +74,19 @@ SoDa::AudioRX::AudioRX(Params * params,
 
   // create a silence buffer for pauses in the
   // sidetone stream.
-  sidetone_silence = getFreeAudioBuffer();
-  int i;
-  for(i = 0; i < audio_buffer_size; i++) sidetone_silence[i] = 0.0; 
-  
+  int i, j;
+  // and prime the audio stream so that we don't fall behind
+  // right away.
+  for(j = 0; j < 6; j++) {
+    sidetone_silence = getFreeAudioBuffer();
+    for(i = 0; i < audio_buffer_size; i++) {
+      sidetone_silence[i] = 0.0; 
+    }
+    if(j < 5) {
+      pendAudioBuffer(sidetone_silence); 
+    }
+  }
+
   // create hilbert transformer
   hilbert = new SoDa::HilbertTransformer(audio_buffer_size);
 
@@ -87,6 +96,7 @@ SoDa::AudioRX::AudioRX(Params * params,
   // setup the catchup mechanism that adjusts to differences
   // between the radio's clock frequency and the sound system's clock
   in_catchup = false;
+  in_fallback = false;  
   // setup the random number generator.  Note that randomness
   // isn't nearly as important as an apparently long period.
   // The RNG is used to "steal" an audio sample out of the
@@ -300,7 +310,8 @@ void SoDa::AudioRX::execSetCommand(SoDa::Command * cmd)
   case SoDa::Command::TX_STATE: // SET TX_ON
     if(cmd->iparms[0] == 1) {
       // flush the audio buffers that have RX info that we
-      // aren't going to need anymore. 
+      // aren't going to need anymore.
+      debugMsg("In TX ON");      
       flushAudioBuffers(); 
       if (sidetone_stream_enabled) {
 	cur_af_gain = &af_sidetone_gain;
@@ -310,7 +321,8 @@ void SoDa::AudioRX::execSetCommand(SoDa::Command * cmd)
 	audio_ifc->sleepOut();
       }
     }
-    if(cmd->iparms[0] == 0) {
+    if(cmd->iparms[0] == 2) { // the CTRL unit has done the setup.... 
+      debugMsg("In RX ON");
       cur_af_gain = &af_gain; 
       audio_rx_stream_enabled = true;
       audio_rx_stream_needs_start = true;
@@ -376,8 +388,18 @@ void SoDa::AudioRX::run()
   Command * cmd; 
 
   int rxbufcount = 0;
+  int last_rxbufcount = 10;
   int afbufcount = 0;
 
+  int trim_count = 0; 
+  int add_count = 0;     
+
+  int null_audio_buf_count = 0;
+  int sleep_count = 0; 
+  int catchup_count = 0;
+  int fallback_count = 0;
+
+  int restart_count = 0;
   while(!exitflag) {
     bool did_work = false;
     bool did_audio_work = false; 
@@ -390,6 +412,7 @@ void SoDa::AudioRX::run()
     }
 
     if(audio_rx_stream_enabled) {
+
       if(!ready_buffers.empty()) {
 
 	if(!in_catchup && (ready_buffers.size() > 8)) {
@@ -397,20 +420,33 @@ void SoDa::AudioRX::run()
 	  // then go into catchup mode, where we'll gain about 0.4 mS
 	  // on each 2304 sample frame. 
 	  in_catchup = true;
+	  in_fallback = false; 
+	  catchup_count++; 
 	}
-	if(in_catchup && (ready_buffers.size() < 2)) {
+	if(in_catchup && (ready_buffers.size() < 2)) { /// 6)) {
 	  in_catchup = false; 
 	}
+#if 0
+	if(!in_fallback && (ready_buffers.size() < 3)) {
+	  in_fallback = true; 
+	  in_catchup = false; 
+	  fallback_count++; 
+	}
+	if(in_fallback && (ready_buffers.size() > 5)) {
+	  in_fallback = false;
+	}
+#endif
 	
 	if((audio_rx_stream_needs_start && (ready_buffers.size() > 1)) ||
 	   (!audio_rx_stream_needs_start && (ready_buffers.size() > 1))) {
 	  if(audio_rx_stream_needs_start) {
 	    audio_ifc->wakeOut(); 
-	    audio_rx_stream_needs_start = false; 	    
+	    audio_rx_stream_needs_start = false; 
+	    restart_count++; 
 	  }
 	  
 	  while(1) {
-	    if(audio_ifc->sendBufferReady(audio_buffer_size)) {
+	    if(audio_ifc->sendBufferReady(audio_buffer_size + (in_fallback ? 1 : 0))) {
 	      float * outb = getNextAudioBuffer();
 	      if(outb == NULL) {
 		break; 
@@ -424,16 +460,26 @@ void SoDa::AudioRX::run()
 		// drop out one "randomly" selected sample in the first (power of two) part of the buffer.
 		audio_ifc->send(outb, trim);
 		audio_ifc->send(&(outb[trim+1]), (audio_buffer_size - (trim + 1))); 
+		trim_count++; 
+	      }
+	      else if(in_fallback) {
+		// duplicate one "randomly" selected sample in the first (power of two) part of the buffer.
+		int dup = (random() & catchup_rand_mask);
+		audio_ifc->send(outb, dup);
+		audio_ifc->send(&(outb[dup]), (audio_buffer_size - dup)); 
+		add_count++; 
 	      }
 	      else {
 		audio_ifc->send(outb, audio_buffer_size);
 	      }
 
+	      // is this a problem?  Is it possible to free the buffer too soon? 
 	      freeAudioBuffer(outb);
 
 	      afbufcount++;
 	    }
 	    else {
+	      null_audio_buf_count++; 
 	      break; 
 	    }
 	  }
@@ -451,8 +497,9 @@ void SoDa::AudioRX::run()
       }
     }
 
-    if(did_audio_work || !did_work) {
+    if(!did_audio_work && !did_work) {
       usleep(1000); 
+      sleep_count++; 
     }
   }
   // close(outdump); 

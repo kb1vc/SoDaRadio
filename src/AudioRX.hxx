@@ -217,6 +217,7 @@ namespace SoDa {
 
     // flow timing management
     bool in_catchup;  ///< when true, the audio server has fallen behind...
+    bool in_fallback;  ///< when true, the audio server has gotten ahead...
     unsigned int catchup_rand_mask; ///< a mask to use for fast selection of a random index into an audio buffer. 
 
     std::queue<float *> free_buffers; ///< a pool of free audio buffers

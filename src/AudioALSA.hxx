@@ -174,7 +174,15 @@ namespace SoDa {
     snd_pcm_t * pcm_in;  ///< The capture (input) handle. 
     snd_pcm_hw_params_t * hw_in_params;  ///< the input parameter list
     snd_pcm_hw_params_t * hw_out_params; ///< the output parameter list
+
+    int underrun_count; ///< count of number of times we posted to the audio out and it had run dry. 
+    int event_count; ///< how many anomalous and good send events did we have
+    int write_count; ///< how many writes
+    int chunklet_count; ///< how many short buffers
+    int whole_count; ///< how many full buffers    
+    int again_count; ///< how many eagain events
     
+
     /**
      * setup the playback handle and features. 
      */

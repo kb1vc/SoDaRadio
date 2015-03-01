@@ -37,6 +37,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#include <fstream>
+
 SoDa::USRPRX::USRPRX(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
 		     DatMBox * _rx_stream, DatMBox * _if_stream,
 		     CmdMBox * _cmd_stream) : SoDa::SoDaThread("USRPRX")
@@ -78,6 +80,11 @@ SoDa::USRPRX::USRPRX(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
 
   // enable spectrum reporting at startup
   enable_spectrum_report = true; 
+
+#if 0
+  rf_dumpfile.open("RFDump.dat", std::ios::out | std::ios::binary);
+  if_dumpfile.open("IFDump.dat", std::ios::out | std::ios::binary);
+#endif
 }
 
 static void doFFTandDump(int fd, std::complex<float> * in, int len)
@@ -154,12 +161,13 @@ void SoDa::USRPRX::run()
 
       // support debug... 
       scount++;
-      
+
       // tune it down with the IF oscillator
       doMixer(buf); 
-      
       // now put the baseband signal on the ring.
       rx_stream->put(buf);
+
+      // write the buffer output
     }
     else {
       usleep(1000);
@@ -185,6 +193,7 @@ void SoDa::USRPRX::set3rdLOFreq(double IF_tuning)
   // calculate the advance of phase for the IF
   // oscilator in terms of radians per sample
   IF_osc.setPhaseIncr(IF_tuning * 2.0 * M_PI / rx_sample_rate);
+  debugMsg(boost::format("Changed 3rdLO to freq = %g\n") % IF_tuning);
 }
 
 void SoDa::USRPRX::execCommand(Command * cmd)
@@ -207,9 +216,11 @@ void SoDa::USRPRX::execCommand(Command * cmd)
 
 void SoDa::USRPRX::startStream()
 {
-  //  std::cerr << "Starting RX Stream from USRP" << std::endl;
-  usrp->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_START_CONTINUOUS, 0);
-  audio_rx_stream_enabled = true; 
+  if(!audio_rx_stream_enabled) {
+    //  std::cerr << "Starting RX Stream from USRP" << std::endl;
+    usrp->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_START_CONTINUOUS, 0);
+    audio_rx_stream_enabled = true; 
+  }
 }
 
 void SoDa::USRPRX::stopStream()
@@ -231,22 +242,25 @@ void SoDa::USRPRX::execSetCommand(Command * cmd)
     set3rdLOFreq(cmd->dparms[0]); 
     break;
   case SoDa::Command::TX_STATE: // SET TX_ON
-    if(cmd->iparms[0] == 1) {
+    if(cmd->iparms[0] == 3) {
       if((rx_modulation == SoDa::Command::CW_L) || (rx_modulation == SoDa::Command::CW_U)) {
 	// If we're in a CW mode, set the RF gain to zip.
 	// this is already done in the USRPCtrl thread.
-	// and adjust the AF gain. 
+	// and adjust the AF gain.
+	debugMsg("In TX ON -- stream continues");
       }
       else {
 	// Otherwise
 	// stop the RX stream
+	debugMsg("In TX ON -- stopped stream");	
 	stopStream();
       }
       enable_spectrum_report = false;
     }
-    if(cmd->iparms[0] == 0) {
+    if(cmd->iparms[0] == 2) {
       // start the RX stream.
-      usleep(750000);
+      //usleep(750000);
+      debugMsg("In TX OFF -- restart stream");
       startStream();
       enable_spectrum_report = true;
     }

@@ -110,7 +110,8 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
   // we need to setup the subdevices
   if(is_B2xx) {
     usrp->set_rx_subdev_spec(std::string("A:A"), 0);
-    if(is_B210) {
+    std::cerr << "DISABLING TVRT LO" << std::endl;
+    if(0 && is_B210) {
       debugMsg("Setup two subdevices -- TVRT_LO Capable");
       usrp->set_tx_subdev_spec(std::string("A:A A:B"), 0);
       tvrt_lo_capable = true;
@@ -136,12 +137,22 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
 
   uhd::usrp::subdev_spec_t rx_subdev_spec = tree->access<uhd::usrp::subdev_spec_t>("/mboards/" + mbname + "/rx_subdev_spec").get();
   
+  debugMsg(boost::format("RX SUBDEV Spec [%s]\n") % rx_subdev_spec.to_string());
+
   // get the tx front end subtree
   uhd::fs_path tx_fe_root;
   tx_fe_root = is_B2xx ? ("/mboards/" + mbname + "/dboards/A/tx_frontends/A") :
     ("/mboards/" + mbname + "/dboards/A/tx_frontends/0");
   if(tree->exists(tx_fe_root)) {
     tx_fe_subtree = tree->subtree(tx_fe_root);
+  }
+
+  // get the tx front end subtree
+  uhd::fs_path rx_fe_root;
+  rx_fe_root = is_B2xx ? ("/mboards/" + mbname + "/dboards/A/rx_frontends/A") :
+    ("/mboards/" + mbname + "/dboards/A/rx_frontends/0");
+  if(tree->exists(rx_fe_root)) {
+    rx_fe_subtree = tree->subtree(rx_fe_root);
   }
 
   // find the gain ranges
@@ -253,10 +264,10 @@ void SoDa::USRPCtrl::execCommand(Command * cmd)
 
 uhd::tune_result_t SoDa::USRPCtrl::checkLock(uhd::tune_request_t & req, char sel, uhd::tune_result_t & cur)
 {
-  int lock_itercount = 1;
+  int lock_itercount = 0;
   uhd::tune_result_t ret = cur;
 
-  if(is_B2xx) return ret;
+  // as of version 3.8.2 the B2xx has the lo_locked sensor... if(is_B2xx) return ret;
   
   while(1) {
     uhd::sensor_value_t lo_locked = (sel == 'r') ? usrp->get_rx_sensor("lo_locked",0) : usrp->get_tx_sensor("lo_locked",0);
@@ -424,6 +435,9 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
   case Command::RX_FE_FREQ:
     last_rx_req_freq = cmd->dparms[0]; 
     set1stLOFreq(cmd->dparms[0], 'r', cmd->target != Command::RX_TUNE_FREQ);
+    // now adjust the 3rd lo (missing in int-N mode redo....)
+    fdiff = freq - (last_rx_tune_result.actual_rf_freq - last_rx_tune_result.actual_dsp_freq);    
+    cmd_stream->put(new Command(Command::SET, Command::RX_LO3_FREQ, fdiff));     
     cmd_stream->put(new Command(Command::REP, Command::RX_FE_FREQ, 
 			       last_rx_tune_result.actual_rf_freq - last_rx_tune_result.actual_dsp_freq)); 
     break;
@@ -508,6 +522,7 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
 	debugMsg(boost::format("New GPIO = %x ") % dboard->get_gpio_out(uhd::usrp::dboard_iface::UNIT_TX));
       }
       // and tell the TX unit to turn on the TX
+      // This avoids the race between CTRL and TX/RX units for setup and teardown.... 
       cmd_stream->put(new Command(Command::SET, Command::TX_STATE, 
 				  3));
     }
@@ -531,6 +546,10 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
 	debugMsg(boost::format("Got GPIO = %x ") % 
 		 dboard->get_gpio_out(uhd::usrp::dboard_iface::UNIT_TX));
       }
+      // and tell the RX unit to turn on the RX
+      // This avoids the race between CTRL and TX/RX units for setup and teardown.... 
+      cmd_stream->put(new Command(Command::SET, Command::TX_STATE, 
+				  2));
     }
     break; 
 
@@ -696,17 +715,21 @@ void SoDa::USRPCtrl::setTXEna(bool val)
   debugMsg(boost::format("Got %d from call to en/dis TX with val = %d")
 	   % tx_fe_subtree->access<bool>("enabled").get() % val);
 
+  debugMsg(boost::format("Got rx_fe enabled = %d from call to en/dis TX with val = %d")
+	   % rx_fe_subtree->access<bool>("enabled").get() % val);
+
   // if we're enabling, set the power, freq, and other stuff
   if(val) {
     usleep(400);    
     // set the tx antenna
     usrp->set_tx_antenna(tx_ant); 
-    // set the tx rate
-    usrp->set_tx_rate(tx_samp_rate); 
     // set the tx gain. 
     usrp->set_tx_gain(tx_rf_gain);
     // tx freq
     set1stLOFreq(tx_freq + tx_freq_rxmode_offset, 't', false);  
+
+    double r = usrp->get_tx_rate(); 
+    debugMsg(boost::format("TX rate = %g\n") % r);
   }
 }
 

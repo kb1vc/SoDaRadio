@@ -113,7 +113,11 @@ namespace SoDa {
     
     //debug hooks
     int outf[2];
-    int scount; 
+    int scount;
+
+    std::ofstream rf_dumpfile;
+    std::ofstream if_dumpfile; 
+    
   }; 
 }
 

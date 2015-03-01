@@ -44,6 +44,9 @@ namespace SoDa {
     setupPlayback();
 
     setupCapture();
+
+    underrun_count = 0;
+    event_count = write_count = chunklet_count = whole_count = again_count = 0;
   }
 
   void AudioALSA::setupPlayback()
@@ -55,7 +58,7 @@ namespace SoDa {
       exit(-1); 
     }
 
-    setupParams(pcm_out, hw_out_params); 
+    setupParams(pcm_out, hw_out_params);
   }
 
   void AudioALSA::setupCapture()
@@ -94,7 +97,7 @@ namespace SoDa {
 		"setupParams set number of channels", true);
 
     checkStatus(snd_pcm_hw_params_set_buffer_size (dev, hw_paramsp,
-						   sample_count_hint * datatype_size), 
+						   sample_count_hint), // size is in frames... * datatype_size), 
 		"setupParams set buffer size", true);
 
     checkStatus(snd_pcm_hw_params (dev, hw_paramsp), 
@@ -123,16 +126,20 @@ namespace SoDa {
   }
 
   bool AudioALSA::sendBufferReady(unsigned int len)  {
-    snd_pcm_sframes_t sframes_ready = snd_pcm_avail(pcm_out);
-    if(sframes_ready == -EPIPE) {
-      // we got an under-run... just ignore it.
-      int err; 
-      if(err = snd_pcm_recover(pcm_out, sframes_ready, 1) < 0) {
-	checkStatus(err, "sendBufferReady got EPIPE, tried recovery", false);
-      }
+    snd_pcm_sframes_t sframes_ready;
+    while(1) {
       sframes_ready = snd_pcm_avail(pcm_out);
+      if(sframes_ready == -EPIPE) {
+	// we got an under-run... just ignore it.
+	int err; 
+	if(err = snd_pcm_recover(pcm_out, sframes_ready, 1) < 0) {
+	  checkStatus(err, "sendBufferReady got EPIPE, tried recovery", false);
+	}
+      }
+      else {
+	break;
+      }
     }
-
     checkStatus(sframes_ready, "sendBufferReady", false);
 
     return sframes_ready >= len; 
@@ -145,24 +152,44 @@ namespace SoDa {
     char * cbuf = (char *) buf; 
     while(1) {
       err = snd_pcm_writei(pcm_out, cbuf, len);
-      
-      if(err == len) return len; 
-      else if(err == -EAGAIN) continue;
+      write_count++; 
+      event_count++;
+      if(err == len) {
+	whole_count++; 
+	break;
+      }
+      else if(err == -EAGAIN){
+	again_count++; 
+	event_count++;
+	continue;
+      }
       else if(err == -EPIPE) {
 	// we got an under-run... just ignore it.
-	if(err = snd_pcm_recover(pcm_out, err, 1) < 0) {
-	checkStatus(err, "send got EPIPE, tried recovery", false);
-	}
+	underrun_count++;
+	event_count++;
+	snd_pcm_prepare(pcm_out);	
+	// if((err = snd_pcm_recover(pcm_out, err, 1)) < 0) {
+	// 	  checkStatus(err, "send got EPIPE, tried recovery", false);
+	// }
       }
       else if(err < 0) {
 	checkStatus(err, "send", true);
       }
       else if(err != len) {
+	chunklet_count++;
+	event_count++;	
 	len -= err;
 	cbuf += (err * datatype_size);
       }
     }
-   
+
+#ifdef ALSA_DEBUG_FLOW   
+    if((event_count & 0xff) == 0) {
+      event_count++; 
+      std::cerr << boost::format("AAAAAAA: again = %d underrun = %d chunklet = %d whole = %d write = %d event = %d\n")
+	% again_count % underrun_count % chunklet_count % whole_count % write_count % event_count;
+    }
+#endif    
     return olen; 
   }
 
