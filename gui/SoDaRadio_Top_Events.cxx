@@ -133,7 +133,7 @@ namespace SoDaRadio_GUI {
 
     std::cerr << "About to show save_config_as dialog" << std::endl; 
 
-    if (save_config_dialog->Show() == wxID_OK) {
+    if (save_config_dialog->ShowModal() == wxID_OK) {
       std::cerr << "About to get path." << std::endl; 
       wxString fname = save_config_dialog->GetPath();
       std::cerr << "got the path: " << fname << std::endl; 

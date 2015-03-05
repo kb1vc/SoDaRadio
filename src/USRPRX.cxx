@@ -134,6 +134,11 @@ void SoDa::USRPRX::run()
       std::complex<float> *dbuf = buf->getComplexBuf();
       while(left != 0) {
 	unsigned int got = rx_bits->recv(&(dbuf[coll_so_far]), left, md);
+	if(got == 0) {
+	  debugMsg("****************************************");
+	  debugMsg(boost::format("RECV got error -- md = [%s]\n") % md.to_pp_string());
+	  debugMsg("****************************************");	  
+	}
 	coll_so_far += got;
 	left -= got;
       }
