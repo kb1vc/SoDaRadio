@@ -33,7 +33,7 @@
 #include <boost/format.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition.hpp>
-
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace SoDa {
   /** 
@@ -64,7 +64,7 @@ namespace SoDa {
     void debugMsg(const std::string & msg, unsigned int threshold = 1) {
       boost::mutex::scoped_lock lock(debug_msg_mutex);
       if((debug_level >= threshold) || (global_debug_level >= threshold)) {
-	std::cerr << unit_name << " " << msg << std::endl; 
+	std::cerr << boost::format("%-20s %s\t%s\n") % unit_name % curDateTime() % msg; 
       }
     }
 
@@ -88,6 +88,13 @@ namespace SoDa {
     static boost::mutex debug_msg_mutex; 
     
   protected:
+
+    std::string curDateTime() { 
+      boost::posix_time::ptime t1; 
+      t1 = boost::posix_time::microsec_clock::local_time();
+      return to_simple_string(t1);
+    }
+
     std::string unit_name; ///< the name of the unit reporting status
     unsigned int debug_level; ///< the debug level (threshold) for messages
 

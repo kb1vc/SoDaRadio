@@ -31,13 +31,13 @@
 
 namespace SoDa {
 #if HAVE_LIBPORTAUDIO
-  AudioPA::AudioPA(unsigned int _sample_rate, DataFormat _fmt, unsigned int _sample_count_hint) :
-    AudioIfc(_sample_rate, _fmt, _sample_count_hint, "AudioPA Port Audio Interface") {
+  AudioPA::AudioPA(unsigned int _sample_rate, unsigned int _sample_count_hint) :
+    AudioIfc(_sample_rate,  _sample_count_hint, "AudioPA Port Audio Interface") {
     checkStatus(pa_stat = Pa_Initialize(), "Init");
 
-    checkStatus(Pa_OpenDefaultStream(&pa_instream, 1, 0, translateFormat(_fmt), sample_rate, sample_count_hint, NULL, NULL), "OpenIn");
+    checkStatus(Pa_OpenDefaultStream(&pa_instream, 1, 0, paFloat32, sample_rate, sample_count_hint, NULL, NULL), "OpenIn");
 
-    checkStatus(Pa_OpenDefaultStream(&pa_outstream, 0, 1, translateFormat(_fmt), sample_rate, sample_count_hint, NULL, NULL), "OpenOut");
+    checkStatus(Pa_OpenDefaultStream(&pa_outstream, 0, 1, paFloat32, sample_rate, sample_count_hint, NULL, NULL), "OpenOut");
     
     
   }
@@ -56,7 +56,7 @@ namespace SoDa {
   }
 
   
-  int AudioPA::send(void * buf, unsigned int len) {
+  int AudioPA::send(float * buf, unsigned int len) {
     int err;
     int olen = len;
 
@@ -71,7 +71,7 @@ namespace SoDa {
     return olen; 
   }
   
-  int AudioPA::recv(void * buf, unsigned int len, bool block) {
+  int AudioPA::recv(float * buf, unsigned int len, bool block) {
     int err;
     int olen = len;
 
@@ -104,8 +104,8 @@ namespace SoDa {
   }
 
 #else
-  AudioPA::AudioPA(unsigned int _sample_rate, DataFormat _fmt, unsigned int _sample_count_hint) :
-    AudioIfc(_sample_rate, _fmt, _sample_count_hint, "AudioPA Port Audio Interface") {
+  AudioPA::AudioPA(unsigned int _sample_rate, unsigned int _sample_count_hint) :
+    AudioIfc(_sample_rate, _sample_count_hint, "AudioPA Port Audio Interface") {
     throw SoDaException("PortAudio Library is not enabled in this build version.");
   }
 #endif // HAVE_LIBPORTAUDIO

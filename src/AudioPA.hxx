@@ -65,17 +65,17 @@ namespace SoDa {
      * @param _fmt -- the format of the data (FLOAT, DFLOAT, INT32, INT16, INT8)
      * @param _sample_count_hint -- the size of the buffers passed to and from the audio device (in samples)
      */
-    AudioPA(unsigned int _sample_rate, AudioIfc::DataFormat _fmt, unsigned int _sample_count_hint = 1024) ;
+    AudioPA(unsigned int _sample_rate, unsigned int _sample_count_hint = 1024) ;
 
     ~AudioPA() { }
     
     /**
      * sendBuf -- send a buffer to the audio output
-     * @param buf buffer of type described by the DataFormat selected at init
+     * @param buf buffer of floats
      * @param len number of elements in the buffer to send
      * @return number of elements transferred to the audio output
      */
-    int send(void * buf, unsigned int len) PORTAUDIO_DEF ;
+    int send(float * buf, unsigned int len) PORTAUDIO_DEF ;
 
     /**
      * sendBufferReady -- is there enough space in the audio device send buffer for a call from send?
@@ -86,12 +86,12 @@ namespace SoDa {
 
     /**
      * recvBuf -- get a buffer of data from the audio input
-     * @param buf buffer of type described by the DataFormat selected at init
+     * @param buf buffer of floats
      * @param len number of elements in the buffer to get
      * @param block block on this call if data is not ready (assumed true).
      * @return number of elements transferred from the audio input
      */
-    int recv(void * buf, unsigned int len, bool block = true) PORTAUDIO_DEF ; 
+    int recv(float * buf, unsigned int len, bool block = true) PORTAUDIO_DEF ; 
 
     /**
      * recvBufferReady -- is there enough space in the audio device recv buffer for a call from recv?

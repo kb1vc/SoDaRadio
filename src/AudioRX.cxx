@@ -116,6 +116,10 @@ SoDa::AudioRX::AudioRX(Params * params,
 
   // debug help
   dbg_ctr = 0;
+
+  // log all audio to an output file (debug only....?)
+  audio_save_enable = true; 
+  audio_file.open("soda_audio.bin", std::ios::out | std::ios::binary); 
 }
 
 void SoDa::AudioRX::demodulateWBFM(SoDaBuf * rxbuf, SoDa::Command::ModulationType mod, float af_gain)
@@ -503,6 +507,10 @@ void SoDa::AudioRX::run()
     }
   }
   // close(outdump); 
+
+  if(audio_save_enable) {
+    audio_file.close();
+  }
 }
 
 
@@ -528,6 +536,9 @@ void SoDa::AudioRX::pendAudioBuffer(float * b)
 {
   boost::mutex::scoped_lock lock(ready_lock);
   ready_buffers.push(b);
+  if(audio_save_enable) {
+    audio_file.write((char*) b, audio_buffer_size * sizeof(float));
+  }
 }
 
 float * SoDa::AudioRX::getNextAudioBuffer()

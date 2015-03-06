@@ -266,6 +266,11 @@ namespace SoDa {
     // debug helper
     unsigned int dbg_ctr; ///< debug counter, used to support one-time or infrequent bulletins
     std::ofstream dbg_out;
+
+    // audio output file
+    bool audio_save_enable; 
+    std::ofstream audio_file; 
+    
   };
 }
 
