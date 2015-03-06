@@ -38,10 +38,6 @@
 #  define ALSA_DEF { throw SoDa::SoDaException("ALSA Sound Library is not enabled in this build version."); } 
 #endif
 #include <boost/format.hpp>
-
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/condition.hpp>
-
 #include <iostream>
 #include <stdexcept>
 
@@ -74,6 +70,7 @@ namespace SoDa {
      *                              the audio device (in samples)
      */
     AudioALSA(unsigned int _sample_rate,
+	      AudioIfc::DataFormat _fmt,
 	      unsigned int _sample_count_hint = 1024);
 
     ~AudioALSA() {
@@ -88,7 +85,7 @@ namespace SoDa {
      * @param len number of elements in the buffer to send
      * @return number of elements transferred to the audio output
      */
-    int send(float * buf, unsigned int len) ALSA_DEF ;
+    int send(void * buf, unsigned int len) ALSA_DEF ;
 
     /**
      * sendBufferReady -- is there enough space in the audio device
@@ -105,7 +102,7 @@ namespace SoDa {
      * @param block make this a blocking call --- ignored. 
      * @return number of elements transferred from the audio input
      */
-    int recv(float * buf, unsigned int len, bool block = true) ALSA_DEF ; 
+    int recv(void * buf, unsigned int len, bool block = true) ALSA_DEF ; 
 
     /**
      * recvBufferReady -- is there enough space in the audio device
@@ -177,15 +174,7 @@ namespace SoDa {
     snd_pcm_t * pcm_in;  ///< The capture (input) handle. 
     snd_pcm_hw_params_t * hw_in_params;  ///< the input parameter list
     snd_pcm_hw_params_t * hw_out_params; ///< the output parameter list
-
-    int underrun_count; ///< count of number of times we posted to the audio out and it had run dry. 
-    int event_count; ///< how many anomalous and good send events did we have
-    int write_count; ///< how many writes
-    int chunklet_count; ///< how many short buffers
-    int whole_count; ///< how many full buffers    
-    int again_count; ///< how many eagain events
     
-
     /**
      * setup the playback handle and features. 
      */
@@ -197,6 +186,20 @@ namespace SoDa {
     void setupCapture(); 
 
     /**
+     * setup the parameters for a PCM device
+     * @param dev the device handle
+     * @param hw_params (out parameter) a pointer to a device parameter block
+     */
+    void setupParams(snd_pcm_t * dev, snd_pcm_hw_params_t * & hw_params);
+    
+    /**
+     * ALSA has predefined data type codes corresponding to float/ints of various sizes.
+     * @param fmt the AudioIfc::DataFormat spec (FLOAT, DFLOAT, INT32, INT16, INT8)
+     * @return a format specifier from the ALSA PCM format list.
+     */
+    snd_pcm_format_t translateFormat(AudioIfc::DataFormat fmt);
+
+    /**
      * checkStatus check to see if the return status from an alsa call was OK
      * @param err -- the error number
      * @param exp -- why are we here
@@ -205,53 +208,10 @@ namespace SoDa {
     void checkStatus(int err, const std::string & exp, bool fatal = false) {
       
       if (err < 0) {
-	if(fatal) {
-	  std::cerr << "AudioALSA!!!: " << exp << snd_strerror(err) << std::endl;
-	  throw SoDaException((boost::format("%s %s") % exp % snd_strerror(err)).str(), this);
-	}
+	if(fatal) throw SoDaException((boost::format("%s %s") % exp % snd_strerror(err)).str(), this);
 	else std::cerr << boost::format("%s %s %s\n") % getObjName() % exp % snd_strerror(err);
       }
     }
-
-    /**
-     * setup the parameters for a PCM device
-     * @param dev the device handle
-     * @param hw_params (out parameter) a pointer to a device parameter block
-     */
-    void setupParams(snd_pcm_t * dev, snd_pcm_hw_params_t * & hw_params);
-    
-
-    // we keep paired short buffers!!
-        short float2Short(float v) 
-    {
-      if(v > 1.0) return 32767; 
-      if(v < -1.0) return -32767; 
-      else return static_cast<short>(v * 32767.0);
-    }
-
-    float short2Float(short v) 
-    {
-      float fv = static_cast<float>(v); 
-      fv = fv / 32768.0; 
-      if(fv > 1.0) return 1.0;
-      if(fv < -1.0) return -1.0;
-      else return fv;
-    }
-
-    bool translateFloat2Short(float * fb, unsigned int len);
-    
-    bool translateShort2Float(float * fb, unsigned int len);
-
-    short * short_send_buffer;
-    unsigned int send_buflen; 
-    short * short_recv_buffer;
-    unsigned int recv_buflen;     
-
-    
-    // mutual exclusion -- prevent us from "crossing the streams"
-    // between send and recv clients. 
-    static boost::mutex alsa_lib_mutex; 
-    
 #endif // HAVE_LIBASOUND
   };
 }

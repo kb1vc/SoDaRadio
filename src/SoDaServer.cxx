@@ -164,6 +164,7 @@ int doWork(int argc, char * argv[])
   /// choices include a PortAudio interface and an ALSA interface.
   /// These are subclasses of the more generic SoDa::AudioIfc class
   SoDa::AudioALSA audio_ifc(params.getAudioSampleRate(),
+			    SoDa::AudioIfc::FLOAT,
 			    params.getAFBufferSize()); 
   /// doWork creates the audio RX and audio TX unit threads
   /// These are also responsible for implementing IF tuning and modulation. 

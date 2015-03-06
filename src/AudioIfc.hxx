@@ -43,18 +43,34 @@ namespace SoDa {
    */
   class AudioIfc : public SoDaBase {
   public:
+    enum DataFormat { FLOAT, DFLOAT, INT32, INT16, INT8 };
+
     /*
      * constructor
      * @param sample_rate in Hz -- 48000 is a good choice
+     * @param fmt -- the format of the data (FLOAT, DFLOAT, INT32, INT16, INT8)
      * @param _sample_count_hint -- the size of the buffers passed to
      *                              and from the audio device (in samples)
      */
     AudioIfc(unsigned int _sample_rate,
+	     DataFormat _fmt,
 	     unsigned int _sample_count_hint,
 	     const std::string & name = "AudioIfc") : SoDaBase(name) {
       sample_rate = _sample_rate;
       sample_count_hint = _sample_count_hint;
-
+      format = _fmt;
+      switch (format) {
+      case FLOAT: datatype_size = sizeof(float);
+	break; 
+      case DFLOAT: datatype_size = sizeof(double);
+	break; 
+      case INT32: datatype_size = sizeof(int);
+	break; 
+      case INT16: datatype_size = sizeof(short);
+	break; 
+      case INT8: datatype_size = sizeof(char);
+	break; 
+      }
     }
 
     /**
@@ -63,7 +79,7 @@ namespace SoDa {
      * @param len number of elements in the buffer to send
      * @return number of elements transferred to the audio output
      */
-    virtual int send(float * buf, unsigned int len) = 0; 
+    virtual int send(void * buf, unsigned int len) = 0; 
 
     /**
      * sendBufferReady -- is there enough space in the audio device
@@ -77,11 +93,11 @@ namespace SoDa {
     /**
      * recv -- get a buffer of data from the audio input
      * @param buf buffer of type described by the DataFormat selected at init
-     * @param len number of elements in the buffer to acquire
+     * @param len number of elements in the buffer to send
      * @param block block on this call if no data is available (ignored)
      * @return number of elements transferred to the audio output
      */
-    virtual int recv(float * buf, unsigned int len, bool block = true) = 0;
+    virtual int recv(void * buf, unsigned int len, bool block = true) = 0;
 
     /**
      * recvBufferReady -- is there enough space in the audio device
@@ -148,14 +164,14 @@ namespace SoDa {
         
 
   protected:
-
-
     unsigned int sample_rate;
+    DataFormat format;
     unsigned int sample_count_hint; 
-
 
     float in_gain;
     float out_gain; 
+
+    int datatype_size; 
   };
 }
 
