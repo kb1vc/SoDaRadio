@@ -33,6 +33,12 @@
 
 #include <boost/format.hpp>
 
+// Use the simple setup, as recent (March 2015) changes to the 
+// ALSA/pulseaudio interactions have made explicit selection
+// of parameters somewhat harder to figure out.  In particular, 
+// buffer management has become far more important.
+#define ALSA_USE_SIMPLE_SETUP
+
 namespace SoDa {
 #if HAVE_LIBASOUND
   AudioALSA::AudioALSA(unsigned int _sample_rate,
@@ -55,6 +61,7 @@ namespace SoDa {
       exit(-1); 
     }
 
+#ifdef ALSA_USE_SIMPLE_SETUP    
     checkStatus(snd_pcm_set_params(pcm_out,
 				   SND_PCM_FORMAT_FLOAT, 
 				   SND_PCM_ACCESS_RW_INTERLEAVED, 
@@ -63,7 +70,7 @@ namespace SoDa {
 				   1, 
 				   500000), // 100000),
 		"Failed to do simple set params for output.", true); 
-#if 0    
+#else   
     setupParams(pcm_out, hw_out_params);
 #endif
   }
@@ -77,7 +84,18 @@ namespace SoDa {
       exit(-1); 
     }
 
+#ifdef ALSA_USE_SIMPLE_SETUP
+    checkStatus(snd_pcm_set_params(pcm_in,
+				   SND_PCM_FORMAT_FLOAT, 
+				   SND_PCM_ACCESS_RW_INTERLEAVED, 
+				   1,
+				   sample_rate,
+				   1, 
+				   500000), // 100000),
+		"Failed to do simple set params for output.", true); 
+#else    
     setupParams(pcm_in, hw_in_params);
+#endif    
   }
 
   void AudioALSA::setupParams(snd_pcm_t * dev, snd_pcm_hw_params_t *  & hw_params_ptr)
