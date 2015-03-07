@@ -167,14 +167,62 @@ namespace SoDa {
       }
 #endif
     }
+#if HAVE_LIBASOUND
+    std::string currentPlaybackState() { 
+      std::string cs = currentState(pcm_out);      
+      return (boost::format("%s  ready_frames = %d") % cs % snd_pcm_avail(pcm_out)).str();
+    }
 
+    std::string currentCaptureState() { 
+      return currentState(pcm_in);
+    }
+#endif
   protected:
 #if HAVE_LIBASOUND    
     snd_pcm_t * pcm_out; ///< The playback (output) handle. 
     snd_pcm_t * pcm_in;  ///< The capture (input) handle. 
     snd_pcm_hw_params_t * hw_in_params;  ///< the input parameter list
     snd_pcm_hw_params_t * hw_out_params; ///< the output parameter list
-    
+
+    /**
+     *
+     */
+    std::string currentState(snd_pcm_t * dev) {
+      snd_pcm_state_t st = snd_pcm_state(dev);
+
+      switch (st) {
+      case SND_PCM_STATE_OPEN:
+	return std::string("SND_PCM_STATE_OPEN");
+	break;
+      case SND_PCM_STATE_SETUP:
+	return std::string("SND_PCM_STATE_SETUP");
+	break;
+      case SND_PCM_STATE_PREPARED:
+	return std::string("SND_PCM_STATE_PREPARED");
+	break;
+      case SND_PCM_STATE_RUNNING:
+	return std::string("SND_PCM_STATE_RUNNING");
+	break;
+      case SND_PCM_STATE_XRUN:
+	return std::string("SND_PCM_STATE_XRUN");
+	break;
+      case SND_PCM_STATE_DRAINING:
+	return std::string("SND_PCM_STATE_DRAINING");
+	break;
+      case SND_PCM_STATE_PAUSED:
+	return std::string("SND_PCM_STATE_PAUSED");
+	break;
+      case SND_PCM_STATE_SUSPENDED:
+	return std::string("SND_PCM_STATE_SUSPENDED");
+	break;
+      case SND_PCM_STATE_DISCONNECTED:
+	return std::string("SND_PCM_STATE_DISCONNECTED");
+	break;
+      default:
+	return std::string("BADSTATE-UNKNOWN");
+      }
+    }
+
     /**
      * setup the playback handle and features. 
      */

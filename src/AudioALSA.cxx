@@ -61,7 +61,7 @@ namespace SoDa {
 				   1,
 				   sample_rate,
 				   1, 
-				   100000),
+				   500000), // 100000),
 		"Failed to do simple set params for output.", true); 
 #if 0    
     setupParams(pcm_out, hw_out_params);
@@ -133,18 +133,30 @@ namespace SoDa {
   }
 
   bool AudioALSA::sendBufferReady(unsigned int len)  {
-    snd_pcm_sframes_t sframes_ready = snd_pcm_avail(pcm_out);
-    if(sframes_ready == -EPIPE) {
-      // we got an under-run... just ignore it.
-      int err; 
-      if(err = snd_pcm_recover(pcm_out, sframes_ready, 1) < 0) {
-	checkStatus(err, "sendBufferReady got EPIPE, tried recovery", false);
+    snd_pcm_sframes_t sframes_ready;
+
+    while(1) {
+      sframes_ready= snd_pcm_avail(pcm_out);
+    
+      if(sframes_ready == -EPIPE) {
+	// we got an under-run... we can't just ignore it.
+	// if pcm_avail returns -EPIPE we need to recover and restart the pipe... sigh.
+	std::cerr << boost::format("snd_pcm_avail returns EPIPE -- current state is %s\n") % currentPlaybackState();
+	int err; 
+	if(err = snd_pcm_recover(pcm_out, sframes_ready, 1) < 0) {
+	  checkStatus(err, "sendBufferReady got EPIPE, tried recovery", false);
+	}
+	if((err = snd_pcm_start(pcm_out)) < 0) {
+	  throw
+	    SoDaException((boost::format("AudioALSA::wakeOut() Failed to wake after sleepOut() -- %s")
+			   % snd_strerror(err)).str(), this);
+	}
       }
-      sframes_ready = snd_pcm_avail(pcm_out);
+      else {
+	checkStatus(sframes_ready, "sendBufferReady", false);
+	break;
+      }
     }
-
-    checkStatus(sframes_ready, "sendBufferReady", false);
-
     return sframes_ready >= len; 
   }
 

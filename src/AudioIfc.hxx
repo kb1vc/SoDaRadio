@@ -163,6 +163,9 @@ namespace SoDa {
     virtual void wakeIn() = 0;
         
 
+    virtual std::string currentPlaybackState() { return std::string("UNKNOWN"); }
+    virtual std::string currentCaptureState() { return std::string("UNKNOWN"); }    
+
   protected:
     unsigned int sample_rate;
     DataFormat format;

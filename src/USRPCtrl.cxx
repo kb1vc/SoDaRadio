@@ -154,6 +154,7 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
   if(tree->exists(rx_fe_root)) {
     rx_fe_subtree = tree->subtree(rx_fe_root);
   }
+  rx_fe_subtree->access<bool>("enabled").set(true);
 
   // find the gain ranges
   rx_rf_gain_range = usrp->get_rx_gain_range();
@@ -274,8 +275,8 @@ uhd::tune_result_t SoDa::USRPCtrl::checkLock(uhd::tune_request_t & req, char sel
     if(lo_locked.to_bool()) break;
     else usleep(1000);
     if((lock_itercount & 0xfff) == 0) {
-      std::cerr << boost::format("Waiting for %c LO lock to freq = %f (%f:%f)  count = %d\n")
-	% sel % req.target_freq % req.rf_freq % req.dsp_freq % lock_itercount; 
+      debugMsg(boost::format("Waiting for %c LO lock to freq = %f (%f:%f)  count = %d\n")
+	       % sel % req.target_freq % req.rf_freq % req.dsp_freq % lock_itercount);
       if(sel == 'r') ret = usrp->set_rx_freq(req);
       else ret = usrp->set_tx_freq(req);
     }

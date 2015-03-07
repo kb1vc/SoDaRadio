@@ -117,9 +117,14 @@ SoDa::AudioRX::AudioRX(Params * params,
   // debug help
   dbg_ctr = 0;
 
+  audio_rx_stream_enabled = true;
+  debugMsg("audio_rx_stream_enabled = true\n");  
+  audio_rx_stream_needs_start = true;
+
   // log all audio to an output file (debug only....?)
-  audio_save_enable = true; 
-  audio_file.open("soda_audio.bin", std::ios::out | std::ios::binary); 
+  audio_save_enable = true;
+  audio_file.open("soda_audio.bin", std::ios::out | std::ios::binary);
+  audio_file2.open("soda_audio_dq.bin", std::ios::out | std::ios::binary);   
 }
 
 void SoDa::AudioRX::demodulateWBFM(SoDaBuf * rxbuf, SoDa::Command::ModulationType mod, float af_gain)
@@ -322,6 +327,7 @@ void SoDa::AudioRX::execSetCommand(SoDa::Command * cmd)
       }
       else {
 	audio_rx_stream_enabled = false;
+	debugMsg("audio_rx_stream_enabled = false\n");
 	audio_ifc->sleepOut();
       }
     }
@@ -329,7 +335,10 @@ void SoDa::AudioRX::execSetCommand(SoDa::Command * cmd)
       debugMsg("In RX ON");
       cur_af_gain = &af_gain; 
       audio_rx_stream_enabled = true;
-      audio_rx_stream_needs_start = true;
+      debugMsg("audio_rx_stream_enabled = true\n");      
+      // audio_rx_stream_needs_start = true;
+      audio_rx_stream_needs_start = false;      
+      audio_ifc->wakeOut();      
     }
     break;
   case SoDa::Command::RX_AF_FILTER: // set af filter bw.
@@ -416,9 +425,9 @@ void SoDa::AudioRX::run()
     }
 
     if(audio_rx_stream_enabled) {
-
+      debugMsg("e\n");
       if(!ready_buffers.empty()) {
-
+	debugMsg("R\n");
 	if(!in_catchup && (ready_buffers.size() > 8)) {
 	  // If we've fallen 8 buffers behind, (about 400mS)
 	  // then go into catchup mode, where we'll gain about 0.4 mS
@@ -440,21 +449,30 @@ void SoDa::AudioRX::run()
 	  in_fallback = false;
 	}
 #endif
-	
-	if((audio_rx_stream_needs_start && (ready_buffers.size() > 1)) ||
-	   (!audio_rx_stream_needs_start && (ready_buffers.size() > 1))) {
+	int rbsize = ready_buffers.size(); 
+	debugMsg(boost::format("RBSIZE = %d\n") % rbsize);
+	if((audio_rx_stream_needs_start && (rbsize > 1)) ||
+	   (!audio_rx_stream_needs_start && (rbsize > 1))) {
+	  debugMsg("S\n");
+
 	  if(audio_rx_stream_needs_start) {
+	    debugMsg("N\n");	    
 	    audio_ifc->wakeOut(); 
 	    audio_rx_stream_needs_start = false; 
 	    restart_count++; 
 	  }
 	  
 	  while(1) {
+	    debugMsg("X\n");	    
 	    if(audio_ifc->sendBufferReady(audio_buffer_size + (in_fallback ? 1 : 0))) {
 	      float * outb = getNextAudioBuffer();
 	      if(outb == NULL) {
 		break; 
 	      }
+	      if(audio_save_enable) {
+		audio_file2.write((char*) outb, audio_buffer_size * sizeof(float));
+	      }
+
 	      did_work = true;
 	      did_audio_work = true; 
 
@@ -462,18 +480,21 @@ void SoDa::AudioRX::run()
 		// this is where the random generator comes in.
 		int trim = (random() & catchup_rand_mask);
 		// drop out one "randomly" selected sample in the first (power of two) part of the buffer.
+		debugMsg("C\n");
 		audio_ifc->send(outb, trim);
 		audio_ifc->send(&(outb[trim+1]), (audio_buffer_size - (trim + 1))); 
 		trim_count++; 
 	      }
 	      else if(in_fallback) {
 		// duplicate one "randomly" selected sample in the first (power of two) part of the buffer.
+		debugMsg("F\n");		
 		int dup = (random() & catchup_rand_mask);
 		audio_ifc->send(outb, dup);
 		audio_ifc->send(&(outb[dup]), (audio_buffer_size - dup)); 
 		add_count++; 
 	      }
 	      else {
+		debugMsg("SN\n");		
 		audio_ifc->send(outb, audio_buffer_size);
 	      }
 
@@ -484,6 +505,10 @@ void SoDa::AudioRX::run()
 	    }
 	    else {
 	      null_audio_buf_count++; 
+	      if(rbsize > 10) {
+		// what is the state of the audio ifc? 
+		debugMsg(boost::format("ALSA State [%s] rbsize = %d\n") % audio_ifc->currentPlaybackState() % rbsize);
+	      }
 	      break; 
 	    }
 	  }
@@ -534,8 +559,11 @@ float * SoDa::AudioRX::getFreeAudioBuffer() {
 
 void SoDa::AudioRX::pendAudioBuffer(float * b)
 {
-  boost::mutex::scoped_lock lock(ready_lock);
-  ready_buffers.push(b);
+  {
+    boost::mutex::scoped_lock lock(ready_lock);
+    ready_buffers.push(b);
+  }
+  debugMsg("P\n");
   if(audio_save_enable) {
     audio_file.write((char*) b, audio_buffer_size * sizeof(float));
   }
@@ -548,15 +576,18 @@ float * SoDa::AudioRX::getNextAudioBuffer()
   float * ret;
   ret = ready_buffers.front();
   ready_buffers.pop();
+  debugMsg("gnab_bp\n");
   return ret; 
 }
 
 void SoDa::AudioRX::flushAudioBuffers()
 {
+  debugMsg("FFF\n");
   boost::mutex::scoped_lock lock(ready_lock); 
   while(!ready_buffers.empty()) {
     float * v = ready_buffers.front(); 
     ready_buffers.pop();
+    debugMsg("flush_bp\n");    
     freeAudioBuffer(v);
   }
   return;

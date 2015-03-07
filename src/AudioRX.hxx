@@ -269,7 +269,8 @@ namespace SoDa {
 
     // audio output file
     bool audio_save_enable; 
-    std::ofstream audio_file; 
+    std::ofstream audio_file;
+    std::ofstream audio_file2;     
     
   };
 }
