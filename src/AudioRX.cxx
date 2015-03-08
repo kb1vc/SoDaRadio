@@ -72,17 +72,15 @@ SoDa::AudioRX::AudioRX(Params * params,
   af_sidetone_gain = 1.0;
   cur_af_gain = &af_gain; 
 
-  // create a silence buffer for pauses in the
-  // sidetone stream.
   int i, j;
-  // and prime the audio stream so that we don't fall behind
+  // prime the audio stream so that we don't fall behind
   // right away.
   for(j = 0; j < 6; j++) {
     sidetone_silence = getFreeAudioBuffer();
     for(i = 0; i < audio_buffer_size; i++) {
       sidetone_silence[i] = 0.0; 
     }
-    if(j < 5) {
+    if(j < 5) { // don't pend the last buffer, as we use it for background silence
       pendAudioBuffer(sidetone_silence); 
     }
   }
@@ -122,9 +120,9 @@ SoDa::AudioRX::AudioRX(Params * params,
   audio_rx_stream_needs_start = true;
 
   // log all audio to an output file (debug only....?)
-  audio_save_enable = true;
-  audio_file.open("soda_audio.bin", std::ios::out | std::ios::binary);
-  audio_file2.open("soda_audio_dq.bin", std::ios::out | std::ios::binary);   
+  audio_save_enable = false;
+  //  audio_file.open("soda_audio.bin", std::ios::out | std::ios::binary);
+  // audio_file2.open("soda_audio_dq.bin", std::ios::out | std::ios::binary);   
 }
 
 void SoDa::AudioRX::demodulateWBFM(SoDaBuf * rxbuf, SoDa::Command::ModulationType mod, float af_gain)
@@ -310,7 +308,7 @@ void SoDa::AudioRX::execSetCommand(SoDa::Command * cmd)
   case SoDa::Command::TX_MODE:
     txmod = SoDa::Command::ModulationType(cmd->iparms[0]);
     if((txmod == SoDa::Command::CW_L) || (txmod == SoDa::Command::CW_U)) {
-      sidetone_stream_enabled = true; 
+      sidetone_stream_enabled = true;
     }
     else {
       sidetone_stream_enabled = false; 
@@ -383,7 +381,7 @@ void SoDa::AudioRX::execGetCommand(SoDa::Command * cmd)
     SoDa::Command::UnitSelector us;
     us = SoDa::Command::UnitSelector(cmd->iparms[0]);
     if(us == SoDa::Command::AudioRX) {
-      std::cerr << boost::format("%s ready_buffers.size = %d free_buffers.size = %d\n") % getObjName() % ready_buffers.size() % free_buffers.size();
+      std::cerr << boost::format("%s ready_buffers.size = %d free_buffers.size = %d\n") % getObjName() % readyAudioBuffers() % free_buffers.size();
     }
     break; 
   }
@@ -425,10 +423,8 @@ void SoDa::AudioRX::run()
     }
 
     if(audio_rx_stream_enabled) {
-      debugMsg("e\n");
-      if(!ready_buffers.empty()) {
-	debugMsg("R\n");
-	if(!in_catchup && (ready_buffers.size() > 8)) {
+      if(readyAudioBuffers()) {
+	if(!in_catchup && (readyAudioBuffers() > 8)) {
 	  // If we've fallen 8 buffers behind, (about 400mS)
 	  // then go into catchup mode, where we'll gain about 0.4 mS
 	  // on each 2304 sample frame. 
@@ -436,34 +432,30 @@ void SoDa::AudioRX::run()
 	  in_fallback = false; 
 	  catchup_count++; 
 	}
-	if(in_catchup && (ready_buffers.size() < 2)) { /// 6)) {
+	if(in_catchup && (readyAudioBuffers() < 2)) { /// 6)) {
 	  in_catchup = false; 
 	}
 #if 0
-	if(!in_fallback && (ready_buffers.size() < 3)) {
+	if(!in_fallback && (readyAudioBuffers() < 3)) {
 	  in_fallback = true; 
 	  in_catchup = false; 
 	  fallback_count++; 
 	}
-	if(in_fallback && (ready_buffers.size() > 5)) {
+	if(in_fallback && (readyAudioBuffers() > 5)) {
 	  in_fallback = false;
 	}
 #endif
-	int rbsize = ready_buffers.size(); 
-	debugMsg(boost::format("RBSIZE = %d\n") % rbsize);
+	int rbsize = readyAudioBuffers(); 
 	if((audio_rx_stream_needs_start && (rbsize > 1)) ||
 	   (!audio_rx_stream_needs_start && (rbsize > 1))) {
-	  debugMsg("S\n");
 
 	  if(audio_rx_stream_needs_start) {
-	    debugMsg("N\n");	    
 	    audio_ifc->wakeOut(); 
 	    audio_rx_stream_needs_start = false; 
 	    restart_count++; 
 	  }
 	  
 	  while(1) {
-	    debugMsg("X\n");	    
 	    if(audio_ifc->sendBufferReady(audio_buffer_size + (in_fallback ? 1 : 0))) {
 	      float * outb = getNextAudioBuffer();
 	      if(outb == NULL) {
@@ -480,21 +472,18 @@ void SoDa::AudioRX::run()
 		// this is where the random generator comes in.
 		int trim = (random() & catchup_rand_mask);
 		// drop out one "randomly" selected sample in the first (power of two) part of the buffer.
-		debugMsg("C\n");
 		audio_ifc->send(outb, trim);
 		audio_ifc->send(&(outb[trim+1]), (audio_buffer_size - (trim + 1))); 
 		trim_count++; 
 	      }
 	      else if(in_fallback) {
 		// duplicate one "randomly" selected sample in the first (power of two) part of the buffer.
-		debugMsg("F\n");		
 		int dup = (random() & catchup_rand_mask);
 		audio_ifc->send(outb, dup);
 		audio_ifc->send(&(outb[dup]), (audio_buffer_size - dup)); 
 		add_count++; 
 	      }
 	      else {
-		debugMsg("SN\n");		
 		audio_ifc->send(outb, audio_buffer_size);
 	      }
 
@@ -557,13 +546,18 @@ float * SoDa::AudioRX::getFreeAudioBuffer() {
   return ret; 
 }
 
+int SoDa::AudioRX::readyAudioBuffers() 
+{
+  boost::mutex::scoped_lock lock(ready_lock);
+  return ready_buffers.size();
+}
+
 void SoDa::AudioRX::pendAudioBuffer(float * b)
 {
   {
     boost::mutex::scoped_lock lock(ready_lock);
     ready_buffers.push(b);
   }
-  debugMsg("P\n");
   if(audio_save_enable) {
     audio_file.write((char*) b, audio_buffer_size * sizeof(float));
   }
@@ -576,18 +570,15 @@ float * SoDa::AudioRX::getNextAudioBuffer()
   float * ret;
   ret = ready_buffers.front();
   ready_buffers.pop();
-  debugMsg("gnab_bp\n");
   return ret; 
 }
 
 void SoDa::AudioRX::flushAudioBuffers()
 {
-  debugMsg("FFF\n");
   boost::mutex::scoped_lock lock(ready_lock); 
   while(!ready_buffers.empty()) {
     float * v = ready_buffers.front(); 
     ready_buffers.pop();
-    debugMsg("flush_bp\n");    
     freeAudioBuffer(v);
   }
   return;

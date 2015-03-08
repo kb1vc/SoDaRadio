@@ -30,6 +30,7 @@
 */
 
 #include "AudioTX.hxx"
+#include "AudioRX.hxx"
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -42,7 +43,8 @@
 
 SoDa::AudioTX::AudioTX(Params * params, DatMBox * _tx_stream,
 		       CmdMBox * _cmd_stream,
-		       AudioIfc * _audio_ifc) : SoDa::SoDaThread("AudioTX")
+		       AudioIfc * _audio_ifc
+		       ) : SoDa::SoDaThread("AudioTX")
 {
   debug_mode = false;
   debug_ctr = 0;
@@ -68,6 +70,7 @@ SoDa::AudioTX::AudioTX(Params * params, DatMBox * _tx_stream,
   fm_phase = 0.0; 
 
   audio_ifc = _audio_ifc; 
+
   tx_stream_on = false;
 
   // create the IQ buffer.

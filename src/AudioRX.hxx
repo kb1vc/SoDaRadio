@@ -92,7 +92,6 @@ namespace SoDa {
      */
     void run();
 
-    
   private:
     /**
      * @brief execute GET commands from the command channel
@@ -185,6 +184,15 @@ namespace SoDa {
     AudioIfc * audio_ifc; ///< pointer to the audio interface (output) object
     
     // buffer pool management
+
+    /**
+     * @brief put an audio buffer on the "pending for output" list
+     *
+     * @param b pointer to an audio buffer
+     *
+     */
+    void pendAudioBuffer(float * b); 
+    
     /**
      * @brief return the next queued audio buffer to pass to the audio output device
      *
@@ -208,12 +216,12 @@ namespace SoDa {
      * @return a pointer to a free audio buffer
      */
     float * getFreeAudioBuffer();
+
     /**
-     * @brief put an audio buffer on the "pending for output" list
-     *
-     * @param b pointer to an audio buffer
+     * @brief return number audio buffers available
      */
-    void pendAudioBuffer(float * b); 
+    int readyAudioBuffers(); 
+
 
     // flow timing management
     bool in_catchup;  ///< when true, the audio server has fallen behind...

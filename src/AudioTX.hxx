@@ -50,6 +50,7 @@ namespace SoDa {
    * CW (CW_L and CW_U) modes are implemented in the USRPTX module and the CW unit.
    *
    */
+  class AudioRX;  
   class AudioTX : public SoDaThread {
   public:
     /**
@@ -63,7 +64,8 @@ namespace SoDa {
     AudioTX(Params * params,
 	    DatMBox * tx_stream,
 	    CmdMBox * cmd_stream,
-	    AudioIfc * audio_ifc);
+	    AudioIfc * audio_ifc
+	    );
     /**
      * @brief the run method -- does the work of the audio transmitter process
      */
@@ -134,6 +136,7 @@ namespace SoDa {
 
     // audio server state
     AudioIfc * audio_ifc; ///< pointer to an AudioIfc object for the microphone input
+
     bool tx_stream_on; ///< if true, we are transmitting. 
 
     // we need some intermediate storage for things like

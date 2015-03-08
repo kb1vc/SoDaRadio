@@ -67,6 +67,7 @@ namespace SoDa {
      * @brief USRPTX run loop: handle commands, and modulate the tx carrier
      */
     void run(); 
+
   private:
 
     uhd::usrp::multi_usrp::sptr usrp; ///< the radio.
@@ -156,7 +157,6 @@ namespace SoDa {
     bool LO_capable; ///< if true, this hardware model supports LO config
 
     std::complex<float> * const_buf; ///< envelope for dead silence
-
   }; 
 
 }

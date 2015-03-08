@@ -105,7 +105,7 @@ SoDa::USRPTX::USRPTX(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
     zero_buf[i] = std::complex<float>(0.0, 0.0);
     const_buf[i] = std::complex<float>(1.0, 0.0);
   }
-  
+
   tx_enabled = false;
 }
 
@@ -208,6 +208,7 @@ void SoDa::USRPTX::run()
 
   debugMsg("Leaving\n");
 }
+
 
 void SoDa::USRPTX::doCW(std::complex<float> * out, float * envelope, unsigned int env_len)
 {

@@ -172,8 +172,6 @@ int doWork(int argc, char * argv[])
   SoDa::AudioRX arx(&params, &rx_stream, &cmd_stream, &audio_ifc);
   SoDa::AudioTX atx(&params, &tx_stream, &cmd_stream, &audio_ifc);
 
-
-  
   /// doWork creates the morse code (CW) tx handler thread @see SoDa::CWTX
   SoDa::CWTX cwtx(&params, &cwtxt_stream, &cw_env_stream, &cmd_stream); 
   
