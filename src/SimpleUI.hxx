@@ -35,6 +35,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "UDSockets.hxx"
 
 namespace SoDa {
+  /**
+   * SimpleUI -- operates as a basic command relay from a UD socket to/from a command stream.
+   */
   class SimpleUI : public SoDaThread {
   public:
     SimpleUI(Params * params, 
@@ -43,7 +46,7 @@ namespace SoDa {
     
     void run();
 
-  private:
+  protected:
     // the internal communications paths -- between the SoDa threads. 
     CmdMBox * cmd_stream;
     unsigned int cmd_subs;

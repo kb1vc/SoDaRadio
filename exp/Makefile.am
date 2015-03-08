@@ -53,7 +53,7 @@ TSIP_Test_LDADD = $(AM_BOOSTLIBFLAGS)
 
 
 
-TestServer_SOURCES = TestServer.cxx  ../src/Command.cxx ../src/UI.cxx ../src/Params.cxx ../src/UDSockets.cxx ../src/Spectrogram.cxx ../src/SoDaBase.cxx ../src/Debug.cxx
+TestServer_SOURCES = TestServer.cxx  ../src/Command.cxx ../src/UI.cxx ../src/Params.cxx ../src/UDSockets.cxx ../src/Spectrogram.cxx ../src/SoDaBase.cxx ../src/Debug.cxx ../src/SimpleUI.cxx
 TestServer_CPPFLAGS = $(AM_CPPFLAGS)
 TestServer_LDADD = $(AM_BOOSTLIBFLAGS) -lrt
 

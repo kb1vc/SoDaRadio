@@ -1406,8 +1406,9 @@ namespace SoDaRadio_GUI {
 	found_problem = true;
 	problem_string = problem_string + "\nPlease specify transverter local osc. multiplier (non zero).";
       }
-
-      lsi = (m_InjectionSel->GetSelection() == wxString(wxT("Low Side")));
+      
+      int isel = m_InjectionSel->GetSelection();
+      lsi = (m_InjectionSel->GetString(isel) == wxString(wxT("Low Side")));
     }
     
     std::string mode = std::string(m_ModChoice->GetStringSelection().mb_str());

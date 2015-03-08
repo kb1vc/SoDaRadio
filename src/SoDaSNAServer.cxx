@@ -41,7 +41,7 @@
  * @li SoDa::USRPCtrl executes all control and status functions on the USRP
  * @li SoDa::USRPSNARX manages the inbound IF signal stream from the USRP receive chain
  * @li SoDa::USRPSNATX manages the outbound IF signal stream to the USRP transmit chain
- * @li SoDa::UI waits for requests and CW text on the UDP socket from the GUI, and forwards status and
+ * @li SoDa::SimpleUI waits for requests and CW text on the UDP socket from the GUI, and forwards status and
  * The SoDa receiver architecture is a 3 stage heterodyne design.  
  * The first two IF conversions are performed within the USRP SDR platform.
  * The final stage of conversion is completed in the USRPSNARX module.
@@ -112,7 +112,7 @@
 #include "USRPSNACtrl.hxx"
 #include "USRPSNARX.hxx"
 #include "USRPSNATX.hxx"
-#include "UI.hxx"
+#include "SimpleUI.hxx"
 #include "Command.hxx"
 #include "Debug.hxx"
 
@@ -142,12 +142,12 @@ int doWork(int argc, char * argv[])
 
   /// doWork creates the USRP Control, RX Streamer, and TX Streamer threads
   /// @see SoDa::USRPCtrl @see SoDa::USRPRX @see SoDa::USRPTX
-  SoDa::USRPSNACtrl ctrl(&params, &cmd_stream);
-  SoDa::USRPSNARX rx(&params, ctrl.getUSRP(), &cmd_stream); 
+  SoDa::USRPSNACtrl ctrl(&params, &cmd_stream, 10.1e6);
+  SoDa::USRPSNARX rx(&params, ctrl.getUSRP(), &cmd_stream, 100.0e3); 
   SoDa::USRPSNATX tx(&params, ctrl.getUSRP(), &cmd_stream);
   
   /// doWork creates the user interface (UI) thread @see SoDa::UI
-  SoDa::UI ui(&params, &cmd_stream);
+  SoDa::SimpleUI ui(&params, &cmd_stream);
 
   d.debugMsg("Created units.");
   

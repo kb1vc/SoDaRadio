@@ -80,7 +80,7 @@ SoDaSNAFrame::SoDaSNAFrame( wxWindow* parent, wxWindowID id, const wxString& tit
 	m_SweepRate->SetSelection( 3 );
 	sSweepSpeed->Add( m_SweepRate, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 	
-	gbSizer2->Add( sSweepSpeed, wxGBPosition( 0, 3 ), wxGBSpan( 1, 1 ), wxEXPAND, 5 );
+	gbSizer2->Add( sSweepSpeed, wxGBPosition( 0, 1 ), wxGBSpan( 1, 1 ), 0, 5 );
 	
 	wxStaticBoxSizer* sFreqCentSizer;
 	sFreqCentSizer = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Center Frequency") ), wxHORIZONTAL );
@@ -96,7 +96,7 @@ SoDaSNAFrame::SoDaSNAFrame( wxWindow* parent, wxWindowID id, const wxString& tit
 	m_CenterUnits->SetSelection( 1 );
 	sFreqCentSizer->Add( m_CenterUnits, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 	
-	gbSizer2->Add( sFreqCentSizer, wxGBPosition( 0, 0 ), wxGBSpan( 1, 1 ), wxEXPAND, 5 );
+	gbSizer2->Add( sFreqCentSizer, wxGBPosition( 0, 0 ), wxGBSpan( 1, 1 ), 0, 5 );
 	
 	wxStaticBoxSizer* sFreqSpanSizer;
 	sFreqSpanSizer = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Frequency Span") ), wxHORIZONTAL );
@@ -113,26 +113,20 @@ SoDaSNAFrame::SoDaSNAFrame( wxWindow* parent, wxWindowID id, const wxString& tit
 	m_SpanUnits->SetSelection( 1 );
 	sFreqSpanSizer->Add( m_SpanUnits, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 	
-	gbSizer2->Add( sFreqSpanSizer, wxGBPosition( 0, 1 ), wxGBSpan( 1, 1 ), wxEXPAND, 5 );
+	gbSizer2->Add( sFreqSpanSizer, wxGBPosition( 1, 0 ), wxGBSpan( 1, 1 ), wxEXPAND, 5 );
 	
 	wxStaticBoxSizer* sbOutputPowerSizerA;
-	sbOutputPowerSizerA = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Output Power (dBm)") ), wxHORIZONTAL );
+	sbOutputPowerSizerA = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Relative Output Power (dB)") ), wxHORIZONTAL );
 	
-	m_OutPowerSliderA = new wxSlider( this, wxID_ANY, 10, -30, 20, wxDefaultPosition, wxDefaultSize, wxSL_AUTOTICKS|wxSL_BOTH|wxSL_HORIZONTAL|wxSL_LABELS );
+	m_OutPowerSliderA = new wxSlider( this, wxID_ANY, 10, -30, 0, wxDefaultPosition, wxDefaultSize, wxSL_AUTOTICKS|wxSL_BOTH|wxSL_HORIZONTAL|wxSL_LABELS );
 	m_OutPowerSliderA->SetMinSize( wxSize( 200,-1 ) );
 	
 	sbOutputPowerSizerA->Add( m_OutPowerSliderA, 0, wxALL, 5 );
 	
-	gbSizer2->Add( sbOutputPowerSizerA, wxGBPosition( 0, 4 ), wxGBSpan( 1, 1 ), wxEXPAND, 5 );
+	gbSizer2->Add( sbOutputPowerSizerA, wxGBPosition( 1, 1 ), wxGBSpan( 1, 2 ), wxEXPAND, 5 );
 	
 	wxBoxSizer* sRFOutA;
 	sRFOutA = new wxBoxSizer( wxVERTICAL );
-	
-	wxString m_RFOutEna_AChoices[] = { wxT("ON"), wxT("OFF") };
-	int m_RFOutEna_ANChoices = sizeof( m_RFOutEna_AChoices ) / sizeof( wxString );
-	m_RFOutEna_A = new wxRadioBox( this, wxID_ANY, wxT("RF Output A"), wxDefaultPosition, wxDefaultSize, m_RFOutEna_ANChoices, m_RFOutEna_AChoices, 1, wxRA_SPECIFY_COLS );
-	m_RFOutEna_A->SetSelection( 1 );
-	sRFOutA->Add( m_RFOutEna_A, 2, wxALL, 5 );
 	
 	gbSizer2->Add( sRFOutA, wxGBPosition( 0, 5 ), wxGBSpan( 1, 1 ), wxEXPAND, 5 );
 	
@@ -142,7 +136,7 @@ SoDaSNAFrame::SoDaSNAFrame( wxWindow* parent, wxWindowID id, const wxString& tit
 	m_RefLevel = new wxSpinCtrl( this, wxID_ANY, wxT("0"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, -70, 30, 0 );
 	sPlotControl->Add( m_RefLevel, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 	
-	gbSizer2->Add( sPlotControl, wxGBPosition( 0, 6 ), wxGBSpan( 1, 1 ), wxEXPAND, 5 );
+	gbSizer2->Add( sPlotControl, wxGBPosition( 0, 2 ), wxGBSpan( 1, 1 ), 0, 5 );
 	
 	wxStaticBoxSizer* sVrtRes;
 	sVrtRes = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Vertical Resolution") ), wxHORIZONTAL );
@@ -157,7 +151,13 @@ SoDaSNAFrame::SoDaSNAFrame( wxWindow* parent, wxWindowID id, const wxString& tit
 	m_staticText11->Wrap( -1 );
 	sVrtRes->Add( m_staticText11, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 	
-	gbSizer2->Add( sVrtRes, wxGBPosition( 0, 7 ), wxGBSpan( 1, 1 ), wxALIGN_CENTER_HORIZONTAL|wxEXPAND, 5 );
+	gbSizer2->Add( sVrtRes, wxGBPosition( 0, 3 ), wxGBSpan( 1, 1 ), wxALIGN_CENTER_HORIZONTAL, 5 );
+	
+	wxString m_SweepControlChoices[] = { wxT("Off"), wxT("Single"), wxT("Continuous") };
+	int m_SweepControlNChoices = sizeof( m_SweepControlChoices ) / sizeof( wxString );
+	m_SweepControl = new wxRadioBox( this, wxID_ANY, wxT("Sweep Control"), wxDefaultPosition, wxDefaultSize, m_SweepControlNChoices, m_SweepControlChoices, 1, wxRA_SPECIFY_COLS );
+	m_SweepControl->SetSelection( 0 );
+	gbSizer2->Add( m_SweepControl, wxGBPosition( 0, 4 ), wxGBSpan( 2, 1 ), wxALL, 5 );
 	
 	sGenSizer->Add( gbSizer2, 0, wxEXPAND, 5 );
 	
@@ -174,7 +174,7 @@ SoDaSNAFrame::SoDaSNAFrame( wxWindow* parent, wxWindowID id, const wxString& tit
 	this->Connect( Quit->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaSNAFrame::OnQuit ) );
 	this->Connect( Aboutitem->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaSNAFrame::OnAbout ) );
 	this->Connect( UserGuideitem->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaSNAFrame::OnUserGuide ) );
-	m_SweepRate->Connect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( SoDaSNAFrame::OnSweepSel ), NULL, this );
+	m_SweepRate->Connect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( SoDaSNAFrame::OnSweepSpeed ), NULL, this );
 	m_CenterFreqBox->Connect( wxEVT_LEAVE_WINDOW, wxMouseEventHandler( SoDaSNAFrame::OnFreqEnter ), NULL, this );
 	m_CenterFreqBox->Connect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( SoDaSNAFrame::OnFreqEnter ), NULL, this );
 	m_CenterUnits->Connect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( SoDaSNAFrame::OnFreqRangeSel ), NULL, this );
@@ -189,8 +189,8 @@ SoDaSNAFrame::SoDaSNAFrame( wxWindow* parent, wxWindowID id, const wxString& tit
 	m_OutPowerSliderA->Connect( wxEVT_SCROLL_THUMBTRACK, wxScrollEventHandler( SoDaSNAFrame::OnOutputPowerSel ), NULL, this );
 	m_OutPowerSliderA->Connect( wxEVT_SCROLL_THUMBRELEASE, wxScrollEventHandler( SoDaSNAFrame::OnOutputPowerSel ), NULL, this );
 	m_OutPowerSliderA->Connect( wxEVT_SCROLL_CHANGED, wxScrollEventHandler( SoDaSNAFrame::OnOutputPowerSel ), NULL, this );
-	m_RFOutEna_A->Connect( wxEVT_COMMAND_RADIOBOX_SELECTED, wxCommandEventHandler( SoDaSNAFrame::OnOutputEna ), NULL, this );
 	m_SpanMag1->Connect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( SoDaSNAFrame::OnFreqRangeSel ), NULL, this );
+	m_SweepControl->Connect( wxEVT_COMMAND_RADIOBOX_SELECTED, wxCommandEventHandler( SoDaSNAFrame::OnSweepControl ), NULL, this );
 }
 
 SoDaSNAFrame::~SoDaSNAFrame()
@@ -203,7 +203,7 @@ SoDaSNAFrame::~SoDaSNAFrame()
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaSNAFrame::OnQuit ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaSNAFrame::OnAbout ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaSNAFrame::OnUserGuide ) );
-	m_SweepRate->Disconnect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( SoDaSNAFrame::OnSweepSel ), NULL, this );
+	m_SweepRate->Disconnect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( SoDaSNAFrame::OnSweepSpeed ), NULL, this );
 	m_CenterFreqBox->Disconnect( wxEVT_LEAVE_WINDOW, wxMouseEventHandler( SoDaSNAFrame::OnFreqEnter ), NULL, this );
 	m_CenterFreqBox->Disconnect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( SoDaSNAFrame::OnFreqEnter ), NULL, this );
 	m_CenterUnits->Disconnect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( SoDaSNAFrame::OnFreqRangeSel ), NULL, this );
@@ -218,8 +218,8 @@ SoDaSNAFrame::~SoDaSNAFrame()
 	m_OutPowerSliderA->Disconnect( wxEVT_SCROLL_THUMBTRACK, wxScrollEventHandler( SoDaSNAFrame::OnOutputPowerSel ), NULL, this );
 	m_OutPowerSliderA->Disconnect( wxEVT_SCROLL_THUMBRELEASE, wxScrollEventHandler( SoDaSNAFrame::OnOutputPowerSel ), NULL, this );
 	m_OutPowerSliderA->Disconnect( wxEVT_SCROLL_CHANGED, wxScrollEventHandler( SoDaSNAFrame::OnOutputPowerSel ), NULL, this );
-	m_RFOutEna_A->Disconnect( wxEVT_COMMAND_RADIOBOX_SELECTED, wxCommandEventHandler( SoDaSNAFrame::OnOutputEna ), NULL, this );
 	m_SpanMag1->Disconnect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( SoDaSNAFrame::OnFreqRangeSel ), NULL, this );
+	m_SweepControl->Disconnect( wxEVT_COMMAND_RADIOBOX_SELECTED, wxCommandEventHandler( SoDaSNAFrame::OnSweepControl ), NULL, this );
 	
 }
 

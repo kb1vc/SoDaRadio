@@ -32,6 +32,8 @@
 #include <string>
 #include "MultiMBox.hxx"
 #include <string.h>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/condition.hpp>
 
 
 namespace SoDa {
@@ -156,7 +158,7 @@ namespace SoDa {
       /**
        * Set the RX front end attenuator/amp
        *
-       * gain param is a double 0.0 < gain < 40.0
+       * gain param is a double 0.0 < gain < 100.0
        */
       RX_RF_GAIN,
       /**
@@ -165,6 +167,21 @@ namespace SoDa {
        * gain param is a double 0.0 < gain < 100.0
        */
       TX_RF_GAIN,
+
+      /**
+       * Set the RX front end attenuator/amp relative to max gain
+       *
+       * gain param is a double -bignum < gain < 0.0
+       */
+      RX_RF_GAIN_DB,
+      /**
+       * Set the TX final amplifier relative to max gain
+       *
+       * gain param is a double -bignum < gain < 0.0
+       */
+      TX_RF_GAIN_DB,
+
+
 
       /**
        * RX audio gain setting
@@ -663,6 +680,7 @@ namespace SoDa {
 
     static int command_sequence_number; ///< sequential ID applied to each command
     
+    static boost::mutex command_mutex; 
     static bool table_needs_init; ///< if true, we need to call initTables()
     static std::map<std::string, cmd_target> target_map_s2v; ///< mapping for parseCommandString
     static std::map<cmd_target, std::string *> target_map_v2s; ///< mapping for toString

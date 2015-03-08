@@ -59,7 +59,7 @@ namespace SoDa {
     /// @param params Pointer to a parameter object with all the initial settings
     /// and identification for the attached USRP
     /// @param _cmd_stream Pointer to the command stream message channel.
-    USRPSNACtrl(Params * params, CmdMBox * _cmd_stream);
+    USRPSNACtrl(Params * params, CmdMBox * _cmd_stream, double _rx_offset = 100.0e3);
 
     /// the run loop for an SNA control object is simpler than 
     /// we'd see for a normal radio
@@ -83,6 +83,25 @@ namespace SoDa {
     /// increment the frequency
     void doStep();
 
+    /// correct frequencies to avoid big spurs
+    double correctFreq(double freq);
+
+    /// set the RX freq
+    void setRXFreq(); 
+    /// use DDC tuning where we can, to avoid settling time
+    bool rx_need_fe_retune;     
+    double rx_last_fe_freq;
+
+    /// set the TX freq
+    void setTXFreq(); 
+    bool tx_need_fe_retune;
+    double tx_last_fe_freq;    
+
+
+
+
+
+
     enum SWEEP_STATE { IDLE, WAIT_FOR_RX } ; 
 
     SWEEP_STATE sweep_state; ///< what are we doing? 
@@ -91,6 +110,8 @@ namespace SoDa {
     double end_sweep_freq;   ///< ending sweep frequency
     double step_sweep_freq;  ///< increment by this at each step
     double time_per_step;    ///< approximate dwell time (in seconds)
+
+    double rx_offset; ///< offset freq between RX and TX oscillators.
   };
 }
 

@@ -72,6 +72,7 @@ namespace SoDaSNA_GUI {
       int stat = cmd_q->get(ncmd, sizeof(SoDa::Command));
       if(stat > 0) {
 	if(ncmd->cmd == SoDa::Command::REP) execRepCommand(ncmd);
+	else if(ncmd->cmd == SoDa::Command::SET) execSetCommand(ncmd);	
 	didwork = true;
 	repctr++; 
       }
@@ -100,9 +101,26 @@ namespace SoDaSNA_GUI {
       SNA_gui->setRadioName(wxString((char*) cmd->sparm, wxConvUTF8));
       debugMsg("Set the Radio Name field.\n");
       break;
+    case SoDa::Command::SNA_SCAN_REPORT:
+      SNA_gui->createUpdateEvent(cmd->dparms[0], cmd->dparms[1]);
+      debugMsg(boost::format("SCAN Report freq = %g  mag = %g\n") 
+	       % cmd->dparms[0] % cmd->dparms[1]);
+      break;
+    case SoDa::Command::SNA_SCAN_END:
+      SNA_gui->createScanEndEvent();
+      debugMsg("SCAN End\n");
+      break;
     default:
       break; 
     }
-
   }
+
+  void SNAListenerThread::execSetCommand(SoDa::Command * cmd)
+  {
+    switch(cmd->target) {
+    default:
+      break; 
+    }
+  }
+
 }

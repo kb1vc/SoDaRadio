@@ -71,8 +71,6 @@ void SoDa::SimpleUI::run()
 
     if(server_socket->isReady()) {
       if(new_connection) {
-	updateSpectrumState();
-
 	std::string vers= (boost::format("%s SVN %s") % PACKAGE_VERSION % SVN_VERSION).str(); 
 	SoDa::Command * vers_cmd = new SoDa::Command(Command::REP,
 						     Command::SDR_VERSION,
@@ -100,13 +98,9 @@ void SoDa::SimpleUI::run()
 
     // if there are commands arriving from the socket port, handle them.
     if(got_new_netmsg) {
+      debugMsg(boost::format("Got command [%s]\n") % net_cmd->toString());
       cmd_stream->put(net_cmd);
       didwork = true; 
-      if(net_cmd->target == SoDa::Command::STOP) {
-	// relay "stop" commands to the GPS unit. 
-	gps_stream->put(new SoDa::Command(Command::SET, Command::STOP, 0));
-	break;
-      }
       net_cmd = NULL; 
     }
 
@@ -131,50 +125,17 @@ void SoDa::SimpleUI::run()
 
 void SoDa::SimpleUI::execSetCommand(Command * cmd)
 {
-  // when we get a SET SPEC_CENTER_FREQ
-  switch(cmd->target) {
-  case SoDa::Command::SPEC_CENTER_FREQ:
-    spectrum_center_freq = cmd->dparms[0];
-    new_spectrum_setting = true;
-    reportSpectrumCenterFreq();
-    break;
-  case SoDa::Command::SPEC_AVG_WINDOW:
-    fft_acc_gain = 1.0 - (1.0 / ((double) cmd->iparms[0]));
-    new_spectrum_setting = true;
-    break; 
-  case SoDa::Command::SPEC_UPDATE_RATE:
-    fft_update_interval = 11 - cmd->iparms[0];
-    if(fft_update_interval < 1) fft_update_interval = 1;
-    if(fft_update_interval > 12) fft_update_interval = 12;
-    new_spectrum_setting = true;
-    debugMsg(boost::format("Updated SPEC_UPDATE_RATE = %d -> interval = %d\n")
-	     % cmd->iparms[0] % fft_update_interval);
-    break; 
-  default:
-    break; 
-  }
+  return; 
 }
 
 void SoDa::SimpleUI::execGetCommand(Command * cmd)
 {
-  switch(cmd->target) {
-  case SoDa::Command::LO_OFFSET: // remember that we want to report
-    // the offset of the LO microwave oscillator on the next FFT event.
-    lo_check_mode = true;
-    fft_send_counter = 0; 
-  }
+  return;
 }
 
 void SoDa::SimpleUI::execRepCommand(Command * cmd)
 {
-  switch(cmd->target) {
-  case SoDa::Command::RX_FE_FREQ:
-    // save the front end baseband frequency
-    baseband_rx_freq = cmd->dparms[0];
-    break;
-  default:
-    break; 
-  }
+  return;
 }
 
 

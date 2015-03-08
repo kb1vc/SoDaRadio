@@ -33,6 +33,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Command.hxx"
 #include "Params.hxx"
 #include "UI.hxx"
+#include "DCBlock.hxx"
+#include "OSFilter.hxx"
 #include <uhd/usrp/multi_usrp.hpp>
 #include <uhd/stream.hpp>
 
@@ -53,7 +55,7 @@ namespace SoDa {
      * @param _cmd_stream data mailbox used to carry command, query, and report messages
      */
     USRPSNARX(Params * params, uhd::usrp::multi_usrp::sptr usrp,
-	   CmdMBox * _cmd_stream);
+	      CmdMBox * _cmd_stream, double _rx_offset = 100.0e3);
 
     /**
      * USRPRX is a thread -- this is its run loop. 
@@ -86,15 +88,20 @@ namespace SoDa {
     double test_freq;     //< the frequency we're testing now
     
     std::complex<float> * sample_buf; //< we collect input samples here. 
-    int ring_elements;  //< How many mag measurements do we save? 
-    int ring_count;     //< pointer to current ring element
-    static const int SNARX_MAX_RING_SAMPS = 10;
+    int ring_count;     //< pointer to current ring element (take mod SNARX_MAX_RING_SAMPS first)
+    static const int SNARX_MAX_RING_SAMPS = 16;
     double sample_magsq[SNARX_MAX_RING_SAMPS]; //< the last <ring_elements>  
     bool do_collection; //< when true, we accumulate statistics. 
 
     //debug hooks
     int outf[2];
     int scount; 
+
+    // dc blocking filter
+    SoDa::DCBlock<std::complex<float>, float> * dc_block;
+
+    // rx_offset filter
+    SoDa::OSFilter * offset_filter;
   }; 
 }
 

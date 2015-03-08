@@ -23,9 +23,9 @@
 #include <wx/choice.h>
 #include <wx/textctrl.h>
 #include <wx/slider.h>
-#include <wx/radiobox.h>
 #include <wx/spinctrl.h>
 #include <wx/stattext.h>
+#include <wx/radiobox.h>
 #include <wx/gbsizer.h>
 #include <wx/frame.h>
 #include <wx/statbmp.h>
@@ -55,10 +55,10 @@ namespace SoDaSNA_GUI
 			wxChoice* m_SpanMag;
 			wxChoice* m_SpanUnits;
 			wxSlider* m_OutPowerSliderA;
-			wxRadioBox* m_RFOutEna_A;
 			wxSpinCtrl* m_RefLevel;
 			wxChoice* m_SpanMag1;
 			wxStaticText* m_staticText11;
+			wxRadioBox* m_SweepControl;
 			
 			// Virtual event handlers, overide them in your derived class
 			virtual void OnOpenConfig( wxCommandEvent& event ) { event.Skip(); }
@@ -68,12 +68,12 @@ namespace SoDaSNA_GUI
 			virtual void OnQuit( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnAbout( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnUserGuide( wxCommandEvent& event ) { event.Skip(); }
-			virtual void OnSweepSel( wxCommandEvent& event ) { event.Skip(); }
+			virtual void OnSweepSpeed( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnFreqEnter( wxMouseEvent& event ) { event.Skip(); }
 			virtual void OnFreqEnter( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnFreqRangeSel( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnOutputPowerSel( wxScrollEvent& event ) { event.Skip(); }
-			virtual void OnOutputEna( wxCommandEvent& event ) { event.Skip(); }
+			virtual void OnSweepControl( wxCommandEvent& event ) { event.Skip(); }
 			
 		
 		public:

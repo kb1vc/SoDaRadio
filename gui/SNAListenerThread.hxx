@@ -61,6 +61,7 @@ namespace SoDaSNA_GUI {
 
   private:
     void execRepCommand(SoDa::Command * cmd);
+    void execSetCommand(SoDa::Command * cmd);    
 
     bool exitflag; // Set to true when we want to terminate the application
     

@@ -159,7 +159,8 @@ namespace SoDaSNA_GUI {
 					   SoDaRadio_GUI::XYPlot::DRAW_TITLE | SoDaRadio_GUI::XYPlot::DRAW_VERT_MARKER_BANDS 
 					   );
 
-    pgram_plot->SetXTicTemplate(wxT("%4.1f"), 1e-6);
+    pgram_plot->SetXTicTemplate(wxT("%8.4f"), 1e-6);
+    pgram_plot->SetXCenterTemplate(wxT("%12.4f"));
     pgram_plot->SetXLabelMode(SoDaRadio_GUI::XYPlot::ABSOLUTE);
     int t, b, l, r; 
     pgram_plot->GetGridOffsets(t, b, l, r); 
@@ -178,18 +179,28 @@ namespace SoDaSNA_GUI {
     Connect(MSG_UPDATE_MODELNAME, wxEVT_COMMAND_MENU_SELECTED,
 	    wxCommandEventHandler(SoDaSNA_Top::OnUpdateModelName));
 
+    Connect(MSG_SNA_SCAN_REPORT, wxEVT_COMMAND_MENU_SELECTED,
+	    wxCommandEventHandler(SoDaSNA_Top::OnScanReport));
+
+    Connect(MSG_SNA_SCAN_END, wxEVT_COMMAND_MENU_SELECTED,
+	    wxCommandEventHandler(SoDaSNA_Top::OnScanEnd));
+
     min_span = 100.0e3;
     max_span = 2.0e9;
     min_cfreq = 50.0e6;
     max_cfreq = 2.0e9;
-    
-    display_cfreq = 150.0e6;
-    display_start_freq = 100.0e6;
-    display_end_freq = 200.0e6;
 
+    display_cfreq = 150.0e6;
+    display_start_freq = 149.5e6;
+    display_end_freq = 150.5e6;
+
+    GetFreqSettings();
+    
     display_min_gain = -70.0;
     display_max_gain = 30.0; 
     updateXYPlot();
+
+    sweep_mode = NO_SWEEP; 
   }
 
   void SoDaSNA_Top::configureRadio(SoDa::SNAGuiParams & params) {

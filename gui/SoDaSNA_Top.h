@@ -73,6 +73,7 @@ namespace SoDaSNA_GUI {
     public SoDaRadio_GUI::XYPlotClient 
   {
     friend class SoDaRadio_GUI::XYPlot;
+    
   protected:
     // Handlers for SoDaSNAFrame events.
     void OnOpenConfig( wxCommandEvent& event );
@@ -80,18 +81,21 @@ namespace SoDaSNA_GUI {
     void OnSaveConfigAs( wxCommandEvent& event );
     void OnCalibrate( wxCommandEvent & event );     
 
-    void OnQuit( wxCommandEvent& event );
+    void OnClose( wxCommandEvent& event );
+    void OnQuit( wxCommandEvent& event );    
 
     void OnAbout( wxCommandEvent& event );
 
     void OnUserGuide( wxCommandEvent& event );
-    void OnFreqEnter( wxMouseEvent& event );
+
     void OnFreqEnter( wxCommandEvent& event );
     void OnFreqRangeSel( wxCommandEvent& event );
+    void OnFreqEnter( wxMouseEvent& event );
 
-    void OnSweepSel( wxCommandEvent& event );
     void OnOutputPowerSel( wxScrollEvent& event );
-    void OnOutputEna( wxCommandEvent& event );
+
+    void OnSweepSpeed( wxCommandEvent& event );    
+    void OnSweepControl( wxCommandEvent & event); 
 
     // the save dialog
     wxFileDialog * save_config_dialog;
@@ -99,8 +103,6 @@ namespace SoDaSNA_GUI {
 
     // message handlers
     void OnUpdateSNAPlot(wxCommandEvent & event); 
-
-    void UpdatePlotAxes();
 
     double multFromUnitsString(wxChoice * widg) {
       int sel = widg->GetSelection();
@@ -129,7 +131,8 @@ namespace SoDaSNA_GUI {
       return 1.0;
     }
 
-    void updateXYPlot(); 
+    void updateXYPlot();
+    void GetFreqSettings();    
 
   private:
     double min_span, max_span; 
@@ -146,12 +149,13 @@ namespace SoDaSNA_GUI {
     /** Constructor */
     SoDaSNA_Top( SoDa::SNAGuiParams & parms, wxWindow* parent );
 
+    void UpdatePlotAxes();
+    
     // calibration stuff
     void StartPassThroughCalibration(CalibrateDialog * dlg);
     void StartOpenCalibration(CalibrateDialog * dlg);
     void CompletePassThroughCalibration(CalibrateDialog * dlg);
     void CompleteOpenCalibration(CalibrateDialog * dlg);
-
 
     void postErrorText(const std::string & errmsg); 
     void clearErrorText();
@@ -176,7 +180,12 @@ namespace SoDaSNA_GUI {
 
     wxString radio_modelname; ///< The type of radio (n200, b200, x300...)
     
-    enum MSG_ID { MSG_UPDATE_MODELNAME, MSG_SAMPLE_UPDATE };
+    enum MSG_ID { MSG_UPDATE_MODELNAME, MSG_SNA_SCAN_REPORT, MSG_SNA_SCAN_END };
+    enum SWEEP_MODE { CONTINUOUS_SWEEP, SINGLE_SWEEP, NO_SWEEP }; 
+    SWEEP_MODE sweep_mode;
+
+    // initiate a sweep operation. 
+    void doSweep(bool initial_sweep); 
     
     enum MEAS_MODE { CAL_OPEN, CAL_PASS, NORMAL, IGNORE }; 
 
@@ -194,12 +203,39 @@ namespace SoDaSNA_GUI {
 
     void setRadioName(const wxString & mname) {
       wxMutexLocker lock(ctrl_mutex);
-      radio_modelname = wxT("SoDa Radio ") + mname; 
+      radio_modelname = wxT("SoDa Radio Scalar Network Analyzer ") + mname; 
       wxCommandEvent event(wxEVT_COMMAND_MENU_SELECTED,
 			   SoDaSNA_Top::MSG_UPDATE_MODELNAME);
       pendEvent(event); 
     }
 
+    void createUpdateEvent(double freq, double magsq) {
+      // already mutually exclusive? Probably not. 
+      wxMutexLocker lock(ctrl_mutex);      
+      measurements.push(std::pair<double, double>(freq, magsq));
+    }
+
+    void createScanEndEvent() {
+      wxCommandEvent event(wxEVT_COMMAND_MENU_SELECTED,
+			   SoDaSNA_Top::MSG_SNA_SCAN_END);
+      pendEvent(event); 
+    }
+			   
+    void OnScanEnd(wxCommandEvent & event) {
+      wxMutexLocker lock(ctrl_mutex);            
+      while(!measurements.empty()) {
+	std::pair<double, double> pt = measurements.front();
+	measurements.pop();
+	std::cout << boost::format("M %g %g\n") % pt.first % pt.second;
+      }
+
+      doSweep(false);
+    }
+
+    void OnScanReport(wxCommandEvent & event) {
+
+    }
+    
     void OnUpdateModelName(wxCommandEvent & event) {
       this->SetTitle(radio_modelname); 
     }
@@ -244,6 +280,8 @@ namespace SoDaSNA_GUI {
     SoDa::UD::ClientSocket * soda_radio;
 
     void sendMsg(const SoDa::Command * cmd) {
+      std::cerr << "Sending a message" << std::endl; 
+      std::cerr << "Message [" << cmd << "]" << std::endl; 
       soda_radio->put(cmd, sizeof(SoDa::Command));
     }
 
@@ -252,8 +290,11 @@ namespace SoDaSNA_GUI {
 
     // the mutex used to synchronize access between the GUI
     // thread and the radio listener thread
-    wxMutex ctrl_mutex; 
-  
+    wxMutex ctrl_mutex;
+
+    // queue of measurements to be drawn on the display
+    std::queue<std::pair<double, double> > measurements;
+
     // configuration info
     boost::property_tree::ptree * config_tree_alloc, * config_tree; 
 

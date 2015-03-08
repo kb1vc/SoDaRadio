@@ -111,7 +111,8 @@ am_SoDaSNAServer_OBJECTS = SoDaSNAServer-Params.$(OBJEXT) \
 	SoDaSNAServer-USRPSNARX.$(OBJEXT) \
 	SoDaSNAServer-USRPSNATX.$(OBJEXT) \
 	SoDaSNAServer-Command.$(OBJEXT) SoDaSNAServer-Debug.$(OBJEXT) \
-	SoDaSNAServer-SimpleUI.$(OBJEXT)
+	SoDaSNAServer-SimpleUI.$(OBJEXT) \
+	SoDaSNAServer-OSFilter.$(OBJEXT)
 SoDaSNAServer_OBJECTS = $(am_SoDaSNAServer_OBJECTS)
 am__DEPENDENCIES_1 =
 am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
@@ -368,7 +369,7 @@ SoDaServer_CPPFLAGS = $(AM_CPPFLAGS)  -g
 SoDaServer_LDADD = $(AM_BOOSTLIBFLAGS)  -lrt
 SoDaServer_CXXFLAGS = -g
 SoDaServer_LDFLAGS = -g 
-SoDaSNAServer_SOURCES = Params.cxx SoDaSNAServer.cxx SoDaBase.cxx UDSockets.cxx USRPCtrl.cxx USRPSNACtrl.cxx USRPSNARX.cxx USRPSNATX.cxx Command.cxx Command.hxx IPSockets.hxx MultiMBox.hxx Params.hxx SoDaBase.hxx UDSockets.hxx USRPCtrl.hxx USRPSNACtrl.hxx USRPSNARX.hxx USRPSNATX.hxx  Debug.hxx Debug.cxx RangeMap.hxx SimpleUI.hxx SimpleUI.cxx
+SoDaSNAServer_SOURCES = Params.cxx SoDaSNAServer.cxx SoDaBase.cxx UDSockets.cxx USRPCtrl.cxx USRPSNACtrl.cxx USRPSNARX.cxx USRPSNATX.cxx Command.cxx Command.hxx IPSockets.hxx MultiMBox.hxx Params.hxx SoDaBase.hxx UDSockets.hxx USRPCtrl.hxx USRPSNACtrl.hxx USRPSNARX.hxx USRPSNATX.hxx  Debug.hxx Debug.cxx RangeMap.hxx SimpleUI.hxx SimpleUI.cxx DCBlock.hxx OSFilter.hxx OSFilter.cxx
 SoDaSNAServer_CPPFLAGS = $(AM_CPPFLAGS)  -g
 SoDaSNAServer_LDADD = $(AM_BOOSTLIBFLAGS)  -lrt
 SoDaSNAServer_CXXFLAGS = -g
@@ -466,6 +467,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaSNAServer-Command.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaSNAServer-Debug.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaSNAServer-OSFilter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaSNAServer-Params.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaSNAServer-SimpleUI.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDaSNAServer-SoDaBase.Po@am__quote@
@@ -669,6 +671,20 @@ SoDaSNAServer-SimpleUI.obj: SimpleUI.cxx
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='SimpleUI.cxx' object='SoDaSNAServer-SimpleUI.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -c -o SoDaSNAServer-SimpleUI.obj `if test -f 'SimpleUI.cxx'; then $(CYGPATH_W) 'SimpleUI.cxx'; else $(CYGPATH_W) '$(srcdir)/SimpleUI.cxx'; fi`
+
+SoDaSNAServer-OSFilter.o: OSFilter.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -MT SoDaSNAServer-OSFilter.o -MD -MP -MF $(DEPDIR)/SoDaSNAServer-OSFilter.Tpo -c -o SoDaSNAServer-OSFilter.o `test -f 'OSFilter.cxx' || echo '$(srcdir)/'`OSFilter.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/SoDaSNAServer-OSFilter.Tpo $(DEPDIR)/SoDaSNAServer-OSFilter.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='OSFilter.cxx' object='SoDaSNAServer-OSFilter.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -c -o SoDaSNAServer-OSFilter.o `test -f 'OSFilter.cxx' || echo '$(srcdir)/'`OSFilter.cxx
+
+SoDaSNAServer-OSFilter.obj: OSFilter.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -MT SoDaSNAServer-OSFilter.obj -MD -MP -MF $(DEPDIR)/SoDaSNAServer-OSFilter.Tpo -c -o SoDaSNAServer-OSFilter.obj `if test -f 'OSFilter.cxx'; then $(CYGPATH_W) 'OSFilter.cxx'; else $(CYGPATH_W) '$(srcdir)/OSFilter.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/SoDaSNAServer-OSFilter.Tpo $(DEPDIR)/SoDaSNAServer-OSFilter.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='OSFilter.cxx' object='SoDaSNAServer-OSFilter.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaSNAServer_CPPFLAGS) $(CPPFLAGS) $(SoDaSNAServer_CXXFLAGS) $(CXXFLAGS) -c -o SoDaSNAServer-OSFilter.obj `if test -f 'OSFilter.cxx'; then $(CYGPATH_W) 'OSFilter.cxx'; else $(CYGPATH_W) '$(srcdir)/OSFilter.cxx'; fi`
 
 SoDaServer-Params.o: Params.cxx
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDaServer_CPPFLAGS) $(CPPFLAGS) $(SoDaServer_CXXFLAGS) $(CXXFLAGS) -MT SoDaServer-Params.o -MD -MP -MF $(DEPDIR)/SoDaServer-Params.Tpo -c -o SoDaServer-Params.o `test -f 'Params.cxx' || echo '$(srcdir)/'`Params.cxx

@@ -188,7 +188,8 @@ am_TestServer_OBJECTS = TestServer-TestServer.$(OBJEXT) \
 	../src/TestServer-UDSockets.$(OBJEXT) \
 	../src/TestServer-Spectrogram.$(OBJEXT) \
 	../src/TestServer-SoDaBase.$(OBJEXT) \
-	../src/TestServer-Debug.$(OBJEXT)
+	../src/TestServer-Debug.$(OBJEXT) \
+	../src/TestServer-SimpleUI.$(OBJEXT)
 TestServer_OBJECTS = $(am_TestServer_OBJECTS)
 TestServer_DEPENDENCIES = $(am__DEPENDENCIES_2)
 AM_V_P = $(am__v_P_@AM_V@)
@@ -455,7 +456,7 @@ FFT_Test_LDFLAGS = -g -O1
 TSIP_Test_SOURCES = TSIP_Test.cxx  ../src/TSIP.cxx
 TSIP_Test_CPPFLAGS = $(AM_CPPFLAGS)
 TSIP_Test_LDADD = $(AM_BOOSTLIBFLAGS) 
-TestServer_SOURCES = TestServer.cxx  ../src/Command.cxx ../src/UI.cxx ../src/Params.cxx ../src/UDSockets.cxx ../src/Spectrogram.cxx ../src/SoDaBase.cxx ../src/Debug.cxx
+TestServer_SOURCES = TestServer.cxx  ../src/Command.cxx ../src/UI.cxx ../src/Params.cxx ../src/UDSockets.cxx ../src/Spectrogram.cxx ../src/SoDaBase.cxx ../src/Debug.cxx ../src/SimpleUI.cxx
 TestServer_CPPFLAGS = $(AM_CPPFLAGS)
 TestServer_LDADD = $(AM_BOOSTLIBFLAGS) -lrt
 ReSampler_Test_SOURCES = ReSampler_Test.cxx  ../src/ReSampler.cxx ../src/ReSamplers625x48.cxx ../src/SoDaBase.cxx
@@ -664,6 +665,8 @@ TSIP_Test$(EXEEXT): $(TSIP_Test_OBJECTS) $(TSIP_Test_DEPENDENCIES) $(EXTRA_TSIP_
 	../src/$(DEPDIR)/$(am__dirstamp)
 ../src/TestServer-Debug.$(OBJEXT): ../src/$(am__dirstamp) \
 	../src/$(DEPDIR)/$(am__dirstamp)
+../src/TestServer-SimpleUI.$(OBJEXT): ../src/$(am__dirstamp) \
+	../src/$(DEPDIR)/$(am__dirstamp)
 
 TestServer$(EXEEXT): $(TestServer_OBJECTS) $(TestServer_DEPENDENCIES) $(EXTRA_TestServer_DEPENDENCIES) 
 	@rm -f TestServer$(EXEEXT)
@@ -698,6 +701,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/TestServer-Command.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/TestServer-Debug.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/TestServer-Params.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/TestServer-SimpleUI.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/TestServer-SoDaBase.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/TestServer-Spectrogram.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/TestServer-UDSockets.Po@am__quote@
@@ -1263,6 +1267,20 @@ TestServer-TestServer.obj: TestServer.cxx
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='../src/Debug.cxx' object='../src/TestServer-Debug.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TestServer_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ../src/TestServer-Debug.obj `if test -f '../src/Debug.cxx'; then $(CYGPATH_W) '../src/Debug.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/Debug.cxx'; fi`
+
+../src/TestServer-SimpleUI.o: ../src/SimpleUI.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TestServer_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ../src/TestServer-SimpleUI.o -MD -MP -MF ../src/$(DEPDIR)/TestServer-SimpleUI.Tpo -c -o ../src/TestServer-SimpleUI.o `test -f '../src/SimpleUI.cxx' || echo '$(srcdir)/'`../src/SimpleUI.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) ../src/$(DEPDIR)/TestServer-SimpleUI.Tpo ../src/$(DEPDIR)/TestServer-SimpleUI.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='../src/SimpleUI.cxx' object='../src/TestServer-SimpleUI.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TestServer_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ../src/TestServer-SimpleUI.o `test -f '../src/SimpleUI.cxx' || echo '$(srcdir)/'`../src/SimpleUI.cxx
+
+../src/TestServer-SimpleUI.obj: ../src/SimpleUI.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TestServer_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ../src/TestServer-SimpleUI.obj -MD -MP -MF ../src/$(DEPDIR)/TestServer-SimpleUI.Tpo -c -o ../src/TestServer-SimpleUI.obj `if test -f '../src/SimpleUI.cxx'; then $(CYGPATH_W) '../src/SimpleUI.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/SimpleUI.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) ../src/$(DEPDIR)/TestServer-SimpleUI.Tpo ../src/$(DEPDIR)/TestServer-SimpleUI.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='../src/SimpleUI.cxx' object='../src/TestServer-SimpleUI.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TestServer_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ../src/TestServer-SimpleUI.obj `if test -f '../src/SimpleUI.cxx'; then $(CYGPATH_W) '../src/SimpleUI.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/SimpleUI.cxx'; fi`
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique

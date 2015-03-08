@@ -159,6 +159,20 @@ namespace SoDaSNA_GUI {
     
   }
   
+  void SoDaSNA_Top::OnClose( wxCommandEvent& event )
+  {
+    debugMsg("Sending Radio Server a STOP command.");
+    // This will cause the radio server to abort as well. 
+    SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::STOP, 0);
+    sendMsg(&ncmd);
+
+    debugMsg("Stopping RadioListener thread.");
+    // stop the radio listener thread.
+    listener->stop();
+
+    debugMsg("Passing close event up the chain.");
+    event.Skip();
+  }
   void SoDaSNA_Top::OnQuit( wxCommandEvent& event )
   {
     Close(); 
@@ -179,20 +193,51 @@ namespace SoDaSNA_GUI {
   {
     UpdatePlotAxes();    
   }
-  void SoDaSNA_Top::OnSweepSel( wxCommandEvent& event )
+  void SoDaSNA_Top::OnSweepSpeed( wxCommandEvent& event )
   {
   }
+
+  void SoDaSNA_Top::OnSweepControl( wxCommandEvent& event )
+  {
+    wxRadioBox * w = (wxRadioBox *) event.GetEventObject(); 
+    wxString res = w->GetString(w->GetSelection()); 
+    if(res == wxString(wxT("Single"))) {
+      sweep_mode = SINGLE_SWEEP; 
+      debugMsg("Starting Single Sweep");
+    }
+    else if(res == wxString(wxT("Continuous"))) {
+      sweep_mode = CONTINUOUS_SWEEP;
+      debugMsg("Starting Continuous Sweep");
+    }
+    else {
+      sweep_mode = NO_SWEEP;
+      debugMsg("Turning sweep off");
+    }
+
+    if(sweep_mode == NO_SWEEP) {
+      SoDa::Command txoff(SoDa::Command::SET, SoDa::Command::TX_STATE, 0);      
+      sendMsg(&txoff);
+    }
+    else {
+      doSweep(true);
+    }
+  }
+
   void SoDaSNA_Top::OnOutputPowerSel( wxScrollEvent& event )
   {
+    wxSlider * w = (wxSlider *) event.GetEventObject();     
+    double val = (double) w->GetValue();
+    SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::TX_RF_GAIN_DB, 
+		       val);
+
+    sendMsg(&ncmd);
   }
-  void SoDaSNA_Top::OnOutputEna( wxCommandEvent& event )
-  {
-  }
+  
   void SoDaSNA_Top::OnUpdateSNAPlot(wxCommandEvent & event)
   {
   }
 
-  void SoDaSNA_Top::UpdatePlotAxes() 
+  void SoDaSNA_Top::GetFreqSettings()
   {
     // get the center freq
     std::string cfstr(m_CenterFreqBox->GetValue().mb_str()); 
@@ -236,9 +281,44 @@ namespace SoDaSNA_GUI {
 
       display_start_freq = display_cfreq - per_block * 5.0;
       display_end_freq = display_cfreq + per_block * 5.0; 
-
-      updateXYPlot(); 
     }
 
+  }
+
+  void SoDaSNA_Top::UpdatePlotAxes() 
+  {
+    GetFreqSettings();
+    updateXYPlot(); 
+  }
+
+  void SoDaSNA_Top::doSweep(bool initial_sweep)
+  {
+    debugMsg("Starting sweep");
+    // send a message to start the sweep. 
+    
+    if(sweep_mode != NO_SWEEP) {
+      debugMsg("really going to try a sweep...");
+      if(!initial_sweep && (sweep_mode == SINGLE_SWEEP)) {
+	debugMsg("This was a single sweep.");
+	sweep_mode = NO_SWEEP;
+	// set the selection to IDLE
+	m_SweepControl->SetSelection(0);
+	// turn off the sweeper
+	SoDa::Command txoff(SoDa::Command::SET, SoDa::Command::TX_STATE, 0);
+	sendMsg(&txoff);	
+      }
+      else {
+	// now send a message to the server to start a scan
+	SoDa::Command txon(SoDa::Command::SET, SoDa::Command::TX_STATE, 1);
+	
+	double step_freq = (display_end_freq - display_start_freq) / 100.0; 
+	double time_per_step = 1.15; 
+	SoDa::Command sweep(SoDa::Command::SET, SoDa::Command::SNA_SCAN_START, 
+			    display_start_freq, display_end_freq, step_freq, time_per_step); 
+	debugMsg("Created the sweep messages.");
+	sendMsg(&txon);
+	sendMsg(&sweep); 
+      }
+    }
   }
 }

@@ -12,7 +12,7 @@ SoDaServer_CXXFLAGS = -g
 SoDaServer_LDFLAGS = -g 
 
 
-SoDaSNAServer_SOURCES = Params.cxx SoDaSNAServer.cxx SoDaBase.cxx UDSockets.cxx USRPCtrl.cxx USRPSNACtrl.cxx USRPSNARX.cxx USRPSNATX.cxx Command.cxx Command.hxx IPSockets.hxx MultiMBox.hxx Params.hxx SoDaBase.hxx UDSockets.hxx USRPCtrl.hxx USRPSNACtrl.hxx USRPSNARX.hxx USRPSNATX.hxx  Debug.hxx Debug.cxx RangeMap.hxx SimpleUI.hxx SimpleUI.cxx
+SoDaSNAServer_SOURCES = Params.cxx SoDaSNAServer.cxx SoDaBase.cxx UDSockets.cxx USRPCtrl.cxx USRPSNACtrl.cxx USRPSNARX.cxx USRPSNATX.cxx Command.cxx Command.hxx IPSockets.hxx MultiMBox.hxx Params.hxx SoDaBase.hxx UDSockets.hxx USRPCtrl.hxx USRPSNACtrl.hxx USRPSNARX.hxx USRPSNATX.hxx  Debug.hxx Debug.cxx RangeMap.hxx SimpleUI.hxx SimpleUI.cxx DCBlock.hxx OSFilter.hxx OSFilter.cxx
 
 SoDaSNAServer_CPPFLAGS = $(AM_CPPFLAGS)  -g
 SoDaSNAServer_LDADD = $(AM_BOOSTLIBFLAGS)  -lrt

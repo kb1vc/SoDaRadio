@@ -176,7 +176,7 @@ void SoDa::USRPCtrl::run()
   uhd::set_thread_priority_safe(); 
   // now do the event loop.  we watch
   // for commands and responses on the command stream.
-  
+  debugMsg("Starting Run Loop");
   // do the initial commands
   cmd_stream->put(new Command(Command::SET, Command::RX_SAMP_RATE,
 			     params->getRXRate())); 
@@ -236,17 +236,22 @@ double SoDa::USRPCtrl::getTime()
 
 void SoDa::USRPCtrl::execCommand(Command * cmd)
 {
+  debugMsg(boost::format("got [%s]\n") % cmd->toString());
   switch (cmd->cmd) {
   case Command::GET:
+    debugMsg(boost::format("calling GetCommand on [%s]\n") % cmd->toString());    
     execGetCommand(cmd); 
     break;
   case Command::SET:
+    debugMsg(boost::format("calling SetCommand on [%s]\n") % cmd->toString());    
     execSetCommand(cmd); 
     break; 
   case Command::REP:
+    debugMsg(boost::format("calling RepCommand on [%s]\n") % cmd->toString());        
     execRepCommand(cmd); 
     break;
   default:
+    debugMsg(boost::format("calling NOTHING on [%s]\n") % cmd->toString());        
     break; 
   }
 }
@@ -403,6 +408,8 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
     std::cerr << "execSetCommand got a non-set command!  " << cmd->toString() << std::endl;
     return; 
   }
+
+  debugMsg(boost::format("Got message [%s]\n") % cmd->toString());
   double tmp;
   switch (cmd->target) {
   case Command::RX_RETUNE_FREQ:
@@ -474,6 +481,18 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
 				  usrp->get_rx_gain()));
     }
     break; 
+
+  case Command::RX_RF_GAIN_DB:
+    // dparameters ranges from 0 to -bignum
+    // to the actual range; 
+    rx_rf_gain = rx_rf_gain_range.stop() + cmd->dparms[0];
+    if(!tx_on) {
+      usrp->set_rx_gain(rx_rf_gain);
+      cmd_stream->put(new Command(Command::REP, Command::RX_RF_GAIN, 
+				  usrp->get_rx_gain()));
+    }
+    break; 
+
   case Command::TX_RF_GAIN:
     tx_rf_gain = tx_rf_gain_range.start() + cmd->dparms[0] * 0.01 * (tx_rf_gain_range.stop() - tx_rf_gain_range.start());
     tmp = cmd->dparms[0];
@@ -484,9 +503,22 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
 				  usrp->get_tx_gain())); 
     }
     break; 
+
+  case Command::TX_RF_GAIN_DB:
+    tx_rf_gain = tx_rf_gain_range.stop() + cmd->dparms[0];
+    tmp = cmd->dparms[0];
+    debugMsg(boost::format("Setting relative TX gain to %lg from power %lg") % tx_rf_gain % tmp);
+    if(tx_on) {
+      usrp->set_tx_gain(tx_rf_gain);
+      cmd_stream->put(new Command(Command::REP, Command::TX_RF_GAIN, 
+				  usrp->get_tx_gain())); 
+    }
+    break; 
   case SoDa::Command::TX_STATE: // SET TX_ON
+    debugMsg(boost::format("Got TX_STATE message [%s]\n") % cmd->toString());
     if(cmd->iparms[0] == 1) {
       // set the txgain to where it is supposed to be.
+      debugMsg(boost::format("Setting TX state on tx_gain = %g\n") % tx_rf_gain);
       tx_on = true; 
       usrp->set_rx_gain(0.0); 
       usrp->set_tx_gain(tx_rf_gain); 

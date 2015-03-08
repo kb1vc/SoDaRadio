@@ -29,6 +29,7 @@
 #include "xyplot.hxx"
 #include <wx/print.h>
 #include <wx/dcbuffer.h>
+#include <boost/format.hpp>
 
 
 using namespace std;

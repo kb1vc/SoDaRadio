@@ -31,13 +31,18 @@
 #include <sstream>
 #include <map>
 
+boost::mutex SoDa::Command::command_mutex; 
 int SoDa::Command::command_sequence_number = 0;
 bool SoDa::Command::table_needs_init = true; 
 std::map<std::string, SoDa::Command::cmd_target> SoDa::Command::target_map_s2v;
 std::map<SoDa::Command::cmd_target, std::string *> SoDa::Command::target_map_v2s;
 
+
 void SoDa::Command::initTables()
 {
+  // multiple threads use this service.... avoid conflicts.
+  boost::mutex::scoped_lock lock(command_mutex);
+  if(!table_needs_init) return; 
   table_needs_init = true; 
   // created from the buildmap file produced by enum_body2map.sh
   target_map_s2v[std::string("RX_TUNE_FREQ")] = RX_TUNE_FREQ;
@@ -53,7 +58,9 @@ void SoDa::Command::initTables()
   target_map_s2v[std::string("TX_ANT")] = TX_ANT;
   target_map_s2v[std::string("RX_RF_GAIN")] = RX_RF_GAIN;
   target_map_s2v[std::string("TX_RF_GAIN")] = TX_RF_GAIN;
-  target_map_s2v[std::string("RX_AF_GAIN")] = RX_AF_GAIN;
+  target_map_s2v[std::string("RX_RF_GAIN_DB")] = RX_RF_GAIN_DB;  
+  target_map_s2v[std::string("TX_RF_GAIN_DB")] = TX_RF_GAIN_DB;
+  target_map_s2v[std::string("RX_AF_GAIN")] = RX_AF_GAIN;  
   target_map_s2v[std::string("RX_AF_SIDETONE_GAIN")] = RX_AF_SIDETONE_GAIN;
   target_map_s2v[std::string("TX_AF_GAIN")] = TX_AF_GAIN;
   target_map_s2v[std::string("TX_STATE")] = TX_STATE;
@@ -108,6 +115,8 @@ void SoDa::Command::initTables()
   target_map_v2s[TX_ANT] = new std::string("TX_ANT");
   target_map_v2s[RX_RF_GAIN] = new std::string("RX_RF_GAIN");
   target_map_v2s[TX_RF_GAIN] = new std::string("TX_RF_GAIN");
+  target_map_v2s[RX_RF_GAIN_DB] = new std::string("RX_RF_GAIN_DB");
+  target_map_v2s[TX_RF_GAIN_DB] = new std::string("TX_RF_GAIN_DB");
   target_map_v2s[RX_AF_GAIN] = new std::string("RX_AF_GAIN");
   target_map_v2s[RX_AF_SIDETONE_GAIN] = new std::string("RX_AF_SIDETONE_GAIN");
   target_map_v2s[TX_AF_GAIN] = new std::string("TX_AF_GAIN");
@@ -151,6 +160,7 @@ void SoDa::Command::initTables()
 
 SoDa::Command * SoDa::Command::parseCommandString(std::string str)
 {
+
   if(table_needs_init) {
     initTables(); 
   }
@@ -210,6 +220,7 @@ SoDa::Command * SoDa::Command::parseCommandString(std::string str)
 
 std::string & SoDa::Command::toString()
 {
+  
   if(table_needs_init) {
     initTables(); 
   }
@@ -231,8 +242,6 @@ std::string & SoDa::Command::toString()
   else {
     oss << " [?" << target << "?] ";
   }
-
-
   
   switch(parm_type) {
   case 'I':
