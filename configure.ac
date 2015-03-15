@@ -21,7 +21,7 @@ AC_CHECK_LIB(portaudio, Pa_GetVersion)
 AC_CHECK_LIB(asound, snd_pcm_open)
 
 AC_PATH_PROG(gitcommand, git)
-if test "X$gitcommand" = "X" || test `git rev-parse --is-inside-work-tree 2> /dev/null` != "true"; then
+if test "X$gitcommand" = "X" || test ! "x`git rev-parse --is-inside-work-tree 2> /dev/null`" = "xtrue"; then
   AC_DEFINE_UNQUOTED(GIT_VERSION, ["`cat ${srcdir}/saved_git_version.txt`"], [repository git version])
 else
   AC_DEFINE_UNQUOTED(GIT_VERSION, ["`git describe --all --long`"], [repository git version])
