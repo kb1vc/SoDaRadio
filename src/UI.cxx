@@ -141,7 +141,7 @@ void SoDa::UI::run()
       if(new_connection) {
 	updateSpectrumState();
 
-	std::string vers= (boost::format("%s SVN %s") % PACKAGE_VERSION % SVN_VERSION).str(); 
+	std::string vers= (boost::format("%s GIT %s") % PACKAGE_VERSION % GIT_VERSION).str(); 
 	SoDa::Command * vers_cmd = new SoDa::Command(Command::REP,
 						     Command::SDR_VERSION,
 						     vers.c_str());
