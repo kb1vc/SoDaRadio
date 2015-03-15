@@ -22,6 +22,16 @@ There may be information on building SoDaRadio for your
 particular system.  Take a look at the SoDaRadio wiki at
 https://sourceforge.net/p/sodaradio/wiki/Building%20SoDa%20Radio/
 
+Version 3.5
+
+Updates to fix a change in ALSA's behavior when the output channel
+runs dry.  Before the bug fix, audio would often come out as a
+series of clicks with no discernable relation to the received signal.
+The audio failure often happened at startup, but would occasionally
+occur on transition from TX to RX mode.
+
+Moved the code repository from subversion to git.  It was time.
+
 Version 3.4
 
 Fixed a bug in the way the GUI started up.  Original code used
