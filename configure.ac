@@ -20,12 +20,12 @@ AC_CHECK_LIB(portaudio, Pa_GetVersion)
 
 AC_CHECK_LIB(asound, snd_pcm_open)
 
-AC_PATH_PROG(svnversioncommand, svnversion)
-if test "X$svnversioncommand" = "X" || test `$svnversioncommand -n $srcdir` = "exported"; then
-AC_DEFINE_UNQUOTED(SVN_VERSION, ["`cat ${srcdir}/saved_svn_version.txt`"], [repository svn version])
+AC_PATH_PROG(gitcommand, git)
+if test "X$gitcommand" = "X"; then
+  AC_DEFINE_UNQUOTED(GIT_VERSION, ["`cat ${srcdir}/saved_git_version.txt`"], [repository git version])
 else
-AC_DEFINE_UNQUOTED(SVN_VERSION, ["`svnversion -n $srcdir`"], [repository svn version])
-`svnversion -n $srcdir > ${srcdir}/saved_svn_version.txt`
+  AC_DEFINE_UNQUOTED(GIT_VERSION, ["`git describe --all --long`"], [repository git version])
+  `git describe --all --long  > ${srcdir}/saved_git_version.txt`
 fi
 
 

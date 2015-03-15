@@ -703,7 +703,7 @@ DX_ENV
 DX_DOCDIR
 DX_CONFIG
 DX_PROJECT
-svnversioncommand
+gitcommand
 am__fastdepCC_FALSE
 am__fastdepCC_TRUE
 CCDEPMODE
@@ -4507,16 +4507,16 @@ _ACEOF
 fi
 
 
-# Extract the first word of "svnversion", so it can be a program name with args.
-set dummy svnversion; ac_word=$2
+# Extract the first word of "git", so it can be a program name with args.
+set dummy git; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_path_svnversioncommand+:} false; then :
+if ${ac_cv_path_gitcommand+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  case $svnversioncommand in
+  case $gitcommand in
   [\\/]* | ?:[\\/]*)
-  ac_cv_path_svnversioncommand="$svnversioncommand" # Let the user override the test with a path.
+  ac_cv_path_gitcommand="$gitcommand" # Let the user override the test with a path.
   ;;
   *)
   as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
@@ -4526,7 +4526,7 @@ do
   test -z "$as_dir" && as_dir=.
     for ac_exec_ext in '' $ac_executable_extensions; do
   if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_path_svnversioncommand="$as_dir/$ac_word$ac_exec_ext"
+    ac_cv_path_gitcommand="$as_dir/$ac_word$ac_exec_ext"
     $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -4537,29 +4537,29 @@ IFS=$as_save_IFS
   ;;
 esac
 fi
-svnversioncommand=$ac_cv_path_svnversioncommand
-if test -n "$svnversioncommand"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $svnversioncommand" >&5
-$as_echo "$svnversioncommand" >&6; }
+gitcommand=$ac_cv_path_gitcommand
+if test -n "$gitcommand"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gitcommand" >&5
+$as_echo "$gitcommand" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 fi
 
 
-if test "X$svnversioncommand" = "X" || test `$svnversioncommand -n $srcdir` = "exported"; then
+if test "X$gitcommand" = "X"; then
 
 cat >>confdefs.h <<_ACEOF
-#define SVN_VERSION "`cat ${srcdir}/saved_svn_version.txt`"
+#define GIT_VERSION "`cat ${srcdir}/saved_git_version.txt`"
 _ACEOF
 
 else
 
 cat >>confdefs.h <<_ACEOF
-#define SVN_VERSION "`svnversion -n $srcdir`"
+#define GIT_VERSION "`git describe --all --long`"
 _ACEOF
 
-`svnversion -n $srcdir > ${srcdir}/saved_svn_version.txt`
+  `git describe --all --long  > ${srcdir}/saved_git_version.txt`
 fi
 
 
