@@ -4547,7 +4547,7 @@ $as_echo "no" >&6; }
 fi
 
 
-if test "X$gitcommand" = "X"; then
+if test "X$gitcommand" = "X" || test `git rev-parse --is-inside-work-tree 2> /dev/null` != "true"; then
 
 cat >>confdefs.h <<_ACEOF
 #define GIT_VERSION "`cat ${srcdir}/saved_git_version.txt`"

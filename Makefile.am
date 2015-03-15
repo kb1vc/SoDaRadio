@@ -2,7 +2,7 @@ AUTOMAKE_OPTIONS = subdir-objects
 # Doxygen support
 include $(top_srcdir)/doxygen_aminclude.am
 
-EXTRA_DIST = Doxyfile saved_svn_version.txt  \
+EXTRA_DIST = Doxyfile saved_git_version.txt  \
 	doc/figs/Resample_RX_625to48.svg \
 	doc/figs/SoDa_Radio_RX_Audio.svg \
 	doc/figs/SoDa_Radio_RX_Signal_Path.svg \
