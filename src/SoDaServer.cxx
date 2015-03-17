@@ -115,6 +115,7 @@
 #include "USRPCtrl.hxx"
 #include "USRPRX.hxx"
 #include "USRPTX.hxx"
+#include "TransLO.hxx"
 #include "AudioRX.hxx"
 #include "AudioTX.hxx"
 #include "CWTX.hxx"
@@ -158,6 +159,7 @@ int doWork(int argc, char * argv[])
   SoDa::USRPCtrl ctrl(&params, &cmd_stream);
   SoDa::USRPRX rx(&params, ctrl.getUSRP(), &rx_stream, &if_stream, &cmd_stream); 
   SoDa::USRPTX tx(&params, ctrl.getUSRP(), &tx_stream, &cw_env_stream, &cmd_stream);
+  SoDa::TransLO lo(&params, ctrl.getUSRP(), &cmd_stream);  
   
 
   /// doWork creates the audio server on the host machine.
@@ -197,6 +199,8 @@ int doWork(int argc, char * argv[])
   atx.start();
   cwtx.start();
 
+  lo.start();
+
   // now the gps...
   d.debugMsg("Starting gps");
   gps.start();
@@ -210,6 +214,8 @@ int doWork(int argc, char * argv[])
   atx.join();
   cwtx.join();
   gps.join();
+  lo.join();
+
   d.debugMsg("Exit");
   
   // when we get here, we are done... (UI should not return until it gets an "exit/quit" command.)

@@ -109,16 +109,16 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
 
   // we need to setup the subdevices
   if(is_B2xx) {
-    usrp->set_rx_subdev_spec(std::string("A:A"), 0);
-    std::cerr << "DISABLING TVRT LO" << std::endl;
-    if(0 && is_B210) {
+    if(is_B210) {
       debugMsg("Setup two subdevices -- TVRT_LO Capable");
       usrp->set_tx_subdev_spec(std::string("A:A A:B"), 0);
+      usrp->set_rx_subdev_spec(std::string("A:A A:B"), 0);      
       tvrt_lo_capable = true;
     }
     else {
       debugMsg("Setup one subdevice -- NOT TVRT_LO Capable");
       usrp->set_tx_subdev_spec(std::string("A:A"), 0);
+      usrp->set_rx_subdev_spec(std::string("A:A"), 0);      
       tvrt_lo_capable = false;
     }
   }
@@ -145,6 +145,14 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
     ("/mboards/" + mbname + "/dboards/A/tx_frontends/0");
   if(tree->exists(tx_fe_root)) {
     tx_fe_subtree = tree->subtree(tx_fe_root);
+  }
+
+  // get the LO transmit subtree -- if it exists. 
+  if(is_B210) {
+    tverter_LO_fe_subtree = tree->subtree("/mboards/" + mbname + "/dboards/A/tx_frontends/B");
+    // turn off the LO channel unless we want it. 
+    tverter_LO_fe_subtree->access<bool>("enabled").set(false);
+    debugMsg("Transverter LO disabled at start.\n");    
   }
 
   // get the tx front end subtree
@@ -200,7 +208,7 @@ void SoDa::USRPCtrl::run()
   cmd_stream->put(new Command(Command::SET, Command::TX_ANT,
 			     params->getTXAnt()));
   cmd_stream->put(new Command(Command::SET, Command::CLOCK_SOURCE,
-			     params->getClockSource())); 
+			     1)); 
 
   cmd_stream->put(new Command(Command::SET, Command::TX_RF_GAIN, 0.0)); 
   cmd_stream->put(new Command(Command::SET, Command::RX_RF_GAIN, 0.0));
@@ -414,6 +422,9 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
   if(cmd->cmd != Command::SET) {
     std::cerr << "execSetCommand got a non-set command!  " << cmd->toString() << std::endl;
     return; 
+  }
+  else {
+    debugMsg(boost::format("got command: [%s]\n") % cmd->toString());
   }
   double tmp;
   switch (cmd->target) {
@@ -758,6 +769,7 @@ bool SoDa::USRPCtrl::getTXRelayOn()
 
 void SoDa::USRPCtrl::setTransverterLOFreqPower(double freq, double power)
 {
+  if(!tvrt_lo_capable) return; 
   uhd::gain_range_t tx_gain_range = usrp->get_tx_gain_range(1);
   double plo = tx_gain_range.start();
   double phi = tx_gain_range.stop();
@@ -768,17 +780,18 @@ void SoDa::USRPCtrl::setTransverterLOFreqPower(double freq, double power)
   
   debugMsg("About to report Transverter LO setting.");
   cmd_stream->put(new Command(Command::REP, Command::TVRT_LO_CONFIG, tvrt_lo_freq, power));  
-
+ 
 }
 
 void SoDa::USRPCtrl::enableTransverterLO()
 {
+  debugMsg("Enabling transverter LO\n");  
   if(!tvrt_lo_capable) {
     tvrt_lo_mode = false; 
     return;
   }
 
-  debugMsg("Enabling transverter LO\n");
+
   usrp->set_tx_antenna("TX2", 1);
     
   usrp->set_tx_gain(tvrt_lo_gain, 1);
@@ -788,19 +801,29 @@ void SoDa::USRPCtrl::enableTransverterLO()
 
   tvrt_lo_mode = true;
   
-  debugMsg(boost::format("LO frequency = %10lg power %g  number of channels = %d target_rf %g actual rf %g target dsp %g actual dsp %g\n")
+  debugMsg(boost::format("TVRT LO frequency = %10lg power %g  number of channels = %d target_rf %g actual rf %g target dsp %g actual dsp %g\n")
 	     % usrp->get_tx_freq(1) % usrp->get_tx_gain(1) % usrp->get_tx_num_channels()
 	     % tres.target_rf_freq % tres.actual_rf_freq % tres.target_dsp_freq % tres.actual_dsp_freq);
 
   tvrt_lo_fe_freq = tres.target_rf_freq; 
+
+  // enable the transmit LO
+  tverter_LO_fe_subtree->access<bool>("enabled").set(true);
+  debugMsg("TVRT LO enabled by Ctrl command.\n");        
 }
 
 void SoDa::USRPCtrl::disableTransverterLO()
 {
+  debugMsg("Disabling Transverter LO\n");
   tvrt_lo_mode = false;
   if(!tvrt_lo_capable) return; 
   usrp->set_tx_gain(0.0, 1);
   usrp->set_tx_freq(100.0e6, 1);
+
+  // disable the transmit LO
+  tverter_LO_fe_subtree->access<bool>("enabled").set(false);
+  debugMsg("TVRT LO disabled by Ctrl command.\n");      
+
 }
 
 double SoDa::USRPCtrl::getNearestStep(double freq, double offset)

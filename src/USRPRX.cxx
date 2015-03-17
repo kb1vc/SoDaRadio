@@ -54,9 +54,7 @@ SoDa::USRPRX::USRPRX(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
 
   // create the rx buffer streamers.
   uhd::stream_args_t stream_args("fc32", "sc16");
-  std::vector<size_t> channel_nums;
-  channel_nums.push_back(0);
-  stream_args.channels = channel_nums;
+  stream_args.channels.push_back(0);
   rx_bits = usrp->get_rx_stream(stream_args);
 
   usrp->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_STOP_CONTINUOUS);

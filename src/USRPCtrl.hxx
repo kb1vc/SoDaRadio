@@ -147,6 +147,9 @@ namespace SoDa {
     // need this for TX/RX enable.
     uhd::property_tree::sptr rx_fe_subtree; ///< property tree from daughtercard module
 
+    // This is used for the transverter LO on the B210
+    uhd::property_tree::sptr tverter_LO_fe_subtree; ///< property tree from daughtercard module    
+
     // Capability Flags --
     bool supports_tx_gpio; ///< does this unit support GPIO signals?  (B2xx does not as of 3.7.0)
     

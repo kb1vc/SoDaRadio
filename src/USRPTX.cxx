@@ -52,23 +52,9 @@ SoDa::USRPTX::USRPTX(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
   // and to the CW envelope stream
   cw_subs = cw_env_stream->subscribe(); 
 
-  LO_enabled = false;
-  LO_configured = false;
-  LO_capable = false;
-
   // create the tx buffer streamers.
   stream_args = new uhd::stream_args_t("fc32", "sc16");
   stream_args->channels.push_back(0);
-  if(0 && (usrp->get_tx_num_channels() > 1)) {
-    // disable this for now... there appears to be a bug in the b210 support in 3.8.1
-    debugMsg("This radio is transverter LO capable");
-    // use the second channel as a transverter LO
-    stream_args->channels.push_back(1);
-    LO_capable = true;
-  }
-  else {
-    debugMsg("This radio is NOT transverter LO capable");
-  }
 
   // find out how to configure the transmitter
   tx_sample_rate = params->getTXRate();
@@ -100,10 +86,8 @@ SoDa::USRPTX::USRPTX(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
   
   // build the zero buffer and the transverter lo buffer
   zero_buf = new std::complex<float>[tx_buffer_size];
-  const_buf = new std::complex<float>[tx_buffer_size];
   for(int i = 0; i < tx_buffer_size; i++) {
     zero_buf[i] = std::complex<float>(0.0, 0.0);
-    const_buf[i] = std::complex<float>(1.0, 0.0);
   }
 
   tx_enabled = false;
@@ -124,13 +108,11 @@ void SoDa::USRPTX::run()
   bool exitflag = false;
   SoDaBuf * txbuf, * cwenv;
   Command * cmd; 
-  std::vector<std::complex<float> *> buffers(LO_capable ? 2 : 1);
+  std::vector<std::complex<float> *> buffers(1);
 
   int debug_ctr = 0; 
   while(!exitflag) {
     bool didwork = false; 
-    if(LO_capable && LO_enabled && LO_configured) buffers[1] = const_buf;
-    else if(LO_capable) buffers[1] = zero_buf;
     
     if((cmd = cmd_stream->get(cmd_subs)) != NULL) {
       // process the command.
@@ -193,13 +175,6 @@ void SoDa::USRPTX::run()
       md.start_of_burst = false; 
       didwork = true; 
     }
-    else if(tx_enabled && 
-	    tx_bits) {
-      // all other cases -- we still want to send the LO buffer
-      buffers[0] = zero_buf;
-      tx_bits->send(buffers, tx_buffer_size, md);
-      didwork = true; 
-    }
 
     if(!didwork) {
       usleep(100);
@@ -239,12 +214,6 @@ void SoDa::USRPTX::transmitSwitch(bool tx_on)
     tx_enabled = true; 
   }
   else {
-    if(!tx_enabled && !LO_enabled) return;
-    if(!LO_enabled) {
-      // If LO is enabled, we always send SOMETHING....
-      md.end_of_burst = true;
-      tx_bits->send(zero_buf, 10, md);
-    }
     tx_enabled = false;
   }
 }
@@ -282,14 +251,6 @@ void SoDa::USRPTX::execSetCommand(Command * cmd)
   case Command::TX_CW_EMPTY:
     waiting_to_run_dry = true; 
     break;
-  case SoDa::Command::TVRT_LO_ENABLE:
-    debugMsg("Enable Transverter LO");
-    LO_enabled = true; 
-    break; 
-  case SoDa::Command::TVRT_LO_DISABLE:
-    debugMsg("Disable Transverter LO");
-    LO_enabled = false; 
-    break;
   default:
     break; 
   }
@@ -308,13 +269,6 @@ void SoDa::USRPTX::execGetCommand(Command * cmd)
 
 void SoDa::USRPTX::execRepCommand(Command * cmd)
 {
-  switch(cmd->target) {
-  case SoDa::Command::TVRT_LO_CONFIG:
-    debugMsg("LO configured");
-    LO_configured = true; 
-    break;
-  default:
-    break;
-  }
+  return; 
 }
 
