@@ -109,16 +109,18 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
 
   // we need to setup the subdevices
   if(is_B2xx) {
+    usrp->set_tx_subdev_spec(std::string("A:A"), 0);
+    usrp->set_rx_subdev_spec(std::string("A:A"), 0);      
     if(is_B210) {
+      // setup a usrp object for the transverter. 
+      tvrtr = uhd::usrp::multi_usrp::make(params->getUHDArgs());
       debugMsg("Setup two subdevices -- TVRT_LO Capable");
-      usrp->set_tx_subdev_spec(std::string("A:A A:B"), 0);
-      usrp->set_rx_subdev_spec(std::string("A:A A:B"), 0);      
+      tvrtr->set_tx_subdev_spec(std::string("A:B"), 0);
+      tvrtr->set_rx_subdev_spec(std::string("A:B"), 0);      
       tvrt_lo_capable = true;
     }
     else {
       debugMsg("Setup one subdevice -- NOT TVRT_LO Capable");
-      usrp->set_tx_subdev_spec(std::string("A:A"), 0);
-      usrp->set_rx_subdev_spec(std::string("A:A"), 0);      
       tvrt_lo_capable = false;
     }
   }
@@ -149,7 +151,7 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
 
   // get the LO transmit subtree -- if it exists. 
   if(is_B210) {
-    tverter_LO_fe_subtree = tree->subtree("/mboards/" + mbname + "/dboards/A/tx_frontends/B");
+    tverter_LO_fe_subtree = tvrtr->get_device()->get_tree()->subtree("/mboards/" + mbname + "/dboards/A/tx_frontends/B");
     // turn off the LO channel unless we want it. 
     tverter_LO_fe_subtree->access<bool>("enabled").set(false);
     debugMsg("Transverter LO disabled at start.\n");    
@@ -381,7 +383,7 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
     double txfreqs[2];
     txfreqs[0] = usrp->get_tx_freq(0);
     if(tvrt_lo_mode) {
-      txfreqs[1] = usrp->get_tx_freq(1);
+      txfreqs[1] = tvrtr->get_tx_freq(0);
       debugMsg(boost::format("TX LO = %g  TVRT LO = %g\n") % txfreqs[0] % txfreqs[1]);
     }
   }
@@ -770,7 +772,7 @@ bool SoDa::USRPCtrl::getTXRelayOn()
 void SoDa::USRPCtrl::setTransverterLOFreqPower(double freq, double power)
 {
   if(!tvrt_lo_capable) return; 
-  uhd::gain_range_t tx_gain_range = usrp->get_tx_gain_range(1);
+  uhd::gain_range_t tx_gain_range = tvrtr->get_tx_gain_range(0);
   double plo = tx_gain_range.start();
   double phi = tx_gain_range.stop();
   tvrt_lo_gain = plo + power * (phi - plo);
@@ -792,17 +794,18 @@ void SoDa::USRPCtrl::enableTransverterLO()
   }
 
 
-  usrp->set_tx_antenna("TX2", 1);
-    
-  usrp->set_tx_gain(tvrt_lo_gain, 1);
+  tvrtr->set_tx_antenna("TX2", 0);
+
+  // tvrtr->set_tx_gain(tvrt_lo_gain, 0);
+  tvrtr->set_tx_gain(100.0, 0);  
   // tune the first LO 4MHz below the target, and let the DDC make up the rest. 
   uhd::tune_request_t lo_freq_req(tvrt_lo_freq, -4.0e6);
-  uhd::tune_result_t tres = usrp->set_tx_freq(lo_freq_req, 1);
+  uhd::tune_result_t tres = tvrtr->set_tx_freq(lo_freq_req, 0);
 
   tvrt_lo_mode = true;
   
   debugMsg(boost::format("TVRT LO frequency = %10lg power %g  number of channels = %d target_rf %g actual rf %g target dsp %g actual dsp %g\n")
-	     % usrp->get_tx_freq(1) % usrp->get_tx_gain(1) % usrp->get_tx_num_channels()
+	     % tvrtr->get_tx_freq(0) % tvrtr->get_tx_gain(0) % tvrtr->get_tx_num_channels()
 	     % tres.target_rf_freq % tres.actual_rf_freq % tres.target_dsp_freq % tres.actual_dsp_freq);
 
   tvrt_lo_fe_freq = tres.target_rf_freq; 
@@ -817,8 +820,8 @@ void SoDa::USRPCtrl::disableTransverterLO()
   debugMsg("Disabling Transverter LO\n");
   tvrt_lo_mode = false;
   if(!tvrt_lo_capable) return; 
-  usrp->set_tx_gain(0.0, 1);
-  usrp->set_tx_freq(100.0e6, 1);
+  tvrtr->set_tx_gain(0.0, 0);
+  tvrtr->set_tx_freq(100.0e6, 0);
 
   // disable the transmit LO
   tverter_LO_fe_subtree->access<bool>("enabled").set(false);

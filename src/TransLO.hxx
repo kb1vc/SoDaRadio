@@ -94,7 +94,6 @@ namespace SoDa {
     // transverter local oscillator support
     bool LO_enabled; ///< if true, we're in local transverter mode
     bool LO_configured; ///< if true, the LO has had its gain/freq set.
-    bool LO_capable; ///< if true, this hardware model supports LO config
 
     std::complex<float> * const_buf; ///< envelope for constant carrier.
     std::complex<float> * zero_buf; ///< envelope for zero output carrier.

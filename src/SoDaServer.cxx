@@ -159,8 +159,12 @@ int doWork(int argc, char * argv[])
   SoDa::USRPCtrl ctrl(&params, &cmd_stream);
   SoDa::USRPRX rx(&params, ctrl.getUSRP(), &rx_stream, &if_stream, &cmd_stream); 
   SoDa::USRPTX tx(&params, ctrl.getUSRP(), &tx_stream, &cw_env_stream, &cmd_stream);
-  SoDa::TransLO lo(&params, ctrl.getUSRP(), &cmd_stream);  
-  
+
+  /// Note the CTRL unit must be created FIRST.  
+  SoDa::TransLO * lo_ptr = NULL; 
+  if(ctrl.isLOCapable()) {
+    lo_ptr = new SoDa::TransLO(&params, ctrl.getTVLO(), &cmd_stream);  
+  }
 
   /// doWork creates the audio server on the host machine.
   /// choices include a PortAudio interface and an ALSA interface.
@@ -199,7 +203,9 @@ int doWork(int argc, char * argv[])
   atx.start();
   cwtx.start();
 
-  lo.start();
+  if(lo_ptr != NULL) {
+    lo_ptr->start();
+  }
 
   // now the gps...
   d.debugMsg("Starting gps");
@@ -214,7 +220,9 @@ int doWork(int argc, char * argv[])
   atx.join();
   cwtx.join();
   gps.join();
-  lo.join();
+  if(lo_ptr != NULL) {  
+    lo_ptr->join();
+  }
 
   d.debugMsg("Exit");
   

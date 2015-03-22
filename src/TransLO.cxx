@@ -37,7 +37,7 @@
 #include <stdio.h>
 
 SoDa::TransLO::TransLO(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
-		     CmdMBox * _cmd_stream) : SoDa::SoDaThread("TransLO")
+		       CmdMBox * _cmd_stream) : SoDa::SoDaThread("TransLO")
 {
   // It is important to NOT setup streamers here -- wait until the USRPCtl
   // unit is up and running and commands are circulating. 
@@ -49,21 +49,13 @@ SoDa::TransLO::TransLO(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
 
   LO_enabled = false;
   LO_configured = false;
-  LO_capable = false;
 
   // create the tx buffer streamers.
   stream_args = new uhd::stream_args_t("fc32", "sc16");
-  if(usrp->get_tx_num_channels() > 1) {
-    // disable this for now... there appears to be a bug in the b210 support in 3.8.1
-    debugMsg("This radio is transverter LO capable");
-    // use the second channel as a transverter LO
-    stream_args->channels.push_back(1);
-    LO_capable = true;
-  }
-  else {
-    debugMsg("This radio is NOT transverter LO capable");
-    LO_capable = false;
-  }
+  
+  debugMsg("This radio is transverter LO capable");
+  // use the second channel as a transverter LO
+  stream_args->channels.push_back(0);
 
   // find out how to configure the transmitter
   tx_sample_rate = params->getTXRate();
@@ -73,15 +65,12 @@ SoDa::TransLO::TransLO(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
   zero_buf = new std::complex<float>[tx_buffer_size];      
   for(int i = 0; i < tx_buffer_size; i++) {
     zero_buf[i] = std::complex<float>(0.0, 0.0);
-    const_buf[i] = std::complex<float>(1.0, 0.0);
+    const_buf[i] = std::complex<float>(0.3, 0.3);
   }
 }
 
 void SoDa::TransLO::run()
 {
-  // nothing to do if we are not LO capable. 
-  if(!LO_capable) return; 
-
   uhd::set_thread_priority_safe(); 
   // now do the event loop.  we watch
   // for commands and responses on the command stream.
@@ -93,7 +82,6 @@ void SoDa::TransLO::run()
   debugMsg("Created LO streamer.\n");
 
   bool exitflag = false;
-  SoDaBuf * txbuf;
   Command * cmd; 
   std::vector<std::complex<float> *> buffers(1);
 
@@ -111,7 +99,7 @@ void SoDa::TransLO::run()
     }
     else if(LO_configured && LO_enabled) {
       // get a buffer and 
-      tx_bits->send(buffers, txbuf->getComplexLen(), md);
+      tx_bits->send(buffers, tx_buffer_size, md);
       md.start_of_burst = false; 
       didwork = true; 
     }

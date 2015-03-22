@@ -78,6 +78,16 @@ namespace SoDa {
     /// @return a pointer to the USRP radio object
     uhd::usrp::multi_usrp::sptr getUSRP() { return usrp; }
 
+    /// return a pointer to the TRANSVERTER side multi_usrp object -- used by
+    /// the transverter LO to generate a tone on the TX B port.
+    /// @return a pointer to the USRP radio object
+    uhd::usrp::multi_usrp::sptr getTVLO() { return tvrtr; }
+
+    /// is this Transverter LO capable? 
+    bool isLOCapable() { return tvrt_lo_capable; }
+
+
+
     /// Temporary message handler, while we're looking for
     /// "natural" front-end VCO settings.
     static void freq_search_message_handler(uhd::msg::type_t type, const std::string & msg);
@@ -148,6 +158,7 @@ namespace SoDa {
     uhd::property_tree::sptr rx_fe_subtree; ///< property tree from daughtercard module
 
     // This is used for the transverter LO on the B210
+    uhd::usrp::multi_usrp::sptr tvrtr; ///< A usrp for the transverter
     uhd::property_tree::sptr tverter_LO_fe_subtree; ///< property tree from daughtercard module    
 
     // Capability Flags --
