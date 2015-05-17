@@ -855,6 +855,9 @@ void SoDa::USRPCtrl::initStepMap()
 
   if(is_B2xx) return;
 
+  std::cerr << "Integer N mode is disabled...\n";
+  return; 
+
   debugMsg("In initStepMap\n");
   
   // first, do we have this capability?
@@ -870,7 +873,9 @@ void SoDa::USRPCtrl::initStepMap()
   uhd::tune_request_t tunreq_frac(tf);
   tunreq_int.args = uhd::device_addr_t("mode_n=integer");
   uhd::tune_result_t tunres_int, tunres_frac;
-  tunres_int = usrp->set_rx_freq(tunreq_int); 
+  debugMsg("About to tune int...\n");
+  tunres_int = usrp->set_rx_freq(tunreq_int);
+  debugMsg("About to tune frac...\n");
   tunres_frac = usrp->set_rx_freq(tunreq_frac);
   
   // are there differences?
