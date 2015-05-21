@@ -83,7 +83,7 @@ bin_PROGRAMS = FFT_Test$(EXEEXT) Sockets_Test$(EXEEXT) \
 	OSFilter_Test$(EXEEXT) TestServer$(EXEEXT) \
 	ReSampler_Test$(EXEEXT) TSIP_Test$(EXEEXT) Audio_test$(EXEEXT) \
 	Hilbert_Test$(EXEEXT) FindHome_Test$(EXEEXT) \
-	RangeMap_test$(EXEEXT)
+	RangeMap_test$(EXEEXT) SerialDev_Test$(EXEEXT)
 subdir = exp
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/depcomp
@@ -160,6 +160,12 @@ ReSampler_Test_OBJECTS = $(am_ReSampler_Test_OBJECTS)
 ReSampler_Test_DEPENDENCIES = $(am__DEPENDENCIES_2)
 ReSampler_Test_LINK = $(CXXLD) $(ReSampler_Test_CXXFLAGS) $(CXXFLAGS) \
 	$(ReSampler_Test_LDFLAGS) $(LDFLAGS) -o $@
+am_SerialDev_Test_OBJECTS = SerialDev_Test-SerialDev_Test.$(OBJEXT) \
+	../src/SerialDev_Test-SerialDev.$(OBJEXT)
+SerialDev_Test_OBJECTS = $(am_SerialDev_Test_OBJECTS)
+SerialDev_Test_DEPENDENCIES = $(am__DEPENDENCIES_2)
+SerialDev_Test_LINK = $(CXXLD) $(SerialDev_Test_CXXFLAGS) $(CXXFLAGS) \
+	$(SerialDev_Test_LDFLAGS) $(LDFLAGS) -o $@
 am_SoDa_ThreadTest_OBJECTS =  \
 	SoDa_ThreadTest-SoDa_ThreadTest.$(OBJEXT) \
 	../src/SoDa_ThreadTest-SoDaBase.$(OBJEXT) \
@@ -234,14 +240,16 @@ SOURCES = $(Audio_test_SOURCES) $(FFT_Test_SOURCES) \
 	$(FindHome_Test_SOURCES) $(Hilbert_Test_SOURCES) \
 	$(MultiMBox_Test_SOURCES) $(OSFilter_Test_SOURCES) \
 	$(RangeMap_test_SOURCES) $(ReSampler_Test_SOURCES) \
-	$(SoDa_ThreadTest_SOURCES) $(Sockets_Test_SOURCES) \
-	$(TSIP_Test_SOURCES) $(TestServer_SOURCES)
+	$(SerialDev_Test_SOURCES) $(SoDa_ThreadTest_SOURCES) \
+	$(Sockets_Test_SOURCES) $(TSIP_Test_SOURCES) \
+	$(TestServer_SOURCES)
 DIST_SOURCES = $(Audio_test_SOURCES) $(FFT_Test_SOURCES) \
 	$(FindHome_Test_SOURCES) $(Hilbert_Test_SOURCES) \
 	$(MultiMBox_Test_SOURCES) $(OSFilter_Test_SOURCES) \
 	$(RangeMap_test_SOURCES) $(ReSampler_Test_SOURCES) \
-	$(SoDa_ThreadTest_SOURCES) $(Sockets_Test_SOURCES) \
-	$(TSIP_Test_SOURCES) $(TestServer_SOURCES)
+	$(SerialDev_Test_SOURCES) $(SoDa_ThreadTest_SOURCES) \
+	$(Sockets_Test_SOURCES) $(TSIP_Test_SOURCES) \
+	$(TestServer_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -465,6 +473,11 @@ RangeMap_test_CPPFLAGS = $(AM_CPPFLAGS) -g -O1
 RangeMap_test_LDADD = $(AM_BOOSTLIBFLAGS) 
 RangeMap_test_CXXFLAGS = -g -O1
 RangeMap_test_LDFLAGS = -g -O1
+SerialDev_Test_SOURCES = SerialDev_Test.cxx  ../src/SerialDev.hxx ../src/SerialDev.cxx
+SerialDev_Test_CPPFLAGS = $(AM_CPPFLAGS) -g -O1 
+SerialDev_Test_LDADD = $(AM_BOOSTLIBFLAGS) 
+SerialDev_Test_CXXFLAGS = -g -O1
+SerialDev_Test_LDFLAGS = -g -O1
 all: all-am
 
 .SUFFIXES:
@@ -611,6 +624,12 @@ RangeMap_test$(EXEEXT): $(RangeMap_test_OBJECTS) $(RangeMap_test_DEPENDENCIES) $
 ReSampler_Test$(EXEEXT): $(ReSampler_Test_OBJECTS) $(ReSampler_Test_DEPENDENCIES) $(EXTRA_ReSampler_Test_DEPENDENCIES) 
 	@rm -f ReSampler_Test$(EXEEXT)
 	$(AM_V_CXXLD)$(ReSampler_Test_LINK) $(ReSampler_Test_OBJECTS) $(ReSampler_Test_LDADD) $(LIBS)
+../src/SerialDev_Test-SerialDev.$(OBJEXT): ../src/$(am__dirstamp) \
+	../src/$(DEPDIR)/$(am__dirstamp)
+
+SerialDev_Test$(EXEEXT): $(SerialDev_Test_OBJECTS) $(SerialDev_Test_DEPENDENCIES) $(EXTRA_SerialDev_Test_DEPENDENCIES) 
+	@rm -f SerialDev_Test$(EXEEXT)
+	$(AM_V_CXXLD)$(SerialDev_Test_LINK) $(SerialDev_Test_OBJECTS) $(SerialDev_Test_LDADD) $(LIBS)
 ../src/SoDa_ThreadTest-SoDaBase.$(OBJEXT): ../src/$(am__dirstamp) \
 	../src/$(DEPDIR)/$(am__dirstamp)
 ../src/SoDa_ThreadTest-Debug.$(OBJEXT): ../src/$(am__dirstamp) \
@@ -673,6 +692,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/ReSampler_Test-ReSampler.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/ReSampler_Test-ReSamplers625x48.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/ReSampler_Test-SoDaBase.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/SerialDev_Test-SerialDev.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/SoDa_ThreadTest-Debug.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/SoDa_ThreadTest-SoDaBase.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/Sockets_Test-IPSockets.Po@am__quote@
@@ -693,6 +713,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OSFilter_Test-OSFilter_Test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/RangeMap_test-RangeMap_test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ReSampler_Test-ReSampler_Test.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SerialDev_Test-SerialDev_Test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDa_ThreadTest-SoDa_ThreadTest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Sockets_Test-Sockets_Test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TSIP_Test-TSIP_Test.Po@am__quote@
@@ -1007,6 +1028,34 @@ ReSampler_Test-ReSampler_Test.obj: ReSampler_Test.cxx
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='../src/SoDaBase.cxx' object='../src/ReSampler_Test-SoDaBase.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(ReSampler_Test_CPPFLAGS) $(CPPFLAGS) $(ReSampler_Test_CXXFLAGS) $(CXXFLAGS) -c -o ../src/ReSampler_Test-SoDaBase.obj `if test -f '../src/SoDaBase.cxx'; then $(CYGPATH_W) '../src/SoDaBase.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/SoDaBase.cxx'; fi`
+
+SerialDev_Test-SerialDev_Test.o: SerialDev_Test.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SerialDev_Test_CPPFLAGS) $(CPPFLAGS) $(SerialDev_Test_CXXFLAGS) $(CXXFLAGS) -MT SerialDev_Test-SerialDev_Test.o -MD -MP -MF $(DEPDIR)/SerialDev_Test-SerialDev_Test.Tpo -c -o SerialDev_Test-SerialDev_Test.o `test -f 'SerialDev_Test.cxx' || echo '$(srcdir)/'`SerialDev_Test.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/SerialDev_Test-SerialDev_Test.Tpo $(DEPDIR)/SerialDev_Test-SerialDev_Test.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='SerialDev_Test.cxx' object='SerialDev_Test-SerialDev_Test.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SerialDev_Test_CPPFLAGS) $(CPPFLAGS) $(SerialDev_Test_CXXFLAGS) $(CXXFLAGS) -c -o SerialDev_Test-SerialDev_Test.o `test -f 'SerialDev_Test.cxx' || echo '$(srcdir)/'`SerialDev_Test.cxx
+
+SerialDev_Test-SerialDev_Test.obj: SerialDev_Test.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SerialDev_Test_CPPFLAGS) $(CPPFLAGS) $(SerialDev_Test_CXXFLAGS) $(CXXFLAGS) -MT SerialDev_Test-SerialDev_Test.obj -MD -MP -MF $(DEPDIR)/SerialDev_Test-SerialDev_Test.Tpo -c -o SerialDev_Test-SerialDev_Test.obj `if test -f 'SerialDev_Test.cxx'; then $(CYGPATH_W) 'SerialDev_Test.cxx'; else $(CYGPATH_W) '$(srcdir)/SerialDev_Test.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/SerialDev_Test-SerialDev_Test.Tpo $(DEPDIR)/SerialDev_Test-SerialDev_Test.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='SerialDev_Test.cxx' object='SerialDev_Test-SerialDev_Test.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SerialDev_Test_CPPFLAGS) $(CPPFLAGS) $(SerialDev_Test_CXXFLAGS) $(CXXFLAGS) -c -o SerialDev_Test-SerialDev_Test.obj `if test -f 'SerialDev_Test.cxx'; then $(CYGPATH_W) 'SerialDev_Test.cxx'; else $(CYGPATH_W) '$(srcdir)/SerialDev_Test.cxx'; fi`
+
+../src/SerialDev_Test-SerialDev.o: ../src/SerialDev.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SerialDev_Test_CPPFLAGS) $(CPPFLAGS) $(SerialDev_Test_CXXFLAGS) $(CXXFLAGS) -MT ../src/SerialDev_Test-SerialDev.o -MD -MP -MF ../src/$(DEPDIR)/SerialDev_Test-SerialDev.Tpo -c -o ../src/SerialDev_Test-SerialDev.o `test -f '../src/SerialDev.cxx' || echo '$(srcdir)/'`../src/SerialDev.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) ../src/$(DEPDIR)/SerialDev_Test-SerialDev.Tpo ../src/$(DEPDIR)/SerialDev_Test-SerialDev.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='../src/SerialDev.cxx' object='../src/SerialDev_Test-SerialDev.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SerialDev_Test_CPPFLAGS) $(CPPFLAGS) $(SerialDev_Test_CXXFLAGS) $(CXXFLAGS) -c -o ../src/SerialDev_Test-SerialDev.o `test -f '../src/SerialDev.cxx' || echo '$(srcdir)/'`../src/SerialDev.cxx
+
+../src/SerialDev_Test-SerialDev.obj: ../src/SerialDev.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SerialDev_Test_CPPFLAGS) $(CPPFLAGS) $(SerialDev_Test_CXXFLAGS) $(CXXFLAGS) -MT ../src/SerialDev_Test-SerialDev.obj -MD -MP -MF ../src/$(DEPDIR)/SerialDev_Test-SerialDev.Tpo -c -o ../src/SerialDev_Test-SerialDev.obj `if test -f '../src/SerialDev.cxx'; then $(CYGPATH_W) '../src/SerialDev.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/SerialDev.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) ../src/$(DEPDIR)/SerialDev_Test-SerialDev.Tpo ../src/$(DEPDIR)/SerialDev_Test-SerialDev.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='../src/SerialDev.cxx' object='../src/SerialDev_Test-SerialDev.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SerialDev_Test_CPPFLAGS) $(CPPFLAGS) $(SerialDev_Test_CXXFLAGS) $(CXXFLAGS) -c -o ../src/SerialDev_Test-SerialDev.obj `if test -f '../src/SerialDev.cxx'; then $(CYGPATH_W) '../src/SerialDev.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/SerialDev.cxx'; fi`
 
 SoDa_ThreadTest-SoDa_ThreadTest.o: SoDa_ThreadTest.cxx
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(SoDa_ThreadTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT SoDa_ThreadTest-SoDa_ThreadTest.o -MD -MP -MF $(DEPDIR)/SoDa_ThreadTest-SoDa_ThreadTest.Tpo -c -o SoDa_ThreadTest-SoDa_ThreadTest.o `test -f 'SoDa_ThreadTest.cxx' || echo '$(srcdir)/'`SoDa_ThreadTest.cxx
