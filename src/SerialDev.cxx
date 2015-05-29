@@ -173,5 +173,46 @@ namespace SoDa
     return true; 
   }
 
-  
+
+  bool SerialDev::palindromeCommand(std::string & str) 
+  {
+    std::string resp;
+    int stlen = str.size(); 
+
+    std::string exp = (boost::format("OK [%s]") % (str.substr(0, stlen-1))).str();
+
+    putString(str); 
+    int i; 
+    for(i = 0; i < 10; i++) { // 10 retries
+      std::cerr << boost::format("loop %d start\n") % i; 
+      while(!getString(resp, stlen + 5)) {
+	usleep(1000);
+      }
+      int v; 
+      if((v = exp.compare(0, stlen + 3, resp)) == 0) {
+	std::cerr << "YAY!" << std::endl; 
+	return true; 
+      }
+      else {
+	std::cerr << boost::format("Expected [%s] got [%s]. stlen = %d compare = %d\n")
+	  % exp % resp % stlen % v; 
+	int j; 
+	for(j = 0; j < stlen+5; j++) {
+	  int cmp = (exp[i] == resp[i]); 
+	  std::cerr << boost::format("%c %c (%d %d) =? %d\n")
+	    % exp[j] % resp[j] % ((int) exp[j]) % ((int) resp[j]) % cmp;
+	}
+	flushInput();
+	if(resp.compare(0, 3, "BAD") == 0) {
+	  std::cerr << "flushing input buffer" << std::endl; 
+	  flushInput(); 
+	}
+	std::cerr << boost::format("Resend [%s]\n") % str;
+	putString(str); 	
+	std::cerr << boost::format("loop %d end\n") % i; 
+      }
+    }
+
+    return false; 
+  }
 }

@@ -45,6 +45,7 @@ namespace SoDa {
 
     bool getString(std::string & str, unsigned int maxlen); 
 
+    bool palindromeCommand(std::string & str); 
     bool flushInput();
 
     bool flushOutput();

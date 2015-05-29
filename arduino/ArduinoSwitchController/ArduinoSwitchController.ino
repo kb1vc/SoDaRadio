@@ -71,7 +71,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  
  */
  
- #define FIRST_PIN 6
+ #define FIRST_PIN 2
  
  void setup()
  {
@@ -99,7 +99,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    bidx = 0;
    Serial.print("BAD [");
    Serial.print(cmdbuf);
-   Serial.println("]");
+   Serial.println(']');
  }
  
  void goodBeef()
@@ -107,7 +107,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    bidx = 0;
    Serial.print("OK [");
    Serial.print(cmdbuf);
-   Serial.println("]");
+   Serial.println(']');
  }
  
  void loop()

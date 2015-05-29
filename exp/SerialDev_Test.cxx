@@ -55,22 +55,33 @@ int main(int argc, char ** argv)
   std::cerr << "Need to add synchronization here --- for arduino... send a challenge/response that gives us a starting point for synchronization" << std::endl;
 
   while(1) {
-    for(int i = 0; i < 4; i++) {
+    for(int i = 0; i < 8; i++) {
       on = (boost::format("ON%d%dNO%c") % i % i % ctlj).str();
+#if 0
       sport.putString(on); 
       sport.getString(repl, 100); 
-      std::cerr << boost::format("on: got reply [%s]\n") % repl; 
+#else
+      if(sport.palindromeCommand(on)) {
+	std::cerr << boost::format("on: success\n");
+      }
+      else {
+	std::cerr << boost::format("on: fail\n");
+      }
+#endif      
       sleep(2);
       off = (boost::format("ST%d%dTS%c") % i % i % ctlj).str();      
+#if 0
       sport.putString(off); 
-      sport.getString(repl, 100); 
-
-      if(repl.compare(0, 3, "BAD") == 0) {
-	std::cerr << "flushing input buffer" << std::endl; 
-	sport.flushInput(); 
-      }
-
+      sport.getString(repl, 100);
       std::cerr << boost::format("off: got reply [%s]\n") % repl;
+#else
+      if(sport.palindromeCommand(off)) {
+	std::cerr << boost::format("off: success\n");
+      }
+      else {
+	std::cerr << boost::format("off: fail\n");
+      }
+#endif      
       sleep(2); 
     }
   }
