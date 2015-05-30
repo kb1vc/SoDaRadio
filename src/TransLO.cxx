@@ -55,7 +55,7 @@ SoDa::TransLO::TransLO(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
   
   debugMsg("This radio is transverter LO capable");
   // use the second channel as a transverter LO
-  stream_args->channels.push_back(0);
+  stream_args->channels.push_back(1);
 
   // find out how to configure the transmitter
   tx_sample_rate = params->getTXRate();
@@ -102,6 +102,11 @@ void SoDa::TransLO::run()
       tx_bits->send(buffers, tx_buffer_size, md);
       md.start_of_burst = false; 
       didwork = true; 
+
+      if((debug_ctr & 1023) == 0) {
+	debugMsg((boost::format("sent %d LO bursts\n") % debug_ctr).str());
+      }
+      debug_ctr++; 
     }
 
     if(!didwork) {
@@ -116,8 +121,13 @@ void SoDa::TransLO::run()
 
 void SoDa::TransLO::getLOStreamer()
 {
-  tx_bits = usrp->get_tx_stream(*stream_args);
-  rx_dummy_bits = usrp->get_rx_stream(*stream_args); 
+  try {
+    tx_bits = usrp->get_tx_stream(*stream_args);
+    //  rx_dummy_bits = usrp->get_rx_stream(*stream_args); 
+  } 
+  catch (const std::exception & e) {
+    std::cerr << e.what() << boost::format(" fail in getLOStreamer\n");
+  }
 }
 
 
