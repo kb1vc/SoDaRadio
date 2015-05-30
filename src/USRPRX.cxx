@@ -41,12 +41,13 @@
 
 SoDa::USRPRX::USRPRX(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
 		     DatMBox * _rx_stream, DatMBox * _if_stream,
-		     CmdMBox * _cmd_stream) : SoDa::SoDaThread("USRPRX")
+		     CmdMBox * _cmd_stream, 
+		     bool _transverter_capable) : SoDa::SoDaThread("USRPRX")
 {
   cmd_stream = _cmd_stream;
   rx_stream = _rx_stream;
   if_stream = _if_stream; 
-
+  transverter_capable = _transverter_capable; 
   usrp = _usrp; 
   
   // subscribe to the command stream.
@@ -55,6 +56,10 @@ SoDa::USRPRX::USRPRX(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
   // create the rx buffer streamers.
   uhd::stream_args_t stream_args("fc32", "sc16");
   stream_args.channels.push_back(0);
+  if(transverter_capable) {
+    stream_args.channels.push_back(1);
+  }
+
   rx_bits = usrp->get_rx_stream(stream_args);
 
   usrp->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_STOP_CONTINUOUS);
@@ -106,6 +111,10 @@ void SoDa::USRPRX::run()
 
   bool exitflag = false;
 
+  // we need a junk RX buffer to support transverter-enabled widgets. 
+  // this just consumes a null bitstream. 
+  std::complex<float> * junk_buffer = new std::complex<float>[rx_buffer_size]; 
+
   while(!exitflag) {
     Command * cmd = cmd_stream->get(cmd_subs);
     if(cmd != NULL) {
@@ -130,8 +139,14 @@ void SoDa::USRPRX::run()
       unsigned int coll_so_far = 0;
       uhd::rx_metadata_t md;
       std::complex<float> *dbuf = buf->getComplexBuf();
+      std::vector< std::complex<float> * > buffs; 
+      buffs.push_back(dbuf); 
+      if(transverter_capable) {
+	buffs.push_back(junk_buffer); 
+      }
       while(left != 0) {
-	unsigned int got = rx_bits->recv(&(dbuf[coll_so_far]), left, md);
+	buffs[0] = &(dbuf[coll_so_far]); 
+	unsigned int got = rx_bits->recv(buffs, left, md);
 	if(got == 0) {
 	  debugMsg("****************************************");
 	  debugMsg(boost::format("RECV got error -- md = [%s]\n") % md.to_pp_string());
@@ -221,7 +236,7 @@ void SoDa::USRPRX::startStream()
 {
   if(!audio_rx_stream_enabled) {
     //  std::cerr << "Starting RX Stream from USRP" << std::endl;
-    usrp->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_START_CONTINUOUS, 0);
+    usrp->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_START_CONTINUOUS); // , 0);
     audio_rx_stream_enabled = true; 
   }
 }
@@ -229,7 +244,7 @@ void SoDa::USRPRX::startStream()
 void SoDa::USRPRX::stopStream()
 {
   //  std::cerr << "Stoping RX Stream from USRP" << std::endl; 
-  usrp->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_STOP_CONTINUOUS, 0);
+  usrp->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_STOP_CONTINUOUS); // , 0);
   audio_rx_stream_enabled = false;
 }
 

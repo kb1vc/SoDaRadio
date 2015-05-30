@@ -55,10 +55,12 @@ namespace SoDa {
      *        incoming RF samples to other units
      * @param _if_stream data mailbox used to pass the IF2 data to the spectrum units
      * @param _cmd_stream data mailbox used to carry command, query, and report messages
+     * @param transverter_capable true for B210 and others that have a second TX/RX channel
      */
     USRPRX(Params * params, uhd::usrp::multi_usrp::sptr usrp,
 	   DatMBox * _rx_stream, DatMBox * _if_stream,
-	   CmdMBox * _cmd_stream);
+	   CmdMBox * _cmd_stream, 
+	   bool transverter_capable = false);
 
     /**
      * USRPRX is a thread -- this is its run loop. 
@@ -108,6 +110,10 @@ namespace SoDa {
     double current_IF_tuning;
     double rx_sample_rate;
 
+    // transverter support
+    bool transverter_capable; 
+    bool transverter_enabled; 
+
     // spectrum reporting
     bool enable_spectrum_report; 
     
@@ -117,7 +123,6 @@ namespace SoDa {
 
     std::ofstream rf_dumpfile;
     std::ofstream if_dumpfile; 
-    
   }; 
 }
 

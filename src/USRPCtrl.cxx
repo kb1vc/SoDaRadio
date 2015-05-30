@@ -116,8 +116,10 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
       // as it hooks two sets of commands to one MB... we get seq
       // errors. 
       debugMsg("Setup two subdevices -- TVRT_LO Capable");
+      // Because of a check in b200_impl::update_enables, we need
+      // to create TWO subdevices for both RX and TX... 
       usrp->set_tx_subdev_spec(std::string("A:A A:B"), 0);
-      usrp->set_rx_subdev_spec(std::string("A:A"), 0);      
+      usrp->set_rx_subdev_spec(std::string("A:A A:B"), 0);      
       tvrt_lo_capable = true;
     }
     else {

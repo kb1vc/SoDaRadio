@@ -157,12 +157,12 @@ int doWork(int argc, char * argv[])
   /// doWork creates the USRP Control, RX Streamer, and TX Streamer threads
   /// @see SoDa::USRPCtrl @see SoDa::USRPRX @see SoDa::USRPTX
   SoDa::USRPCtrl ctrl(&params, &cmd_stream);
-  SoDa::USRPRX rx(&params, ctrl.getUSRP(), &rx_stream, &if_stream, &cmd_stream); 
-  SoDa::USRPTX tx(&params, ctrl.getUSRP(), &tx_stream, &cw_env_stream, &cmd_stream);
+  SoDa::USRPRX rx(&params, ctrl.getUSRP(), &rx_stream, &if_stream, &cmd_stream, ctrl.isLOCapable()); 
+  SoDa::USRPTX tx(&params, ctrl.getUSRP(), &tx_stream, &cw_env_stream, &cmd_stream, ctrl.isLOCapable());
 
   /// Note the CTRL unit must be created FIRST.  
   SoDa::TransLO * lo_ptr = NULL; 
-  if(ctrl.isLOCapable()) {
+  if(false && ctrl.isLOCapable()) {
     lo_ptr = new SoDa::TransLO(&params, ctrl.getTVLO(), &cmd_stream);  
   }
 

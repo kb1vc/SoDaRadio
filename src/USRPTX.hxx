@@ -58,11 +58,13 @@ namespace SoDa {
      * @param _tx_stream audio transmit stream to be used in modulator
      * @param _cw_env_stream envelope stream from text-to-CW converter
      * @param _cmd_stream command stream
+     * @param transverter_capable true for B210 and others that have a second TX/RX channel
      *
      */
     USRPTX(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
 	   DatMBox * _tx_stream, DatMBox * _cw_env_stream,
-	   CmdMBox * _cmd_stream);
+	   CmdMBox * _cmd_stream,
+	   bool transverter_capable = false);
     /**
      * @brief USRPTX run loop: handle commands, and modulate the tx carrier
      */
@@ -140,6 +142,7 @@ namespace SoDa {
 
     std::complex<float> * cw_buf; ///< CW modulated envelope to send to USRP
     std::complex<float> * zero_buf; ///< zero signal envelope to fill in end of transmit stream
+    std::complex<float> * tvtr_buf; ///< constant signal envelope for transverter LO
 
     double tx_sample_rate; ///< sample rate for buffer going to USRP (UHD)
     unsigned int tx_buffer_size; ///< size of buffer going to USRP
@@ -151,6 +154,8 @@ namespace SoDa {
     uhd::tx_streamer::sptr tx_bits; ///< USRP (UHD) transmit stream handle
     uhd::tx_metadata_t md; ///< metadata describing USRP transmit buffer
 
+    // transverter support -- for B210 
+    bool transverter_capable;     
   }; 
 
 }

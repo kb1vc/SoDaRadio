@@ -38,13 +38,15 @@
 
 SoDa::USRPTX::USRPTX(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
 		     DatMBox * _tx_stream, DatMBox * _cw_env_stream,
-		     CmdMBox * _cmd_stream) : SoDa::SoDaThread("USRPTX")
+		     CmdMBox * _cmd_stream, 
+		     bool _transverter_capable) : SoDa::SoDaThread("USRPTX")
 {
   cmd_stream = _cmd_stream;
   tx_stream = _tx_stream;
   cw_env_stream = _cw_env_stream;
   usrp = _usrp; 
-
+  transverter_capable = _transverter_capable; 
+  
   // subscribe to the command stream.
   cmd_subs = cmd_stream->subscribe();
   // subscribe to the tx data stream
@@ -86,8 +88,10 @@ SoDa::USRPTX::USRPTX(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
   
   // build the zero buffer and the transverter lo buffer
   zero_buf = new std::complex<float>[tx_buffer_size];
+  tvtr_buf = new std::complex<float>[tx_buffer_size];
   for(int i = 0; i < tx_buffer_size; i++) {
     zero_buf[i] = std::complex<float>(0.0, 0.0);
+    tvtr_buf[i] = std::complex<float>(0.7, 0.0);
   }
 
   tx_enabled = false;
@@ -109,6 +113,10 @@ void SoDa::USRPTX::run()
   SoDaBuf * txbuf, * cwenv;
   Command * cmd; 
   std::vector<std::complex<float> *> buffers(1);
+
+  if(transverter_capable) {
+    buffers.push_back(tvtr_buf); 
+  }
 
   int debug_ctr = 0; 
   while(!exitflag) {
@@ -173,6 +181,12 @@ void SoDa::USRPTX::run()
       buffers[0] = cw_buf;
       tx_bits->send(buffers, tx_buffer_size, md);
       md.start_of_burst = false; 
+      didwork = true; 
+    }
+    else if(!tx_enabled && transverter_capable) {
+      buffers[0] = zero_buf;
+      buffers[1] = tvtr_buf; 
+      tx_bits->send(buffers, tx_buffer_size, md);
       didwork = true; 
     }
 
