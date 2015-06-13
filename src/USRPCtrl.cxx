@@ -344,10 +344,10 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
     // On the transmit side, we're using a minimal IF rate and
     // using the full range of the tuning hardware.
 
-    // if the tx is off, we pretend that we're locked and we ignore the freq.
-    // unless we're on a B2xx -- in that case, we adjust the LO anyway.
-    if(!tx_on && !is_B2xx) return;
-
+    // If the transmitter is off, we retune anyway to park the
+    // transmit LO as far away as possible.   This is especially 
+    // important for the UBX.
+    
     uhd::tune_request_t tx_request(freq);
     
     if(tvrt_lo_mode) {
@@ -503,6 +503,7 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
     }
     break; 
   case SoDa::Command::TX_STATE: // SET TX_ON
+    debugMsg(boost::format("TX_STATE arg = %d\n") % cmd->iparms[0]);
     if(cmd->iparms[0] == 1) {
       // set the txgain to where it is supposed to be.
       tx_on = true; 
@@ -545,7 +546,7 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
       // We keep the rxmode_offset here in case other modules
       // leave the TXLO on.
       setTXEna(false); 
-      debugMsg(boost::format("Disabling TX\nGot TXENA %d") % tx_fe_subtree->access<bool>("enabled").get());
+      debugMsg(boost::format("Disabling TX -- Got TXENA %d") % tx_fe_subtree->access<bool>("enabled").get());
       if(supports_tx_gpio) {
 	debugMsg(boost::format("Got GPIO = %x ") % 
 		 dboard->get_gpio_out(uhd::usrp::dboard_iface::UNIT_TX));
@@ -866,8 +867,8 @@ void SoDa::USRPCtrl::initStepMap()
 
   if(is_B2xx) return;
 
-  std::cerr << "Integer N mode is disabled...\n";
-  return; 
+  // std::cerr << "Integer N mode is disabled...\n";
+  // return; 
 
   debugMsg("In initStepMap\n");
   
@@ -948,6 +949,6 @@ void SoDa::USRPCtrl::initStepMap()
 	% el.first.getMin() % el.first.getMax() % el.second; 
     }
   }
-  
+
   return; 
 }
