@@ -53,8 +53,15 @@ namespace SoDa {
       // find the IP address. 
       std::string ip_address; 
       ip_address = tree->access<uhd::usrp::mboard_eeprom_t>("/mboards/" + mbname + "/eeprom").get()["ip-addr"];       
-      std::cerr << boost::format("Got address = %s\n") % ip_address; 
-      return new N200Control(usrp, mboard, ip_address);
+      // std::cerr << boost::format("Got address = %s\n") % ip_address; 
+      std::string gpsdo = tree->access<uhd::usrp::mboard_eeprom_t>("/mboards/" + mbname + "/eeprom").get()["gpsdo"];     
+      if(gpsdo == std::string("none")) {
+	return new N200Control(usrp, mboard, ip_address);
+      }
+      else {
+	return new NoopControl;
+      }
+
     }
     else if ((modelname == std::string("B200")) || 
 	     (modelname == std::string("B210"))) {
