@@ -42,6 +42,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Command.hxx"
 #include "Params.hxx"
 #include "RangeMap.hxx"
+#include "TRControl.hxx"
 
 #include <uhd/utils/thread_priority.hpp>
 #include <uhd/utils/safe_main.hpp>
@@ -231,6 +232,9 @@ namespace SoDa {
     /// @brief initialize the step map by probing the LO tuning over the range
     void initStepMap();
     bool supports_IntN_Mode; 
+
+    /// external control widget for TR switching and other things. 
+    SoDa::TRControl * tr_control; 
   };
 }
 

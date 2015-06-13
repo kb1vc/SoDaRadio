@@ -55,7 +55,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  This is to prevent crazy action on the relays when a random stream
  of serial junk is sent to the controller. 
  
- The controller listens at 9600 baud. 
+ The controller listens at 115200 baud.  This requires the use
+ of the hardware serial port.  The Ettus N200 provides a pipe
+ from UDP socket 49172 to the RS232 GPS port.  
  
  It responds to each command with a non-palindromic
  
@@ -71,13 +73,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  
  */
  
- #define FIRST_PIN 4
+#define FIRST_PIN 4
+ // baud rate for N200 exp port -- exp doesn't appear to work...
+ //#define BAUD_RATE 230400
+ // baud rate for N200 GPS port
+#define BAUD_RATE 115200
  
  void setup()
  {
    int k;
-   // start the serial port at 9600 baud
-   Serial.begin(9600);
+   // start the serial port baud rate
+   Serial.begin(BAUD_RATE);
    while (!Serial) {
    }
    
@@ -87,6 +93,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     
     digitalWrite(k, HIGH); 
    }
+   
+   pinMode(13, OUTPUT);
  }
  
  int inByte; 
@@ -100,6 +108,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    Serial.print("BAD [");
    Serial.print(cmdbuf);
    Serial.println(']');
+   int i;
  }
  
  void goodBeef()
@@ -110,18 +119,35 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    Serial.println(']');
  }
  
+ void sendBlink(int c)
+ {
+   return;
+   int i;
+   for(i = 0; i < c; i++) {
+     digitalWrite(13, HIGH); 
+     delay(500);
+     digitalWrite(13, LOW);
+     delay(500);
+   }
+ }
+ 
  void loop()
  {
    if (Serial.available() > 0) {
      inByte = Serial.read();
      
-     if (inByte == 0xa) {// CR
+     if ((inByte == 0xa) || (inByte == 0xd)) {// CR
        if(bidx != 6) {
+         sendBlink(2);
+         delay(2);
+         sendBlink(bidx);
          badBeef();
+         bidx = 0;
          return;
        }
        for(bidx = 0; bidx < 3; bidx++) {
          if(cmdbuf[bidx] != cmdbuf[5 - bidx]) {
+           sendBlink(3);
            badBeef();
            return;
          }
@@ -129,17 +155,21 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
        
        if((cmdbuf[0] == 'S') && (cmdbuf[1] == 'T')) {
          state = HIGH;
+         sendBlink(4);
          goodBeef();
        }
        else if((cmdbuf[0] == 'O') && (cmdbuf[1] == 'N')) {
          state = LOW;
+         sendBlink(4);
          goodBeef();
        }
        else {
+         sendBlink(5);
          badBeef();
          return;
        }
        
+       sendBlink(8);
        // if we get here, then we need to find out which pin was tickled
        int b0 = cmdbuf[2];
        digitalWrite(FIRST_PIN + (b0 - 0x30), state);       
@@ -148,6 +178,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
      else {
        cmdbuf[bidx] = inByte & 0xff; 
        if(bidx == 6) {
+         sendBlink(6);
          bidx = 0;
        }
        else {

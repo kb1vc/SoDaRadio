@@ -159,7 +159,7 @@ namespace SoDa {
       if(sframes_ready == -EPIPE) {
 	// we got an under-run... we can't just ignore it.
 	// if pcm_avail returns -EPIPE we need to recover and restart the pipe... sigh.
-	std::cerr << boost::format("snd_pcm_avail returns EPIPE -- current state is %s\n") % currentPlaybackState();
+	// std::cerr << boost::format("snd_pcm_avail returns EPIPE -- current state is %s\n") % currentPlaybackState();
 	int err; 
 	if(err = snd_pcm_recover(pcm_out, sframes_ready, 1) < 0) {
 	  checkStatus(err, "sendBufferReady got EPIPE, tried recovery", false);

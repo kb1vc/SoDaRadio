@@ -27,23 +27,29 @@
 */
 
 #include "IPSockets.hxx"
-
+#include <stdexcept>
 #include <iostream>
 #include <unistd.h>
 #include <netdb.h>
 #include <sys/select.h>
 #include <sys/types.h>
+#include <sys/socket.h>
 #include <sys/time.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <errno.h>
 
-SoDa::IP::ServerSocket::ServerSocket(int portnum)
+SoDa::IP::ServerSocket::ServerSocket(int portnum, TransportType transport)
 {
   int stat; 
   // create the socket. 
-  server_socket = socket(AF_INET, SOCK_STREAM, 0);
+  if(transport == TCP) {
+    server_socket = socket(AF_INET, SOCK_STREAM, 0);
+  } 
+  else if (transport == UDP) {
+    server_socket = socket(AF_INET, SOCK_DGRAM, 0);
+  }
     
   if(server_socket < 0) {
     std::cerr << "Failed to create server socket... I quit." << std::endl;
@@ -76,9 +82,15 @@ SoDa::IP::ServerSocket::ServerSocket(int portnum)
   ready = false; 
 }
 
-SoDa::IP::ClientSocket::ClientSocket(const char * hostname, int portnum)
+SoDa::IP::ClientSocket::ClientSocket(const char * hostname, int portnum, TransportType transport)
 {
-  conn_socket = socket(AF_INET, SOCK_STREAM, 0);
+  if(transport == TCP) {
+    conn_socket = socket(AF_INET, SOCK_STREAM, 0);
+  }
+  else if(transport == UDP) {
+    conn_socket = socket(AF_INET, SOCK_DGRAM, 0);
+  }
+
   if(conn_socket < 0) {
     std::cerr << "Failed to create client socket... I quit." << std::endl;
     exit(-1); 
@@ -101,9 +113,7 @@ SoDa::IP::ClientSocket::ClientSocket(const char * hostname, int portnum)
     exit(-1); 
   }
 
-  int x = fcntl(conn_socket, F_GETFL, 0);
-  fcntl(conn_socket, F_SETFL, x | O_NONBLOCK);
-
+  setNonBlocking(); 
 }
 
 bool SoDa::IP::ServerSocket::isReady()
@@ -148,6 +158,7 @@ int SoDa::IP::NetSocket::loopWrite(int fd, const void * ptr, unsigned int nbytes
     }
   }
 }
+
 int SoDa::IP::NetSocket::put(const void * ptr, unsigned int size)
 {
   // we always put a buffer of bytes, preceded by a count of bytes to be sent.
@@ -217,6 +228,67 @@ int SoDa::IP::NetSocket::get(void * ptr, unsigned int size)
     }
   }
 
+  return size; 
+
+}
+
+
+
+
+int SoDa::IP::NetSocket::putRaw(const void * ptr, unsigned int size)
+{
+  int stat = loopWrite(conn_socket, ptr, size);
+  return stat; 
+}
+
+int SoDa::IP::NetSocket::getRaw(const void * ptr, unsigned int size, unsigned int usec_timeout)
+{
+  int stat;
+
+  if(usec_timeout != 0) {
+    if(non_blocking_mode) setBlocking(); 
+    struct timeval tv; 
+    tv.tv_sec = 0; 
+    tv.tv_usec = usec_timeout; 
+    int stat = setsockopt(conn_socket, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)); 
+    if (stat < 0) {
+      throw std::runtime_error("Failed to put client socket in timeout mode\n");
+    }
+  }
+  else {
+    if(!non_blocking_mode) setNonBlocking(); 
+  }
+
+  int got = 0;
+  int left = size;
+  char * bptr = (char*) ptr; 
+  int timeout_count = 0; 
+  while(left > 0) {
+    int ls;
+    // ls = read(conn_socket, bptr, left);
+    ls = recv(conn_socket, bptr, left, 0);
+    if(ls < 0) {
+      if((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
+        timeout_count++; 
+	if(timeout_count > 2) {
+	  if(left == size) {
+	    throw ReadTimeoutExc("Client");
+	  }
+	  else return size - (left + ls); 
+	}
+	continue; 
+      }
+      else {
+	perror("Ooops -- read buffer continued");
+	return ls;
+      }
+    }
+    else {
+	left -= ls;
+	bptr += ls; 
+    }
+  }
+  
   return size; 
 
 }

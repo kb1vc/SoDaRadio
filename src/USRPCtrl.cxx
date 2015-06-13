@@ -147,7 +147,7 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
     tx_fe_subtree = tree->subtree(tx_fe_root);
   }
 
-  // get the tx front end subtree
+  // get the rx front end subtree
   uhd::fs_path rx_fe_root;
   rx_fe_root = is_B2xx ? ("/mboards/" + mbname + "/dboards/A/rx_frontends/A") :
     ("/mboards/" + mbname + "/dboards/A/rx_frontends/0");
@@ -171,6 +171,9 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
   // setup the control IO pins (for TX/RX external relay)
   // Note that there are no GPIOs available for the B2xx right now.
   initControlGPIO();
+
+  // setup a widget to control external devices 
+  tr_control = SoDa::TRControl::makeTRControl(usrp);     
 
   // turn off the transmitter
   setTXEna(false);
@@ -732,6 +735,14 @@ void SoDa::USRPCtrl::setTXEna(bool val)
     double r = usrp->get_tx_rate(); 
     debugMsg(boost::format("TX rate = %g\n") % r);
   }
+
+  if(val) {
+    tr_control->setTXOn(); 
+  }
+  else {
+    tr_control->setTXOff(); 
+  }
+  
 }
 
 

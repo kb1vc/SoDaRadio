@@ -83,7 +83,8 @@ bin_PROGRAMS = FFT_Test$(EXEEXT) Sockets_Test$(EXEEXT) \
 	OSFilter_Test$(EXEEXT) TestServer$(EXEEXT) \
 	ReSampler_Test$(EXEEXT) TSIP_Test$(EXEEXT) Audio_test$(EXEEXT) \
 	Hilbert_Test$(EXEEXT) FindHome_Test$(EXEEXT) \
-	RangeMap_test$(EXEEXT) SerialDev_Test$(EXEEXT)
+	RangeMap_test$(EXEEXT) SerialDev_Test$(EXEEXT) \
+	TRControl_Test$(EXEEXT)
 subdir = exp
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/depcomp
@@ -177,6 +178,15 @@ am_Sockets_Test_OBJECTS = Sockets_Test-Sockets_Test.$(OBJEXT) \
 	../src/Sockets_Test-UDSockets.$(OBJEXT)
 Sockets_Test_OBJECTS = $(am_Sockets_Test_OBJECTS)
 Sockets_Test_DEPENDENCIES = $(am__DEPENDENCIES_2)
+am_TRControl_Test_OBJECTS = TRControl_Test-TRControl_Test.$(OBJEXT) \
+	../src/TRControl_Test-N200Control.$(OBJEXT) \
+	../src/TRControl_Test-TRControl.$(OBJEXT) \
+	../src/TRControl_Test-IPSockets.$(OBJEXT) \
+	../src/TRControl_Test-B200Control.$(OBJEXT)
+TRControl_Test_OBJECTS = $(am_TRControl_Test_OBJECTS)
+TRControl_Test_DEPENDENCIES = $(am__DEPENDENCIES_2)
+TRControl_Test_LINK = $(CXXLD) $(TRControl_Test_CXXFLAGS) $(CXXFLAGS) \
+	$(TRControl_Test_LDFLAGS) $(LDFLAGS) -o $@
 am_TSIP_Test_OBJECTS = TSIP_Test-TSIP_Test.$(OBJEXT) \
 	../src/TSIP_Test-TSIP.$(OBJEXT)
 TSIP_Test_OBJECTS = $(am_TSIP_Test_OBJECTS)
@@ -241,15 +251,15 @@ SOURCES = $(Audio_test_SOURCES) $(FFT_Test_SOURCES) \
 	$(MultiMBox_Test_SOURCES) $(OSFilter_Test_SOURCES) \
 	$(RangeMap_test_SOURCES) $(ReSampler_Test_SOURCES) \
 	$(SerialDev_Test_SOURCES) $(SoDa_ThreadTest_SOURCES) \
-	$(Sockets_Test_SOURCES) $(TSIP_Test_SOURCES) \
-	$(TestServer_SOURCES)
+	$(Sockets_Test_SOURCES) $(TRControl_Test_SOURCES) \
+	$(TSIP_Test_SOURCES) $(TestServer_SOURCES)
 DIST_SOURCES = $(Audio_test_SOURCES) $(FFT_Test_SOURCES) \
 	$(FindHome_Test_SOURCES) $(Hilbert_Test_SOURCES) \
 	$(MultiMBox_Test_SOURCES) $(OSFilter_Test_SOURCES) \
 	$(RangeMap_test_SOURCES) $(ReSampler_Test_SOURCES) \
 	$(SerialDev_Test_SOURCES) $(SoDa_ThreadTest_SOURCES) \
-	$(Sockets_Test_SOURCES) $(TSIP_Test_SOURCES) \
-	$(TestServer_SOURCES)
+	$(Sockets_Test_SOURCES) $(TRControl_Test_SOURCES) \
+	$(TSIP_Test_SOURCES) $(TestServer_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -478,6 +488,11 @@ SerialDev_Test_CPPFLAGS = $(AM_CPPFLAGS) -g -O1
 SerialDev_Test_LDADD = $(AM_BOOSTLIBFLAGS) 
 SerialDev_Test_CXXFLAGS = -g -O1
 SerialDev_Test_LDFLAGS = -g -O1
+TRControl_Test_SOURCES = TRControl_Test.cxx  ../src/N200Control.hxx ../src/N200Control.cxx ../src/TRControl.hxx ../src/TRControl.cxx ../src/IPSockets.hxx ../src/IPSockets.cxx ../src/B200Control.hxx ../src/B200Control.cxx
+TRControl_Test_CPPFLAGS = $(AM_CPPFLAGS) -g -O1 
+TRControl_Test_LDADD = $(AM_BOOSTLIBFLAGS) 
+TRControl_Test_CXXFLAGS = -g -O1
+TRControl_Test_LDFLAGS = -g -O1
 all: all-am
 
 .SUFFIXES:
@@ -646,6 +661,18 @@ SoDa_ThreadTest$(EXEEXT): $(SoDa_ThreadTest_OBJECTS) $(SoDa_ThreadTest_DEPENDENC
 Sockets_Test$(EXEEXT): $(Sockets_Test_OBJECTS) $(Sockets_Test_DEPENDENCIES) $(EXTRA_Sockets_Test_DEPENDENCIES) 
 	@rm -f Sockets_Test$(EXEEXT)
 	$(AM_V_CXXLD)$(CXXLINK) $(Sockets_Test_OBJECTS) $(Sockets_Test_LDADD) $(LIBS)
+../src/TRControl_Test-N200Control.$(OBJEXT): ../src/$(am__dirstamp) \
+	../src/$(DEPDIR)/$(am__dirstamp)
+../src/TRControl_Test-TRControl.$(OBJEXT): ../src/$(am__dirstamp) \
+	../src/$(DEPDIR)/$(am__dirstamp)
+../src/TRControl_Test-IPSockets.$(OBJEXT): ../src/$(am__dirstamp) \
+	../src/$(DEPDIR)/$(am__dirstamp)
+../src/TRControl_Test-B200Control.$(OBJEXT): ../src/$(am__dirstamp) \
+	../src/$(DEPDIR)/$(am__dirstamp)
+
+TRControl_Test$(EXEEXT): $(TRControl_Test_OBJECTS) $(TRControl_Test_DEPENDENCIES) $(EXTRA_TRControl_Test_DEPENDENCIES) 
+	@rm -f TRControl_Test$(EXEEXT)
+	$(AM_V_CXXLD)$(TRControl_Test_LINK) $(TRControl_Test_OBJECTS) $(TRControl_Test_LDADD) $(LIBS)
 ../src/TSIP_Test-TSIP.$(OBJEXT): ../src/$(am__dirstamp) \
 	../src/$(DEPDIR)/$(am__dirstamp)
 
@@ -697,6 +724,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/SoDa_ThreadTest-SoDaBase.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/Sockets_Test-IPSockets.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/Sockets_Test-UDSockets.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/TRControl_Test-B200Control.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/TRControl_Test-IPSockets.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/TRControl_Test-N200Control.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/TRControl_Test-TRControl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/TSIP_Test-TSIP.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/TestServer-Command.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@../src/$(DEPDIR)/TestServer-Debug.Po@am__quote@
@@ -716,6 +747,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SerialDev_Test-SerialDev_Test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SoDa_ThreadTest-SoDa_ThreadTest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Sockets_Test-Sockets_Test.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TRControl_Test-TRControl_Test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TSIP_Test-TSIP_Test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TestServer-TestServer.Po@am__quote@
 
@@ -1140,6 +1172,76 @@ Sockets_Test-Sockets_Test.obj: Sockets_Test.cxx
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='../src/UDSockets.cxx' object='../src/Sockets_Test-UDSockets.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(Sockets_Test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ../src/Sockets_Test-UDSockets.obj `if test -f '../src/UDSockets.cxx'; then $(CYGPATH_W) '../src/UDSockets.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/UDSockets.cxx'; fi`
+
+TRControl_Test-TRControl_Test.o: TRControl_Test.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TRControl_Test_CPPFLAGS) $(CPPFLAGS) $(TRControl_Test_CXXFLAGS) $(CXXFLAGS) -MT TRControl_Test-TRControl_Test.o -MD -MP -MF $(DEPDIR)/TRControl_Test-TRControl_Test.Tpo -c -o TRControl_Test-TRControl_Test.o `test -f 'TRControl_Test.cxx' || echo '$(srcdir)/'`TRControl_Test.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/TRControl_Test-TRControl_Test.Tpo $(DEPDIR)/TRControl_Test-TRControl_Test.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='TRControl_Test.cxx' object='TRControl_Test-TRControl_Test.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TRControl_Test_CPPFLAGS) $(CPPFLAGS) $(TRControl_Test_CXXFLAGS) $(CXXFLAGS) -c -o TRControl_Test-TRControl_Test.o `test -f 'TRControl_Test.cxx' || echo '$(srcdir)/'`TRControl_Test.cxx
+
+TRControl_Test-TRControl_Test.obj: TRControl_Test.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TRControl_Test_CPPFLAGS) $(CPPFLAGS) $(TRControl_Test_CXXFLAGS) $(CXXFLAGS) -MT TRControl_Test-TRControl_Test.obj -MD -MP -MF $(DEPDIR)/TRControl_Test-TRControl_Test.Tpo -c -o TRControl_Test-TRControl_Test.obj `if test -f 'TRControl_Test.cxx'; then $(CYGPATH_W) 'TRControl_Test.cxx'; else $(CYGPATH_W) '$(srcdir)/TRControl_Test.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/TRControl_Test-TRControl_Test.Tpo $(DEPDIR)/TRControl_Test-TRControl_Test.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='TRControl_Test.cxx' object='TRControl_Test-TRControl_Test.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TRControl_Test_CPPFLAGS) $(CPPFLAGS) $(TRControl_Test_CXXFLAGS) $(CXXFLAGS) -c -o TRControl_Test-TRControl_Test.obj `if test -f 'TRControl_Test.cxx'; then $(CYGPATH_W) 'TRControl_Test.cxx'; else $(CYGPATH_W) '$(srcdir)/TRControl_Test.cxx'; fi`
+
+../src/TRControl_Test-N200Control.o: ../src/N200Control.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TRControl_Test_CPPFLAGS) $(CPPFLAGS) $(TRControl_Test_CXXFLAGS) $(CXXFLAGS) -MT ../src/TRControl_Test-N200Control.o -MD -MP -MF ../src/$(DEPDIR)/TRControl_Test-N200Control.Tpo -c -o ../src/TRControl_Test-N200Control.o `test -f '../src/N200Control.cxx' || echo '$(srcdir)/'`../src/N200Control.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) ../src/$(DEPDIR)/TRControl_Test-N200Control.Tpo ../src/$(DEPDIR)/TRControl_Test-N200Control.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='../src/N200Control.cxx' object='../src/TRControl_Test-N200Control.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TRControl_Test_CPPFLAGS) $(CPPFLAGS) $(TRControl_Test_CXXFLAGS) $(CXXFLAGS) -c -o ../src/TRControl_Test-N200Control.o `test -f '../src/N200Control.cxx' || echo '$(srcdir)/'`../src/N200Control.cxx
+
+../src/TRControl_Test-N200Control.obj: ../src/N200Control.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TRControl_Test_CPPFLAGS) $(CPPFLAGS) $(TRControl_Test_CXXFLAGS) $(CXXFLAGS) -MT ../src/TRControl_Test-N200Control.obj -MD -MP -MF ../src/$(DEPDIR)/TRControl_Test-N200Control.Tpo -c -o ../src/TRControl_Test-N200Control.obj `if test -f '../src/N200Control.cxx'; then $(CYGPATH_W) '../src/N200Control.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/N200Control.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) ../src/$(DEPDIR)/TRControl_Test-N200Control.Tpo ../src/$(DEPDIR)/TRControl_Test-N200Control.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='../src/N200Control.cxx' object='../src/TRControl_Test-N200Control.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TRControl_Test_CPPFLAGS) $(CPPFLAGS) $(TRControl_Test_CXXFLAGS) $(CXXFLAGS) -c -o ../src/TRControl_Test-N200Control.obj `if test -f '../src/N200Control.cxx'; then $(CYGPATH_W) '../src/N200Control.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/N200Control.cxx'; fi`
+
+../src/TRControl_Test-TRControl.o: ../src/TRControl.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TRControl_Test_CPPFLAGS) $(CPPFLAGS) $(TRControl_Test_CXXFLAGS) $(CXXFLAGS) -MT ../src/TRControl_Test-TRControl.o -MD -MP -MF ../src/$(DEPDIR)/TRControl_Test-TRControl.Tpo -c -o ../src/TRControl_Test-TRControl.o `test -f '../src/TRControl.cxx' || echo '$(srcdir)/'`../src/TRControl.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) ../src/$(DEPDIR)/TRControl_Test-TRControl.Tpo ../src/$(DEPDIR)/TRControl_Test-TRControl.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='../src/TRControl.cxx' object='../src/TRControl_Test-TRControl.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TRControl_Test_CPPFLAGS) $(CPPFLAGS) $(TRControl_Test_CXXFLAGS) $(CXXFLAGS) -c -o ../src/TRControl_Test-TRControl.o `test -f '../src/TRControl.cxx' || echo '$(srcdir)/'`../src/TRControl.cxx
+
+../src/TRControl_Test-TRControl.obj: ../src/TRControl.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TRControl_Test_CPPFLAGS) $(CPPFLAGS) $(TRControl_Test_CXXFLAGS) $(CXXFLAGS) -MT ../src/TRControl_Test-TRControl.obj -MD -MP -MF ../src/$(DEPDIR)/TRControl_Test-TRControl.Tpo -c -o ../src/TRControl_Test-TRControl.obj `if test -f '../src/TRControl.cxx'; then $(CYGPATH_W) '../src/TRControl.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/TRControl.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) ../src/$(DEPDIR)/TRControl_Test-TRControl.Tpo ../src/$(DEPDIR)/TRControl_Test-TRControl.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='../src/TRControl.cxx' object='../src/TRControl_Test-TRControl.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TRControl_Test_CPPFLAGS) $(CPPFLAGS) $(TRControl_Test_CXXFLAGS) $(CXXFLAGS) -c -o ../src/TRControl_Test-TRControl.obj `if test -f '../src/TRControl.cxx'; then $(CYGPATH_W) '../src/TRControl.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/TRControl.cxx'; fi`
+
+../src/TRControl_Test-IPSockets.o: ../src/IPSockets.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TRControl_Test_CPPFLAGS) $(CPPFLAGS) $(TRControl_Test_CXXFLAGS) $(CXXFLAGS) -MT ../src/TRControl_Test-IPSockets.o -MD -MP -MF ../src/$(DEPDIR)/TRControl_Test-IPSockets.Tpo -c -o ../src/TRControl_Test-IPSockets.o `test -f '../src/IPSockets.cxx' || echo '$(srcdir)/'`../src/IPSockets.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) ../src/$(DEPDIR)/TRControl_Test-IPSockets.Tpo ../src/$(DEPDIR)/TRControl_Test-IPSockets.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='../src/IPSockets.cxx' object='../src/TRControl_Test-IPSockets.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TRControl_Test_CPPFLAGS) $(CPPFLAGS) $(TRControl_Test_CXXFLAGS) $(CXXFLAGS) -c -o ../src/TRControl_Test-IPSockets.o `test -f '../src/IPSockets.cxx' || echo '$(srcdir)/'`../src/IPSockets.cxx
+
+../src/TRControl_Test-IPSockets.obj: ../src/IPSockets.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TRControl_Test_CPPFLAGS) $(CPPFLAGS) $(TRControl_Test_CXXFLAGS) $(CXXFLAGS) -MT ../src/TRControl_Test-IPSockets.obj -MD -MP -MF ../src/$(DEPDIR)/TRControl_Test-IPSockets.Tpo -c -o ../src/TRControl_Test-IPSockets.obj `if test -f '../src/IPSockets.cxx'; then $(CYGPATH_W) '../src/IPSockets.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/IPSockets.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) ../src/$(DEPDIR)/TRControl_Test-IPSockets.Tpo ../src/$(DEPDIR)/TRControl_Test-IPSockets.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='../src/IPSockets.cxx' object='../src/TRControl_Test-IPSockets.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TRControl_Test_CPPFLAGS) $(CPPFLAGS) $(TRControl_Test_CXXFLAGS) $(CXXFLAGS) -c -o ../src/TRControl_Test-IPSockets.obj `if test -f '../src/IPSockets.cxx'; then $(CYGPATH_W) '../src/IPSockets.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/IPSockets.cxx'; fi`
+
+../src/TRControl_Test-B200Control.o: ../src/B200Control.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TRControl_Test_CPPFLAGS) $(CPPFLAGS) $(TRControl_Test_CXXFLAGS) $(CXXFLAGS) -MT ../src/TRControl_Test-B200Control.o -MD -MP -MF ../src/$(DEPDIR)/TRControl_Test-B200Control.Tpo -c -o ../src/TRControl_Test-B200Control.o `test -f '../src/B200Control.cxx' || echo '$(srcdir)/'`../src/B200Control.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) ../src/$(DEPDIR)/TRControl_Test-B200Control.Tpo ../src/$(DEPDIR)/TRControl_Test-B200Control.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='../src/B200Control.cxx' object='../src/TRControl_Test-B200Control.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TRControl_Test_CPPFLAGS) $(CPPFLAGS) $(TRControl_Test_CXXFLAGS) $(CXXFLAGS) -c -o ../src/TRControl_Test-B200Control.o `test -f '../src/B200Control.cxx' || echo '$(srcdir)/'`../src/B200Control.cxx
+
+../src/TRControl_Test-B200Control.obj: ../src/B200Control.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TRControl_Test_CPPFLAGS) $(CPPFLAGS) $(TRControl_Test_CXXFLAGS) $(CXXFLAGS) -MT ../src/TRControl_Test-B200Control.obj -MD -MP -MF ../src/$(DEPDIR)/TRControl_Test-B200Control.Tpo -c -o ../src/TRControl_Test-B200Control.obj `if test -f '../src/B200Control.cxx'; then $(CYGPATH_W) '../src/B200Control.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/B200Control.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) ../src/$(DEPDIR)/TRControl_Test-B200Control.Tpo ../src/$(DEPDIR)/TRControl_Test-B200Control.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='../src/B200Control.cxx' object='../src/TRControl_Test-B200Control.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TRControl_Test_CPPFLAGS) $(CPPFLAGS) $(TRControl_Test_CXXFLAGS) $(CXXFLAGS) -c -o ../src/TRControl_Test-B200Control.obj `if test -f '../src/B200Control.cxx'; then $(CYGPATH_W) '../src/B200Control.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/B200Control.cxx'; fi`
 
 TSIP_Test-TSIP_Test.o: TSIP_Test.cxx
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(TSIP_Test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT TSIP_Test-TSIP_Test.o -MD -MP -MF $(DEPDIR)/TSIP_Test-TSIP_Test.Tpo -c -o TSIP_Test-TSIP_Test.o `test -f 'TSIP_Test.cxx' || echo '$(srcdir)/'`TSIP_Test.cxx

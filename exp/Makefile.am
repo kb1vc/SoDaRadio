@@ -3,7 +3,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/src
 AM_BOOSTLIBFLAGS = ${BOOST_PROGRAM_OPTIONS_LIB} ${BOOST_THREAD_LIB} ${BOOST_DATE_TIME_LIB} ${BOOST_SYSTEM_LIB} 
 
 
-bin_PROGRAMS = FFT_Test Sockets_Test MultiMBox_Test SoDa_ThreadTest OSFilter_Test  TestServer ReSampler_Test TSIP_Test Audio_test Hilbert_Test FindHome_Test RangeMap_test SerialDev_Test
+bin_PROGRAMS = FFT_Test Sockets_Test MultiMBox_Test SoDa_ThreadTest OSFilter_Test  TestServer ReSampler_Test TSIP_Test Audio_test Hilbert_Test FindHome_Test RangeMap_test SerialDev_Test TRControl_Test
 
 
 Sockets_Test_SOURCES = Sockets_Test.cxx  ../src/IPSockets.cxx ../src/UDSockets.cxx ../src/IPSockets.hxx ../src/UDSockets.hxx
@@ -83,4 +83,10 @@ SerialDev_Test_CPPFLAGS = $(AM_CPPFLAGS) -g -O1
 SerialDev_Test_LDADD = $(AM_BOOSTLIBFLAGS) 
 SerialDev_Test_CXXFLAGS = -g -O1
 SerialDev_Test_LDFLAGS = -g -O1
+
+TRControl_Test_SOURCES = TRControl_Test.cxx  ../src/N200Control.hxx ../src/N200Control.cxx ../src/TRControl.hxx ../src/TRControl.cxx ../src/IPSockets.hxx ../src/IPSockets.cxx ../src/B200Control.hxx ../src/B200Control.cxx
+TRControl_Test_CPPFLAGS = $(AM_CPPFLAGS) -g -O1 
+TRControl_Test_LDADD = $(AM_BOOSTLIBFLAGS) 
+TRControl_Test_CXXFLAGS = -g -O1
+TRControl_Test_LDFLAGS = -g -O1
 

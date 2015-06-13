@@ -29,7 +29,6 @@
 #ifndef IPSOCKETS_HDR
 #define IPSOCKETS_HDR
 #include "SoDaBase.hxx"
-#include "MultiMBox.hxx"
 #include "Command.hxx"
 
 #include <sys/types.h>
@@ -37,9 +36,22 @@
 #include <stdio.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <fcntl.h>
+
+#include <stdexcept>
 
 namespace SoDa {
   namespace IP {
+
+    class ReadTimeoutExc : public std::runtime_error {
+    public:
+      ReadTimeoutExc(std::string sockname) : 
+	std::runtime_error((boost::format("Read operation on %s socket timed out") % sockname).str()) {
+      }
+    }; 
+
+    enum TransportType { UDP, TCP }; 
+
     class NetSocket {
     public:
       NetSocket() {
@@ -50,9 +62,37 @@ namespace SoDa {
     
       int put(const void * ptr, unsigned int size);
       int get(void * ptr, unsigned int size);
+
+      int putRaw(const void * ptr, unsigned int size);
+      
+      /**
+       * @brief get a raw string of <size> bytes... 
+       *
+       * @param ptr pointer to a buffer
+       * @param size don't return until we've gotten <size> bytes, or timed out
+       * @param usec_timeout return FALSE if we wait longer than this, 0 says don't timeout
+       * @return 0 if we got all <size> bytes, -1 if we timed out. 
+       */
+      int getRaw(const void * ptr, unsigned int size, unsigned int usec_timeout = 0);       
     
+      /** 
+       *
+       */
+      void setNonBlocking() {
+	int x = fcntl(conn_socket, F_GETFL, 0);
+	fcntl(conn_socket, F_SETFL, (x  | O_NONBLOCK));
+	non_blocking_mode = true; 
+      }
+
+      void setBlocking() {
+	int x = fcntl(conn_socket, F_GETFL, 0);
+	fcntl(conn_socket, F_SETFL, (x & ~O_NONBLOCK));
+	non_blocking_mode = false;
+      }
+
       int server_socket, conn_socket, portnum;
       struct sockaddr_in server_address, client_address;
+      bool non_blocking_mode; 
 
       struct timeval timeout; 
     private:
@@ -61,7 +101,7 @@ namespace SoDa {
 
     class ServerSocket : public NetSocket {
     public:
-      ServerSocket(int portnum);
+      ServerSocket(int portnum, TransportType transport = TCP);
       ~ServerSocket() { close(conn_socket);  close(server_socket); }
       bool isReady();
 
@@ -82,7 +122,7 @@ namespace SoDa {
 
     class ClientSocket : public NetSocket {
     public:
-      ClientSocket(const char * hostname, int portnum);
+      ClientSocket(const char * hostname, int portnum, TransportType transport = TCP);
       ~ClientSocket() { close(conn_socket); }
     private:
       struct hostent * server; 

@@ -1,0 +1,7 @@
+This directory contains an arduino sketch to
+manage external TR and bandswitching.
+
+The configuration is tested against an Arduino
+UNO and an 8 relay module.
+
+T/R 
