@@ -93,7 +93,7 @@ namespace SoDa {
     bool sendCommand(const std::string & cmd, int retry_count); 
 
     uhd::usrp::multi_usrp::sptr usrp; 
-
+    
     int mboard; 
   };
 }

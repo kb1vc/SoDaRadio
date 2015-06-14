@@ -233,6 +233,7 @@ namespace SoDa {
     void initStepMap();
     bool supports_IntN_Mode; 
 
+    bool db_is_UBX; 
     /// external control widget for TR switching and other things. 
     SoDa::TRControl * tr_control; 
   };

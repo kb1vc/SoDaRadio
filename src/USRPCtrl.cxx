@@ -156,6 +156,24 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
   }
   rx_fe_subtree->access<bool>("enabled").set(true);
 
+  // UBX modules are an issue
+  db_is_UBX = false; 
+  if(!is_B2xx) {
+    uhd::fs_path namepath = rx_fe_root / "name"; 
+    std::string dbname = tree->access<std::string>(namepath).get();
+    std::cerr << boost::format("***********\n\nfrontend name = [%s]\n\n*********\n")
+      % dbname; 
+
+    std::string ubxname("UBX");
+    if(dbname.compare(0, 3, ubxname) == 0) {
+      std::cerr << "This DB is a UBX" << std::endl; 
+      db_is_UBX = true; 
+    }
+    else {
+      std::cerr << boost::format("This DB is NOT a UBX [%s] != [%s]\n") % ubxname % dbname; 
+    }
+  }
+
   // find the gain ranges
   rx_rf_gain_range = usrp->get_rx_gain_range();
   tx_rf_gain_range = usrp->get_tx_gain_range();
@@ -949,6 +967,11 @@ void SoDa::USRPCtrl::initStepMap()
 	% el.first.getMin() % el.first.getMax() % el.second; 
     }
   }
+
+  // note that regardless of any tests, the UBX doesn't work in intN mode...
+  //  if (dboard_name == "UBX") {
+    supports_IntN_Mode = false; 
+    //  }
 
   return; 
 }
