@@ -86,8 +86,9 @@ namespace SoDa
     usrp = _usrp;
     mboard = _mboard; 
 
-    return; 
     std::vector<std::string> port = usrp->get_gpio_banks(0); 
+
+    std::cerr << "Here in b200control init" << std::endl; 
 
     std::vector<std::string> attrs; 
     attrs.push_back("CTRL");
@@ -101,26 +102,27 @@ namespace SoDa
 
     unsigned int st; 
 
-    usrp->set_gpio_attr("FP0", "DDR", 0x1f, 0x7ff);
-    usrp->set_gpio_attr("FP0", "OUT", 0, 0x7ff);
-    usrp->set_gpio_attr("FP0", "ATR_0X", 1, 0x7ff);
-    usrp->set_gpio_attr("FP0", "ATR_RX", 2, 0x7ff);
-    usrp->set_gpio_attr("FP0", "ATR_TX", 4, 0x7ff);
-    usrp->set_gpio_attr("FP0", "ATR_XX", 8, 0x7ff);    
-    usrp->set_gpio_attr("FP0", "CTRL", 0xf, 0x7ff);  
+    usrp->set_gpio_attr("FP0", "DDR", 0x300, 0x300);
+    usrp->set_gpio_attr("FP0", "OUT", 0, 0x300);
+    usrp->set_gpio_attr("FP0", "CTRL", 0x0, 0x300);  
 
-    usrp->set_gpio_attr("FP0", "DDR", 0xffffffff, 0x400);    
+    usrp->set_gpio_attr("FP0", "DDR", 0xffffffff, 0x300);    
     output_reg_values("FP0", usrp, 11); 
-    sleep(5); 
-    usrp->set_gpio_attr("FP0", "DDR", 0x1f, 0x7ff);
-    output_reg_values("FP0", usrp, 11); 
-    sleep(5); 
-    usrp->set_gpio_attr("FP0", "OUT", 0x10, 0x10);
-    output_reg_values("FP0", usrp, 11);     
+    while(1) {
+      sleep(5); 
+      std::cerr << "ON 1?" << std::endl; 
+      usrp->set_gpio_attr("FP0", "OUT", 0x100, 0x300);
+      output_reg_values("FP0", usrp, 11);  
+      sleep(5);
+      std::cerr << "ON 2?" << std::endl;       
+      usrp->set_gpio_attr("FP0", "OUT", 0x200, 0x300);
+      output_reg_values("FP0", usrp, 11);     
+
+    }
     std::cerr << "DID IT!" << std::endl;
 
     sleep(10);
-    usrp->set_gpio_attr("FP0", "OUT", 0x0, 0x10);
+    usrp->set_gpio_attr("FP0", "OUT", 0x300, 0x300);
     output_reg_values("FP0", usrp, 11);     
     std::cerr << "woke up!" << std::endl;
     sleep(10);
