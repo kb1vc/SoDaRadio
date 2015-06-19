@@ -22,6 +22,28 @@ There may be information on building SoDaRadio for your
 particular system.  Take a look at the SoDaRadio wiki at
 https://sourceforge.net/p/sodaradio/wiki/Building%20SoDa%20Radio/
 
+Version 3.5
+
+
+    Extensive work to implement B200 TR control via J400.
+    
+    This code also contains the new (initial) TR control for the N200 series,
+    where TR commands and band switching information can be sent
+    through the GPS serial port to an arduino sketch that wiggles
+    external relays for PTT, and other uses.
+    
+    WBX gpio TR switching is supported as well, and will be active
+    on any WBX unit.
+    
+    The code MAY have trouble with N200 widgets that have installed
+    a GPS.  It should not, however.  Please report any problems.
+    
+    The B200 and B210 TR control requires a special FPGA binary image.
+    Contact radiogeek381@gmail.com for a pointer to the binary image.
+
+
+
+
 Version 3.4
 
 Fixed a bug in the way the GUI started up.  Original code used
