@@ -46,122 +46,40 @@
 
 namespace SoDa 
 {
-  /* borrowed from Ettus examples gpio.cpp */
- static std::string to_bit_string(boost::uint32_t val, const size_t num_bits)
-  {
-    std::string out;
-    for (int i = num_bits - 1; i >= 0; i--)
-      {
-        std::string bit = ((val >> i) & 1) ? "1" : "0";
-        out += "  ";
-        out += bit;
-      }
-    return out;
-  }
-  
-  static void output_reg_values(
-				const std::string bank,
-				const uhd::usrp::multi_usrp::sptr &usrp,
-				const size_t num_bits)
-  {
-    std::vector<std::string> attrs = 
-      boost::assign::list_of("CTRL")("DDR")("ATR_0X")("ATR_RX")
-      ("ATR_TX")("ATR_XX")("OUT")("READBACK");
-
-    std::cout << (boost::format("%10s ") % "Bit");
-    for (int i = num_bits - 1; i >= 0; i--)
-      std::cout << (boost::format(" %2d") % i);
-    std::cout << std::endl;
-    BOOST_FOREACH(std::string &attr, attrs)
-      {
-        std::cout << (boost::format("%10s:%s")
-		      % attr % to_bit_string(boost::uint32_t(usrp->get_gpio_attr(bank, attr)), num_bits))
-		  << std::endl;
-      }
-  }
-
- 
-  
   B200Control::B200Control(uhd::usrp::multi_usrp::sptr _usrp, int _mboard) : TRControl() {
     usrp = _usrp;
     mboard = _mboard; 
 
     std::vector<std::string> port = usrp->get_gpio_banks(0); 
 
-    std::cerr << "Here in b200control init" << std::endl; 
-
-    std::vector<std::string> attrs; 
-    attrs.push_back("CTRL");
-    attrs.push_back("DDR");
-    attrs.push_back("OUT");
-    attrs.push_back("ATR_0X");
-    attrs.push_back("ATR_RX");
-    attrs.push_back("ATR_TX");
-    attrs.push_back("ATR_XX");
-    attrs.push_back("READBACK");
-
     unsigned int st; 
 
+    // we set J400 pin 1 HIGH on transmit, LOW on RX.   
+    // this is becaus the "default" drive on the pins
+    // if the wrong fpga binary is loaded, the transmitter
+    // TR switch will be left in the TX position. 
+    // This may result in "no signal heard" but at least
+    // it is less likely to result in "blown up radio"
+    // Best configuratio, is to look at both pin 1 and pin 3
+    // TX is when 1 is HIGH and 3 is LOW
+    // RX is when 1 is LOW and 3 is HIGH
+    // do something safe when they are both HIGH or both LOW.
     usrp->set_gpio_attr("FP0", "DDR", 0x300, 0x300);
-    usrp->set_gpio_attr("FP0", "OUT", 0, 0x300);
     usrp->set_gpio_attr("FP0", "CTRL", 0x0, 0x300);  
 
-    usrp->set_gpio_attr("FP0", "DDR", 0xffffffff, 0x300);    
-    output_reg_values("FP0", usrp, 11); 
-    while(1) {
-      sleep(5); 
-      std::cerr << "ON 1?" << std::endl; 
-      usrp->set_gpio_attr("FP0", "OUT", 0x100, 0x300);
-      output_reg_values("FP0", usrp, 11);  
-      sleep(5);
-      std::cerr << "ON 2?" << std::endl;       
-      usrp->set_gpio_attr("FP0", "OUT", 0x200, 0x300);
-      output_reg_values("FP0", usrp, 11);     
-
-    }
-    std::cerr << "DID IT!" << std::endl;
-
-    sleep(10);
-    usrp->set_gpio_attr("FP0", "OUT", 0x300, 0x300);
-    output_reg_values("FP0", usrp, 11);     
-    std::cerr << "woke up!" << std::endl;
-    sleep(10);
-    for(int i = 0; i < 11; i++) {
-      std::cerr << boost::format("%d ---\n") % i; 
-      usrp->set_gpio_attr("FP0", "OUT", (1 << i), 0x3ff);
-      sleep(3);       
-    }
-    usrp->set_gpio_attr("FP0", "OUT", 1, 0x3ff);
-    sleep(1); 
-
-
-    port.push_back("FP0");
-    BOOST_FOREACH(std::string ps, port) {
-      BOOST_FOREACH(std::string at, attrs) {
-	try {
-	  st = usrp->get_gpio_attr(ps, at, 0);
-	  std::cerr << boost::format("port [%s] attr [%s] = 0x%x\n")	  
-	    % ps % at % st; 
-	  
-	}
-	catch (uhd::lookup_error & v) {
-	  std::cerr << boost::format("port [%s] attr [%s] lookup error.\n")
-	    % ps % at; 
-	}
-      }
-    }
-    usrp->set_gpio_attr("FP0", "OUT", 1, 0x3ff);
-    sleep(1); 
-
+    setTXOff();
   }
 
   bool B200Control::setTXOn()
   {
+    usrp->set_gpio_attr("FP0", "OUT", 0x100, 0x300);
     return true; 
   }
 
   bool B200Control::setTXOff()
   {
+    usrp->set_gpio_attr("FP0", "OUT", 0x200, 0x300);
+    return true; 
     return true; 
   }
 
@@ -174,7 +92,4 @@ namespace SoDa
   { return false; }
   bool B200Control::getBand(unsigned int band) 
   { return false; }
-
-
-
 }

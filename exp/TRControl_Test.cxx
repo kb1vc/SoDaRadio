@@ -101,7 +101,8 @@ int main(int argc, char ** argv)
   sleep(5);
 
   for(int i = 0; i < 8; i++) {
-    ctrl->setTXOn(); 
+    ctrl->setTXOn();
+    sleep(2);     
     ctrl->setTXOff(); 
     sleep(2); 
   }

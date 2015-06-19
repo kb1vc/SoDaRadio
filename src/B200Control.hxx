@@ -43,6 +43,13 @@ namespace SoDa {
   /**
    * @brief Transmit/Receive switch control for B200/B210 via the 
    * FX3 debug GPIO pins. 
+   *
+   * This module requires a special version of the B2x0 fpga firmware. 
+   * 
+   * On TRANSMIT, pin 1 of J400 will be pulled HIGH.  On RECEIVE
+   * pin 1 of J400 will be pulled LOW.  
+   * On TRANSMIT, pin 3 of J400 will be pulled LOW.  On RECEIVE
+   * pin 1 of J400 will be pulled HIGH.  
    */
   class B200Control : public TRControl {
   public:
