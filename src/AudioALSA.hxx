@@ -1,6 +1,5 @@
 #ifndef ALSA_PCM_HDR
 #define ALSA_PCM_HDR
-
 /*
   Copyright (c) 2012, Matthew H. Reilly (kb1vc)
   All rights reserved.
@@ -31,6 +30,7 @@
 
 #include "SoDaBase.hxx"
 #include "AudioIfc.hxx"
+#include <string>
 #if HAVE_LIBASOUND
 #  include <alsa/asoundlib.h>
 #  define ALSA_DEF
@@ -71,7 +71,8 @@ namespace SoDa {
      */
     AudioALSA(unsigned int _sample_rate,
 	      AudioIfc::DataFormat _fmt,
-	      unsigned int _sample_count_hint = 1024);
+	      unsigned int _sample_count_hint = 1024,
+	      std::string audio_port_name = std::string("default"));
 
     ~AudioALSA() {
 #if HAVE_LIBASOUND
@@ -226,12 +227,12 @@ namespace SoDa {
     /**
      * setup the playback handle and features. 
      */
-    void setupPlayback();
+    void setupPlayback(std::string audio_port_name);
 
     /**
      * setup the capture handle and features.
      */
-    void setupCapture(); 
+    void setupCapture(std::string audio_port_name); 
 
     /**
      * setup the parameters for a PCM device

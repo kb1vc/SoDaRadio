@@ -44,6 +44,7 @@ namespace SoDa {
     std::string getConfigFileName() { return config_filename; }
     std::string getUHDArgs() { return uhd_args; }
     unsigned int getDebugLevel() { return debug_level; }
+    std::string getAudioPortName() { return audio_portname; }
   private:
     // this is really quite gross -- wxApp is not very nice about this. 
     char ** convertWXargs2Cargs(int argc, wxChar ** argv);
@@ -57,6 +58,7 @@ namespace SoDa {
     std::string log_filename;
     std::string uhd_args;
     unsigned int debug_level; ///< 0 => no debug messages .. more detail with higher values
+    std::string audio_portname; 
   };
 
 }

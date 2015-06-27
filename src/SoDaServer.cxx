@@ -165,7 +165,8 @@ int doWork(int argc, char * argv[])
   /// These are subclasses of the more generic SoDa::AudioIfc class
   SoDa::AudioALSA audio_ifc(params.getAudioSampleRate(),
 			    SoDa::AudioIfc::FLOAT,
-			    params.getAFBufferSize()); 
+			    params.getAFBufferSize(),
+			    params.getAudioPortName()); 
   /// doWork creates the audio RX and audio TX unit threads
   /// These are also responsible for implementing IF tuning and modulation. 
   /// @see SoDa::AudioRX @see SoDa::AudioTX

@@ -145,6 +145,9 @@ namespace SoDaRadio_GUI {
 	  wxString((boost::format(" --debug %d") % getDebugLevel()).str().c_str(), wxConvUTF8);
       }
 
+      std::string audio_port = params.getAudioPortName(); 
+      scmd = scmd + wxT(" --audio ") + wxString(audio_port.c_str(), wxConvUTF8);
+
       debugMsg(boost::format("About to execute [%s]\n") % scmd.mb_str());
 
       // this appears to be "safe" wrt wxwidgets and the gtk stuff behind it.

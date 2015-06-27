@@ -102,6 +102,8 @@ namespace SoDa {
 
     std::string getServerSocketBasename() { return server_sock_basename; }
 
+    std::string getAudioPortName() { return audio_portname; }
+    
     std::string getGPSDev() { return "/dev/ttyGPS"; }
 
     unsigned int getDebugLevel() { return debug_level; }
@@ -118,6 +120,9 @@ namespace SoDa {
 
     // message socket parameters
     std::string server_sock_basename;
+
+    // audio port/device name
+    std::string audio_portname; 
 
     unsigned int debug_level; 
   };

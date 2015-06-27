@@ -46,6 +46,8 @@ SoDa::GuiParams::GuiParams(int argc, wxChar ** wxargv)
      )
     ("log", po::value<std::string>(&log_filename)->default_value("SoDa.soda_log"),
      "Log filename")
+    ("audio", po::value<std::string>(&audio_portname)->default_value("default"), 
+     "Audio device name for ALSA audio.")
     ("debug", po::value<unsigned int>(&debug_level)->default_value(0)->implicit_value(1),
      "Enable debug messages for value > 0.  Higher values may produce more detail.")
     ;
