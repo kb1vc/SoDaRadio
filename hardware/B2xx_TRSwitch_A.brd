@@ -148,6 +148,10 @@ kb1vc</text>
 T/R Switch</text>
 <text x="1.27" y="19.05" size="1.27" layer="25">REV-A
 07121515</text>
+<text x="3.81" y="13.335" size="1.016" layer="21">GND</text>
+<text x="1.27" y="8.255" size="1.016" layer="21">+V</text>
+<text x="0.635" y="5.715" size="1.016" layer="21">PTT</text>
+<text x="0.635" y="3.81" size="1.016" layer="21">PTT</text>
 </plain>
 <libraries>
 <library name="diode">
