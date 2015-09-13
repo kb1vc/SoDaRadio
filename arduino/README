@@ -1,7 +1,39 @@
 This directory contains an arduino sketch to
 manage external TR and bandswitching.
 
-The configuration is tested against an Arduino
-UNO and an 8 relay module.
+N200ArdProMini_TR
 
-T/R 
+  This is a sketch that listens on the N200's 115 kBaud 
+serial port (normally the serial port listening on socket
+49172) on J312.  This port is otherwise used for the GPSDO
+module.  If you need the GPSDO module, then this sketch
+isn't goint to help you.
+
+  (Though there IS a second RS232 port on the module at J311.
+However, this serial port is programmed to run at 230kB.  At
+that rate, the arduino cant create a reliable baud clock --
+it is more than 8% off from nominal.)
+
+	
+   The configuration is tested against an Arduino UNO or ProMini and
+an 8 relay module. It is used to do TR switching for SoDaRadio.
+
+
+TRSequencer
+
+  This is a digispark program ( http://digistump.com ) to listen
+to an incoming PTT (ground to talk) line and sequence four output
+relays one-after-another to
+
+       a) Switch an external T/R relay from R to T.
+       b) Enable the transmit side of a transverter.
+       c) Apply 12V (or other) power to an external
+       amplifier.
+       d) ground a transmit enable line (for a DEM 2W power
+       amplifier.
+
+When the PTT line is released, the sequence reverses.
+
+The PTT line is sensed with an optoisolator that is powered
+from a local 5V regulator.  
+
