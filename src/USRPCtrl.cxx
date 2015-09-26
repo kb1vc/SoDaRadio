@@ -373,6 +373,12 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
       tx_request.rf_freq_policy = uhd::tune_request_t::POLICY_MANUAL;
       tx_request.rf_freq = tvrt_lo_fe_freq;
     }
+    else if(supports_IntN_Mode) {
+      tx_request.rf_freq = freq; 
+      tx_request.rf_freq_policy = uhd::tune_request_t::POLICY_MANUAL;
+      tx_request.dsp_freq_policy = uhd::tune_request_t::POLICY_AUTO;
+      tx_request.args = uhd::device_addr_t("mode_n=integer");
+    }
     else {
       tx_request.rf_freq_policy = uhd::tune_request_t::POLICY_AUTO;
     }
@@ -889,7 +895,9 @@ void SoDa::USRPCtrl::initStepMap()
   if(is_B2xx) return;
 
   // std::cerr << "Integer N mode is disabled...\n";
-  // return; 
+  // return;
+
+
 
   debugMsg("In initStepMap\n");
   
@@ -972,8 +980,9 @@ void SoDa::USRPCtrl::initStepMap()
   }
 
   // note that regardless of any tests, the UBX doesn't work in intN mode...
+  // after 3.8.5 or there-abouts, UHD supported UBX IntN mode.
   //  if (dboard_name == "UBX") {
-    supports_IntN_Mode = false; 
+  //  supports_IntN_Mode = false; 
     //  }
 
   return; 
