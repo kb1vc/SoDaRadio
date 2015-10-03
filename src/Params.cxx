@@ -42,6 +42,10 @@ SoDa::Params::Params(int argc, char * argv[])
      "unix domain socket name for server to UI client message channels")
     ("audio", po::value<std::string>(&audio_portname)->default_value("default"), 
      "Audio device name for ALSA audio.")
+    ("intN", po::value<bool>(&force_integer_N_mode)->default_value(false)->implicit_value(true),
+     "Force Integer-N synthesis for front-end local oscillators")
+    ("fracN", po::value<bool>(&force_frac_N_mode)->default_value(false)->implicit_value(true),
+     "Force Fractional-N synthesis for front-end local oscillators")
     ("debug", po::value<unsigned int>(&debug_level)->default_value(0)->implicit_value(1),
      "Enable debug messages for value > 0.  Higher values may produce more detail.")
     ;

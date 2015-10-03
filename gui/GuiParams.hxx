@@ -40,6 +40,7 @@ namespace SoDa {
 
     std::string getServerSocketBasename() { return server_sock_basename; }
     std::string getServerName() { return server_name; }
+    std::string getServerArgs() { return server_args; }
     std::string getLogFileName() { return log_filename; }
     std::string getConfigFileName() { return config_filename; }
     std::string getUHDArgs() { return uhd_args; }
@@ -52,6 +53,7 @@ namespace SoDa {
     boost::program_options::variables_map pmap;
 
     std::string server_name;     ///< Where do we find the server?
+    std::string server_args; ///< server control arguments.
     // message socket params
     std::string server_sock_basename; 
     std::string config_filename; 

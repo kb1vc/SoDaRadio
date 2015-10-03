@@ -201,7 +201,7 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
   tvrt_lo_mode = false;
 
   // if we are in integer-N mode, setup the step table.
-  initStepMap(); 
+  initStepMap(params->forceIntN(), params->forceFracN()); 
 }
 
 
@@ -888,44 +888,50 @@ void SoDa::USRPCtrl::normal_message_handler(uhd::msg::type_t type, const std::st
   }
 }
 
-void SoDa::USRPCtrl::initStepMap()
+void SoDa::USRPCtrl::initStepMap(bool force_int_N, bool force_frac_N)
 {
-  supports_IntN_Mode = false;
-
-  if(is_B2xx) return;
-
-  // std::cerr << "Integer N mode is disabled...\n";
-  // return;
-
-
+  uhd::tune_result_t tunres_int, tunres_frac;  
 
   debugMsg("In initStepMap\n");
   
-  // first, do we have this capability?
-  // pick a frequency halfway between the min and max freq for this MB.
-  double tf = (rx_rf_freq_range.stop() + rx_rf_freq_range.start()) * 0.5;
-  // Now bump it by some silly amount
-  tf += 123456.789;
+  supports_IntN_Mode = false;
+  if(force_int_N) {
+    debugMsg("Forced IntN Tuning support ON.");
+    supports_IntN_Mode = true; 
+  }
+  else if(force_frac_N) {
+    debugMsg("Forced IntN Tuning support OFF.");
+    supports_IntN_Mode = false; 
+  }
+  else if(is_B2xx) return; 
+  else {
+    // first, do we have this capability?
+    // pick a frequency halfway between the min and max freq for this MB.
+    double tf = (rx_rf_freq_range.stop() + rx_rf_freq_range.start()) * 0.5;
+    // Now bump it by some silly amount
+    tf += 123456.789;
 
-  debugMsg(boost::format("got tf = %g\n") % tf);
+    debugMsg(boost::format("got tf = %g\n") % tf);
   
-  // and tune with and without intN
-  uhd::tune_request_t tunreq_int(tf);
-  uhd::tune_request_t tunreq_frac(tf);
-  tunreq_int.args = uhd::device_addr_t("mode_n=integer");
-  uhd::tune_result_t tunres_int, tunres_frac;
-  debugMsg("About to tune int...\n");
-  tunres_int = usrp->set_rx_freq(tunreq_int);
-  debugMsg("About to tune frac...\n");
-  tunres_frac = usrp->set_rx_freq(tunreq_frac);
+    // and tune with and without intN
+    uhd::tune_request_t tunreq_int(tf);
+    uhd::tune_request_t tunreq_frac(tf);
+    tunreq_int.args = uhd::device_addr_t("mode_n=integer");
+    debugMsg("About to tune int...\n");
+    tunres_int = usrp->set_rx_freq(tunreq_int);
+    debugMsg("About to tune frac...\n");
+    tunres_frac = usrp->set_rx_freq(tunreq_frac);
   
-  // are there differences?
-  if(tunres_int.actual_rf_freq != tunres_frac.actual_rf_freq) {
-    supports_IntN_Mode = true;
+    // are there differences?
+    if(tunres_int.actual_rf_freq != tunres_frac.actual_rf_freq) {
+      supports_IntN_Mode = true;
+    }
+
+    debugMsg(boost::format("int rf = %g  frac rf = %g  tf = %g\n")
+	     % tunres_int.actual_rf_freq % tunres_frac.actual_rf_freq % tf);
   }
 
-  debugMsg(boost::format("int rf = %g  frac rf = %g  tf = %g\n")
-	   % tunres_int.actual_rf_freq % tunres_frac.actual_rf_freq % tf);
+
 
   if(supports_IntN_Mode) {
     debugMsg("Supports INT_N tuning mode.\n");
@@ -978,12 +984,6 @@ void SoDa::USRPCtrl::initStepMap()
 	% el.first.getMin() % el.first.getMax() % el.second; 
     }
   }
-
-  // note that regardless of any tests, the UBX doesn't work in intN mode...
-  // after 3.8.5 or there-abouts, UHD supported UBX IntN mode.
-  //  if (dboard_name == "UBX") {
-  //  supports_IntN_Mode = false; 
-    //  }
 
   return; 
 }

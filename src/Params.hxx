@@ -106,7 +106,11 @@ namespace SoDa {
     
     std::string getGPSDev() { return "/dev/ttyGPS"; }
 
+    bool forceFracN() { return force_frac_N_mode && !force_integer_N_mode; }
+    bool forceIntN() { return !force_frac_N_mode && force_integer_N_mode; }
+
     unsigned int getDebugLevel() { return debug_level; }
+
   private:
     
     boost::program_options::variables_map pmap;
@@ -123,6 +127,10 @@ namespace SoDa {
 
     // audio port/device name
     std::string audio_portname; 
+
+    // synthesizer mode switches (over-rides local determination)
+    bool force_frac_N_mode;
+    bool force_integer_N_mode;
 
     unsigned int debug_level; 
   };

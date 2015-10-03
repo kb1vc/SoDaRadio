@@ -230,7 +230,10 @@ namespace SoDa {
     double getNearestStep(double freq, double offset = 0.0); 
     SoDa::RangeMap<double, double> lo_step_map; /// map from range to bottom of range...rx_rf
     /// @brief initialize the step map by probing the LO tuning over the range
-    void initStepMap();
+    /// @param force_int_N force LO tuning to use integer-N synthesis
+    /// @param force_frac_N force LO tuning to use fractional-N synthesis
+    void initStepMap(bool force_int_N, bool force_frac_N);
+
     bool supports_IntN_Mode; 
 
     bool db_is_UBX; 

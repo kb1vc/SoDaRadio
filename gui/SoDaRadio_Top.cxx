@@ -145,6 +145,7 @@ namespace SoDaRadio_GUI {
 	  wxString((boost::format(" --debug %d") % getDebugLevel()).str().c_str(), wxConvUTF8);
       }
 
+      scmd = scmd + wxT(" ") + wxString(params.getServerArgs().c_str(), wxConvUTF8) + wxT(" ");
       std::string audio_port = params.getAudioPortName(); 
       scmd = scmd + wxT(" --audio ") + wxString(audio_port.c_str(), wxConvUTF8);
 
