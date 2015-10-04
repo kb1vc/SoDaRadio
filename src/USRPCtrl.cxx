@@ -848,8 +848,25 @@ double SoDa::USRPCtrl::getNearestStep(double freq, double offset)
 
   // Without integer-N mode, this is a wash....
   if(supports_IntN_Mode) {
+    debugMsg(boost::format("getNearestStep freq = %12lf offset = %12lf\n")
+	     % freq % offset);
     if(lo_step_map.find(freq - offset) != lo_step_map.end()) {
       ret = lo_step_map[freq - offset]; 
+      debugMsg(boost::format("getNearestStep found step map entry for [%12lf] = %12lf\n")
+	       % (freq - offset) % ret); 
+      // make sure the ret frequency is not within +/- 200 kHz of freq
+      if(fabs(ret - freq) < 200.0e3) {
+	// we need to adjust. 
+	// either bucket will be better than the one we are in. 
+	// so go to the next one. 
+	double old_ret = ret; 
+	ret = (lo_step_map.find(freq - offset)++)->second; 
+	debugMsg(boost::format("getNearestStep bumped a step from %12lf to %12lf\n") % (1.0e-6 * old_ret) % (1.0e-6 * ret)); 
+      }
+    }
+    else {
+      debugMsg(boost::format("getNearestStep found NO step map entry for [%12lf] ret = %12lf\n")
+	       % (freq - offset) % ret); 
     }
   }
   return ret; 
@@ -963,15 +980,20 @@ void SoDa::USRPCtrl::initStepMap(bool force_int_N, bool force_frac_N)
     uhd::tune_request_t treq(ff);
     treq.args = uhd::device_addr_t("mode_n=integer");
     tunres_int = usrp->set_rx_freq(treq);
+
+    debugMsg(boost::format("Range Check RF_actual %lf DDC = %lf request = %lf requested RF = %lf ddc = %lf\n")
+	     % tunres_int.actual_rf_freq
+	     % tunres_int.actual_dsp_freq
+	     % ff
+	     % treq.rf_freq
+	     % treq.dsp_freq);
+    
     if(target != tunres_int.actual_rf_freq) {
       // we found a new one...
       lo_step_map[SoDa::Range<double>(r_st, tunres_int.actual_rf_freq)] = target;
       r_st = tunres_int.actual_rf_freq;
-      // ff_incr = (target - r_st) * 0.8;  // this is the step size... ? 
       target = r_st;
     }
-    // debugMsg(boost::format("ff = %g   rf = %g\n")
-    // 	     % ff % tunres_int.actual_rf_freq); 
   }
 
   // now go back to the normal handler. 

@@ -84,7 +84,7 @@ bin_PROGRAMS = FFT_Test$(EXEEXT) Sockets_Test$(EXEEXT) \
 	ReSampler_Test$(EXEEXT) TSIP_Test$(EXEEXT) Audio_test$(EXEEXT) \
 	Hilbert_Test$(EXEEXT) FindHome_Test$(EXEEXT) \
 	RangeMap_test$(EXEEXT) SerialDev_Test$(EXEEXT) \
-	TRControl_Test$(EXEEXT)
+	TRControl_Test$(EXEEXT) IntN_FreqTable$(EXEEXT)
 subdir = exp
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/depcomp
@@ -137,6 +137,11 @@ Hilbert_Test_OBJECTS = $(am_Hilbert_Test_OBJECTS)
 Hilbert_Test_DEPENDENCIES = $(am__DEPENDENCIES_2)
 Hilbert_Test_LINK = $(CXXLD) $(Hilbert_Test_CXXFLAGS) $(CXXFLAGS) \
 	$(Hilbert_Test_LDFLAGS) $(LDFLAGS) -o $@
+am_IntN_FreqTable_OBJECTS = IntN_FreqTable-IntN_FreqTable.$(OBJEXT)
+IntN_FreqTable_OBJECTS = $(am_IntN_FreqTable_OBJECTS)
+IntN_FreqTable_DEPENDENCIES = $(am__DEPENDENCIES_2)
+IntN_FreqTable_LINK = $(CXXLD) $(IntN_FreqTable_CXXFLAGS) $(CXXFLAGS) \
+	$(IntN_FreqTable_LDFLAGS) $(LDFLAGS) -o $@
 am_MultiMBox_Test_OBJECTS = MultiMBox_Test-MultiMBox_Test.$(OBJEXT) \
 	../src/MultiMBox_Test-SoDaBase.$(OBJEXT) \
 	../src/MultiMBox_Test-Debug.$(OBJEXT)
@@ -248,18 +253,20 @@ am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
 SOURCES = $(Audio_test_SOURCES) $(FFT_Test_SOURCES) \
 	$(FindHome_Test_SOURCES) $(Hilbert_Test_SOURCES) \
-	$(MultiMBox_Test_SOURCES) $(OSFilter_Test_SOURCES) \
-	$(RangeMap_test_SOURCES) $(ReSampler_Test_SOURCES) \
-	$(SerialDev_Test_SOURCES) $(SoDa_ThreadTest_SOURCES) \
-	$(Sockets_Test_SOURCES) $(TRControl_Test_SOURCES) \
-	$(TSIP_Test_SOURCES) $(TestServer_SOURCES)
+	$(IntN_FreqTable_SOURCES) $(MultiMBox_Test_SOURCES) \
+	$(OSFilter_Test_SOURCES) $(RangeMap_test_SOURCES) \
+	$(ReSampler_Test_SOURCES) $(SerialDev_Test_SOURCES) \
+	$(SoDa_ThreadTest_SOURCES) $(Sockets_Test_SOURCES) \
+	$(TRControl_Test_SOURCES) $(TSIP_Test_SOURCES) \
+	$(TestServer_SOURCES)
 DIST_SOURCES = $(Audio_test_SOURCES) $(FFT_Test_SOURCES) \
 	$(FindHome_Test_SOURCES) $(Hilbert_Test_SOURCES) \
-	$(MultiMBox_Test_SOURCES) $(OSFilter_Test_SOURCES) \
-	$(RangeMap_test_SOURCES) $(ReSampler_Test_SOURCES) \
-	$(SerialDev_Test_SOURCES) $(SoDa_ThreadTest_SOURCES) \
-	$(Sockets_Test_SOURCES) $(TRControl_Test_SOURCES) \
-	$(TSIP_Test_SOURCES) $(TestServer_SOURCES)
+	$(IntN_FreqTable_SOURCES) $(MultiMBox_Test_SOURCES) \
+	$(OSFilter_Test_SOURCES) $(RangeMap_test_SOURCES) \
+	$(ReSampler_Test_SOURCES) $(SerialDev_Test_SOURCES) \
+	$(SoDa_ThreadTest_SOURCES) $(Sockets_Test_SOURCES) \
+	$(TRControl_Test_SOURCES) $(TSIP_Test_SOURCES) \
+	$(TestServer_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -493,6 +500,11 @@ TRControl_Test_CPPFLAGS = $(AM_CPPFLAGS) -g -O1
 TRControl_Test_LDADD = $(AM_BOOSTLIBFLAGS) 
 TRControl_Test_CXXFLAGS = -g -O1
 TRControl_Test_LDFLAGS = -g -O1
+IntN_FreqTable_SOURCES = IntN_FreqTable.cxx 
+IntN_FreqTable_CPPFLAGS = $(AM_CPPFLAGS) -g -O1 
+IntN_FreqTable_LDADD = $(AM_BOOSTLIBFLAGS) 
+IntN_FreqTable_CXXFLAGS = -g -O1
+IntN_FreqTable_LDFLAGS = -g -O1
 all: all-am
 
 .SUFFIXES:
@@ -611,6 +623,10 @@ FindHome_Test$(EXEEXT): $(FindHome_Test_OBJECTS) $(FindHome_Test_DEPENDENCIES) $
 Hilbert_Test$(EXEEXT): $(Hilbert_Test_OBJECTS) $(Hilbert_Test_DEPENDENCIES) $(EXTRA_Hilbert_Test_DEPENDENCIES) 
 	@rm -f Hilbert_Test$(EXEEXT)
 	$(AM_V_CXXLD)$(Hilbert_Test_LINK) $(Hilbert_Test_OBJECTS) $(Hilbert_Test_LDADD) $(LIBS)
+
+IntN_FreqTable$(EXEEXT): $(IntN_FreqTable_OBJECTS) $(IntN_FreqTable_DEPENDENCIES) $(EXTRA_IntN_FreqTable_DEPENDENCIES) 
+	@rm -f IntN_FreqTable$(EXEEXT)
+	$(AM_V_CXXLD)$(IntN_FreqTable_LINK) $(IntN_FreqTable_OBJECTS) $(IntN_FreqTable_LDADD) $(LIBS)
 ../src/MultiMBox_Test-SoDaBase.$(OBJEXT): ../src/$(am__dirstamp) \
 	../src/$(DEPDIR)/$(am__dirstamp)
 ../src/MultiMBox_Test-Debug.$(OBJEXT): ../src/$(am__dirstamp) \
@@ -740,6 +756,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FFT_Test-FFT_Test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FindHome_Test-FindHome_Test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Hilbert_Test-Hilbert_Test.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/IntN_FreqTable-IntN_FreqTable.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/MultiMBox_Test-MultiMBox_Test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/OSFilter_Test-OSFilter_Test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/RangeMap_test-RangeMap_test.Po@am__quote@
@@ -920,6 +937,20 @@ Hilbert_Test-Hilbert_Test.obj: Hilbert_Test.cxx
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='../src/SoDaBase.cxx' object='../src/Hilbert_Test-SoDaBase.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(Hilbert_Test_CPPFLAGS) $(CPPFLAGS) $(Hilbert_Test_CXXFLAGS) $(CXXFLAGS) -c -o ../src/Hilbert_Test-SoDaBase.obj `if test -f '../src/SoDaBase.cxx'; then $(CYGPATH_W) '../src/SoDaBase.cxx'; else $(CYGPATH_W) '$(srcdir)/../src/SoDaBase.cxx'; fi`
+
+IntN_FreqTable-IntN_FreqTable.o: IntN_FreqTable.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(IntN_FreqTable_CPPFLAGS) $(CPPFLAGS) $(IntN_FreqTable_CXXFLAGS) $(CXXFLAGS) -MT IntN_FreqTable-IntN_FreqTable.o -MD -MP -MF $(DEPDIR)/IntN_FreqTable-IntN_FreqTable.Tpo -c -o IntN_FreqTable-IntN_FreqTable.o `test -f 'IntN_FreqTable.cxx' || echo '$(srcdir)/'`IntN_FreqTable.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/IntN_FreqTable-IntN_FreqTable.Tpo $(DEPDIR)/IntN_FreqTable-IntN_FreqTable.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='IntN_FreqTable.cxx' object='IntN_FreqTable-IntN_FreqTable.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(IntN_FreqTable_CPPFLAGS) $(CPPFLAGS) $(IntN_FreqTable_CXXFLAGS) $(CXXFLAGS) -c -o IntN_FreqTable-IntN_FreqTable.o `test -f 'IntN_FreqTable.cxx' || echo '$(srcdir)/'`IntN_FreqTable.cxx
+
+IntN_FreqTable-IntN_FreqTable.obj: IntN_FreqTable.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(IntN_FreqTable_CPPFLAGS) $(CPPFLAGS) $(IntN_FreqTable_CXXFLAGS) $(CXXFLAGS) -MT IntN_FreqTable-IntN_FreqTable.obj -MD -MP -MF $(DEPDIR)/IntN_FreqTable-IntN_FreqTable.Tpo -c -o IntN_FreqTable-IntN_FreqTable.obj `if test -f 'IntN_FreqTable.cxx'; then $(CYGPATH_W) 'IntN_FreqTable.cxx'; else $(CYGPATH_W) '$(srcdir)/IntN_FreqTable.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/IntN_FreqTable-IntN_FreqTable.Tpo $(DEPDIR)/IntN_FreqTable-IntN_FreqTable.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='IntN_FreqTable.cxx' object='IntN_FreqTable-IntN_FreqTable.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(IntN_FreqTable_CPPFLAGS) $(CPPFLAGS) $(IntN_FreqTable_CXXFLAGS) $(CXXFLAGS) -c -o IntN_FreqTable-IntN_FreqTable.obj `if test -f 'IntN_FreqTable.cxx'; then $(CYGPATH_W) 'IntN_FreqTable.cxx'; else $(CYGPATH_W) '$(srcdir)/IntN_FreqTable.cxx'; fi`
 
 MultiMBox_Test-MultiMBox_Test.o: MultiMBox_Test.cxx
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(MultiMBox_Test_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT MultiMBox_Test-MultiMBox_Test.o -MD -MP -MF $(DEPDIR)/MultiMBox_Test-MultiMBox_Test.Tpo -c -o MultiMBox_Test-MultiMBox_Test.o `test -f 'MultiMBox_Test.cxx' || echo '$(srcdir)/'`MultiMBox_Test.cxx

@@ -3,7 +3,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/src
 AM_BOOSTLIBFLAGS = ${BOOST_PROGRAM_OPTIONS_LIB} ${BOOST_THREAD_LIB} ${BOOST_DATE_TIME_LIB} ${BOOST_SYSTEM_LIB} 
 
 
-bin_PROGRAMS = FFT_Test Sockets_Test MultiMBox_Test SoDa_ThreadTest OSFilter_Test  TestServer ReSampler_Test TSIP_Test Audio_test Hilbert_Test FindHome_Test RangeMap_test SerialDev_Test TRControl_Test
+bin_PROGRAMS = FFT_Test Sockets_Test MultiMBox_Test SoDa_ThreadTest OSFilter_Test  TestServer ReSampler_Test TSIP_Test Audio_test Hilbert_Test FindHome_Test RangeMap_test SerialDev_Test TRControl_Test IntN_FreqTable
 
 
 Sockets_Test_SOURCES = Sockets_Test.cxx  ../src/IPSockets.cxx ../src/UDSockets.cxx ../src/IPSockets.hxx ../src/UDSockets.hxx
@@ -89,4 +89,10 @@ TRControl_Test_CPPFLAGS = $(AM_CPPFLAGS) -g -O1
 TRControl_Test_LDADD = $(AM_BOOSTLIBFLAGS) 
 TRControl_Test_CXXFLAGS = -g -O1
 TRControl_Test_LDFLAGS = -g -O1
+
+IntN_FreqTable_SOURCES = IntN_FreqTable.cxx 
+IntN_FreqTable_CPPFLAGS = $(AM_CPPFLAGS) -g -O1 
+IntN_FreqTable_LDADD = $(AM_BOOSTLIBFLAGS) 
+IntN_FreqTable_CXXFLAGS = -g -O1
+IntN_FreqTable_LDFLAGS = -g -O1
 
