@@ -79,9 +79,6 @@ namespace SoDa {
     /// @return a pointer to the USRP radio object
     uhd::usrp::multi_usrp::sptr getUSRP() { return usrp; }
 
-    /// Temporary message handler, while we're looking for
-    /// "natural" front-end VCO settings.
-    static void freq_search_message_handler(uhd::msg::type_t type, const std::string & msg);
 
     /// This is the more permanent message handler... 
     static void normal_message_handler(uhd::msg::type_t type, const std::string & msg);
@@ -204,7 +201,7 @@ namespace SoDa {
     // to move the transmit birdie out of band.
     double tx_freq; ///< remember current tx freq 
     double tx_freq_rxmode_offset; ///< when in RX mode, move tx off frequency to put the tx birdie out of band, when in TX mode, this is 0
-    static const double rxmode_offset = 1e6; ///< tx offset when in RX mode
+    static const double rxmode_offset = 1.0e6; ///< tx offset when in RX mode
 
     double tx_samp_rate; ///< sample rate to USRP TX chain. 
     std::string tx_ant;  ///< TX antenna choice (usually has to be TX or TX/RX1?
@@ -223,16 +220,21 @@ namespace SoDa {
 
     // integer tuning mode is helped by a map of LO capabilities.
 
-    /// @brief getNearestStep returns the nearest integer-N step
-    /// to the supplied frequency that is at least <offset> Hz below it.
-    /// @param freq -- target tuning frequency
-    /// @param offset -- returned frequency will be < freq - offset
-    double getNearestStep(double freq, double offset = 0.0); 
-    SoDa::RangeMap<double, double> lo_step_map; /// map from range to bottom of range...rx_rf
-    /// @brief initialize the step map by probing the LO tuning over the range
+    /// @brief applyTargetFreqCorrection adjusts the requested frequency,
+    /// if necessary, to avoid a birdie caused by a multiple of the step
+    /// size within the passband. It will also adjust the stepsize. 
+    /// @param target_freq -- target tuning frequency
+    /// @param avoid_freq -- the frequency that we must avoid by at least 1MHz
+    /// @param tune_req -- tune request record. 
+    void applyTargetFreqCorrection(double target_freq, 
+				   double avoid_freq, 
+				   uhd::tune_request_t * tune_req);
+
+
+    /// @brief Test for support for integer-N synthesis
     /// @param force_int_N force LO tuning to use integer-N synthesis
     /// @param force_frac_N force LO tuning to use fractional-N synthesis
-    void initStepMap(bool force_int_N, bool force_frac_N);
+    void testIntNMode(bool force_int_N, bool force_frac_N);
 
     bool supports_IntN_Mode; 
 
