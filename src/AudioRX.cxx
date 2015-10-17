@@ -354,14 +354,14 @@ void SoDa::AudioRX::execSetCommand(SoDa::Command * cmd)
 				af_filter_selection));
     break; 
   case SoDa::Command::RX_AF_GAIN: // set audio gain. 
-    af_gain = powf(10.0, 0.1 * (cmd->dparms[0] - 50.0));
+    af_gain = powf(10.0, 0.25 * (cmd->dparms[0] - 50.0));
     cmd_stream->put(new Command(Command::REP, Command::RX_AF_GAIN, 
-				50 + 10.0 * log10(af_gain)));
+				50. + 4.0 * log10(af_gain)));
     break; 
   case SoDa::Command::RX_AF_SIDETONE_GAIN: // set audio gain. 
-    af_sidetone_gain = powf(10.0, 0.1 * (cmd->dparms[0] - 50.0));
+    af_sidetone_gain = powf(10.0, 0.25 * (cmd->dparms[0] - 50.0));
     cmd_stream->put(new Command(Command::REP, Command::RX_AF_GAIN, 
-				50 + 10.0 * log10(af_gain)));
+				50. + 4.0 * log10(af_gain)));
     break; 
   }
 }
@@ -375,7 +375,7 @@ void SoDa::AudioRX::execGetCommand(SoDa::Command * cmd)
     break;
   case SoDa::Command::RX_AF_GAIN: // set af filter bw.
     cmd_stream->put(new Command(Command::REP, Command::RX_AF_GAIN, 
-				10.0 * log10(af_gain)));
+				50.0 + 4.0 * log10(af_gain)));
     break;
   case SoDa::Command::DBG_REP: // report status
     SoDa::Command::UnitSelector us;
