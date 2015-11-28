@@ -41,8 +41,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "MultiMBox.hxx"
 #include "Command.hxx"
 #include "Params.hxx"
-#include "RangeMap.hxx"
 #include "TRControl.hxx"
+#include "USRPTuner.hxx"
 
 #include <uhd/utils/thread_priority.hpp>
 #include <uhd/utils/safe_main.hpp>
@@ -53,79 +53,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <uhd/utils/msg.hpp>
 
 namespace SoDa {
-
-  /// @class USRPTuner
-  /// 
-  /// Generic class for TX and RX tuning.  This is specialized for
-  /// each of the daughtercard modules that needs specialization. 
-  /// The base class implements the standard tuning interface
-  /// (typically fractional-N). 
-  /// 
-  /// 
-  class USRPTuner : public Debug {
-  public:
-    /// @brief Constructor -- 
-    /// @param unit_name the name of this tuner
-    /// @param usrp a pointer to the USRP object that owns this tuner
-    /// @param min_separation where possible, the LO frequency should 
-    /// be at least min_separation Hz from a specified "avoid_frequency."
-    USRPTuner(uhd::usrp::multi_usrp::sptr usrp, 
-	      double min_separation, 
-	      std::string unit_name = std::string("USRPTuner")); 
-
-    /// @brief setRXFreq set the RX 1st LO frequency.  Where possible,
-    /// the chosen frequency should be separated from the avoid_freq
-    /// by the amount specified when we created this tuning object. 
-    ///
-    /// @param rx_freq the target frequency of interest
-    /// @param avoid_freq the frequency that we must avoid by at least min_sep
-    /// @param tune_result the response from the UHD set_xx_freq request
-    /// @return true on success, false on failure. 
-    ///
-    virtual bool setRXFreq(double rx_freq, double avoid_freq, uhd::tune_result_t & tune_result);
-    /// @brief setTXFreq set the TX 1st LO frequency.  Where possible,
-    /// the chosen frequency should be separated from the avoid_freq
-    /// by the amount specified when we created this tuning object. 
-    ///
-    /// @param tx_freq the target frequency of interest
-    /// @param avoid_freq the frequency that we must avoid by at least min_sep
-    /// @param tune_result the response from the UHD set_xx_freq request
-    /// @return true on success, false on failure. 
-    ///
-    virtual bool setTXFreq(double tx_freq, double avoid_freq, uhd::tune_result_t & tune_result);
-
-  protected:
-    /// is the identified (rx or tx) front-end LO locked?
-    /// If not, set the tuning frequency to "the right thing"
-    /// @param req the requested frequency (and tuning discipline)
-    /// @param sel 'r' for RX LO, 't' for TX LO
-    /// @param cur tuning result, if the LO was locked.
-        /// @return true if the LO is locked, false otherwise. 
-    virtual bool checkLock(uhd::tune_request_t & req,
-			   char sel,
-			   uhd::tune_result_t & cur);
-
-    double min_separation;
-    uhd::usrp::multi_usrp::sptr usrp;
-  }; 
-
-  /// 
-  /// @class UBXTuner
-  ///
-  /// This is a tuner for the UBX module that takes advantage of 
-  /// the int_n_step argument in the tune request. 
-  /// WBX or SBX modules
-  class UBXTuner : public USRPTuner {
-  };
-
-  /// 
-  /// @class IntNTuner
-  ///
-  /// This is a simple integer-N tuner.  Suitable for the 
-  /// WBX or SBX modules
-  class IntNTuner : public USRPTuner {
-  };
-
 
 
   ///  @class USRPCtrl
