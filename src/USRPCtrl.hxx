@@ -42,7 +42,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Command.hxx"
 #include "Params.hxx"
 #include "TRControl.hxx"
-#include "USRPTuner.hxx"
 
 #include <uhd/utils/thread_priority.hpp>
 #include <uhd/utils/safe_main.hpp>
