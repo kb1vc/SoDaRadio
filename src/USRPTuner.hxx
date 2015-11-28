@@ -76,12 +76,11 @@ namespace SoDa {
     /// @param usrp a pointer to the USRP object that owns this tuner
     /// @param min_separation where possible, the LO frequency should 
     /// be at least min_separation Hz from a specified "avoid_frequency."
-    /// @param force_simple if true, turn off intN tuning mode even if it supported, 
-    /// use the simplest version of the tuner (
-
+    /// @param force_fracN if true, turn off intN tuning mode even if it supported, 
+    /// @param force_simple if true, use the simplest version of the tuner.
     USRPTuner * makeTuner(uhd::usrp::multi_usrp::sptr usrp, 
-			  double min_separation, 
-			  bool force_fracN = false, 
+			  double min_separation,
+			  bool force_fracN = false,
 			  bool force_simple = false);
 
     /// @brief setRXFreq set the RX 1st LO frequency.  Where possible,
@@ -129,7 +128,6 @@ namespace SoDa {
   class IntNTuner : public USRPTuner {
   public:
     /// @brief Constructor -- 
-    /// @param unit_name the name of this tuner
     /// @param usrp a pointer to the USRP object that owns this tuner
     /// @param min_separation where possible, the LO frequency should 
     /// be at least min_separation Hz from a specified "avoid_frequency."
@@ -176,7 +174,6 @@ namespace SoDa {
   class SimpleTuner : public USRPTuner {
   public:
     /// @brief Constructor -- 
-    /// @param unit_name the name of this tuner
     /// @param usrp a pointer to the USRP object that owns this tuner
     SimpleTuner(uhd::usrp::multi_usrp::sptr usrp) : 
       USRPTuner(usrp, 0.0, std::string("IntNTuner")) 

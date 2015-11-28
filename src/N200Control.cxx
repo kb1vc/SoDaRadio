@@ -64,7 +64,7 @@ namespace SoDa
     }
     catch (IP::ReadTimeoutExc & ex) {
       // if we get here, then the device is not connected!  
-      std::cerr << "No network control device found." << std::endl; 
+      std::cerr << "No Serial TR switch control device found." << std::endl; 
       delete skt; 
       skt = NULL; 
     }
@@ -84,7 +84,7 @@ namespace SoDa
       } 
       catch (IP::ReadTimeoutExc & ex) {
 	// if we get here, then the device is not connected!  
-	std::cerr << "Lost networked control device....." << std::endl; 
+	std::cerr << "No Serial Controlled TR switch is connected to this N2xx....." << std::endl; 
 	delete skt; 
 	skt = NULL; 
 	return false; 
@@ -108,8 +108,8 @@ namespace SoDa
 	% cmd % buf; 
       }
       catch (IP::ReadTimeoutExc & ex) {
-	// if we get here, then the device is not connected!  
-	std::cerr << "Lost networked control device....." << std::endl; 
+	// if we get here, then the device is not connected!
+	std::cerr << "No Serial Controlled TR switch is connected to this N2xx....." << std::endl; 	
 	delete skt; 
 	skt = NULL; 
 	return false; 

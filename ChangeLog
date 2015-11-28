@@ -1,3 +1,25 @@
+2015-11-28 Matt Reilly kb1vc (kb1vc@kb1vc.org)
+	* wow.... not many updates to the ChangeLog since the conversion to Git.
+	Changes from 3.5:
+	* Addition of arduino sketches for hardware to do TR and bandswitching.
+	* Added "serverargs" command line switch to gui -- argument is passed through to 
+	the SoDaServer program.
+	* Added "audio" switch to gui -- select the audio device for ALSA.
+	* Added hardware schematic and layout files (eagle) for a B2xx TR switch module
+	* Added hardware schematic and layout files (eagle) for a serial controlled
+	TR and bandswitch that talks to the N200 through the GPS serial port.
+	* Fixed audio gain problem where the original (up to 3.5) slider control would
+	go from silent to ear-splitting in the first 1/4 of the range.
+	* Added B200 and N200 TR switch control modules -- called by USRPCtrl
+	* Added -intN and -fracN (force integer-N or fractional-N synthesis in
+	the front-end) to the SoDaServer command line switches.
+	* Changed tuning scheme in USRPCtrl to better avoid reference multiple spurs.
+	* Cleaned up some of the sloppier code in USRPCtrl.
+	* Started refactoring the front-end tuner code... not in use yet.
+	* Fixed some problems in USRPCtrl that would likely crash on USRPs that
+	have no front-end local oscillators (LFRX/LFTX/BASICRX/BASICTX). This
+	code is as yet untested on such modules....  
+
 2014-09-13 Matt Reilly kb1vc (kb1vc@kb1vc.org)
 	* SVN 81
 	* First support for B210 10GHz simple transverter see the Blog...

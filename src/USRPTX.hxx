@@ -54,7 +54,7 @@ namespace SoDa {
      * @brief Constructor for RF Transmit/modulator process
      *
      * @param params block describing intial setup of the radio
-     * @param usrp libuhd handle for the USRP radio
+     * @param _usrp libuhd handle for the USRP radio
      * @param _tx_stream audio transmit stream to be used in modulator
      * @param _cw_env_stream envelope stream from text-to-CW converter
      * @param _cmd_stream command stream

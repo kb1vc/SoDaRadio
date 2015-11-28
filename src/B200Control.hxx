@@ -55,8 +55,8 @@ namespace SoDa {
   public:
     /**
      * @brief constructor
-     * @param ip_addr_str the ip address of the selected radio
-     * @param portnum the port to use
+     * @param usrp a pointer to the radio object
+     * @param mboard which B200 object in the usrp
      *
      */
     B200Control(uhd::usrp::multi_usrp::sptr usrp, int mboard = 0);

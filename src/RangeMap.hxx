@@ -40,7 +40,8 @@
 #include <map>
 
 namespace SoDa {
-  ///  @class Range -- a template class for mapping ranges to thingies
+  ///  @class Range 
+  /// @brief a template class for mapping ranges to thingies
   ///  This represents an open interval -- thanks to suggestions from
   ///  http://stackoverflow.com/questions/1089192/c-stl-range-container
   template <typename Tk> class Range {

@@ -36,6 +36,7 @@
 #include <uhd/types/tune_request.hpp>
 #include <uhd/types/tune_result.hpp>
 #include <boost/format.hpp>
+#include <boost/property_tree/exceptions.hpp>
 
 
 // Mac OSX doesn't have a clock_gettime, it has
@@ -89,10 +90,22 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
     throw SoDaException((boost::format("Unable to allocate USRP unit with arguments = [%]\n") % params->getUHDArgs()).str(), this);
   }
 
-  uhd::property_tree::sptr tree = usrp->get_device()->get_tree();
-  const std::string mbname = tree->list("/mboards").at(0);
-  // find out what kind of device we have.
-  motherboard_name = tree->access<std::string>("/mboards/" + mbname + "/name").get();
+  // We need to find out if this is a B2xx or something like it -- they don't
+  // have daughter cards and there are other things to watch out for....
+  uhd::property_tree::sptr tree;
+  std::string mbname;
+  try {
+    tree = usrp->get_device()->get_tree();  
+    mbname = tree->list("/mboards").at(0);
+    // find out what kind of device we have.
+    motherboard_name = tree->access<std::string>("/mboards/" + mbname + "/name").get();
+  }
+  catch (boost::property_tree::ptree_error e) {
+    std::cerr << boost::format("USRPCtrl encountered PropertyTree exception on motherboard_name: [%s]\nServer will continue.\n") % e.what(); 
+  }
+  catch (std::runtime_error e) {
+    std::cerr << boost::format("USRPCtrl encountered Unknown exception on motherboard_name: [%s]\nServer will continue.\n") % e.what(); 
+  }
 
   if((motherboard_name == "B200") || (motherboard_name == "B210")) {
     // B2xx needs a master clock rate of 50 MHz to generate a sample rate of 625 kS/s.
@@ -129,51 +142,71 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
 
   first_gettime = 0.0;
   double tmp = getTime();
-  // remove the whole number of seconds -- paranoia
+  // truncate to whole number of seconds -- paranoia
   first_gettime = floor(tmp); 
 
-  // dumpTree("/mboards", tree);
-
-
-  uhd::usrp::subdev_spec_t rx_subdev_spec = tree->access<uhd::usrp::subdev_spec_t>("/mboards/" + mbname + "/rx_subdev_spec").get();
-  
-  debugMsg(boost::format("RX SUBDEV Spec [%s]\n") % rx_subdev_spec.to_string());
 
   // get the tx front end subtree
   uhd::fs_path tx_fe_root;
+  tx_fe_has_enable = false; 
   tx_fe_root = is_B2xx ? ("/mboards/" + mbname + "/dboards/A/tx_frontends/A") :
     ("/mboards/" + mbname + "/dboards/A/tx_frontends/0");
-  if(tree->exists(tx_fe_root)) {
-    tx_fe_subtree = tree->subtree(tx_fe_root);
+  try {
+    if(tree->exists(tx_fe_root)) {
+      tx_fe_subtree = tree->subtree(tx_fe_root);
+    }
+
+    // do we care?  If the tx_fe_subtree doesn't have an enable property,
+    // we want to avoid setting and getting it....
+    if(tx_fe_subtree != NULL) {
+      std::vector<std::string> pslis = tx_fe_subtree->list("");
+      if(std::find(pslis.begin(), pslis.end(), "enabled") != pslis.end()) {
+	tx_fe_has_enable = true; 
+      }
+    }
+  }
+  catch (boost::property_tree::ptree_error e) {
+    std::cerr << boost::format("USRPCtrl encountered PropertyTree exception on tx_fe_subtree: [%s]\nServer will continue.\n") % e.what(); 
+  }
+  catch (std::runtime_error e) {
+    std::cerr << boost::format("USRPCtrl encountered Unknown exception on tx_fe_subtree: [%s]\nServer will continue.\n") % e.what(); 
   }
 
   // get the rx front end subtree
   uhd::fs_path rx_fe_root;
+  rx_fe_has_enable = false; 
   rx_fe_root = is_B2xx ? ("/mboards/" + mbname + "/dboards/A/rx_frontends/A") :
     ("/mboards/" + mbname + "/dboards/A/rx_frontends/0");
-  if(tree->exists(rx_fe_root)) {
-    rx_fe_subtree = tree->subtree(rx_fe_root);
-  }
-  rx_fe_subtree->access<bool>("enabled").set(true);
-
-  // UBX modules are an issue
-  db_is_UBX = false; 
-  if(!is_B2xx) {
-    uhd::fs_path namepath = rx_fe_root / "name"; 
-    std::string dbname = tree->access<std::string>(namepath).get();
-    // std::cerr << boost::format("***********\n\nfrontend name = [%s]\n\n*********\n")
-    //   % dbname; 
-
-    std::string ubxname("UBX");
-    if(dbname.compare(0, 3, ubxname) == 0) {
-      // std::cerr << "This DB is a UBX" << std::endl; 
-      db_is_UBX = true; 
+  try {
+    if(tree->exists(rx_fe_root)) {
+      rx_fe_subtree = tree->subtree(rx_fe_root);
     }
-    else {
-      // std::cerr << boost::format("This DB is NOT a UBX [%s] != [%s]\n") % ubxname % dbname; 
-      db_is_UBX = false; 
+
+    // do we care?  If the rx_fe_subtree doesn't have an enable property, 
+    // we want to avoid setting and getting it....
+    if(rx_fe_subtree != NULL) {
+      std::vector<std::string> pslis = rx_fe_subtree->list("");
+      if(std::find(pslis.begin(), pslis.end(), "enabled") != pslis.end()) {
+	rx_fe_has_enable = true; 
+      }
     }
   }
+  catch (boost::property_tree::ptree_error e) {
+    std::cerr << boost::format("USRPCtrl encountered PropertyTree exception on rx_fe_subtree: [%s]\nServer will continue.\n") % e.what(); 
+  }
+  catch (std::runtime_error e) {
+    std::cerr << boost::format("USRPCtrl encountered Unknown exception on rx_fe_subtree: [%s]\nServer will continue.\n") % e.what(); 
+  }
+  
+  if(rx_fe_has_enable) rx_fe_subtree->access<bool>("enabled").set(true);
+
+  // do we have lock sensors? 
+  std::vector<std::string> rx_snames, tx_snames; 
+  rx_snames = usrp->get_rx_sensor_names(0);
+  tx_snames = usrp->get_tx_sensor_names(0);
+  rx_has_lo_locked_sensor = std::find(rx_snames.begin(), rx_snames.end(), "lo_locked") != rx_snames.end();
+  tx_has_lo_locked_sensor = std::find(tx_snames.begin(), tx_snames.end(), "lo_locked") != tx_snames.end();
+
 
   // find the gain ranges
   rx_rf_gain_range = usrp->get_rx_gain_range();
@@ -252,10 +285,6 @@ void SoDa::USRPCtrl::run()
       exitflag |= (cmd->target == Command::STOP); 
       cmd_stream->free(cmd); 
     }
-    // if(loopcount == 100) {
-    //   loopcount = 0;
-    //   cmd_stream->put(new Command(Command::GET, Command::DBG_REP, (int) Command::AudioRX));
-    // }
   }
 }
 
@@ -290,8 +319,11 @@ uhd::tune_result_t SoDa::USRPCtrl::checkLock(uhd::tune_request_t & req, char sel
   int lock_itercount = 0;
   uhd::tune_result_t ret = cur;
 
-  // as of version 3.8.2 the B2xx has the lo_locked sensor... if(is_B2xx) return ret;
-  
+  // not all front ends even have LOs....  
+  if(!((sel == 'r') ? rx_has_lo_locked_sensor : tx_has_lo_locked_sensor)) {
+    return cur; 
+  }
+
   while(1) {
     uhd::sensor_value_t lo_locked = (sel == 'r') ? usrp->get_rx_sensor("lo_locked",0) : usrp->get_tx_sensor("lo_locked",0);
     if(lo_locked.to_bool()) break;
@@ -330,17 +362,19 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
       debugMsg(boost::format("\tfreq = %lf new target = %lf\n") % freq % target_rx_freq);
     }
 
-    /// This code depends on the integer-N tuning features in libuhd 3.7
+    /// This code depends on the integer-N tuning features in libuhd 3.7 and after
     /// earlier libraries will revert to fractional-N tuning and might
     /// see a rise in the noisefloor and perhaps some troublesome spurs
     /// at multiples of the reference frequency divided by the fractional divisor.
     uhd::tune_request_t rx_trequest(target_rx_freq); 
     if(supports_IntN_Mode) {
+      // look for a good target RX freq that doesn't cause inband/nearband spurs... 
       applyTargetFreqCorrection(target_rx_freq, target_rx_freq, &rx_trequest);
       debugMsg(boost::format("\t*****target_rx_freq = %lf corrected to %lf\n")
 	       % target_rx_freq % rx_trequest.rf_freq); 
     }
     else {
+      // just use the vanilla tuning.... 
       rx_trequest.target_freq = target_rx_freq;
       rx_trequest.rf_freq = target_rx_freq; 
       rx_trequest.rf_freq_policy = uhd::tune_request_t::POLICY_AUTO;
@@ -373,10 +407,6 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
     }
     else if(supports_IntN_Mode) {
       applyTargetFreqCorrection(freq, last_rx_req_freq, &tx_request);
-      // tx_request.rf_freq = freq; // applyTargetFreqCorrection(freq, 12.5e6); 
-      // tx_request.rf_freq_policy = uhd::tune_request_t::POLICY_AUTO; // was manual
-      // tx_request.dsp_freq_policy = uhd::tune_request_t::POLICY_AUTO;
-      // tx_request.args = uhd::device_addr_t("mode_n=integer,int_n_step=12.5e6");
     }
     else {
       tx_request.rf_freq_policy = uhd::tune_request_t::POLICY_AUTO;
@@ -395,7 +425,6 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
 	     % last_tx_tune_result.actual_dsp_freq);
 
     last_tx_tune_result = checkLock(tx_request, 't', last_tx_tune_result);
-    // tx_fe_subtree->access<bool>("enabled").set(last_tx_ena);
 
     double txfreqs[2];
     txfreqs[0] = usrp->get_tx_freq(0);
@@ -744,13 +773,8 @@ void SoDa::USRPCtrl::setTXEna(bool val)
     tr_control->setTXOn(); 
   }
 
-  // enable the transmitter (or disable it)
-  tx_fe_subtree->access<bool>("enabled").set(val);
-  debugMsg(boost::format("Got %d from call to en/dis TX with val = %d")
-	   % tx_fe_subtree->access<bool>("enabled").get() % val);
-
-  debugMsg(boost::format("Got rx_fe enabled = %d from call to en/dis TX with val = %d")
-	   % rx_fe_subtree->access<bool>("enabled").get() % val);
+  // if the front end has an enable property, set it. 
+  setTXFrontEndEnable(val); 
 
   // if we're enabling, set the power, freq, and other stuff
   if(val) {
@@ -772,7 +796,37 @@ void SoDa::USRPCtrl::setTXEna(bool val)
   
 }
 
+void SoDa::USRPCtrl::setTXFrontEndEnable(bool val) 
+{
+  if(!tx_fe_has_enable) return; 
 
+  // enable the transmitter (or disable it)
+  try {
+    tx_fe_subtree->access<bool>("enabled").set(val);
+  }
+  catch (boost::property_tree::ptree_error e) {
+    std::cerr << boost::format("USRPCtrl encountered PropertyTree exception in setTXEna: [%s]\nServer will continue.\n") % e.what(); 
+  }
+  catch (std::runtime_error e) {
+    std::cerr << boost::format("USRPCtrl encountered Unknown exception in setTXEna: [%s]\nServer will continue.\n") % e.what(); 
+  }
+
+  try {
+    debugMsg(boost::format("Got %d from call to en/dis TX with val = %d")
+	     % tx_fe_subtree->access<bool>("enabled").get() % val);
+    if(rx_fe_has_enable) {
+      debugMsg(boost::format("Got rx_fe enabled = %d from call to en/dis TX with val = %d")
+	       % rx_fe_subtree->access<bool>("enabled").get() % val);
+    }
+  }
+  catch (boost::property_tree::ptree_error e) {
+    std::cerr << boost::format("USRPCtrl encountered PropertyTree exception in setTXEna debug: [%s]\nServer will continue.\n") % e.what(); 
+  }
+  catch (std::runtime_error e) {
+    std::cerr << boost::format("USRPCtrl encountered Unknown exception in setTXEna debug: [%s]\nServer will continue.\n") % e.what(); 
+  }
+}
+ 
 bool SoDa::USRPCtrl::getTXEna()
 {
   unsigned int enabits = 0; 
@@ -845,6 +899,7 @@ void SoDa::USRPCtrl::applyTargetFreqCorrection(double target_freq, double avoid_
 {
   debugMsg(boost::format("######   aTFC(%lf...)") % target_freq); 
 
+  // if we can't find a really good answer, at least setup a "correct" answer... 
   treq->dsp_freq_policy = uhd::tune_request_t::POLICY_AUTO; 
   treq->target_freq = target_freq; 
   // default
@@ -863,6 +918,8 @@ void SoDa::USRPCtrl::applyTargetFreqCorrection(double target_freq, double avoid_
 
   double N; 
 
+  // now look for a good integer N setting that puts the reference spurs 
+  // at least 1MHz away from our "avoid" frequency...
   for(i = 0; i < 3; i++) {
     N = round(target_freq / steps[i]);
     
@@ -879,6 +936,7 @@ void SoDa::USRPCtrl::applyTargetFreqCorrection(double target_freq, double avoid_
   }
   
   // if we get here, we're probably a multiple of 50 MHz.... tough point to make....
+  // there are no good answers... 
   N = round(target_freq / steps[0]);
   double rf_freq = N * steps[0];
   debugMsg(boost::format("\t\tTRY rf_freq = %lf step = %lf\n") % rf_freq % steps[0]);
@@ -928,9 +986,37 @@ void SoDa::USRPCtrl::testIntNMode(bool force_int_N, bool force_frac_N)
     debugMsg("Forced IntN Tuning support OFF.");
     supports_IntN_Mode = false; 
   }
-  else if(is_B2xx) return; 
+  else if(is_B2xx) {
+    supports_IntN_Mode = false; 
+    return; 
+  }
   else {
     // first, do we have this capability?
+    // LFTX/LFRX/BASICRX/BASICTX don't.   Check the RX/RF front end name
+    // if it contains LFRX or BASICRX then we don't support intN mode.
+    // get the db name for the rx
+    std::string dbname;
+    try {
+      dbname = rx_fe_subtree->access<std::string>("name").get();
+    }
+    catch (boost::property_tree::ptree_error e) {
+      std::cerr << boost::format("USRPCtrl encountered PropertyTree exception on rx frontend name: [%s]\nServer will continue.\n") % e.what(); 
+    }
+    catch (std::runtime_error e) {
+      std::cerr << boost::format("USRPCtrl encountered Unknown exception on rx frontend name: [%s]\nServer will continue.\n") % e.what(); 
+    }
+
+    std::string lfrx("LFRX");
+    std::string basrx("BASICRX");
+    if((dbname.compare(0, lfrx.length(), lfrx) == 0) ||
+       (dbname.compare(0, basrx.length(), basrx) == 0)) {
+      std::cerr << boost::format("This is a simple front end -- no front-end LO. [%s]\n")
+	% dbname;
+      supports_IntN_Mode = false; 
+      return;
+    }
+
+    // if we get here, the front end has an LO
     // pick a frequency halfway between the min and max freq for this MB.
     double tf = (rx_rf_freq_range.stop() + rx_rf_freq_range.start()) * 0.5;
     // Now bump it by some silly amount

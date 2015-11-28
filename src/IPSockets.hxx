@@ -66,12 +66,12 @@ namespace SoDa {
       int putRaw(const void * ptr, unsigned int size);
       
       /**
-       * @brief get a raw string of <size> bytes... 
+       * @brief get a raw string of &lt;size&gt; bytes... 
        *
        * @param ptr pointer to a buffer
-       * @param size don't return until we've gotten <size> bytes, or timed out
+       * @param size don't return until we've gotten &lt;size&gt; bytes, or timed out
        * @param usec_timeout return FALSE if we wait longer than this, 0 says don't timeout
-       * @return 0 if we got all <size> bytes, -1 if we timed out. 
+       * @return 0 if we got all &lt;size&gt; bytes, -1 if we timed out. 
        */
       int getRaw(const void * ptr, unsigned int size, unsigned int usec_timeout = 0);       
     

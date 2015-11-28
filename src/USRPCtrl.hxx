@@ -147,6 +147,14 @@ namespace SoDa {
     // need this for TX/RX enable.
     uhd::property_tree::sptr rx_fe_subtree; ///< property tree from daughtercard module
 
+    // what controls and widgets do we have for the two front-ends? 
+
+    bool tx_fe_has_enable; ///< can we access  tx_fe_subtree/enabled ? 
+    bool rx_fe_has_enable; ///< can we access  rx_fe_subtree/enabled ? 
+    bool tx_has_lo_locked_sensor; ///< does the tx frond end have an lo_locked sensor?
+    bool rx_has_lo_locked_sensor; ///< does the rx frond end have an lo_locked sensor?
+
+
     // Capability Flags --
     bool supports_tx_gpio; ///< does this unit support GPIO signals?  (B2xx does not as of 3.7.0)
     
@@ -167,8 +175,13 @@ namespace SoDa {
     /// @param val true to enable the transmitter, false otherwise.
     void setTXEna(bool val);
 
+    /// set TX enable property on front-end module -- not present in all 
+    /// daughtercards... 
+    /// @param val true to enable transmitter front end, false otherwise. 
+    void setTXFrontEndEnable(bool val); 
 
-    /// set the transvert LO frequency and power
+    /// set the transverter LO frequency and power
+    /// This code does not work for libUHD after 3.7 -- it may not work for the older versions either.;(
     void setTransverterLOFreqPower(double freq, double power);
     void enableTransverterLO();
     void disableTransverterLO();
@@ -238,9 +251,11 @@ namespace SoDa {
     /// @param force_frac_N force LO tuning to use fractional-N synthesis
     void testIntNMode(bool force_int_N, bool force_frac_N);
 
-    bool supports_IntN_Mode; 
+    bool supports_IntN_Mode;  ///< if true, this unit can tune the front-end LO 
+    ///< in integer-N mode (as opposed to fractional-N)
+    ///< to improve rejection of spurious signals and 
+    ///< drop the noise floor a bit.
 
-    bool db_is_UBX; 
     /// external control widget for TR switching and other things. 
     SoDa::TRControl * tr_control; 
   };

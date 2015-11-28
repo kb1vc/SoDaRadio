@@ -64,10 +64,11 @@ namespace SoDa {
   public:
     /**
      * constructor
-     * @param _sample_rate in Hz -- 48000 is a good choice
-     * @param _fmt -- the format of the data (FLOAT, DFLOAT, INT32, INT16, INT8)
-     * @param _sample_count_hint -- the size of the buffers passed to and from
+     * @param _sample_rate in Hz  48000 is a good choice
+     * @param _fmt  the format of the data (FLOAT, DFLOAT, INT32, INT16, INT8)
+     * @param _sample_count_hint  the size of the buffers passed to and from
      *                              the audio device (in samples)
+     * @param audio_port_name  which ALSA device are we connecting to?
      */
     AudioALSA(unsigned int _sample_rate,
 	      AudioIfc::DataFormat _fmt,

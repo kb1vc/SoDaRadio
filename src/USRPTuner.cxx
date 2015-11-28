@@ -60,7 +60,7 @@ SoDa::USRPTuner::USRPTuner(uhd::usrp::multi_usrp::sptr _usrp, double _min_separa
   min_separation = _min_separation; 
   usrp = _usrp; 
 
-  std::vector<std::string> sensor_names; 
+  std::vector<std::string> sensor_names = usrp->get_rx_sensor_names(0); 
   has_lock_detect = std::find(sensor_names.begin(), sensor_names.end(), "lo_locked") != sensor_names.end(); 
 }
 
