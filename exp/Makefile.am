@@ -3,7 +3,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/src
 AM_BOOSTLIBFLAGS = ${BOOST_PROGRAM_OPTIONS_LIB} ${BOOST_THREAD_LIB} ${BOOST_DATE_TIME_LIB} ${BOOST_SYSTEM_LIB} 
 
 
-bin_PROGRAMS = FFT_Test Sockets_Test MultiMBox_Test SoDa_ThreadTest OSFilter_Test  TestServer ReSampler_Test TSIP_Test Audio_test Hilbert_Test FindHome_Test RangeMap_test SerialDev_Test TRControl_Test IntN_FreqTable
+bin_PROGRAMS = FFT_Test Sockets_Test MultiMBox_Test SoDa_ThreadTest OSFilter_Test  TestServer ReSampler_Test TSIP_Test Audio_test Hilbert_Test FindHome_Test RangeMap_test SerialDev_Test TRControl_Test IntN_FreqTable Demod_test
 
 
 Sockets_Test_SOURCES = Sockets_Test.cxx  ../src/IPSockets.cxx ../src/UDSockets.cxx ../src/IPSockets.hxx ../src/UDSockets.hxx
@@ -95,4 +95,10 @@ IntN_FreqTable_CPPFLAGS = $(AM_CPPFLAGS) -g -O1
 IntN_FreqTable_LDADD = $(AM_BOOSTLIBFLAGS) 
 IntN_FreqTable_CXXFLAGS = -g -O1
 IntN_FreqTable_LDFLAGS = -g -O1
+
+Demod_test_SOURCES = Demod_test.cxx  ../src/Demod.hxx ../src/Demod.cxx ../src/SoDaBase.hxx ../src/Debug.hxx ../src/Debug.cxx ../src/SoDaBase.cxx
+Demod_test_CPPFLAGS = $(AM_CPPFLAGS) -g -O1 
+Demod_test_LDADD = $(AM_BOOSTLIBFLAGS) 
+Demod_test_CXXFLAGS = -g -O1
+Demod_test_LDFLAGS = -g -O1
 

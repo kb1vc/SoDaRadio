@@ -294,7 +294,7 @@ namespace SoDa {
        */
       LO_CHECK,
       /**
-       * this is a GET/REP command -- AudioRX takes FFT
+       * this is a GET/REP command -- BaseBandRX takes FFT
        * centered around 0 and reports largest peak within
        * 50KHz.
        */
@@ -426,7 +426,7 @@ namespace SoDa {
     /**
      * @brief a selector to identify a particular unit for debug reports
      */
-    enum UnitSelector { AudioRX, AudioTX, RFRX, RFTX, CWTX, CTRL };
+    enum UnitSelector { BaseBandRX, BaseBandTX, RFRX, RFTX, CWTX, CTRL };
 
     /**
      * Constructor for commands with no parameters

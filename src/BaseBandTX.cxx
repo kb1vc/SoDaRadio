@@ -29,8 +29,8 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "AudioTX.hxx"
-#include "AudioRX.hxx"
+#include "BaseBandTX.hxx"
+#include "BaseBandRX.hxx"
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -41,10 +41,10 @@
 
 #include "SoDa_tx_filter_tables.hxx" 
 
-SoDa::AudioTX::AudioTX(Params * params, DatMBox * _tx_stream,
+SoDa::BaseBandTX::BaseBandTX(Params * params, DatMBox * _tx_stream,
 		       CmdMBox * _cmd_stream,
 		       AudioIfc * _audio_ifc
-		       ) : SoDa::SoDaThread("AudioTX")
+		       ) : SoDa::SoDaThread("BaseBandTX")
 {
   debug_mode = false;
   debug_ctr = 0;
@@ -60,7 +60,7 @@ SoDa::AudioTX::AudioTX(Params * params, DatMBox * _tx_stream,
   interpolator = new SoDa::ReSample48to625(audio_buffer_size);
 
   // create the audio stream.
-  // borrow the stream from the AudioRX side. ? 
+  // borrow the stream from the BaseBandRX side. ? 
   //   pa_stream = _pa_stream;
   double srate = params->getAudioSampleRate();
 
@@ -84,7 +84,7 @@ SoDa::AudioTX::AudioTX(Params * params, DatMBox * _tx_stream,
   fm_mic_gain = 0.8;
 }
 
-void SoDa::AudioTX::run()
+void SoDa::BaseBandTX::run()
 {
   bool exitflag = false;
   SoDaBuf * rxbuf;
@@ -92,7 +92,7 @@ void SoDa::AudioTX::run()
   float audio_buf[audio_buffer_size];
 
   /**
-   * This is the AudioTX run loop.
+   * This is the BaseBandTX run loop.
    * \code
    *     while true
    *       if(commands_available) 
@@ -148,7 +148,7 @@ void SoDa::AudioTX::run()
   }
 }
 
-SoDa::SoDaBuf * SoDa::AudioTX::modulateAM(float * audio_buf,
+SoDa::SoDaBuf * SoDa::BaseBandTX::modulateAM(float * audio_buf,
 					  unsigned int len,
 					  bool is_usb,
 					  bool is_lsb)
@@ -190,7 +190,7 @@ SoDa::SoDaBuf * SoDa::AudioTX::modulateAM(float * audio_buf,
 }
 
 
-SoDa::SoDaBuf * SoDa::AudioTX::modulateFM(float *audio_buf, unsigned int len, double deviation)
+SoDa::SoDaBuf * SoDa::BaseBandTX::modulateFM(float *audio_buf, unsigned int len, double deviation)
 {
   int i;
   
@@ -231,7 +231,7 @@ SoDa::SoDaBuf * SoDa::AudioTX::modulateFM(float *audio_buf, unsigned int len, do
 }
 
 
-void SoDa::AudioTX::execSetCommand(SoDa::Command * cmd)
+void SoDa::BaseBandTX::execSetCommand(SoDa::Command * cmd)
 {
   SoDa::Command::AudioFilterBW fbw;
 
@@ -277,13 +277,13 @@ void SoDa::AudioTX::execSetCommand(SoDa::Command * cmd)
   }
 }
 
-void SoDa::AudioTX::execGetCommand(SoDa::Command * cmd)
+void SoDa::BaseBandTX::execGetCommand(SoDa::Command * cmd)
 {
   switch (cmd->target) {
   }
 }
 
-void SoDa::AudioTX::execRepCommand(SoDa::Command * cmd)
+void SoDa::BaseBandTX::execRepCommand(SoDa::Command * cmd)
 {
 }
 

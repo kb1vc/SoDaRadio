@@ -73,8 +73,8 @@
  * @li SoDa::USRPCtrl executes all control and status functions on the USRP
  * @li SoDa::USRPRX manages the inbound IF signal stream from the USRP receive chain
  * @li SoDa::USRPTX manages the outbound IF signal stream to the USRP transmit chain
- * @li SoDa::AudioRX demodulates an incoming RX intermediate frequency signal
- * @li SoDa::AudioTX converts incoming audio into the appropriately modulated TX intermediate-frequency signal.
+ * @li SoDa::BaseBandRX demodulates an incoming RX intermediate frequency signal
+ * @li SoDa::BaseBandTX converts incoming audio into the appropriately modulated TX intermediate-frequency signal.
  * @li SoDa::CWTX converts text strings received from the UI thread into amplitude envelopes (keying envelopes)
  * for the USRPTX process. 
  * @li SoDa::UI waits for requests and CW text on the UDP socket from the GUI, and forwards status and
@@ -115,8 +115,8 @@
 #include "USRPCtrl.hxx"
 #include "USRPRX.hxx"
 #include "USRPTX.hxx"
-#include "AudioRX.hxx"
-#include "AudioTX.hxx"
+#include "BaseBandRX.hxx"
+#include "BaseBandTX.hxx"
 #include "CWTX.hxx"
 #include "UI.hxx"
 #include "GPS_TSIPmon.hxx"
@@ -169,9 +169,9 @@ int doWork(int argc, char * argv[])
 			    params.getAudioPortName()); 
   /// doWork creates the audio RX and audio TX unit threads
   /// These are also responsible for implementing IF tuning and modulation. 
-  /// @see SoDa::AudioRX @see SoDa::AudioTX
-  SoDa::AudioRX arx(&params, &rx_stream, &cmd_stream, &audio_ifc);
-  SoDa::AudioTX atx(&params, &tx_stream, &cmd_stream, &audio_ifc);
+  /// @see SoDa::BaseBandRX @see SoDa::BaseBandTX
+  SoDa::BaseBandRX bbrx(&params, &rx_stream, &cmd_stream, &audio_ifc);
+  SoDa::BaseBandTX bbtx(&params, &tx_stream, &cmd_stream, &audio_ifc);
 
   /// doWork creates the morse code (CW) tx handler thread @see SoDa::CWTX
   SoDa::CWTX cwtx(&params, &cwtxt_stream, &cw_env_stream, &cmd_stream); 
@@ -194,8 +194,8 @@ int doWork(int argc, char * argv[])
   ctrl.start();
   rx.start();
   tx.start();
-  arx.start();
-  atx.start();
+  bbrx.start();
+  bbtx.start();
   cwtx.start();
 
   // now the gps...
@@ -207,8 +207,8 @@ int doWork(int argc, char * argv[])
   ctrl.join();
   rx.join();
   tx.join();
-  arx.join();
-  atx.join();
+  bbrx.join();
+  bbtx.join();
   cwtx.join();
   gps.join();
   d.debugMsg("Exit");

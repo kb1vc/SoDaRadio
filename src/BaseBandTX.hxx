@@ -29,8 +29,8 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef AUDIOTX_HDR
-#define AUDIOTX_HDR
+#ifndef BASEBANDTX_HDR
+#define BASEBANDTX_HDR
 #include "SoDaBase.hxx"
 #include "MultiMBox.hxx"
 #include "Params.hxx"
@@ -41,17 +41,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace SoDa {
   /**
-   * AudioTX -- this is the audio processing chain for the transmit path
+   * BaseBandTX -- this is the audio processing chain for the transmit path
    *
    * @image html SoDa_Radio_TX_Signal_Path.svg
    *
-   * The AudioTX unit creates I/Q audio streams for LSB, SSB, and AM modulation.
-   * Frequency Modulation schemes are not yet implemented.
+   * The BaseBandTX unit creates I/Q audio streams for LSB, SSB, FM, and AM modulation.
    * CW (CW_L and CW_U) modes are implemented in the USRPTX module and the CW unit.
    *
    */
-  class AudioRX;  
-  class AudioTX : public SoDaThread {
+  class BaseBandRX;  
+  class BaseBandTX : public SoDaThread {
   public:
     /**
      * constructor
@@ -61,7 +60,7 @@ namespace SoDa {
      * @param cmd_stream pointer to mailbox holding control/report commands
      * @param audio_ifc pointer to the audio output handler
      */
-    AudioTX(Params * params,
+    BaseBandTX(Params * params,
 	    DatMBox * tx_stream,
 	    CmdMBox * cmd_stream,
 	    AudioIfc * audio_ifc

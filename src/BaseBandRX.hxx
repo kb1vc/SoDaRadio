@@ -26,8 +26,8 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef AUDIORX_HDR
-#define AUDIORX_HDR
+#ifndef BASEBANDRX_HDR
+#define BASEBANDRX_HDR
 #include "SoDaBase.hxx"
 #include "Params.hxx"
 #include "MultiMBox.hxx"
@@ -48,11 +48,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace SoDa {
   /**
-   * AudioRX -- this is the audio processing chain for the recieve path
+   * BaseBandRX -- this is the audio processing chain for the recieve path
    *
    * @image html SoDa_Radio_RX_Signal_Path.svg
    *
-   * The AudioRX unit accepts the 3rd IF (nominally 80kHz to 200kHz)
+   * The BaseBandRX unit accepts the 3rd IF (nominally 80kHz to 200kHz)
    * from the USRPRX thread on the rx_stream.
    *
    * In most cases (all but Wide Band FM) the rx stream is downselected
@@ -63,16 +63,16 @@ namespace SoDa {
    * is placed on a queue of outbound audio blocks for the host processor's
    * audio system. Since there is some slop in the timing (specifically, the
    * clock governing the radio is not necessarily in sync with the audio
-   * system clock) the AudioRX unit monitors the backlog of outbound audio
+   * system clock) the BaseBandRX unit monitors the backlog of outbound audio
    * buffers.  When this backlog gets longer than about 400mS, the unit will
    * "drop out" a sample here and there until the downstream sound system
    * catches up.
    *
-   * AudioRX supports CW_U (upper sideband CW), CW_L (lower sideband CW),
+   * BaseBandRX supports CW_U (upper sideband CW), CW_L (lower sideband CW),
    * USB, and LSB modulation via the phasing method, since both I and Q
    * channels are available. AM is performed with a simple magnitude detector.
    */
-  class AudioRX : public SoDaThread {
+  class BaseBandRX : public SoDaThread {
   public:
     /**
      * @brief the constructor
@@ -82,7 +82,7 @@ namespace SoDa {
      * @param cmd_stream pointer to mailbox holding control/report commands
      * @param audio_ifc pointer to the audio output handler
      **/
-    AudioRX(Params * params,
+    BaseBandRX(Params * params,
 	    DatMBox * rx_stream, 
 	    CmdMBox * cmd_stream,
 	    AudioIfc * audio_ifc);

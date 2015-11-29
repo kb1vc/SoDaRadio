@@ -43,7 +43,7 @@ namespace SoDa {
    * @image html SoDa_Radio_TX_Signal_Path.svg
    *
    * In SSB/AM/FM modes, the USRPTX unit accepts an I/Q audio
-   * stream from the AudioTX unit and forwards it to the USRP.
+   * stream from the BaseBandTX unit and forwards it to the USRP.
    * In CW mode, the USRPTX unit impresses a CW envelope (received
    * from the CW unit) onto a carrier and passes this to the USRP. 
    *
@@ -119,7 +119,7 @@ namespace SoDa {
      */
     void doCW(std::complex<float> * out, float * envelope, unsigned int env_len);
     
-    unsigned int tx_subs;  ///< subscription handle for transmit audio stream (from AudioTX)
+    unsigned int tx_subs;  ///< subscription handle for transmit audio stream (from BaseBandTX)
     unsigned int cmd_subs; ///< subscription handle for command stream
     unsigned int cw_subs;  ///< subscription handle for cw envelope stream (from CW unit)
 

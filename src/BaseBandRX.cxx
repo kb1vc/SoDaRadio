@@ -26,7 +26,7 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "AudioRX.hxx"
+#include "BaseBandRX.hxx"
 #include "OSFilter.hxx"
 #include <fstream>
 #include <stdio.h>
@@ -34,9 +34,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-SoDa::AudioRX::AudioRX(Params * params,
+SoDa::BaseBandRX::BaseBandRX(Params * params,
 		       DatMBox * _rx_stream, CmdMBox * _cmd_stream,
-		       AudioIfc * _audio_ifc) : SoDa::SoDaThread("AudioRX")
+		       AudioIfc * _audio_ifc) : SoDa::SoDaThread("BaseBandRX")
 {
   audio_ifc = _audio_ifc; 
   rx_stream = _rx_stream;
@@ -125,7 +125,7 @@ SoDa::AudioRX::AudioRX(Params * params,
   // audio_file2.open("soda_audio_dq.bin", std::ios::out | std::ios::binary);   
 }
 
-void SoDa::AudioRX::demodulateWBFM(SoDaBuf * rxbuf, SoDa::Command::ModulationType mod, float af_gain)
+void SoDa::BaseBandRX::demodulateWBFM(SoDaBuf * rxbuf, SoDa::Command::ModulationType mod, float af_gain)
 {
   // now allocate a new audio buffer from the buffer ring
   float * audio_buffer = getFreeAudioBuffer(); 
@@ -162,7 +162,7 @@ void SoDa::AudioRX::demodulateWBFM(SoDaBuf * rxbuf, SoDa::Command::ModulationTyp
   pendAudioBuffer(audio_buffer);
 }
 
-void SoDa::AudioRX::demodulateNBFM(std::complex<float> * dbuf, SoDa::Command::ModulationType mod, float af_gain)
+void SoDa::BaseBandRX::demodulateNBFM(std::complex<float> * dbuf, SoDa::Command::ModulationType mod, float af_gain)
 {
   // now allocate a new audio buffer from the buffer ring
   float * audio_buffer = getFreeAudioBuffer(); 
@@ -199,7 +199,7 @@ void SoDa::AudioRX::demodulateNBFM(std::complex<float> * dbuf, SoDa::Command::Mo
   pendAudioBuffer(audio_buffer);
 }
 
-void SoDa::AudioRX::demodulateSSB(std::complex<float> * dbuf, SoDa::Command::ModulationType mod)
+void SoDa::BaseBandRX::demodulateSSB(std::complex<float> * dbuf, SoDa::Command::ModulationType mod)
 {
   // now allocate a new audio buffer from the buffer ring
   float * audio_buffer = getFreeAudioBuffer(); 
@@ -218,7 +218,7 @@ void SoDa::AudioRX::demodulateSSB(std::complex<float> * dbuf, SoDa::Command::Mod
   pendAudioBuffer(audio_buffer);
 }
 
-void SoDa::AudioRX::demodulateAM(std::complex<float> * dbuf)
+void SoDa::BaseBandRX::demodulateAM(std::complex<float> * dbuf)
 {
   // now allocate a new audio buffer from the buffer ring
   float * audio_buffer = getFreeAudioBuffer(); 
@@ -244,7 +244,7 @@ void SoDa::AudioRX::demodulateAM(std::complex<float> * dbuf)
   pendAudioBuffer(audio_buffer);
 }
 
-void SoDa::AudioRX::demodulate(SoDaBuf * rxbuf)
+void SoDa::BaseBandRX::demodulate(SoDaBuf * rxbuf)
 {
   // First we downsample and apply the audio filter unless this is a WBFM signal.
   std::complex<float> dbufi[audio_buffer_size]; 
@@ -297,7 +297,7 @@ void SoDa::AudioRX::demodulate(SoDaBuf * rxbuf)
   }
 }
 
-void SoDa::AudioRX::execSetCommand(SoDa::Command * cmd)
+void SoDa::BaseBandRX::execSetCommand(SoDa::Command * cmd)
 {
   SoDa::Command::AudioFilterBW fbw;
   SoDa::Command::ModulationType txmod; 
@@ -366,7 +366,7 @@ void SoDa::AudioRX::execSetCommand(SoDa::Command * cmd)
   }
 }
 
-void SoDa::AudioRX::execGetCommand(SoDa::Command * cmd)
+void SoDa::BaseBandRX::execGetCommand(SoDa::Command * cmd)
 {
   switch (cmd->target) {
   case SoDa::Command::RX_AF_FILTER: // set af filter bw.
@@ -380,7 +380,7 @@ void SoDa::AudioRX::execGetCommand(SoDa::Command * cmd)
   case SoDa::Command::DBG_REP: // report status
     SoDa::Command::UnitSelector us;
     us = SoDa::Command::UnitSelector(cmd->iparms[0]);
-    if(us == SoDa::Command::AudioRX) {
+    if(us == SoDa::Command::BaseBandRX) {
       std::cerr << boost::format("%s ready_buffers.size = %d free_buffers.size = %d\n") % getObjName() % readyAudioBuffers() % free_buffers.size();
     }
     break; 
@@ -388,11 +388,11 @@ void SoDa::AudioRX::execGetCommand(SoDa::Command * cmd)
 
 }
 
-void SoDa::AudioRX::execRepCommand(SoDa::Command * cmd)
+void SoDa::BaseBandRX::execRepCommand(SoDa::Command * cmd)
 {
 }
 
-void SoDa::AudioRX::run()
+void SoDa::BaseBandRX::run()
 {
   bool exitflag = false;
   SoDaBuf * rxbuf;
@@ -528,12 +528,12 @@ void SoDa::AudioRX::run()
 }
 
 
-void SoDa::AudioRX::freeAudioBuffer(float * b) {
+void SoDa::BaseBandRX::freeAudioBuffer(float * b) {
   boost::mutex::scoped_lock lock(free_lock);
   free_buffers.push(b); 
 }
 
-float * SoDa::AudioRX::getFreeAudioBuffer() {
+float * SoDa::BaseBandRX::getFreeAudioBuffer() {
   float * ret; 
   boost::mutex::scoped_lock lock(free_lock);
   if(free_buffers.empty()) {
@@ -546,13 +546,13 @@ float * SoDa::AudioRX::getFreeAudioBuffer() {
   return ret; 
 }
 
-int SoDa::AudioRX::readyAudioBuffers() 
+int SoDa::BaseBandRX::readyAudioBuffers() 
 {
   boost::mutex::scoped_lock lock(ready_lock);
   return ready_buffers.size();
 }
 
-void SoDa::AudioRX::pendAudioBuffer(float * b)
+void SoDa::BaseBandRX::pendAudioBuffer(float * b)
 {
   {
     boost::mutex::scoped_lock lock(ready_lock);
@@ -563,7 +563,7 @@ void SoDa::AudioRX::pendAudioBuffer(float * b)
   }
 }
 
-float * SoDa::AudioRX::getNextAudioBuffer()
+float * SoDa::BaseBandRX::getNextAudioBuffer()
 {
   boost::mutex::scoped_lock lock(ready_lock); 
   if(ready_buffers.empty()) return NULL;
@@ -573,7 +573,7 @@ float * SoDa::AudioRX::getNextAudioBuffer()
   return ret; 
 }
 
-void SoDa::AudioRX::flushAudioBuffers()
+void SoDa::BaseBandRX::flushAudioBuffers()
 {
   boost::mutex::scoped_lock lock(ready_lock); 
   while(!ready_buffers.empty()) {
@@ -584,7 +584,7 @@ void SoDa::AudioRX::flushAudioBuffers()
   return;
 }
 
-void SoDa::AudioRX::buildFilterMap()
+void SoDa::BaseBandRX::buildFilterMap()
 {
   // Each filter is 512 samples long... (a really big filter)
   // The Overlap and Save buffer needs to be long enough to make this all
