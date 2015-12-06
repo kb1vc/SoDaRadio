@@ -1,5 +1,5 @@
 AUTOMAKE_OPTIONS = subdir-objects
-AM_CPPFLAGS = -I$(top_srcdir)/include
+AM_CPPFLAGS = -I$(top_srcdir)/include -Wno-deprecated-declarations
 AM_BOOSTLIBFLAGS = ${BOOST_PROGRAM_OPTIONS_LIB} ${BOOST_THREAD_LIB} ${BOOST_DATE_TIME_LIB} ${BOOST_SYSTEM_LIB}
 
 EXTRA_DIST = SoDaRadio_GUI.cpp uparrow.xpm downarrow.xpm SoDaLogo.xpm SoDaLogo_Big.xpm adjust_GUI.sh SoDaLogo_Big.png 

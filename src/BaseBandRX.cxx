@@ -121,8 +121,8 @@ SoDa::BaseBandRX::BaseBandRX(Params * params,
 
   // log all audio to an output file (debug only....?)
   audio_save_enable = false;
-  //  audio_file.open("soda_audio.bin", std::ios::out | std::ios::binary);
-  // audio_file2.open("soda_audio_dq.bin", std::ios::out | std::ios::binary);   
+  //audio_file.open("soda_audio.bin", std::ios::out | std::ios::binary);
+  //audio_file2.open("soda_audio_iq_fm.bin", std::ios::out | std::ios::binary);   
 }
 
 void SoDa::BaseBandRX::demodulateWBFM(SoDaBuf * rxbuf, SoDa::Command::ModulationType mod, float af_gain)
@@ -189,6 +189,9 @@ void SoDa::BaseBandRX::demodulateNBFM(std::complex<float> * dbuf, SoDa::Command:
 
   cur_audio_filter->apply(demod_out, demod_out, 5.0);
   
+  if(audio_save_enable) {
+    audio_file2.write((char*) demod_out, audio_buffer_size * sizeof(std::complex<float>));
+  }
   for(i = 0; i < audio_buffer_size; i++) {
     audio_buffer[i] = demod_out[i].real(); 
   }
@@ -461,9 +464,6 @@ void SoDa::BaseBandRX::run()
 	      if(outb == NULL) {
 		break; 
 	      }
-	      if(audio_save_enable) {
-		audio_file2.write((char*) outb, audio_buffer_size * sizeof(float));
-	      }
 
 	      did_work = true;
 	      did_audio_work = true; 
@@ -524,6 +524,7 @@ void SoDa::BaseBandRX::run()
 
   if(audio_save_enable) {
     audio_file.close();
+    audio_file2.close();    
   }
 }
 

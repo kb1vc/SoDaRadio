@@ -27,6 +27,8 @@
 */
 
 #include "GuiParams.hxx"
+#include <iostream>
+
 
 SoDa::GuiParams::GuiParams(int argc, wxChar ** wxargv)
 {

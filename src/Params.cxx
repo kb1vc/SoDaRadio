@@ -27,6 +27,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "Params.hxx"
+#include <iostream>
 
 SoDa::Params::Params(int argc, char * argv[])
 {

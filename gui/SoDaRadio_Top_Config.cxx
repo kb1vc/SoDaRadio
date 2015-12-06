@@ -37,6 +37,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/format.hpp>
+#include <boost/version.hpp>
 
 using namespace std; 
 namespace SoDaRadio_GUI {
@@ -82,8 +83,12 @@ namespace SoDaRadio_GUI {
     debugMsg(boost::format("config tree = %p D\n") % config_tree);
     config_tree->put("SoDaRadio.reference.source", tuner->getExtRefEna());
     config_tree->put("SoDaRadio.tx.tx_rx_locked", tx_rx_locked);
+#if (BOOST_VERSION >= 105600)
+    boost::property_tree::xml_writer_settings<std::string> wset('\t',1);
+#else
     boost::property_tree::xml_writer_settings<char> wset('\t',1);
-
+#endif
+    
     // save the band configurations to the tree.
     config_tree->put("SoDaRadio.current_band", current_band->getName());
     
