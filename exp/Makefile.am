@@ -3,7 +3,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/src
 AM_BOOSTLIBFLAGS = ${BOOST_PROGRAM_OPTIONS_LIB} ${BOOST_THREAD_LIB} ${BOOST_DATE_TIME_LIB} ${BOOST_SYSTEM_LIB} 
 
 
-bin_PROGRAMS = FFT_Test Sockets_Test MultiMBox_Test SoDa_ThreadTest OSFilter_Test  TestServer ReSampler_Test TSIP_Test Audio_test Hilbert_Test FindHome_Test RangeMap_test SerialDev_Test TRControl_Test IntN_FreqTable Demod_test
+bin_PROGRAMS = FFT_Test Sockets_Test MultiMBox_Test SoDa_ThreadTest OSFilter_Test  TestServer ReSampler_Test TSIP_Test Audio_test Hilbert_Test FindHome_Test RangeMap_test SerialDev_Test TRControl_Test IntN_FreqTable Demod_test FrontEnd_test
 
 
 Sockets_Test_SOURCES = Sockets_Test.cxx  ../src/IPSockets.cxx ../src/UDSockets.cxx ../src/IPSockets.hxx ../src/UDSockets.hxx
@@ -101,4 +101,11 @@ Demod_test_CPPFLAGS = $(AM_CPPFLAGS) -g -O1
 Demod_test_LDADD = $(AM_BOOSTLIBFLAGS) 
 Demod_test_CXXFLAGS = -g -O1
 Demod_test_LDFLAGS = -g -O1
+
+
+FrontEnd_test_SOURCES = FrontEnd_test.cxx  ../src/FrontEnd.hxx ../src/PropTree.hxx
+FrontEnd_test_CPPFLAGS = $(AM_CPPFLAGS) -g -O1 
+FrontEnd_test_LDADD = $(AM_BOOSTLIBFLAGS) 
+FrontEnd_test_CXXFLAGS = -g -O1
+FrontEnd_test_LDFLAGS = -g -O1
 

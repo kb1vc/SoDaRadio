@@ -95,7 +95,7 @@ bin_PROGRAMS = FFT_Test$(EXEEXT) Sockets_Test$(EXEEXT) \
 	Hilbert_Test$(EXEEXT) FindHome_Test$(EXEEXT) \
 	RangeMap_test$(EXEEXT) SerialDev_Test$(EXEEXT) \
 	TRControl_Test$(EXEEXT) IntN_FreqTable$(EXEEXT) \
-	Demod_test$(EXEEXT)
+	Demod_test$(EXEEXT) FrontEnd_test$(EXEEXT)
 subdir = exp
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_boost_asio.m4 \
@@ -148,6 +148,11 @@ FindHome_Test_OBJECTS = $(am_FindHome_Test_OBJECTS)
 FindHome_Test_DEPENDENCIES = $(am__DEPENDENCIES_2)
 FindHome_Test_LINK = $(CXXLD) $(FindHome_Test_CXXFLAGS) $(CXXFLAGS) \
 	$(FindHome_Test_LDFLAGS) $(LDFLAGS) -o $@
+am_FrontEnd_test_OBJECTS = FrontEnd_test-FrontEnd_test.$(OBJEXT)
+FrontEnd_test_OBJECTS = $(am_FrontEnd_test_OBJECTS)
+FrontEnd_test_DEPENDENCIES = $(am__DEPENDENCIES_2)
+FrontEnd_test_LINK = $(CXXLD) $(FrontEnd_test_CXXFLAGS) $(CXXFLAGS) \
+	$(FrontEnd_test_LDFLAGS) $(LDFLAGS) -o $@
 am_Hilbert_Test_OBJECTS = Hilbert_Test-Hilbert_Test.$(OBJEXT) \
 	../src/Hilbert_Test-HilbertTransformer.$(OBJEXT) \
 	../src/Hilbert_Test-SoDaBase.$(OBJEXT)
@@ -271,20 +276,22 @@ am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
 SOURCES = $(Audio_test_SOURCES) $(Demod_test_SOURCES) \
 	$(FFT_Test_SOURCES) $(FindHome_Test_SOURCES) \
-	$(Hilbert_Test_SOURCES) $(IntN_FreqTable_SOURCES) \
-	$(MultiMBox_Test_SOURCES) $(OSFilter_Test_SOURCES) \
-	$(RangeMap_test_SOURCES) $(ReSampler_Test_SOURCES) \
-	$(SerialDev_Test_SOURCES) $(SoDa_ThreadTest_SOURCES) \
-	$(Sockets_Test_SOURCES) $(TRControl_Test_SOURCES) \
-	$(TSIP_Test_SOURCES) $(TestServer_SOURCES)
+	$(FrontEnd_test_SOURCES) $(Hilbert_Test_SOURCES) \
+	$(IntN_FreqTable_SOURCES) $(MultiMBox_Test_SOURCES) \
+	$(OSFilter_Test_SOURCES) $(RangeMap_test_SOURCES) \
+	$(ReSampler_Test_SOURCES) $(SerialDev_Test_SOURCES) \
+	$(SoDa_ThreadTest_SOURCES) $(Sockets_Test_SOURCES) \
+	$(TRControl_Test_SOURCES) $(TSIP_Test_SOURCES) \
+	$(TestServer_SOURCES)
 DIST_SOURCES = $(Audio_test_SOURCES) $(Demod_test_SOURCES) \
 	$(FFT_Test_SOURCES) $(FindHome_Test_SOURCES) \
-	$(Hilbert_Test_SOURCES) $(IntN_FreqTable_SOURCES) \
-	$(MultiMBox_Test_SOURCES) $(OSFilter_Test_SOURCES) \
-	$(RangeMap_test_SOURCES) $(ReSampler_Test_SOURCES) \
-	$(SerialDev_Test_SOURCES) $(SoDa_ThreadTest_SOURCES) \
-	$(Sockets_Test_SOURCES) $(TRControl_Test_SOURCES) \
-	$(TSIP_Test_SOURCES) $(TestServer_SOURCES)
+	$(FrontEnd_test_SOURCES) $(Hilbert_Test_SOURCES) \
+	$(IntN_FreqTable_SOURCES) $(MultiMBox_Test_SOURCES) \
+	$(OSFilter_Test_SOURCES) $(RangeMap_test_SOURCES) \
+	$(ReSampler_Test_SOURCES) $(SerialDev_Test_SOURCES) \
+	$(SoDa_ThreadTest_SOURCES) $(Sockets_Test_SOURCES) \
+	$(TRControl_Test_SOURCES) $(TSIP_Test_SOURCES) \
+	$(TestServer_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -529,6 +536,11 @@ Demod_test_CPPFLAGS = $(AM_CPPFLAGS) -g -O1
 Demod_test_LDADD = $(AM_BOOSTLIBFLAGS) 
 Demod_test_CXXFLAGS = -g -O1
 Demod_test_LDFLAGS = -g -O1
+FrontEnd_test_SOURCES = FrontEnd_test.cxx  ../src/FrontEnd.hxx ../src/PropTree.hxx
+FrontEnd_test_CPPFLAGS = $(AM_CPPFLAGS) -g -O1 
+FrontEnd_test_LDADD = $(AM_BOOSTLIBFLAGS) 
+FrontEnd_test_CXXFLAGS = -g -O1
+FrontEnd_test_LDFLAGS = -g -O1
 all: all-am
 
 .SUFFIXES:
@@ -648,6 +660,10 @@ FFT_Test$(EXEEXT): $(FFT_Test_OBJECTS) $(FFT_Test_DEPENDENCIES) $(EXTRA_FFT_Test
 FindHome_Test$(EXEEXT): $(FindHome_Test_OBJECTS) $(FindHome_Test_DEPENDENCIES) $(EXTRA_FindHome_Test_DEPENDENCIES) 
 	@rm -f FindHome_Test$(EXEEXT)
 	$(AM_V_CXXLD)$(FindHome_Test_LINK) $(FindHome_Test_OBJECTS) $(FindHome_Test_LDADD) $(LIBS)
+
+FrontEnd_test$(EXEEXT): $(FrontEnd_test_OBJECTS) $(FrontEnd_test_DEPENDENCIES) $(EXTRA_FrontEnd_test_DEPENDENCIES) 
+	@rm -f FrontEnd_test$(EXEEXT)
+	$(AM_V_CXXLD)$(FrontEnd_test_LINK) $(FrontEnd_test_OBJECTS) $(FrontEnd_test_LDADD) $(LIBS)
 ../src/Hilbert_Test-HilbertTransformer.$(OBJEXT):  \
 	../src/$(am__dirstamp) ../src/$(DEPDIR)/$(am__dirstamp)
 ../src/Hilbert_Test-SoDaBase.$(OBJEXT): ../src/$(am__dirstamp) \
@@ -792,6 +808,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Demod_test-Demod_test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FFT_Test-FFT_Test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FindHome_Test-FindHome_Test.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FrontEnd_test-FrontEnd_test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Hilbert_Test-Hilbert_Test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/IntN_FreqTable-IntN_FreqTable.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/MultiMBox_Test-MultiMBox_Test.Po@am__quote@
@@ -988,6 +1005,20 @@ FindHome_Test-FindHome_Test.obj: FindHome_Test.cxx
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='../gui/FindHome.cxx' object='../gui/FindHome_Test-FindHome.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(FindHome_Test_CPPFLAGS) $(CPPFLAGS) $(FindHome_Test_CXXFLAGS) $(CXXFLAGS) -c -o ../gui/FindHome_Test-FindHome.obj `if test -f '../gui/FindHome.cxx'; then $(CYGPATH_W) '../gui/FindHome.cxx'; else $(CYGPATH_W) '$(srcdir)/../gui/FindHome.cxx'; fi`
+
+FrontEnd_test-FrontEnd_test.o: FrontEnd_test.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(FrontEnd_test_CPPFLAGS) $(CPPFLAGS) $(FrontEnd_test_CXXFLAGS) $(CXXFLAGS) -MT FrontEnd_test-FrontEnd_test.o -MD -MP -MF $(DEPDIR)/FrontEnd_test-FrontEnd_test.Tpo -c -o FrontEnd_test-FrontEnd_test.o `test -f 'FrontEnd_test.cxx' || echo '$(srcdir)/'`FrontEnd_test.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/FrontEnd_test-FrontEnd_test.Tpo $(DEPDIR)/FrontEnd_test-FrontEnd_test.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='FrontEnd_test.cxx' object='FrontEnd_test-FrontEnd_test.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(FrontEnd_test_CPPFLAGS) $(CPPFLAGS) $(FrontEnd_test_CXXFLAGS) $(CXXFLAGS) -c -o FrontEnd_test-FrontEnd_test.o `test -f 'FrontEnd_test.cxx' || echo '$(srcdir)/'`FrontEnd_test.cxx
+
+FrontEnd_test-FrontEnd_test.obj: FrontEnd_test.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(FrontEnd_test_CPPFLAGS) $(CPPFLAGS) $(FrontEnd_test_CXXFLAGS) $(CXXFLAGS) -MT FrontEnd_test-FrontEnd_test.obj -MD -MP -MF $(DEPDIR)/FrontEnd_test-FrontEnd_test.Tpo -c -o FrontEnd_test-FrontEnd_test.obj `if test -f 'FrontEnd_test.cxx'; then $(CYGPATH_W) 'FrontEnd_test.cxx'; else $(CYGPATH_W) '$(srcdir)/FrontEnd_test.cxx'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/FrontEnd_test-FrontEnd_test.Tpo $(DEPDIR)/FrontEnd_test-FrontEnd_test.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='FrontEnd_test.cxx' object='FrontEnd_test-FrontEnd_test.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(FrontEnd_test_CPPFLAGS) $(CPPFLAGS) $(FrontEnd_test_CXXFLAGS) $(CXXFLAGS) -c -o FrontEnd_test-FrontEnd_test.obj `if test -f 'FrontEnd_test.cxx'; then $(CYGPATH_W) 'FrontEnd_test.cxx'; else $(CYGPATH_W) '$(srcdir)/FrontEnd_test.cxx'; fi`
 
 Hilbert_Test-Hilbert_Test.o: Hilbert_Test.cxx
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(Hilbert_Test_CPPFLAGS) $(CPPFLAGS) $(Hilbert_Test_CXXFLAGS) $(CXXFLAGS) -MT Hilbert_Test-Hilbert_Test.o -MD -MP -MF $(DEPDIR)/Hilbert_Test-Hilbert_Test.Tpo -c -o Hilbert_Test-Hilbert_Test.o `test -f 'Hilbert_Test.cxx' || echo '$(srcdir)/'`Hilbert_Test.cxx

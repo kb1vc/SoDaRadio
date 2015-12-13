@@ -28,6 +28,7 @@
 
 #include "USRPCtrl.hxx"
 #include "SoDaBase.hxx"
+#include "FrontEnd.hxx"
 #include <uhd/utils/thread_priority.hpp>
 #include <uhd/utils/safe_main.hpp>
 #include <uhd/usrp/multi_usrp.hpp>
@@ -126,25 +127,21 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
   // truncate to whole number of seconds -- paranoia
   first_gettime = floor(tmp); 
 
-
   // get the tx front end subtree
-  uhd::fs_path tx_fe_root;
   tx_fe_has_enable = false; 
-  tx_fe_root = is_B2xx ? ("dboards/A/tx_frontends/A") :
-    ("dboards/A/tx_frontends/0");
-  tx_fe_subtree = new PropTree(tree, tx_fe_root); 
+  tx_fe_subtree = getFrontEnd(tree, 'T');
+
   // do we care?  If the tx_fe_subtree doesn't have an enable property,
   // we want to avoid setting and getting it....
   if(tx_fe_subtree != NULL) {
     tx_fe_has_enable = tx_fe_subtree->hasProperty("enabled"); 
   }
 
+
   // get the rx front end subtree
-  uhd::fs_path rx_fe_root;
   rx_fe_has_enable = false; 
-  rx_fe_root = is_B2xx ? ("dboards/A/rx_frontends/A") :
-    ("dboards/A/rx_frontends/0");
-  rx_fe_subtree = new PropTree(tree, rx_fe_root);
+  rx_fe_subtree = getFrontEnd(tree, 'T');
+
   // do we care?  If the rx_fe_subtree doesn't have an enable property, 
   // we want to avoid setting and getting it....
   if(rx_fe_subtree != NULL) {

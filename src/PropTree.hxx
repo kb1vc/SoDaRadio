@@ -30,6 +30,7 @@
 #define PROP_TREE_HDR
 
 #include <string>
+#include <uhd/usrp/multi_usrp.hpp>
 #include <uhd/property_tree.hpp>
 #include <boost/format.hpp>
 #include <iostream>
@@ -43,7 +44,7 @@ namespace SoDa {
   class PropTree {
   public:
     /**
-     * Constructor -- build a bas property tree widget rooted at the first motherboard in this multi-usrp
+     * Constructor -- build a property tree widget rooted at the first motherboard in this multi-usrp
      * 
      * @param usrp to which USRP unit is this connected?
      * @param requester name of object that is creating this tree
@@ -106,6 +107,11 @@ namespace SoDa {
 	complain("Exception while looking for property", fqpn + "/" + propname, e, false);
       }
 
+    }
+
+    std::vector<std::string> getPropNames(const std::string & path = std::string("")) 
+    {
+      return tree->list(path);
     }
 
     std::string getStringProp(const std::string & propname, const std::string defval = std::string("None")) 
