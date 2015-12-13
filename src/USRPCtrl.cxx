@@ -48,14 +48,6 @@ const unsigned int SoDa::USRPCtrl::TX_RELAY_MON = 0x0800;
 
 SoDa::USRPCtrl * SoDa::USRPCtrl::singleton_ctrl_obj = NULL; 
 
-// borrowed from uhd_usrp_probe print_tree function
-void dumpTree(const uhd::fs_path &path, uhd::property_tree::sptr tree){
-    std::cout << path << std::endl;
-    BOOST_FOREACH(const std::string &name, tree->list(path)){
-        dumpTree(path / name, tree);
-    }
-}
-
 SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaThread("USRPCtrl")
 {
   // point to myself.... 
@@ -92,20 +84,9 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
 
   // We need to find out if this is a B2xx or something like it -- they don't
   // have daughter cards and there are other things to watch out for....
-  uhd::property_tree::sptr tree;
-  std::string mbname;
-  try {
-    tree = usrp->get_device()->get_tree();  
-    mbname = tree->list("/mboards").at(0);
-    // find out what kind of device we have.
-    motherboard_name = tree->access<std::string>("/mboards/" + mbname + "/name").get();
-  }
-  catch (boost::property_tree::ptree_error e) {
-    std::cerr << boost::format("USRPCtrl encountered PropertyTree exception on motherboard_name: [%s]\nServer will continue.\n") % e.what(); 
-  }
-  catch (std::runtime_error e) {
-    std::cerr << boost::format("USRPCtrl encountered Unknown exception on motherboard_name: [%s]\nServer will continue.\n") % e.what(); 
-  }
+  PropTree tree(usrp, getObjName()); 
+
+  motherboard_name = tree.getStringProp("name", "unknown");
 
   if((motherboard_name == "B200") || (motherboard_name == "B210")) {
     // B2xx needs a master clock rate of 50 MHz to generate a sample rate of 625 kS/s.
@@ -149,56 +130,27 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
   // get the tx front end subtree
   uhd::fs_path tx_fe_root;
   tx_fe_has_enable = false; 
-  tx_fe_root = is_B2xx ? ("/mboards/" + mbname + "/dboards/A/tx_frontends/A") :
-    ("/mboards/" + mbname + "/dboards/A/tx_frontends/0");
-  try {
-    if(tree->exists(tx_fe_root)) {
-      tx_fe_subtree = tree->subtree(tx_fe_root);
-    }
-
-    // do we care?  If the tx_fe_subtree doesn't have an enable property,
-    // we want to avoid setting and getting it....
-    if(tx_fe_subtree != NULL) {
-      std::vector<std::string> pslis = tx_fe_subtree->list("");
-      if(std::find(pslis.begin(), pslis.end(), "enabled") != pslis.end()) {
-	tx_fe_has_enable = true; 
-      }
-    }
-  }
-  catch (boost::property_tree::ptree_error e) {
-    std::cerr << boost::format("USRPCtrl encountered PropertyTree exception on tx_fe_subtree: [%s]\nServer will continue.\n") % e.what(); 
-  }
-  catch (std::runtime_error e) {
-    std::cerr << boost::format("USRPCtrl encountered Unknown exception on tx_fe_subtree: [%s]\nServer will continue.\n") % e.what(); 
+  tx_fe_root = is_B2xx ? ("dboards/A/tx_frontends/A") :
+    ("dboards/A/tx_frontends/0");
+  tx_fe_subtree = new PropTree(tree, tx_fe_root); 
+  // do we care?  If the tx_fe_subtree doesn't have an enable property,
+  // we want to avoid setting and getting it....
+  if(tx_fe_subtree != NULL) {
+    tx_fe_has_enable = tx_fe_subtree->hasProperty("enabled"); 
   }
 
   // get the rx front end subtree
   uhd::fs_path rx_fe_root;
   rx_fe_has_enable = false; 
-  rx_fe_root = is_B2xx ? ("/mboards/" + mbname + "/dboards/A/rx_frontends/A") :
-    ("/mboards/" + mbname + "/dboards/A/rx_frontends/0");
-  try {
-    if(tree->exists(rx_fe_root)) {
-      rx_fe_subtree = tree->subtree(rx_fe_root);
-    }
-
-    // do we care?  If the rx_fe_subtree doesn't have an enable property, 
-    // we want to avoid setting and getting it....
-    if(rx_fe_subtree != NULL) {
-      std::vector<std::string> pslis = rx_fe_subtree->list("");
-      if(std::find(pslis.begin(), pslis.end(), "enabled") != pslis.end()) {
-	rx_fe_has_enable = true; 
-      }
-    }
+  rx_fe_root = is_B2xx ? ("dboards/A/rx_frontends/A") :
+    ("dboards/A/rx_frontends/0");
+  rx_fe_subtree = new PropTree(tree, rx_fe_root);
+  // do we care?  If the rx_fe_subtree doesn't have an enable property, 
+  // we want to avoid setting and getting it....
+  if(rx_fe_subtree != NULL) {
+    rx_fe_has_enable = rx_fe_subtree->hasProperty("enabled");
   }
-  catch (boost::property_tree::ptree_error e) {
-    std::cerr << boost::format("USRPCtrl encountered PropertyTree exception on rx_fe_subtree: [%s]\nServer will continue.\n") % e.what(); 
-  }
-  catch (std::runtime_error e) {
-    std::cerr << boost::format("USRPCtrl encountered Unknown exception on rx_fe_subtree: [%s]\nServer will continue.\n") % e.what(); 
-  }
-  
-  if(rx_fe_has_enable) rx_fe_subtree->access<bool>("enabled").set(true);
+  if(rx_fe_has_enable) rx_fe_subtree->setBoolProp("enabled",true);
 
   // do we have lock sensors? 
   std::vector<std::string> rx_snames, tx_snames; 
@@ -568,14 +520,14 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
       tx_freq_rxmode_offset = 0.0; // so tuning works.
 
       // enable the transmit relay
-      debugMsg(boost::format("Enabling TX\nCurrent TXENA %d\n") % tx_fe_subtree->access<bool>("enabled").get());
+      debugMsg(boost::format("Enabling TX\nCurrent TXENA %d\n") % tx_fe_subtree->getBoolProp("enabled"));
       if(supports_tx_gpio) {
 	debugMsg(boost::format("Current GPIO = %x ") %
 		 dboard->get_gpio_out(uhd::usrp::dboard_iface::UNIT_TX));
       }
       setTXEna(true);
 
-      debugMsg(boost::format("New TXENA %d\n") % tx_fe_subtree->access<bool>("enabled").get());
+      debugMsg(boost::format("New TXENA %d\n") % tx_fe_subtree->getBoolProp("enabled"));
       if(supports_tx_gpio) {
 	debugMsg(boost::format("New GPIO = %x ") % dboard->get_gpio_out(uhd::usrp::dboard_iface::UNIT_TX));
       }
@@ -599,7 +551,7 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
       // We keep the rxmode_offset here in case other modules
       // leave the TXLO on.
       setTXEna(false); 
-      debugMsg(boost::format("Disabling TX -- Got TXENA %d") % tx_fe_subtree->access<bool>("enabled").get());
+      debugMsg(boost::format("Disabling TX -- Got TXENA %d") % tx_fe_subtree->getBoolProp("enabled"));
       if(supports_tx_gpio) {
 	debugMsg(boost::format("Got GPIO = %x ") % 
 		 dboard->get_gpio_out(uhd::usrp::dboard_iface::UNIT_TX));
@@ -801,29 +753,13 @@ void SoDa::USRPCtrl::setTXFrontEndEnable(bool val)
   if(!tx_fe_has_enable) return; 
 
   // enable the transmitter (or disable it)
-  try {
-    tx_fe_subtree->access<bool>("enabled").set(val);
-  }
-  catch (boost::property_tree::ptree_error e) {
-    std::cerr << boost::format("USRPCtrl encountered PropertyTree exception in setTXEna: [%s]\nServer will continue.\n") % e.what(); 
-  }
-  catch (std::runtime_error e) {
-    std::cerr << boost::format("USRPCtrl encountered Unknown exception in setTXEna: [%s]\nServer will continue.\n") % e.what(); 
-  }
+  tx_fe_subtree->setBoolProp("enabled", val);
 
-  try {
-    debugMsg(boost::format("Got %d from call to en/dis TX with val = %d")
-	     % tx_fe_subtree->access<bool>("enabled").get() % val);
-    if(rx_fe_has_enable) {
-      debugMsg(boost::format("Got rx_fe enabled = %d from call to en/dis TX with val = %d")
-	       % rx_fe_subtree->access<bool>("enabled").get() % val);
-    }
-  }
-  catch (boost::property_tree::ptree_error e) {
-    std::cerr << boost::format("USRPCtrl encountered PropertyTree exception in setTXEna debug: [%s]\nServer will continue.\n") % e.what(); 
-  }
-  catch (std::runtime_error e) {
-    std::cerr << boost::format("USRPCtrl encountered Unknown exception in setTXEna debug: [%s]\nServer will continue.\n") % e.what(); 
+  debugMsg(boost::format("Got %d from call to en/dis TX with val = %d")
+	   % tx_fe_subtree->getBoolProp("enabled") % val);
+  if(rx_fe_has_enable) {
+    debugMsg(boost::format("Got rx_fe enabled = %d from call to en/dis TX with val = %d")
+	     % rx_fe_subtree->getBoolProp("enabled") % val);
   }
 }
  
@@ -996,15 +932,7 @@ void SoDa::USRPCtrl::testIntNMode(bool force_int_N, bool force_frac_N)
     // if it contains LFRX or BASICRX then we don't support intN mode.
     // get the db name for the rx
     std::string dbname;
-    try {
-      dbname = rx_fe_subtree->access<std::string>("name").get();
-    }
-    catch (boost::property_tree::ptree_error e) {
-      std::cerr << boost::format("USRPCtrl encountered PropertyTree exception on rx frontend name: [%s]\nServer will continue.\n") % e.what(); 
-    }
-    catch (std::runtime_error e) {
-      std::cerr << boost::format("USRPCtrl encountered Unknown exception on rx frontend name: [%s]\nServer will continue.\n") % e.what(); 
-    }
+    dbname = rx_fe_subtree->getStringProp("name");
 
     std::string lfrx("LFRX");
     std::string basrx("BASICRX");

@@ -29,6 +29,7 @@
 #include "TRControl.hxx"
 #include "N200Control.hxx"
 #include "B200Control.hxx"
+#include "PropTree.hxx"
 
 #include <uhd/version.hpp>
 #include <uhd/device.hpp>
@@ -43,18 +44,17 @@ namespace SoDa {
 
   TRControl * TRControl::makeTRControl(uhd::usrp::multi_usrp::sptr usrp, int mboard) {
     // first figure out what kind of device we are... 
-    uhd::property_tree::sptr tree = usrp->get_device()->get_tree(); 
-    std::string mbname = tree->list("/mboards").at(mboard); 
-    std::string modelname = tree->access<std::string>("/mboards/" + mbname + "/name").get();
+    PropTree tree(usrp, "TRControl");
+    std::string modelname = tree.getStringProp("name", "unknown");
 
     // now do something different for each one... 
     if ((modelname == std::string("N200")) || 
 	(modelname == std::string("N210"))) {
       // find the IP address. 
       std::string ip_address; 
-      ip_address = tree->access<uhd::usrp::mboard_eeprom_t>("/mboards/" + mbname + "/eeprom").get()["ip-addr"];       
+      ip_address = tree.getProperty<uhd::usrp::mboard_eeprom_t>("/eeprom")["ip-addr"];
       // std::cerr << boost::format("Got address = %s\n") % ip_address; 
-      std::string gpsdo = tree->access<uhd::usrp::mboard_eeprom_t>("/mboards/" + mbname + "/eeprom").get()["gpsdo"];     
+      std::string gpsdo = tree.getProperty<uhd::usrp::mboard_eeprom_t>("/eeprom")["gpsdo"];      
       if(gpsdo == std::string("none")) {
 	return new N200Control(usrp, mboard, ip_address);
       }

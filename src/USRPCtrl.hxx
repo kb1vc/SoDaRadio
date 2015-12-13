@@ -42,6 +42,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Command.hxx"
 #include "Params.hxx"
 #include "TRControl.hxx"
+#include "PropTree.hxx"
 
 #include <uhd/utils/thread_priority.hpp>
 #include <uhd/utils/safe_main.hpp>
@@ -142,9 +143,9 @@ namespace SoDa {
     uhd::usrp::multi_usrp::sptr usrp; ///< to which USRP unit is this connected?
     uhd::usrp::dboard_iface::sptr dboard;  ///< the daughterboard we're controlling
     // need this for TX/RX enable.
-    uhd::property_tree::sptr tx_fe_subtree; ///< property tree from daughtercard module
+    SoDa::PropTree * tx_fe_subtree; ///< property tree from daughtercard module
     // need this for TX/RX enable.
-    uhd::property_tree::sptr rx_fe_subtree; ///< property tree from daughtercard module
+    SoDa::PropTree * rx_fe_subtree; ///< property tree from daughtercard module
 
     // what controls and widgets do we have for the two front-ends? 
 
