@@ -1,0 +1,288 @@
+
+include_directories(${KDE4_INCLUDES} ${KDE4_INCLUDE_DIR} ${QT_INCLUDES} )
+
+
+########### next target ###############
+
+set(FFT_Test_SRCS FFT_Test.cxx)
+
+kde4_add_executable(FFT_Test ${FFT_Test_SRCS})
+
+target_link_libraries(FFT_Test ${KDE4_KDECORE_LIBS})
+
+install(TARGETS FFT_Test ${INSTALL_TARGETS_DEFAULT_ARGS})
+
+
+########### next target ###############
+
+set(Sockets_Test_SRCS
+    Sockets_Test.cxx
+    ../src/IPSockets.cxx
+    ../src/UDSockets.cxx
+    ../src/IPSockets.hxx
+    ../src/UDSockets.hxx)
+
+kde4_add_executable(Sockets_Test ${Sockets_Test_SRCS})
+
+target_link_libraries(Sockets_Test ${KDE4_KDECORE_LIBS})
+
+install(TARGETS Sockets_Test ${INSTALL_TARGETS_DEFAULT_ARGS})
+
+
+########### next target ###############
+
+set(MultiMBox_Test_SRCS MultiMBox_Test.cxx ../src/SoDaBase.cxx ../src/Debug.cxx)
+
+kde4_add_executable(MultiMBox_Test ${MultiMBox_Test_SRCS})
+
+target_link_libraries(MultiMBox_Test ${KDE4_KDECORE_LIBS})
+
+install(TARGETS MultiMBox_Test ${INSTALL_TARGETS_DEFAULT_ARGS})
+
+
+########### next target ###############
+
+set(SoDa_ThreadTest_SRCS SoDa_ThreadTest.cxx ../src/SoDaBase.cxx ../src/Debug.cxx)
+
+kde4_add_executable(SoDa_ThreadTest ${SoDa_ThreadTest_SRCS})
+
+target_link_libraries(SoDa_ThreadTest ${KDE4_KDECORE_LIBS})
+
+install(TARGETS SoDa_ThreadTest ${INSTALL_TARGETS_DEFAULT_ARGS})
+
+
+########### next target ###############
+
+set(OSFilter_Test_SRCS OSFilter_Test.cxx ../src/OSFilter.cxx)
+
+kde4_add_executable(OSFilter_Test ${OSFilter_Test_SRCS})
+
+target_link_libraries(OSFilter_Test ${KDE4_KDECORE_LIBS})
+
+install(TARGETS OSFilter_Test ${INSTALL_TARGETS_DEFAULT_ARGS})
+
+
+########### next target ###############
+
+set(TestServer_SRCS
+    TestServer.cxx
+    ../src/Command.cxx
+    ../src/UI.cxx
+    ../src/Params.cxx
+    ../src/UDSockets.cxx
+    ../src/Spectrogram.cxx
+    ../src/SoDaBase.cxx
+    ../src/Debug.cxx)
+
+kde4_add_executable(TestServer ${TestServer_SRCS})
+
+target_link_libraries(TestServer ${KDE4_KDECORE_LIBS} rt)
+
+install(TARGETS TestServer ${INSTALL_TARGETS_DEFAULT_ARGS})
+
+
+########### next target ###############
+
+set(ReSampler_Test_SRCS
+    ReSampler_Test.cxx
+    ../src/ReSampler.cxx
+    ../src/ReSamplers625x48.cxx
+    ../src/SoDaBase.cxx)
+
+kde4_add_executable(ReSampler_Test ${ReSampler_Test_SRCS})
+
+target_link_libraries(ReSampler_Test ${KDE4_KDECORE_LIBS})
+
+install(TARGETS ReSampler_Test ${INSTALL_TARGETS_DEFAULT_ARGS})
+
+
+########### next target ###############
+
+set(TSIP_Test_SRCS TSIP_Test.cxx ../src/TSIP.cxx)
+
+kde4_add_executable(TSIP_Test ${TSIP_Test_SRCS})
+
+target_link_libraries(TSIP_Test ${KDE4_KDECORE_LIBS})
+
+install(TARGETS TSIP_Test ${INSTALL_TARGETS_DEFAULT_ARGS})
+
+
+########### next target ###############
+
+set(Audio_test_SRCS
+    Audio_test.cxx
+    ../src/AudioPA.cxx
+    ../src/AudioALSA.cxx
+    ../src/SoDaBase.cxx
+    ../src/Debug.cxx)
+
+kde4_add_executable(Audio_test ${Audio_test_SRCS})
+
+target_link_libraries(Audio_test ${KDE4_KDECORE_LIBS})
+
+install(TARGETS Audio_test ${INSTALL_TARGETS_DEFAULT_ARGS})
+
+
+########### next target ###############
+
+set(Hilbert_Test_SRCS Hilbert_Test.cxx ../src/HilbertTransformer.cxx ../src/SoDaBase.cxx)
+
+kde4_add_executable(Hilbert_Test ${Hilbert_Test_SRCS})
+
+target_link_libraries(Hilbert_Test ${KDE4_KDECORE_LIBS})
+
+install(TARGETS Hilbert_Test ${INSTALL_TARGETS_DEFAULT_ARGS})
+
+
+########### next target ###############
+
+set(FindHome_Test_SRCS FindHome_Test.cxx ../gui/FindHome.cxx ../gui/FindHome.hxx)
+
+kde4_add_executable(FindHome_Test ${FindHome_Test_SRCS})
+
+target_link_libraries(FindHome_Test ${KDE4_KDECORE_LIBS})
+
+install(TARGETS FindHome_Test ${INSTALL_TARGETS_DEFAULT_ARGS})
+
+
+########### next target ###############
+
+set(RangeMap_test_SRCS RangeMap_test.cxx ../src/RangeMap.hxx)
+
+kde4_add_executable(RangeMap_test ${RangeMap_test_SRCS})
+
+target_link_libraries(RangeMap_test ${KDE4_KDECORE_LIBS})
+
+install(TARGETS RangeMap_test ${INSTALL_TARGETS_DEFAULT_ARGS})
+
+
+########### next target ###############
+
+set(SerialDev_Test_SRCS SerialDev_Test.cxx ../src/SerialDev.hxx ../src/SerialDev.cxx)
+
+kde4_add_executable(SerialDev_Test ${SerialDev_Test_SRCS})
+
+target_link_libraries(SerialDev_Test ${KDE4_KDECORE_LIBS})
+
+install(TARGETS SerialDev_Test ${INSTALL_TARGETS_DEFAULT_ARGS})
+
+
+########### next target ###############
+
+set(TRControl_Test_SRCS
+    TRControl_Test.cxx
+    ../src/N200Control.hxx
+    ../src/N200Control.cxx
+    ../src/TRControl.hxx
+    ../src/TRControl.cxx
+    ../src/IPSockets.hxx
+    ../src/IPSockets.cxx
+    ../src/B200Control.hxx
+    ../src/B200Control.cxx)
+
+kde4_add_executable(TRControl_Test ${TRControl_Test_SRCS})
+
+target_link_libraries(TRControl_Test ${KDE4_KDECORE_LIBS})
+
+install(TARGETS TRControl_Test ${INSTALL_TARGETS_DEFAULT_ARGS})
+
+
+########### install files ###############
+
+
+
+
+#original Makefile.am contents follow:
+
+#AUTOMAKE_OPTIONS = subdir-objects
+#AM_CPPFLAGS = -I$(top_srcdir)/src
+#AM_BOOSTLIBFLAGS = ${BOOST_PROGRAM_OPTIONS_LIB} ${BOOST_THREAD_LIB} ${BOOST_DATE_TIME_LIB} ${BOOST_SYSTEM_LIB} 
+#
+#
+#bin_PROGRAMS = FFT_Test Sockets_Test MultiMBox_Test SoDa_ThreadTest OSFilter_Test  TestServer ReSampler_Test TSIP_Test Audio_test Hilbert_Test FindHome_Test RangeMap_test SerialDev_Test TRControl_Test
+#
+#
+#Sockets_Test_SOURCES = Sockets_Test.cxx  ../src/IPSockets.cxx ../src/UDSockets.cxx ../src/IPSockets.hxx ../src/UDSockets.hxx
+#Sockets_Test_CPPFLAGS = $(AM_CPPFLAGS)
+#Sockets_Test_LDADD = $(AM_BOOSTLIBFLAGS)
+#
+#SoDa_ThreadTest_SOURCES = SoDa_ThreadTest.cxx  ../src/SoDaBase.cxx ../src/Debug.cxx
+#SoDa_ThreadTest_CPPFLAGS = $(AM_CPPFLAGS)
+#SoDa_ThreadTest_LDADD = $(AM_BOOSTLIBFLAGS)
+#
+#
+#
+#Audio_test_SOURCES = Audio_test.cxx  ../src/AudioPA.cxx ../src/AudioALSA.cxx ../src/SoDaBase.cxx ../src/Debug.cxx
+#Audio_test_CPPFLAGS = $(AM_CPPFLAGS)
+#Audio_test_LDADD = $(AM_BOOSTLIBFLAGS)
+#
+#
+#MultiMBox_Test_SOURCES = MultiMBox_Test.cxx  ../src/SoDaBase.cxx ../src/Debug.cxx
+#MultiMBox_Test_CPPFLAGS = $(AM_CPPFLAGS)
+#MultiMBox_Test_LDADD = $(AM_BOOSTLIBFLAGS)
+#
+#
+#OSFilter_Test_SOURCES = OSFilter_Test.cxx  ../src/OSFilter.cxx
+#OSFilter_Test_CPPFLAGS = $(AM_CPPFLAGS) -g -O1 
+#OSFilter_Test_LDADD = $(AM_BOOSTLIBFLAGS) 
+#OSFilter_Test_CXXFLAGS = -O1 -g
+#OSFilter_Test_LDFLAGS = -g -O1
+#
+#Hilbert_Test_SOURCES = Hilbert_Test.cxx  ../src/HilbertTransformer.cxx  ../src/SoDaBase.cxx
+#Hilbert_Test_CPPFLAGS = $(AM_CPPFLAGS) -g -O1 
+#Hilbert_Test_LDADD = $(AM_BOOSTLIBFLAGS) 
+#Hilbert_Test_CXXFLAGS = -O1 -g
+#Hilbert_Test_LDFLAGS = -g -O1
+#
+#
+#
+#FFT_Test_SOURCES = FFT_Test.cxx  
+#FFT_Test_CPPFLAGS = $(AM_CPPFLAGS) -g -O1 
+#FFT_Test_LDADD = $(AM_BOOSTLIBFLAGS) 
+#FFT_Test_CXXFLAGS = -O1 -g
+#FFT_Test_LDFLAGS = -g -O1
+#
+#
+#TSIP_Test_SOURCES = TSIP_Test.cxx  ../src/TSIP.cxx
+#TSIP_Test_CPPFLAGS = $(AM_CPPFLAGS)
+#TSIP_Test_LDADD = $(AM_BOOSTLIBFLAGS) 
+#
+#
+#
+#TestServer_SOURCES = TestServer.cxx  ../src/Command.cxx ../src/UI.cxx ../src/Params.cxx ../src/UDSockets.cxx ../src/Spectrogram.cxx ../src/SoDaBase.cxx ../src/Debug.cxx
+#TestServer_CPPFLAGS = $(AM_CPPFLAGS)
+#TestServer_LDADD = $(AM_BOOSTLIBFLAGS) -lrt
+#
+#
+#ReSampler_Test_SOURCES = ReSampler_Test.cxx  ../src/ReSampler.cxx ../src/ReSamplers625x48.cxx ../src/SoDaBase.cxx
+#ReSampler_Test_CPPFLAGS = $(AM_CPPFLAGS) -g -O3 -ffast-math 
+#ReSampler_Test_LDADD = $(AM_BOOSTLIBFLAGS) 
+#ReSampler_Test_CXXFLAGS = -g -O3 -ffast-math
+#ReSampler_Test_LDFLAGS = -g -O3 
+#
+#
+#FindHome_Test_SOURCES = FindHome_Test.cxx  ../gui/FindHome.cxx ../gui/FindHome.hxx
+#FindHome_Test_CPPFLAGS = $(AM_CPPFLAGS) -g -O1 
+#FindHome_Test_LDADD = $(AM_BOOSTLIBFLAGS) 
+#FindHome_Test_CXXFLAGS = -g -O1
+#FindHome_Test_LDFLAGS = -g -O1
+#
+#
+#RangeMap_test_SOURCES = RangeMap_test.cxx  ../src/RangeMap.hxx
+#RangeMap_test_CPPFLAGS = $(AM_CPPFLAGS) -g -O1 
+#RangeMap_test_LDADD = $(AM_BOOSTLIBFLAGS) 
+#RangeMap_test_CXXFLAGS = -g -O1
+#RangeMap_test_LDFLAGS = -g -O1
+#
+#SerialDev_Test_SOURCES = SerialDev_Test.cxx  ../src/SerialDev.hxx ../src/SerialDev.cxx
+#SerialDev_Test_CPPFLAGS = $(AM_CPPFLAGS) -g -O1 
+#SerialDev_Test_LDADD = $(AM_BOOSTLIBFLAGS) 
+#SerialDev_Test_CXXFLAGS = -g -O1
+#SerialDev_Test_LDFLAGS = -g -O1
+#
+#TRControl_Test_SOURCES = TRControl_Test.cxx  ../src/N200Control.hxx ../src/N200Control.cxx ../src/TRControl.hxx ../src/TRControl.cxx ../src/IPSockets.hxx ../src/IPSockets.cxx ../src/B200Control.hxx ../src/B200Control.cxx
+#TRControl_Test_CPPFLAGS = $(AM_CPPFLAGS) -g -O1 
+#TRControl_Test_LDADD = $(AM_BOOSTLIBFLAGS) 
+#TRControl_Test_CXXFLAGS = -g -O1
+#TRControl_Test_LDFLAGS = -g -O1
+#

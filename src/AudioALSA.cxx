@@ -256,7 +256,8 @@ namespace SoDa {
 #else 
   AudioALSA::AudioALSA(unsigned int _sample_rate,
 		       DataFormat _fmt,
-		       unsigned int _sample_count_hint) :
+		       unsigned int _sample_count_hint,
+		       std::string audio_port_name) :
     AudioIfc(_sample_rate, _fmt, _sample_count_hint, "AudioALSA ALSA Interface")
   {
     std::cerr << "ALSA Sound Library is not enabled in this build version.";  
