@@ -8,6 +8,10 @@ and the B210.
 PREREQUISITES
 
 ---- 
+
+SoDaRadio now uses the CMake build system.  You will need
+a version of cmake that is newer than 3.0.
+
 SoDaRadio is built on the Ettus libuhd library, the FFTW library,
 ALSA linux sound support, and the WXWidgets toolset.
 
@@ -21,6 +25,14 @@ libasound
 There may be information on building SoDaRadio for your
 particular system.  Take a look at the SoDaRadio wiki at
 https://sourceforge.net/p/sodaradio/wiki/Building%20SoDa%20Radio/
+
+Version 4.0
+
+* Migration to cmake
+* Improvements to daughter card detection for LFTX/LFRX and other
+non WBX/UBX daughter cards.
+* Beginning of refactoring to support digital modems.
+
 
 Version 3.6
 

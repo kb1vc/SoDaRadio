@@ -1,3 +1,7 @@
+2015-12-13 Matt Reilly kb1vc (kb1vc@kb1vc.org)
+	Switch build system to cmake.  Autotools finally got to be too much
+	of a mess. 
+
 2015-11-28 Matt Reilly kb1vc (kb1vc@kb1vc.org)
 	Refactor AudioRX/AudioTX into BaseBandRX/TX and separate
 	mod/demod units.
