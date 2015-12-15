@@ -2,7 +2,10 @@ cmake_minimum_required(VERSION 3.0)
 
 cmake_policy(SET CMP0048 NEW)
 
-project(SoDaRadio VERSION 4.0.0)
+project(SoDaRadio)
+set(SoDaRadio_VERSION_MAJOR 4)
+set(SoDaRadio_VERSION_MINOR 0)
+set(SoDaRadio_VERSION_PATCH "pre")
 
 set(CPACK_PACKAGE_VERSION_MAJOR ${SoDaRadio_VERSION_MAJOR})
 set(CPACK_PACKAGE_VERSION_MINOR ${SoDaRadio_VERSION_MINOR})
