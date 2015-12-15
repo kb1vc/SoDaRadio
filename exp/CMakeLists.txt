@@ -1,4 +1,16 @@
+#find_package(Portaudio)
+find_package(ALSA REQUIRED)
+find_package(UHD REQUIRED)
+find_package(FFTW3f REQUIRED)
 
+add_definitions(-DHAVE_LIBASOUND=1)
+
+
+find_package(Boost 1.45 REQUIRED COMPONENTS program_options thread date_time system filesystem serialization regex)
+
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS} ${UHD_INCLUDE_DIRS} ${ALSA_INCLUDE_DIRS} ${FFTW3F_INCLUDE_DIRS} ../src)
+
+set(TEST_LIBS ${Boost_LIBRARIES} ${UHD_LIBRARIES} ${ALSA_LIBRARIES} ${FFTW3F_LIBRARIES})
 
 ########### next target ###############
 
@@ -6,9 +18,9 @@ set(FFT_Test_SRCS FFT_Test.cxx)
 
 add_executable(FFT_Test ${FFT_Test_SRCS})
 
-target_link_libraries(FFT_Test )
+target_link_libraries(FFT_Test ${TEST_LIBS})
 
-install(TARGETS FFT_Test DESTINATION tests)
+#install(TARGETS FFT_Test DESTINATION tests)
 
 
 ########### next target ###############
@@ -22,9 +34,9 @@ set(Sockets_Test_SRCS
 
 add_executable(Sockets_Test ${Sockets_Test_SRCS})
 
-target_link_libraries(Sockets_Test )
+target_link_libraries(Sockets_Test ${TEST_LIBS})
 
-install(TARGETS Sockets_Test DESTINATION tests)
+#install(TARGETS Sockets_Test DESTINATION tests)
 
 
 ########### next target ###############
@@ -33,9 +45,9 @@ set(MultiMBox_Test_SRCS MultiMBox_Test.cxx ../src/SoDaBase.cxx ../src/Debug.cxx)
 
 add_executable(MultiMBox_Test ${MultiMBox_Test_SRCS})
 
-target_link_libraries(MultiMBox_Test )
+target_link_libraries(MultiMBox_Test ${TEST_LIBS})
 
-install(TARGETS MultiMBox_Test DESTINATION tests)
+#install(TARGETS MultiMBox_Test DESTINATION tests)
 
 
 ########### next target ###############
@@ -44,9 +56,9 @@ set(SoDa_ThreadTest_SRCS SoDa_ThreadTest.cxx ../src/SoDaBase.cxx ../src/Debug.cx
 
 add_executable(SoDa_ThreadTest ${SoDa_ThreadTest_SRCS})
 
-target_link_libraries(SoDa_ThreadTest )
+target_link_libraries(SoDa_ThreadTest ${TEST_LIBS})
 
-install(TARGETS SoDa_ThreadTest DESTINATION tests)
+#install(TARGETS SoDa_ThreadTest DESTINATION tests)
 
 
 ########### next target ###############
@@ -55,9 +67,9 @@ set(OSFilter_Test_SRCS OSFilter_Test.cxx ../src/OSFilter.cxx)
 
 add_executable(OSFilter_Test ${OSFilter_Test_SRCS})
 
-target_link_libraries(OSFilter_Test )
+target_link_libraries(OSFilter_Test ${TEST_LIBS})
 
-install(TARGETS OSFilter_Test DESTINATION tests)
+#install(TARGETS OSFilter_Test DESTINATION tests)
 
 
 ########### next target ###############
@@ -74,9 +86,9 @@ set(TestServer_SRCS
 
 add_executable(TestServer ${TestServer_SRCS})
 
-target_link_libraries(TestServer  rt)
+target_link_libraries(TestServer  rt ${TEST_LIBS})
 
-install(TARGETS TestServer DESTINATION tests)
+#install(TARGETS TestServer DESTINATION tests)
 
 
 ########### next target ###############
@@ -89,9 +101,9 @@ set(ReSampler_Test_SRCS
 
 add_executable(ReSampler_Test ${ReSampler_Test_SRCS})
 
-target_link_libraries(ReSampler_Test )
+target_link_libraries(ReSampler_Test ${TEST_LIBS})
 
-install(TARGETS ReSampler_Test DESTINATION tests)
+#install(TARGETS ReSampler_Test DESTINATION tests)
 
 
 ########### next target ###############
@@ -100,9 +112,9 @@ set(TSIP_Test_SRCS TSIP_Test.cxx ../src/TSIP.cxx)
 
 add_executable(TSIP_Test ${TSIP_Test_SRCS})
 
-target_link_libraries(TSIP_Test )
+target_link_libraries(TSIP_Test ${TEST_LIBS})
 
-install(TARGETS TSIP_Test DESTINATION tests)
+#install(TARGETS TSIP_Test DESTINATION tests)
 
 
 ########### next target ###############
@@ -116,9 +128,9 @@ set(Audio_test_SRCS
 
 add_executable(Audio_test ${Audio_test_SRCS})
 
-target_link_libraries(Audio_test )
+target_link_libraries(Audio_test ${TEST_LIBS})
 
-install(TARGETS Audio_test DESTINATION tests)
+#install(TARGETS Audio_test DESTINATION tests)
 
 
 ########### next target ###############
@@ -127,9 +139,9 @@ set(Hilbert_Test_SRCS Hilbert_Test.cxx ../src/HilbertTransformer.cxx ../src/SoDa
 
 add_executable(Hilbert_Test ${Hilbert_Test_SRCS})
 
-target_link_libraries(Hilbert_Test )
+target_link_libraries(Hilbert_Test ${TEST_LIBS})
 
-install(TARGETS Hilbert_Test DESTINATION tests)
+#install(TARGETS Hilbert_Test DESTINATION tests)
 
 
 ########### next target ###############
@@ -138,9 +150,9 @@ set(FindHome_Test_SRCS FindHome_Test.cxx ../gui/FindHome.cxx ../gui/FindHome.hxx
 
 add_executable(FindHome_Test ${FindHome_Test_SRCS})
 
-target_link_libraries(FindHome_Test )
+target_link_libraries(FindHome_Test ${TEST_LIBS})
 
-install(TARGETS FindHome_Test DESTINATION tests)
+#install(TARGETS FindHome_Test DESTINATION tests)
 
 
 ########### next target ###############
@@ -149,9 +161,9 @@ set(RangeMap_test_SRCS RangeMap_test.cxx ../src/RangeMap.hxx)
 
 add_executable(RangeMap_test ${RangeMap_test_SRCS})
 
-target_link_libraries(RangeMap_test )
+target_link_libraries(RangeMap_test ${TEST_LIBS})
 
-install(TARGETS RangeMap_test DESTINATION tests)
+#install(TARGETS RangeMap_test DESTINATION tests)
 
 
 ########### next target ###############
@@ -160,9 +172,9 @@ set(SerialDev_Test_SRCS SerialDev_Test.cxx ../src/SerialDev.hxx ../src/SerialDev
 
 add_executable(SerialDev_Test ${SerialDev_Test_SRCS})
 
-target_link_libraries(SerialDev_Test )
+target_link_libraries(SerialDev_Test ${TEST_LIBS})
 
-install(TARGETS SerialDev_Test DESTINATION tests)
+#install(TARGETS SerialDev_Test DESTINATION tests)
 
 
 ########### next target ###############
@@ -180,9 +192,9 @@ set(TRControl_Test_SRCS
 
 add_executable(TRControl_Test ${TRControl_Test_SRCS})
 
-target_link_libraries(TRControl_Test )
+target_link_libraries(TRControl_Test ${TEST_LIBS})
 
-install(TARGETS TRControl_Test DESTINATION tests)
+#install(TARGETS TRControl_Test DESTINATION tests)
 
 
 ########### next target ###############
@@ -191,9 +203,9 @@ set(IntN_FreqTable_SRCS IntN_FreqTable.cxx)
 
 add_executable(IntN_FreqTable ${IntN_FreqTable_SRCS})
 
-target_link_libraries(IntN_FreqTable )
+target_link_libraries(IntN_FreqTable ${TEST_LIBS})
 
-install(TARGETS IntN_FreqTable DESTINATION tests)
+#install(TARGETS IntN_FreqTable DESTINATION tests)
 
 
 ########### next target ###############
@@ -209,9 +221,9 @@ set(Demod_test_SRCS
 
 add_executable(Demod_test ${Demod_test_SRCS})
 
-target_link_libraries(Demod_test )
+target_link_libraries(Demod_test ${TEST_LIBS})
 
-install(TARGETS Demod_test DESTINATION tests)
+#install(TARGETS Demod_test DESTINATION tests)
 
 
 ########### next target ###############
@@ -220,9 +232,9 @@ set(FrontEnd_test_SRCS FrontEnd_test.cxx ../src/FrontEnd.hxx ../src/PropTree.hxx
 
 add_executable(FrontEnd_test ${FrontEnd_test_SRCS})
 
-target_link_libraries(FrontEnd_test )
+target_link_libraries(FrontEnd_test ${TEST_LIBS})
 
-install(TARGETS FrontEnd_test DESTINATION tests)
+#install(TARGETS FrontEnd_test DESTINATION tests)
 
 
 ########### install files ###############

@@ -42,7 +42,11 @@ add_executable(SoDaRadio ${SoDaRadio_SRCS})
 
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS} ${wxWidgets_INCLUDE_DIRS})
 
+target_compile_options(SoDaRadio BEFORE PUBLIC -Wno-deprecated-declarations)
+
 target_link_libraries(SoDaRadio m rt ${Boost_LIBRARIES} ${wxWidgets_LIBRARIES} )
+
+
 
 install(TARGETS SoDaRadio DESTINATION bin)
 
