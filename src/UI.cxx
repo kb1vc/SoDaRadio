@@ -27,7 +27,7 @@
 */
 
 #include "UI.hxx"
-
+#include "version.h"
 
 SoDa::UI::UI(Params * params, CmdMBox * _cwtxt_stream,
 	     DatMBox * _rx_stream, DatMBox * _if_stream, 
@@ -141,7 +141,7 @@ void SoDa::UI::run()
       if(new_connection) {
 	updateSpectrumState();
 
-	std::string vers= (boost::format("%s GIT %s") % SoDaRadio_VERSION % GIT_VERSION).str(); 
+	std::string vers= (boost::format("%s GIT %s") % SoDaRadio_VERSION % SoDaRadio_GIT_ID).str(); 
 	SoDa::Command * vers_cmd = new SoDa::Command(Command::REP,
 						     Command::SDR_VERSION,
 						     vers.c_str());

@@ -33,7 +33,6 @@ set(SoDaRadio_SRCS
     ../src/Debug.hxx
     ../src/Debug.cxx)
 
-find_package(Boost 1.45 REQUIRED COMPONENTS program_options thread date_time system filesystem serialization regex)
 
 find_package(wxWidgets COMPONENTS core base richtext aui xrc qa html adv  )
 include(${wxWidgets_USE_FILE})

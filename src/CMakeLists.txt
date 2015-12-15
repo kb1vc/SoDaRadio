@@ -70,8 +70,6 @@ set(SoDaServer_SRCS
     PropTree.hxx
     FrontEnd.hxx)
 
-find_package(Boost 1.45 REQUIRED COMPONENTS program_options thread date_time system filesystem serialization regex)
-
 #find_package(Portaudio)
 find_package(ALSA REQUIRED)
 find_package(UHD REQUIRED)

@@ -38,6 +38,7 @@
 #include "GuiParams.hxx"
 #include "TunerDigit.hxx"
 #include "RadioListenerThread.hxx"
+#include "version.h"
 #include "../src/UDSockets.hxx"
 #include "../src/Command.hxx"
 #include "../src/Debug.hxx"
@@ -450,7 +451,7 @@ namespace SoDaRadio_GUI {
 
   AboutDialog(wxWindow * parent, char * SDR_version_string) : m_AboutDialog(parent) {
       // setup the gui version string
-      std::string guiv = (boost::format("GUI Version: %s GIT %s") % SoDaRadio_VERSION % GIT_VERSION).str();
+      std::string guiv = (boost::format("GUI Version: %s GIT %s") % SoDaRadio_VERSION % SoDaRadio_GIT_ID).str();
       wxString wxver(guiv.c_str(), wxConvUTF8);
       m_GUIVersion->SetLabel(wxver);
       std::string sdrv = (boost::format("SDR Version: %s") % SDR_version_string).str();
