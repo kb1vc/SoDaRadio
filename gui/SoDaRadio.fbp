@@ -3650,7 +3650,7 @@
                 </object>
             </object>
         </object>
-        <object class="Dialog" expanded="0">
+        <object class="Dialog" expanded="1">
             <property name="bg"></property>
             <property name="center"></property>
             <property name="context_help"></property>
@@ -3666,7 +3666,7 @@
             <property name="minimum_size"></property>
             <property name="name">m_AboutDialog</property>
             <property name="pos"></property>
-            <property name="size">626,768</property>
+            <property name="size">800,768</property>
             <property name="style">wxDEFAULT_DIALOG_STYLE</property>
             <property name="subclass"></property>
             <property name="title"></property>
@@ -3780,9 +3780,9 @@
                         <property name="font"></property>
                         <property name="hidden">0</property>
                         <property name="id">wxID_ANY</property>
-                        <property name="label">SoDa Radio&#x0A;The &apos;SoD&apos; stands for Software Defined.&#x0A; The &apos;a&apos; doesn&apos;t stand for anything.&#x0A;&#x0A;(Copyright 2013 kb1vc)&#x0A;  All rights reserved.&#x0A;&#x0A;  Redistribution and use in source and binary forms, with or without&#x0A;  modification, are permitted provided that the following conditions are&#x0A;  met:&#x0A;&#x0A;  Redistributions of source code must retain the above copyright&#x0A;  notice, this list of conditions and the following disclaimer.&#x0A;  Redistributions in binary form must reproduce the above copyright&#x0A;  notice, this list of conditions and the following disclaimer in&#x0A;  the documentation and/or other materials provided with the&#x0A;  distribution.&#x0A;&#x0A;  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS&#x0A;  &quot;AS IS&quot; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT&#x0A;  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR&#x0A;  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT&#x0A;  HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,&#x0A;  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT&#x0A;  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,&#x0A;  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY&#x0A;  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT&#x0A;  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE&#x0A;  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</property>
+                        <property name="label">SoDa Radio&#x0A;The &apos;SoD&apos; stands for Software Defined.&#x0A; The &apos;a&apos; doesn&apos;t stand for anything.&#x0A;&#x0A;(Copyright 2013 kb1vc)&#x0A;  All rights reserved.&#x0A;&#x0A; Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:&#x0A;&#x0A; Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.&#x0A;&#x0A; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</property>
                         <property name="maximum_size"></property>
-                        <property name="minimum_size"></property>
+                        <property name="minimum_size">775,-1</property>
                         <property name="name">m_staticText15</property>
                         <property name="permission">protected</property>
                         <property name="pos"></property>
@@ -3797,7 +3797,7 @@
                         <property name="window_extra_style"></property>
                         <property name="window_name"></property>
                         <property name="window_style"></property>
-                        <property name="wrap">-1</property>
+                        <property name="wrap">750</property>
                         <event name="OnChar"></event>
                         <event name="OnEnterWindow"></event>
                         <event name="OnEraseBackground"></event>
@@ -3892,7 +3892,7 @@
                         <property name="font"></property>
                         <property name="hidden">0</property>
                         <property name="id">wxID_ANY</property>
-                        <property name="label">SDR Version</property>
+                        <property name="label">SDR Version:</property>
                         <property name="maximum_size"></property>
                         <property name="minimum_size"></property>
                         <property name="name">m_SDRVersion</property>

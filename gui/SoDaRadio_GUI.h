@@ -202,7 +202,7 @@ namespace SoDaRadio_GUI
 		
 		public:
 			
-			m_AboutDialog( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxEmptyString, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 626,768 ), long style = wxDEFAULT_DIALOG_STYLE );
+			m_AboutDialog( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxEmptyString, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 800,768 ), long style = wxDEFAULT_DIALOG_STYLE );
 			~m_AboutDialog();
 		
 	};
