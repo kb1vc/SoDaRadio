@@ -2,7 +2,7 @@ SoDa -- A Software Defined Radio for the Ettus Research USRP
 
 SoDaRadio is a multi-mode VHF/UHF/Microwave radio transciever
 that runs on Linux.   It has been tested on several Ettus
-USRP models including the N200/WBX, N210/WBX, N210/SBX,
+USRP models including the N200/WBX, N210/WBX, N210/SBX, N200/UBX,
 and the B210. 
 
 PREREQUISITES
@@ -13,18 +13,61 @@ SoDaRadio now uses the CMake build system.  You will need
 a version of cmake that is newer than 3.0.
 
 SoDaRadio is built on the Ettus libuhd library, the FFTW library,
-ALSA linux sound support, and the WXWidgets toolset.
+ALSA linux sound support, and the wxWidgets toolset.
 
 
-Boost version 1.33 or later -- current builds are against boost 1.55
+Boost version 1.33 or later -- current builds are against boost 1.57
 wxWidgets -- current build is against version 2.8
-libuhd -- builds against version 003.008.001
+libuhd -- builds against version 003.009.001
 fftw3 -- builds against version 3.3.0
 libasound
 
 There may be information on building SoDaRadio for your
 particular system.  Take a look at the SoDaRadio wiki at
 https://sourceforge.net/p/sodaradio/wiki/Building%20SoDa%20Radio/
+
+----
+
+INSTALL Quick Start
+
+(X.X.X is the version that you just downloaded, 
+e.g. SoDaRadio-X.X.X.tar.gz might be SoDaRadio-4.0.0.tar.gz...)
+
+# unpack SoDaRadio-X.X.X.tar.gz 
+tar xzvf SoDaRadio-X.X.X.tar.gz
+cd SoDaRadio-X.X.X
+mkdir build
+cd build
+cmake ../
+make
+make install
+
+----
+
+HOWTO 
+
+To start the radio, connect your Ettus USRP N2xx to 
+the host computer. (I'm assuming that your USRP has a
+WBX module.)  Connect an antenna to the TX/RX port.
+
+
+Then execute SoDaRadio
+
+(If you haven't installed SoDaRadio, but have built it, 
+you can start SoDaRadio from the build directory like this: 
+
+gui/SoDaRadio --server=src/SoDaRadio 
+
+)
+
+It should come up tuned to something like 162.55 or nearby. 
+
+Poke buttons.  Try things.  Don't hit the "TX" button unless
+you have something connected and the necessary license to operate
+in that band. 
+
+---- 
+
 
 Version 4.0
 
@@ -186,49 +229,6 @@ user to define band segments, and transverter settings.
 Before running this version, you should remove the file ~/.SoDaRadio/SoDa.soda_cfg as it is no longer compatible with version 2.0.  I really ought to fix that.
 
 
-See the INSTALL file for instructions on configuring, building 
-and installing SoDa
-
-
-----
-
-INSTALL Quick Start  (X.x is the version that you just downloaded, 
-e.g. soda-X.x.tar.gz might be soda-2.2.tar.gz...)
-
-# unpack soda-X.x.tar.gz 
-tar xzvf soda-X.x.tar.gz
-cd soda-X.x
-mkdir build
-cd build
-../configure
-make
-make install
-
-----
-
-HOWTO 
-
-To start the radio, connect your Ettus USRP N2xx to 
-the host computer. (I'm assuming that your USRP has a
-WBX module.)  Connect an antenna to the TX/RX port.
-
-
-Then execute SoDaRadio
-
-(If you haven't installed SoDaRadio, but have built it, 
-you can start SoDaRadio from the build directory like this: 
-
-gui/SoDaRadio --server=src/SoDaRadio 
-
-)
-
-It should come up tuned to something like 162.55 or nearby. 
-
-Poke buttons.  Try things.  Don't hit the "TX" button unless
-you have something connected and the necessary license to operate
-in that band. 
-
----- 
 
 PROBLEMS?
 
