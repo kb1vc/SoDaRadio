@@ -2,9 +2,14 @@
 
 ########### next target ###############
 
+#build the GUI from the generated sources from wxFormBuilder
+#  SoDaRadio_GUI.cpp
+execute_process(COMMAND /bin/bash ${PROJECT_SOURCE_DIR}/gui/adjust_GUI.sh ${PROJECT_SOURCE_DIR}/gui ${PROJECT_BINARY_DIR} ${PROJECT_BINARY_DIR})
+
+
 set(SoDaRadio_SRCS
     SoDaRadio_App.cxx
-    SoDaRadio_GUI.cxx
+    ${PROJECT_BINARY_DIR}/SoDaRadio_GUI.cxx
     SoDaRadio_Top.cxx
     SoDaRadio_Top_Events.cxx
     SoDaRadio_Top_Config.cxx
@@ -31,7 +36,8 @@ set(SoDaRadio_SRCS
     Default.soda_cfg.h
     SoDaRadio_Band.hxx
     ../src/Debug.hxx
-    ../src/Debug.cxx)
+    ../src/Debug.cxx
+    )
 
 
 find_package(wxWidgets COMPONENTS core base richtext aui xrc qa html adv  )
@@ -39,7 +45,7 @@ include(${wxWidgets_USE_FILE})
   
 add_executable(SoDaRadio ${SoDaRadio_SRCS})
 
-include_directories(SYSTEM ${Boost_INCLUDE_DIRS} ${wxWidgets_INCLUDE_DIRS})
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS} ${wxWidgets_INCLUDE_DIRS} ${PROJECT_SOURCE_DIR}/gui)
 
 target_compile_options(SoDaRadio BEFORE PUBLIC -Wno-deprecated-declarations)
 
