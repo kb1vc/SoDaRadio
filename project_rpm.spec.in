@@ -6,7 +6,7 @@ Release:        @CPACK_PACKAGE_RELEASE@
 License:        GPL
 Group:          Development/Tools/Other
 Vendor:         @CPACK_PACKAGE_VENDOR@
-Prefix:         @CPACK_PACKAGING_INSTALL_PREFIX@
+Prefix:         @CPACK_RPM_PACKAGING_INSTALL_PREFIX@
 Requires:       boost >= 1.45
 Requires:       wxGTK-devel >= 2.8
 Requires:       fftw-devel >= 3.3
