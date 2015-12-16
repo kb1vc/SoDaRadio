@@ -9,18 +9,32 @@ option(BUILD_UNIT_TESTS "Build the unit tests -- not normally useful" OFF)
 set(SoDaRadio_VERSION_MAJOR 4)
 set(SoDaRadio_VERSION_MINOR 0)
 set(SoDaRadio_VERSION_PATCH "pre")
+set(SoDaRadio_VERSION "${SoDaRadio_VERSION_MAJOR}.${SoDaRadio_VERSION_MINOR}.${SoDaRadio_VERSION_PATCH}")
 
 # Package generation for the source tarball
 set(CPACK_PACKAGE_VERSION_MAJOR ${SoDaRadio_VERSION_MAJOR})
 set(CPACK_PACKAGE_VERSION_MINOR ${SoDaRadio_VERSION_MINOR})
 set(CPACK_PACKAGE_VERSION_PATCH ${SoDaRadio_VERSION_PATCH})
-set(CPACK_GENERATOR TGZ)
+set(CPACK_PACKAGE_VERSION ${SoDaRadio_VERSION})
+set(CPACK_PACKAGE_NAME "SoDaRadio")
+set(CPACK_PACKAGE_RELEASE 1)
+set(CPACK_PACKAGE_CONTACT "Matt Reilly kb1vc")
+set(CPACK_PACKAGE_VENDOR "Matt Reilly -- radiogeek381@gmail.com")
+# RPM stuff doesn't work and it is screwing up the dest dir for the source package
+# set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_PACKAGE_RELEASE}.${CMAKE_SYSTEM_PROCESSOR}")
+# set(CPACK_GENERATOR TGZ RPM)
 set(CPACK_SOURCE_GENERATOR TGZ)
 set(CPACK_SOURCE_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
 set(CPACK_SOURCE_IGNORE_FILES "/build/" "~$" "SoDa.soda_cfg$" "SoDa.soda_log$" "ckp$" "/.git/")
+
+configure_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/project_rpm.spec.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/project_rpm.spec" @ONLY)
+set(CPACK_RPM_USER_BINARY_SPECFILE "${CMAKE_CURRENT_BINARY_DIR}/project_rpm.spec")
 include(CPack)
 
-set(SoDaRadio_VERSION "${SoDaRadio_VERSION_MAJOR}.${SoDaRadio_VERSION_MINOR}.${SoDaRadio_VERSION_PATCH}")
+
 
 
 message("SoDaRadio_VERSION=[${SoDaRadio_VERSION}]")
