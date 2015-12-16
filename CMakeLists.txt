@@ -22,6 +22,7 @@ include(CPack)
 
 set(SoDaRadio_VERSION "${SoDaRadio_VERSION_MAJOR}.${SoDaRadio_VERSION_MINOR}.${SoDaRadio_VERSION_PATCH}")
 
+
 message("SoDaRadio_VERSION=[${SoDaRadio_VERSION}]")
 
 
@@ -54,6 +55,9 @@ else()
   set(SoDaRadio_GIT_ID "UNKNOWN")  
 endif()
 
+set(DOXY_PROJECT_VERSION "${SoDaRadio_VERSION}-${SoDaRadio_GIT_ID}")
+set(DOXY_EXCLUDE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/gui/Default.soda_cfg.h ${CMAKE_CURRENT_BINARY_DIR}/SoDaRadio_GUI.cxx")
+
 configure_file (
 "${PROJECT_SOURCE_DIR}/version.h.in"
 "${PROJECT_BINARY_DIR}/version.h"
@@ -71,3 +75,13 @@ if(BUILD_UNIT_TESTS)
   add_subdirectory(exp)
 endif()
 
+find_package(Doxygen)
+
+if(DOXYGEN_FOUND)
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
+  add_custom_target(doc
+    ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile 
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    COMMENT "Generating API documentation with Doxygen" VERBATIM
+    )
+endif()
