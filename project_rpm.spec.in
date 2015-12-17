@@ -36,8 +36,7 @@ mv "@CMAKE_CURRENT_BINARY_DIR@/_CPack_Packages/Linux/RPM/tmpBBroot" $RPM_BUILD_R
  
 %files
 %defattr(-,root,root,-)
-@CPACK_PACKAGING_INSTALL_PREFIX@/@LIB_INSTALL_DIR@/*
-@CPACK_PACKAGING_INSTALL_PREFIX@/bin
+@CPACK_PACKAGING_INSTALL_PREFIX@/bin/*
  
 %changelog
 * Tue Dec 15 2015 kb1vc <radiogeek381@gmail.com> 4.0.pre-1
