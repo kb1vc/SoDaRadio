@@ -1,3 +1,9 @@
+2016-1-1 Matt Reilly kb1vc (kb1vc@kb1vc.org)
+	* Retiring this change log -- the git checking log is more detailed
+	* Added RX antenna selection choicebox to GUI
+	* fixed problem with regenerating GUI.cxx file when the real source (...GUI.cpp) was updated.
+	* released and tagged as version 4.0.1
+	
 2015-12-13 Matt Reilly kb1vc (kb1vc@kb1vc.org)
 	Switch build system to cmake.  Autotools finally got to be too much
 	of a mess. 

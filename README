@@ -69,11 +69,14 @@ in that band.
 ---- 
 
 
-Version 4.0
+Version 4.0.1
 
 * Migration to cmake
 * Improvements to daughter card detection for LFTX/LFRX and other
 non WBX/UBX daughter cards.
+* New RX Antenna selection button (look in lower right corner)
+* Fix for screwed up band configuration menu reported by an Ubuntu 14.04
+  user -- likely a problem for all builds against wxWidgets 3.0...
 * Beginning of refactoring to support digital modems.
 
 
