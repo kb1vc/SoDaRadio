@@ -390,12 +390,6 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 	CtrlPopup = new wxButton( this, wxID_ANY, wxT("Set Power, Speed, Sidetone"), wxDefaultPosition, wxDefaultSize, 0 );
 	CtrlPopSizer->Add( CtrlPopup, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 	
-	wxString m_AntChoiceChoices[] = { wxT("RX2"), wxT("TX/RX") };
-	int m_AntChoiceNChoices = sizeof( m_AntChoiceChoices ) / sizeof( wxString );
-	m_AntChoice = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_AntChoiceNChoices, m_AntChoiceChoices, 0 );
-	m_AntChoice->SetSelection( 1 );
-	CtrlPopSizer->Add( m_AntChoice, 0, wxALL, 5 );
-	
 	gbSizer1->Add( CtrlPopSizer, wxGBPosition( 3, 0 ), wxGBSpan( 1, 2 ), wxEXPAND, 5 );
 	
 	bSizer7->Add( gbSizer1, 0, wxEXPAND, 5 );
@@ -462,6 +456,17 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 	bSizer53->Add( bSizer55, 1, wxEXPAND, 5 );
 	
 	sbSizer29->Add( bSizer53, 1, wxEXPAND, 5 );
+	
+	wxStaticBoxSizer* sbSizer36;
+	sbSizer36 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("RX Ant:") ), wxVERTICAL );
+	
+	wxString m_AntChoiceChoices[] = { wxT("RX2"), wxT("TX/RX") };
+	int m_AntChoiceNChoices = sizeof( m_AntChoiceChoices ) / sizeof( wxString );
+	m_AntChoice = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_AntChoiceNChoices, m_AntChoiceChoices, 0 );
+	m_AntChoice->SetSelection( 1 );
+	sbSizer36->Add( m_AntChoice, 0, wxALL, 5 );
+	
+	sbSizer29->Add( sbSizer36, 1, wxEXPAND, 5 );
 	
 	QSOSizer->Add( sbSizer29, 0, 0, 5 );
 	
@@ -540,8 +545,8 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 	m_EditLogButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnEditLog ), NULL, this );
 	m_LogCommentBox->Connect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( SoDaRadioFrame::OnSaveComment ), NULL, this );
 	CtrlPopup->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnCtrlPopup ), NULL, this );
-	m_AntChoice->Connect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnAntChoice ), NULL, this );
 	m_PTT->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnTXOnOff ), NULL, this );
+	m_AntChoice->Connect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnAntChoice ), NULL, this );
 }
 
 SoDaRadioFrame::~SoDaRadioFrame()
@@ -616,8 +621,8 @@ SoDaRadioFrame::~SoDaRadioFrame()
 	m_EditLogButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnEditLog ), NULL, this );
 	m_LogCommentBox->Disconnect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( SoDaRadioFrame::OnSaveComment ), NULL, this );
 	CtrlPopup->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnCtrlPopup ), NULL, this );
-	m_AntChoice->Disconnect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnAntChoice ), NULL, this );
 	m_PTT->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnTXOnOff ), NULL, this );
+	m_AntChoice->Disconnect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnAntChoice ), NULL, this );
 	
 }
 
@@ -1957,4 +1962,3 @@ m_BandConfigProblem::~m_BandConfigProblem()
 	m_button38->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_BandConfigProblem::OnBandErrorOK ), NULL, this );
 	
 }
- 

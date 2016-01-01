@@ -104,12 +104,12 @@ namespace SoDaRadio_GUI
 			wxButton* m_EditLogButton;
 			wxTextCtrl* m_LogCommentBox;
 			wxButton* CtrlPopup;
-			wxChoice* m_AntChoice;
 			wxButton* m_PTT;
 			wxStaticText* m_UTC;
 			wxStaticText* m_GPSGrid;
 			wxStaticText* m_GPSLat;
 			wxStaticText* m_GPSLon;
+			wxChoice* m_AntChoice;
 			
 			// Virtual event handlers, overide them in your derived class
 			virtual void OnClose( wxCloseEvent& event ) { event.Skip(); }
@@ -149,13 +149,13 @@ namespace SoDaRadio_GUI
 			virtual void OnEditLog( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnSaveComment( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnCtrlPopup( wxCommandEvent& event ) { event.Skip(); }
-			virtual void OnAntChoice( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnTXOnOff( wxCommandEvent& event ) { event.Skip(); }
+			virtual void OnAntChoice( wxCommandEvent& event ) { event.Skip(); }
 			
 		
 		public:
 			
-			SoDaRadioFrame( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("SoDa Radio "), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 1280,850 ), long style = wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL );
+			SoDaRadioFrame( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("SoDa Radio "), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 1280,810 ), long style = wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL );
 			~SoDaRadioFrame();
 		
 	};
