@@ -267,17 +267,24 @@ namespace SoDaRadio_GUI {
       wxMenuItem * mitem = m_bandSelect->FindItemByPosition(i);
       m_bandSelect->Delete(mitem);
     }
+    // clear the band ID map. 
+    wxID_to_band_idx_map.clear();
 
-    int band_list_idx = 5000; 
+    int band_list_idx = 0;
     BOOST_FOREACH(SoDaRadio_BandSet::BandMapEntry b, bandset->band_map) {
       SoDaRadio_Band * v = b.second;
       debugMsg(boost::format("Creating band menuitem with string [%s]")
 	       % v->getName().c_str()); 
-      wxMenuItem * newItem = new wxMenuItem( m_bandSelect, band_list_idx,
+      
+      wxMenuItem * newItem = new wxMenuItem( m_bandSelect, wxID_ANY,
 					     wxString(v->getName().c_str(), wxConvUTF8),
 					     wxEmptyString, wxITEM_NORMAL); 
       m_bandSelect->Append(newItem);
+
       int id = newItem->GetId();
+      // remember the correspondence between menu id and list index. 
+      wxID_to_band_idx_map[id] = band_list_idx; 
+
       this->Connect(id, wxEVT_COMMAND_MENU_SELECTED,
 		    wxCommandEventHandler(SoDaRadio_Top::OnBandSelect ));
 

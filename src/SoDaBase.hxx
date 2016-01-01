@@ -210,7 +210,8 @@ namespace SoDa {
      * @param _reason an informative string reporting the cause of the error
      * @param obj  a pointer to the SoDaBase object that triggered the exception (if any).
      */
-    SoDaException(const std::string & _reason, SoDaBase * obj = NULL) {
+    SoDaException(const std::string & _reason, SoDaBase * obj = NULL) 
+    {
       thrower = obj;
       reason = _reason; 
     }

@@ -1003,10 +1003,14 @@ namespace SoDaRadio_GUI {
   {
     // find out which choice we made.
     wxObject * m = event.GetEventObject();
-    // OK... the event has the band that we selected... bumped up by 5000. 
-    // This is a crappy hack, but I couldn't figure out which button got pressed otherwise.
-    // look it up in the bandset.
-    SoDaRadio_Band * newband = bandset->getByIndex(event.GetId() - 5000); 
+    // The band select wxID needs to be mapped to the index into the table. 
+    int ev_id = event.GetId(); 
+    if(wxID_to_band_idx_map.find(ev_id) == wxID_to_band_idx_map.end()) {
+      std::cerr << boost::format("Couldn't find Band Index from window ID %d\n") % ev_id; 
+      return; 
+    }
+
+    SoDaRadio_Band * newband = bandset->getByIndex(wxID_to_band_idx_map[ev_id]); 
     std::string band_name = newband->getName(); 
     
     // set the new band

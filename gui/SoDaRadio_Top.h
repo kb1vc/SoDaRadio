@@ -388,6 +388,8 @@ namespace SoDaRadio_GUI {
     // the band list.
     SoDaRadio_BandSet * bandset; 
     SoDaRadio_Band * current_band; ///< the band that we're currently in (or NULL)
+    // a map of band indices (in the bandset) from wxIDs.
+    std::map<int, int> wxID_to_band_idx_map; 
 
     
     double applyRXTVOffset(double fr) {
