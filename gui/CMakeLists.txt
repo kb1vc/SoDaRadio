@@ -4,8 +4,12 @@
 
 #build the GUI from the generated sources from wxFormBuilder
 #  SoDaRadio_GUI.cpp
-execute_process(COMMAND /bin/bash ${PROJECT_SOURCE_DIR}/gui/adjust_GUI.sh ${PROJECT_SOURCE_DIR}/gui ${PROJECT_BINARY_DIR} ${PROJECT_BINARY_DIR})
+#execute_process(COMMAND /bin/bash ${PROJECT_SOURCE_DIR}/gui/adjust_GUI.sh ${PROJECT_SOURCE_DIR}/gui ${PROJECT_BINARY_DIR} ${PROJECT_BINARY_DIR})
 
+ADD_CUSTOM_COMMAND(OUTPUT
+  ${PROJECT_BINARY_DIR}/SoDaRadio_GUI.cxx
+  COMMAND /bin/bash ${PROJECT_SOURCE_DIR}/gui/adjust_GUI.sh ${PROJECT_SOURCE_DIR}/gui ${PROJECT_BINARY_DIR} ${PROJECT_BINARY_DIR}  
+  DEPENDS ${PROJECT_SOURCE_DIR}/gui/SoDaRadio_GUI.cpp ${PROJECT_SOURCE_DIR}/gui/adjust_GUI.sh )
 
 set(SoDaRadio_SRCS
     SoDaRadio_App.cxx

@@ -100,6 +100,7 @@ namespace SoDaRadio_GUI {
     void OnSetFromGrid( wxCommandEvent& event); 
     void OnConfigBand( wxCommandEvent& event);
     void OnBandSelect( wxCommandEvent& event); 
+    void OnAntChoice( wxCommandEvent& event); 
 
     void OnQSOMenuSet( wxCommandEvent & event);
   
@@ -257,6 +258,12 @@ namespace SoDaRadio_GUI {
     void OnUpdateAntName(wxCommandEvent & event) {
       wxString lab = wxT("RX_Ant: ") + rx_antenna_name;
       m_ClueBar->SetStatusText(lab, 2);
+      // also update the choice box. 
+      wxString wx_rx_ant_name(rx_antenna_name); 
+      int sel = m_AntChoice->FindString(wx_rx_ant_name);
+      if(sel != wxNOT_FOUND) {
+	m_AntChoice->SetSelection(sel);
+      }
     }
 
     void pendEvent(wxCommandEvent & event) {
@@ -377,7 +384,7 @@ namespace SoDaRadio_GUI {
     float tx_rf_outpower;
 
     // the antenna choice
-    void setRXAnt(std::string rx_ant_sel); 
+    void setRXAnt(const std::string & rx_ant_sel); 
 
     double tx_transverter_offset, rx_transverter_offset;
 

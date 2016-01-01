@@ -414,6 +414,12 @@ namespace SoDaRadio_GUI {
     }
   }
 
+  void SoDaRadio_Top::OnAntChoice( wxCommandEvent& event )
+  {
+    wxString ant_string = m_AntChoice->GetStringSelection();
+    setRXAnt(std::string(ant_string.mb_str()));
+  }
+
   void SoDaRadio_Top::OnModeChoice( wxCommandEvent& event )
   {
     // m_ModeBox
