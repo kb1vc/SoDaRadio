@@ -88,6 +88,9 @@ void SoDa::Command::initTables()
 
   target_map_s2v[std::string("STOP")] = STOP;
   target_map_s2v[std::string("STATUS_MESSAGE")] = STATUS_MESSAGE;
+
+  target_map_s2v[std::string("TX_AUDIO_IN")] = TX_AUDIO_IN;
+  target_map_s2v[std::string("TX_AUDIO_FILT_ENA")] = TX_AUDIO_FILT_ENA;
   
   target_map_v2s[RX_TUNE_FREQ] = new std::string("RX_TUNE_FREQ");
   target_map_v2s[TX_TUNE_FREQ] = new std::string("TX_TUNE_FREQ");
@@ -135,6 +138,10 @@ void SoDa::Command::initTables()
   target_map_v2s[TVRT_LO_CONFIG] = new std::string("TVRT_LO_CONFIG");
   target_map_v2s[STOP] = new std::string("STOP");
   target_map_v2s[STATUS_MESSAGE] = new std::string("STATUS_MESSAGE");
+
+  target_map_v2s[TX_AUDIO_IN] = new std::string("TX_AUDIO_IN");
+  target_map_v2s[TX_AUDIO_FILT_ENA] = new std::string("TX_AUDIO_FILT_ENA");
+  
 }
 
 SoDa::Command * SoDa::Command::parseCommandString(std::string str)

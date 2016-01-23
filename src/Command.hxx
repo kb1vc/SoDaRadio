@@ -406,6 +406,16 @@ namespace SoDa {
        * forms: REP
        */
       STATUS_MESSAGE, 
+
+      /**
+       * Select the transmit chain audio input (for SSB, AM, and FM)
+       */
+      TX_AUDIO_IN, 
+
+      /**
+       * Enable the TX audio bandpass filter (limit to 2.5 kHz) for SSB/AM/FM
+       */
+      TX_AUDIO_FILT_ENA, 
       
       /**
        * No comment
@@ -427,6 +437,11 @@ namespace SoDa {
      * @brief a selector to identify a particular unit for debug reports
      */
     enum UnitSelector { BaseBandRX, BaseBandTX, RFRX, RFTX, CWTX, CTRL };
+
+    /**
+     * @brief a selector to identify the Audio TX input (MIC, NOISE...)
+     */
+    enum TXAudioSelector { MIC, NOISE }; 
 
     /**
      * Constructor for commands with no parameters

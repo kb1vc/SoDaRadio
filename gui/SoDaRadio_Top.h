@@ -61,6 +61,7 @@ namespace SoDaRadio_GUI {
   class BandConfigDialog;
   class LogDialog;
   class SpectConfigDialog;
+  class TXAudioConfigDialog; 
 
   /**
    * The SoDaRadio object
@@ -80,6 +81,7 @@ namespace SoDaRadio_GUI {
     friend class TuningDialog;
     friend class ControlsDialog;
     friend class SpectConfigDialog;
+    friend class TXAudioConfigDialog;
     friend class XYPlot;
     friend class Waterfall;
   protected:
@@ -141,6 +143,11 @@ namespace SoDaRadio_GUI {
     void OnPerYScaleChoice( wxCommandEvent& event );
     void OnPerCFreqStep( wxSpinEvent& event );
     void OnPerRxToCentFreq( wxCommandEvent& event );
+
+    // event handlers for the TX Audio Control
+    void OnMenuConfigTXAudio(wxCommandEvent & event);    
+    void OnTXAudioSel(wxCommandEvent & event, bool disable_noise = false); 
+    void OnTXAudioFilterEnable(wxCommandEvent & event); 
 
     void UpdateCenterFreq(double cfreq); 
   
@@ -371,6 +378,8 @@ namespace SoDaRadio_GUI {
     BandConfigDialog * bandconf; 
     LogDialog * logdialog;
     SpectConfigDialog * spect_config;
+    TXAudioConfigDialog * tx_audio_config; 
+    
     
     // State of the radio
     bool tx_on;
@@ -682,6 +691,40 @@ namespace SoDaRadio_GUI {
     void OnBandErrorOK( wxCommandEvent & event); 
   
   };
+
+  class TXAudioConfigDialog : public m_TXAudioDialog {
+  public:
+    TXAudioConfigDialog(wxWindow * parent, SoDaRadio_Top * radio) : 
+    m_TXAudioDialog(parent) {
+      radio_top = radio; 
+    }
+
+    void OnTXAudioSel(wxCommandEvent & event) {
+      radio_top->OnTXAudioSel(event);
+    }
+
+    void OnTXAudioFilterEnable(wxCommandEvent & event) {
+      radio_top->OnTXAudioFilterEnable(event); 
+    }
+
+    void closeWindow(wxCommandEvent &event) {
+      if(IsModal()) {
+	EndModal(wxID_OK);
+      }
+      else {
+	SetReturnCode(wxID_OK);
+	this->Show(false); 
+      }
+
+      // now disable the noise generator, if necessary. 
+      radio_top->OnTXAudioSel(event, true); 
+    }
+
+  private:
+    SoDaRadio_Top * radio_top;       
+
+  }; 
+
 
   class SpectConfigDialog : public m_SpectConfigDialog {
   public:

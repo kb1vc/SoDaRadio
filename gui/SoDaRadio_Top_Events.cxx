@@ -238,6 +238,10 @@ namespace SoDaRadio_GUI {
     }
   }
 
+  void SoDaRadio_Top::OnMenuConfigTXAudio(wxCommandEvent & event) {
+    if(tx_audio_config != NULL) tx_audio_config->Show();
+  }
+
   void SoDaRadio_Top::OnMenuConfigSpect(wxCommandEvent & event) {
     spect_config->Show();
   }
@@ -245,6 +249,7 @@ namespace SoDaRadio_GUI {
     spect_config->Show();
   }
   
+
   void SoDaRadio_Top::OnScrollSpeedUpdate( wxScrollEvent & event) {
     wxSlider * w = (wxSlider *) event.GetEventObject();
     int val = (int) w->GetValue();
@@ -1023,6 +1028,34 @@ namespace SoDaRadio_GUI {
     SetCurrentBand(newband);
   }
 
+  void SoDaRadio_Top::OnTXAudioSel(wxCommandEvent & event, bool disable_noise) 
+  {
+    bool sel_mic = true; 
+    if(!disable_noise) {
+      wxRadioBox * m = (wxRadioBox* ) event.GetEventObject();
+      int sel = m->GetSelection(); 
+      sel_mic = (sel != 1); // 0 is the default (mic) selection. 
+    }
+
+    // now send out the command.
+    int insel; 
+    if(sel_mic) insel = SoDa::Command::MIC; 
+    else insel = SoDa::Command::NOISE; 
+
+    SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::TX_AUDIO_IN, insel); 
+    std::cerr << "TXAudio: About to send " << ncmd.toString() << std::endl; 
+  }
+
+  void SoDaRadio_Top::OnTXAudioFilterEnable(wxCommandEvent & event)
+  {
+    wxCheckBox * m = (wxCheckBox* ) event.GetEventObject();    
+    int ena = m->IsChecked() ? 1 : 0; 
+
+    SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::TX_AUDIO_FILT_ENA, ena); 
+    std::cerr << "TXAudio: About to send " << ncmd.toString() << std::endl; 
+  }
+ 
+  
   void SoDaRadio_Top::OnConfigBand( wxCommandEvent& event)
   {
     // init the list of configured bands in the bandconf dialog

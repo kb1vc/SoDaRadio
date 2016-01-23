@@ -123,6 +123,7 @@ namespace SoDaRadio_GUI
 			virtual void OnGPSOnSel( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnConfigBand( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnMenuConfigSpect( wxCommandEvent& event ) { event.Skip(); }
+			virtual void OnMenuConfigTXAudio( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnQSOMenuSet( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnAbout( wxCommandEvent& event ) { event.Skip(); }
 			virtual void OnUserGuide( wxCommandEvent& event ) { event.Skip(); }
@@ -500,6 +501,33 @@ namespace SoDaRadio_GUI
 			
 			m_BandConfigDialog( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("Band Configuration"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxDEFAULT_DIALOG_STYLE );
 			~m_BandConfigDialog();
+		
+	};
+	
+	///////////////////////////////////////////////////////////////////////////////
+	/// Class m_TXAudioDialog
+	///////////////////////////////////////////////////////////////////////////////
+	class m_TXAudioDialog : public wxDialog 
+	{
+		private:
+		
+		protected:
+			wxRadioBox* m_TXA_Source;
+			wxStaticText* m_noiseWarning;
+			wxCheckBox* m_TXA_FiltEna;
+			wxStaticLine* m_staticline7;
+			wxButton* m_TXA_OK;
+			
+			// Virtual event handlers, overide them in your derived class
+			virtual void OnTXAudioSel( wxCommandEvent& event ) { event.Skip(); }
+			virtual void OnTXAudioFilterEna( wxCommandEvent& event ) { event.Skip(); }
+			virtual void closeWindow( wxCommandEvent& event ) { event.Skip(); }
+			
+		
+		public:
+			
+			m_TXAudioDialog( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxT("Transmit Audio Control"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxDEFAULT_DIALOG_STYLE );
+			~m_TXAudioDialog();
 		
 	};
 	

@@ -52,12 +52,16 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 	ConfigMenu->Append( GPSOn );
 	
 	wxMenuItem* m_configureBand;
-	m_configureBand = new wxMenuItem( ConfigMenu, wxID_ANY, wxString( wxT("Configure Band") ) , wxEmptyString, wxITEM_NORMAL );
+	m_configureBand = new wxMenuItem( ConfigMenu, wxID_ANY, wxString( wxT("Band") ) , wxEmptyString, wxITEM_NORMAL );
 	ConfigMenu->Append( m_configureBand );
 	
 	wxMenuItem* m_configSpect;
-	m_configSpect = new wxMenuItem( ConfigMenu, wxID_ANY, wxString( wxT("Configure Spectrum Display") ) , wxEmptyString, wxITEM_NORMAL );
+	m_configSpect = new wxMenuItem( ConfigMenu, wxID_ANY, wxString( wxT("Spectrum Display") ) , wxEmptyString, wxITEM_NORMAL );
 	ConfigMenu->Append( m_configSpect );
+	
+	wxMenuItem* m_configTXAudio;
+	m_configTXAudio = new wxMenuItem( ConfigMenu, wxID_ANY, wxString( wxT("TX Audio") ) , wxEmptyString, wxITEM_NORMAL );
+	ConfigMenu->Append( m_configTXAudio );
 	
 	m_menubar1->Append( ConfigMenu, wxT("Configure") ); 
 	
@@ -487,6 +491,7 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 	this->Connect( GPSOn->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnGPSOnSel ) );
 	this->Connect( m_configureBand->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnConfigBand ) );
 	this->Connect( m_configSpect->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnMenuConfigSpect ) );
+	this->Connect( m_configTXAudio->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnMenuConfigTXAudio ) );
 	this->Connect( m_SetToCall->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnQSOMenuSet ) );
 	this->Connect( m_SetToGrid->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnQSOMenuSet ) );
 	this->Connect( m_GoToComment->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnQSOMenuSet ) );
@@ -563,6 +568,7 @@ SoDaRadioFrame::~SoDaRadioFrame()
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnGPSOnSel ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnConfigBand ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnMenuConfigSpect ) );
+	this->Disconnect( wxID_ANY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnMenuConfigTXAudio ) );
 	this->Disconnect( ID_GOTOCALL, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnQSOMenuSet ) );
 	this->Disconnect( ID_GOTOGRID, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnQSOMenuSet ) );
 	this->Disconnect( ID_GOTOLOG, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnQSOMenuSet ) );
@@ -1928,6 +1934,61 @@ m_BandConfigDialog::~m_BandConfigDialog()
 	m_LOGenMode->Disconnect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( m_BandConfigDialog::OnTransverterModeSel ), NULL, this );
 	m_BandCancel->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_BandConfigDialog::OnBandCancel ), NULL, this );
 	m_BandOK->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_BandConfigDialog::OnBandOK ), NULL, this );
+	
+}
+
+m_TXAudioDialog::m_TXAudioDialog( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
+{
+	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
+	
+	wxBoxSizer* bSizer72;
+	bSizer72 = new wxBoxSizer( wxVERTICAL );
+	
+	bSizer72->SetMinSize( wxSize( 1,3 ) ); 
+	wxBoxSizer* bSizer73;
+	bSizer73 = new wxBoxSizer( wxHORIZONTAL );
+	
+	wxString m_TXA_SourceChoices[] = { wxT("Microphone"), wxT("Noise") };
+	int m_TXA_SourceNChoices = sizeof( m_TXA_SourceChoices ) / sizeof( wxString );
+	m_TXA_Source = new wxRadioBox( this, wxID_ANY, wxT("TX Audio Source"), wxDefaultPosition, wxDefaultSize, m_TXA_SourceNChoices, m_TXA_SourceChoices, 1, wxRA_SPECIFY_COLS );
+	m_TXA_Source->SetSelection( 0 );
+	bSizer73->Add( m_TXA_Source, 0, wxALL, 5 );
+	
+	m_noiseWarning = new wxStaticText( this, wxID_ANY, wxT("TX Audio Noise Generator is active ONLY \nwhen this dialog box is displayed. \n\n(Hitting OK will connect the TX Audio \ninput to the Microphone.)"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE );
+	m_noiseWarning->Wrap( -1 );
+	m_noiseWarning->SetMinSize( wxSize( 300,-1 ) );
+	
+	bSizer73->Add( m_noiseWarning, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+	
+	bSizer72->Add( bSizer73, 1, wxEXPAND, 5 );
+	
+	m_TXA_FiltEna = new wxCheckBox( this, wxID_ANY, wxT("Enable TX Audio FIlter"), wxDefaultPosition, wxDefaultSize, 0 );
+	bSizer72->Add( m_TXA_FiltEna, 0, wxALL, 5 );
+	
+	m_staticline7 = new wxStaticLine( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL );
+	bSizer72->Add( m_staticline7, 0, wxEXPAND | wxALL, 5 );
+	
+	m_TXA_OK = new wxButton( this, wxID_ANY, wxT("OK"), wxDefaultPosition, wxDefaultSize, 0 );
+	bSizer72->Add( m_TXA_OK, 0, wxALIGN_CENTER|wxALIGN_CENTER_HORIZONTAL|wxALL, 5 );
+	
+	this->SetSizer( bSizer72 );
+	this->Layout();
+	bSizer72->Fit( this );
+	
+	this->Centre( wxBOTH );
+	
+	// Connect Events
+	m_TXA_Source->Connect( wxEVT_COMMAND_RADIOBOX_SELECTED, wxCommandEventHandler( m_TXAudioDialog::OnTXAudioSel ), NULL, this );
+	m_TXA_FiltEna->Connect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( m_TXAudioDialog::OnTXAudioFilterEna ), NULL, this );
+	m_TXA_OK->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_TXAudioDialog::closeWindow ), NULL, this );
+}
+
+m_TXAudioDialog::~m_TXAudioDialog()
+{
+	// Disconnect Events
+	m_TXA_Source->Disconnect( wxEVT_COMMAND_RADIOBOX_SELECTED, wxCommandEventHandler( m_TXAudioDialog::OnTXAudioSel ), NULL, this );
+	m_TXA_FiltEna->Disconnect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( m_TXAudioDialog::OnTXAudioFilterEna ), NULL, this );
+	m_TXA_OK->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_TXAudioDialog::closeWindow ), NULL, this );
 	
 }
 

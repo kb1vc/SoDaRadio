@@ -73,6 +73,7 @@ namespace SoDaRadio_GUI {
     bandconf = NULL;
     logdialog = NULL;
     spect_config = NULL;
+    tx_audio_config = NULL; 
     listener = NULL;
     config_tree_alloc = config_tree = NULL; 
     
@@ -160,6 +161,8 @@ namespace SoDaRadio_GUI {
     debugMsg("About to create the spectrum configuration dialog.\n");
     // setup the spectrum configuration dialog
     spect_config = new SpectConfigDialog(this, this);
+
+    tx_audio_config = new TXAudioConfigDialog(this, this);
 
     // setup the client socket trying once every second for 60 seconds before we give up
     soda_radio = new SoDa::UD::ClientSocket(sock_basename + "_cmd", 60);
