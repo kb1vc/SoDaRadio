@@ -68,6 +68,34 @@ in that band.
 
 ---- 
 
+Version 4.1.1
+
+	Fixed a typo in CWGenerator that caused the letter 'y' to
+	get sent incorrectly. (!) How did that get by for so long?
+	
+Version 4.1.0
+
+    Added TX Audio config pulldown in GUI
+          a) This allows selection of either the microphone input
+                 or a NOISE source (uniform random numbers in the range
+         -0.5 to 0.5 -- looks pretty flat
+          b) Added a button to enable/disable TX audio channel filtering
+                 (the filter has a passband from 150 to 2300 Hz) for USB/LSB/NBFM/WBFM/AM
+          c) Leaving the TX Audio config dialog turns the noise source off, and
+                 connects the TX audio to the MIC input.
+    
+    Added TX_AUDIO_FILT_ENA command (turns on/off the transmit audio filter)
+    to the BaseBandTX module.
+    
+    Added TX_AUDIO_IN command (set 0 selects MIC, 1 selects NOISE) to the
+    BaseBandTX module.
+    
+    This has been tested by looking at the resulting spectrum on a B200
+    panadapter display.  Without the audio filter, the transmitted USB/SSB
+    bandwidth is about 20kHz (about 1/2 the 48kHz sample rate for the TX
+    audio channel).  With the audio filter, the bandwidth is a little more
+    than 2kHz on USB/SSB.
+
 
 Version 4.0.1
 
