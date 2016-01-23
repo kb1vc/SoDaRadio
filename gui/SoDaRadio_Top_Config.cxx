@@ -105,8 +105,14 @@ namespace SoDaRadio_GUI {
   {
     std::stringstream config_stream;
 
-    // write the default config file into the config stream.
+    // write the default config file into the config stream. -- tell doxygen to ignore it
+    /** 
+     * @cond
+     */
 #include "Default.soda_cfg.h"
+    /** 
+     * @endcond
+     */
 
     read_xml(config_stream, *config_tree, boost::property_tree::xml_parser::trim_whitespace);    
   }
