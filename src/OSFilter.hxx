@@ -100,7 +100,7 @@ namespace SoDa {
 
     /// run the filter on a real input stream
     /// @param inbuf the input buffer samples
-    /// @param outbuf the output buffer samples
+    /// @param outbuf the output buffer samples (this can overlap the inbuf vector)
     /// @param outgain normalized output gain
     /// @param instride index increment for the input buffer
     /// @param outstride index increment for the output buffer

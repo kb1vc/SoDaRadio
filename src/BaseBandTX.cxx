@@ -38,6 +38,7 @@
 #include <stdio.h>
 #include "OSFilter.hxx"
 #include "ReSamplers625x48.hxx"
+#include <cstdlib>
 
 #include "SoDa_tx_filter_tables.hxx" 
 
@@ -78,6 +79,29 @@ SoDa::BaseBandTX::BaseBandTX(Params * params, DatMBox * _tx_stream,
 
   // create the Hilbert transformer
   hilbert = new SoDa::HilbertTransformer(audio_buffer_size);
+
+  // create the noise buffer
+  noise_buffer = new float[audio_buffer_size]; 
+  // and initialize it.
+  // use the same random init every time -- counterintuitive, but 
+  // I want this to be "repeatable" noise.
+  srandom(0x92314159);
+  for(int i = 0; i < audio_buffer_size; i++) {
+    float rfl = ((float) random()) / ((float) RAND_MAX);
+    rfl = rfl - 0.5; // make the mean 0
+    noise_buffer[i] = rfl * 0.5; 
+  }
+  
+  // clear the noise enable 
+  tx_noise_source_ena = false; 
+
+  // setup the audio filter for the tx audio input...
+  tx_audio_filter = new SoDa::OSFilter(80.0, 150.0, 2300.0, 2400.0, 
+				       512, 1.0, 
+				       srate, audio_buffer_size);
+
+  // enable the audio filter by default.
+  tx_audio_filter_ena = true; 
 
   mic_gain = 0.4;
 
@@ -123,21 +147,41 @@ void SoDa::BaseBandTX::run()
       if (tx_stream_on && (audio_ifc->recvBufferReady(audio_buffer_size))) {
 	audio_ifc->recv(audio_buf, audio_buffer_size); 
 	SoDaBuf * txbuf = NULL; 
-	//
+	float * audio_tx_buffer = audio_buf; 
+
+	if(tx_noise_source_ena) {
+	  audio_tx_buffer = noise_buffer; 	  
+	}
+
+	// If we're using NOISE, we don't want to overwrite the 
+	// noise buffer with a filtered noise sequence.  Instead,
+	// if we're using NOISE and filtering, we'll dump the 
+	// filters into the audio buffer, then point back to 
+	// the audio buffer. 
+	// If we aren't using NOISE, then this is all hunky dory too. 
+	// If we're using NOISE and we aren't filtering, then audio_tx_buffer
+	// still points to the NOISE buffer. 
+	if(tx_audio_filter_ena) {
+	  tx_audio_filter->apply(audio_tx_buffer, audio_buf);
+	  audio_tx_buffer = audio_buf; 
+	}
+	
+
+
 	if(tx_mode == SoDa::Command::USB) {
-	  txbuf = modulateAM(audio_buf, audio_buffer_size, true, false); 
+	  txbuf = modulateAM(audio_tx_buffer, audio_buffer_size, true, false); 
 	}
 	else if(tx_mode == SoDa::Command::LSB) {
-	  txbuf = modulateAM(audio_buf, audio_buffer_size, false, true); 
+	  txbuf = modulateAM(audio_tx_buffer, audio_buffer_size, false, true); 
 	}
 	else if(tx_mode == SoDa::Command::AM) {
-	  txbuf = modulateAM(audio_buf, audio_buffer_size, false, false); 
+	  txbuf = modulateAM(audio_tx_buffer, audio_buffer_size, false, false); 
 	}
 	else if(tx_mode == SoDa::Command::NBFM) {
-	  txbuf = modulateFM(audio_buf, audio_buffer_size, nbfm_deviation);
+	  txbuf = modulateFM(audio_tx_buffer, audio_buffer_size, nbfm_deviation);
 	}
 	else if(tx_mode == SoDa::Command::WBFM) {
-	  txbuf = modulateFM(audio_buf, audio_buffer_size, wbfm_deviation);
+	  txbuf = modulateFM(audio_tx_buffer, audio_buffer_size, wbfm_deviation);
 	}
 	if(txbuf != NULL) {
 	  tx_stream->put(txbuf); 
@@ -274,6 +318,27 @@ void SoDa::BaseBandTX::execSetCommand(SoDa::Command * cmd)
     cmd_stream->put(new Command(Command::REP, Command::TX_AF_GAIN, 
 				50 + 10.0 * log10(af_gain)));
     break; 
+  case SoDa::Command::TX_AUDIO_IN:
+    if(cmd->iparms[0] == Command::NOISE) {
+      tx_noise_source_ena = true;
+      debugMsg("TX Audio IN is NOISE.\n");      
+    }
+    else {
+      tx_noise_source_ena = false;
+      debugMsg("TX Audio IN is MIC.\n");
+    }
+    break;
+  case SoDa::Command::TX_AUDIO_FILT_ENA: 
+    if(cmd->iparms[0] == 1) {
+      tx_audio_filter_ena = true;
+      debugMsg("TX Audio filter is enabled.\n");      
+    }
+    else {
+      tx_audio_filter_ena = false;      
+      debugMsg("TX Audio filter is disabled.\n");            
+    }
+    break;
+    
   }
 }
 

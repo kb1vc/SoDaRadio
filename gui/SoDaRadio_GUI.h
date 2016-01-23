@@ -520,7 +520,7 @@ namespace SoDaRadio_GUI
 			
 			// Virtual event handlers, overide them in your derived class
 			virtual void OnTXAudioSel( wxCommandEvent& event ) { event.Skip(); }
-			virtual void OnTXAudioFilterEna( wxCommandEvent& event ) { event.Skip(); }
+			virtual void OnTXAudioFilterEnable( wxCommandEvent& event ) { event.Skip(); }
 			virtual void closeWindow( wxCommandEvent& event ) { event.Skip(); }
 			
 		

@@ -1963,6 +1963,7 @@ m_TXAudioDialog::m_TXAudioDialog( wxWindow* parent, wxWindowID id, const wxStrin
 	bSizer72->Add( bSizer73, 1, wxEXPAND, 5 );
 	
 	m_TXA_FiltEna = new wxCheckBox( this, wxID_ANY, wxT("Enable TX Audio FIlter"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_TXA_FiltEna->SetValue(true); 
 	bSizer72->Add( m_TXA_FiltEna, 0, wxALL, 5 );
 	
 	m_staticline7 = new wxStaticLine( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL );
@@ -1979,7 +1980,7 @@ m_TXAudioDialog::m_TXAudioDialog( wxWindow* parent, wxWindowID id, const wxStrin
 	
 	// Connect Events
 	m_TXA_Source->Connect( wxEVT_COMMAND_RADIOBOX_SELECTED, wxCommandEventHandler( m_TXAudioDialog::OnTXAudioSel ), NULL, this );
-	m_TXA_FiltEna->Connect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( m_TXAudioDialog::OnTXAudioFilterEna ), NULL, this );
+	m_TXA_FiltEna->Connect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( m_TXAudioDialog::OnTXAudioFilterEnable ), NULL, this );
 	m_TXA_OK->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_TXAudioDialog::closeWindow ), NULL, this );
 }
 
@@ -1987,7 +1988,7 @@ m_TXAudioDialog::~m_TXAudioDialog()
 {
 	// Disconnect Events
 	m_TXA_Source->Disconnect( wxEVT_COMMAND_RADIOBOX_SELECTED, wxCommandEventHandler( m_TXAudioDialog::OnTXAudioSel ), NULL, this );
-	m_TXA_FiltEna->Disconnect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( m_TXAudioDialog::OnTXAudioFilterEna ), NULL, this );
+	m_TXA_FiltEna->Disconnect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( m_TXAudioDialog::OnTXAudioFilterEnable ), NULL, this );
 	m_TXA_OK->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( m_TXAudioDialog::closeWindow ), NULL, this );
 	
 }

@@ -149,6 +149,28 @@ namespace SoDa {
     float * ssb_af_upsample; 
 
     /**
+     * This is a buffer that holds a set of "noise" samples (uniform random)
+     * for testing the TX audio chain.
+     */
+    float * noise_buffer; 
+
+    /**
+     * When this is TRUE, audio modes (USB,LSB,AM,NBFM,WBFM) use a noise source for
+     * input. 
+     */
+    bool tx_noise_source_ena; 
+
+    /**
+     * There is an audio filter in the chain, by default.  This is the enable.
+     */
+    bool tx_audio_filter_ena; 
+    
+    /** 
+     * TX audio filter
+     */
+    SoDa::OSFilter * tx_audio_filter;
+
+    /**
      *The hilbert transformer to create an analytic (I/Q) signal.
      */
     SoDa::HilbertTransformer * hilbert;

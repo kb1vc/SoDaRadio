@@ -1043,7 +1043,7 @@ namespace SoDaRadio_GUI {
     else insel = SoDa::Command::NOISE; 
 
     SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::TX_AUDIO_IN, insel); 
-    std::cerr << "TXAudio: About to send " << ncmd.toString() << std::endl; 
+    sendMsg(&ncmd);
   }
 
   void SoDaRadio_Top::OnTXAudioFilterEnable(wxCommandEvent & event)
@@ -1052,7 +1052,7 @@ namespace SoDaRadio_GUI {
     int ena = m->IsChecked() ? 1 : 0; 
 
     SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::TX_AUDIO_FILT_ENA, ena); 
-    std::cerr << "TXAudio: About to send " << ncmd.toString() << std::endl; 
+    sendMsg(&ncmd);
   }
  
   
