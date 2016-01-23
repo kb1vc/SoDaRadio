@@ -51,13 +51,13 @@ namespace SoDa {
      * @param mb_index which motherboard are we interested in? 
      *
      */
-    PropTree(const uhd::usrp::multi_usrp::sptr usrp, const std::string & requester) {
+    PropTree(const uhd::usrp::multi_usrp::sptr usrp, const std::string & requester, int mb_index = 0) {
       client_name = requester;
       try {
-	mb0_name = usrp->get_device()->get_tree()->list("/mboards").at(0);
+	mb0_name = usrp->get_device()->get_tree()->list("/mboards").at(mb_index);
       }
       catch (std::runtime_error e) {
-	complain("Exception looking for motherboard 0", e, false);	
+	complain((boost::format("Exception looking for motherboard %d") % mb_index).str(), e, false);	
       }
 
       // the object is to create a tree rooted at the first motherboard. 

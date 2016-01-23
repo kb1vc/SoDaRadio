@@ -708,6 +708,8 @@ namespace SoDaRadio_GUI {
     }
 
     void closeWindow(wxCommandEvent &event) {
+      // set the TX in selection to "MIC"
+      m_TXA_Source->SetSelection(0);
       if(IsModal()) {
 	EndModal(wxID_OK);
       }
