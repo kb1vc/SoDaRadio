@@ -124,7 +124,7 @@ void CWGenerator::initMorseMap()
   morse_map['v'] = "...-";
   morse_map['w'] = ".--";
   morse_map['x'] = "-..-";
-  morse_map['y'] = "--.-";
+  morse_map['y'] = "-.--";
   morse_map['z'] = "--..";
   morse_map['0'] = "-----";
   morse_map['1'] = ".----";
