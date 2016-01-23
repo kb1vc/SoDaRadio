@@ -1030,7 +1030,6 @@ namespace SoDaRadio_GUI {
 
   void SoDaRadio_Top::OnTXAudioSel(wxCommandEvent & event, bool disable_noise) 
   {
-    std::cerr << "TXAudioSel " << (disable_noise ? "DIS" : "NORM") << std::endl;
     bool sel_mic = true; 
     if(!disable_noise) {
       wxRadioBox * m = (wxRadioBox* ) event.GetEventObject();
