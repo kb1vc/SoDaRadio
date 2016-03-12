@@ -1,0 +1,20 @@
+after short warmup, inductive pickup in box hears a strong
+tone at 144.9 about 30dB above the ambient (ambient measured with
+box powered off.)
+
+This is the 9th harmonic of a 16.1 MHz oscillator that seems to be
+RC as it is very very broad -- about 20kHz wide at the 3dB point...
+
+This takes a while to settle after power on, and then wanders around
+over a 20+kHz range.  It raises the local noise floor by more than
+10dB.
+
+Changed to a sleep mode/interrupt scheme and now
+the 16MHz thing is gone.
+
+Noise floor around 16 MHz rises by about 15dB when the power
+widget is plugged in.  But there is no particular spur, just the
+atmospherics in the room...
+
+
+

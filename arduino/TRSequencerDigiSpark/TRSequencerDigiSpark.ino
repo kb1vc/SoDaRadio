@@ -72,6 +72,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // PTT in is pin PB0 (pin 5)
 
+// Mark II version uses interrupts and power saving to 
+// turn off the clock when we aren't in TR switch mode.
+#define __AVR_ATtiny85__
+// need to define ATtiny85 to get the sleep macros....
+#include <avr/interrupt.h>
+#include <avr/sleep.h>
+
+int saw_int; 
+
+
 #define PTT_SENSE 0
 #define TR_SWITCH 1
 #define TVRT_PTT 2
@@ -87,6 +97,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define TVRT2TR 100
 
 // Servo TR_Servo; 
+void system_sleep()
+{
+  MCUCR = 0x20 | 0x10;
+  sleep_cpu();
+}
 
 void setup() {
   // put your setup code here, to run once:
@@ -103,6 +118,17 @@ void setup() {
   digitalWrite(AMP_PTT, HIGH); 
   //TR_Servo.write(0);
   //TR_Servo.detach();
+
+  // now turn on interrupt stuff
+  GIMSK = 0x20;
+  PCMSK = 0x01;
+  saw_int = 0; 
+  sei(); // enable interrupts
+  system_sleep(); // doze...
+}
+
+ISR(PCINT0_vect) {
+  saw_int = 1;
 }
 
 #define DEBOUNCE_DELAY 5
@@ -143,4 +169,7 @@ void loop() {
 //        TR_Servo.detach();
     }
   }
+
+  // now sleep.
+  system_sleep();
 }
