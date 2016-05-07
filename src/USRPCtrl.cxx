@@ -134,7 +134,8 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
   // do we care?  If the tx_fe_subtree doesn't have an enable property,
   // we want to avoid setting and getting it....
   if(tx_fe_subtree != NULL) {
-    tx_fe_has_enable = tx_fe_subtree->hasProperty("enabled"); 
+    tx_fe_has_enable = tx_fe_subtree->hasProperty("enabled");
+    tx_fe_subtree->setStringProp("power_mode/value","powersave"); // "performance");     
   }
 
 
