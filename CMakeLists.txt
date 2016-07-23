@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 2.8)
 
 project(SoDaRadio)
 
-option(BUILD_UNIT_TESTS "Build the unit tests -- not normally useful" OFF)
+option(BUILD_UNIT_TESTS "Build the unit tests -- not normally useful" ON)
 
 set(SoDaRadio_VERSION_MAJOR 4)
 set(SoDaRadio_VERSION_MINOR 1)
