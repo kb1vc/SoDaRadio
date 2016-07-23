@@ -55,7 +55,8 @@ target_compile_options(SoDaRadio BEFORE PUBLIC -Wno-deprecated-declarations)
 
 target_link_libraries(SoDaRadio m rt ${Boost_LIBRARIES} ${wxWidgets_LIBRARIES} )
 
-
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
 
 install(TARGETS SoDaRadio DESTINATION bin)
 

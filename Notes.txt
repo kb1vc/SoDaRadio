@@ -1,0 +1,151 @@
+tuning bug -- UBX
+tune to 50.150 (at center) then
+50.096 and get the deadly red band.
+
+
+ ( 12 + 144 + 20 + 3 * sqrt(4) ) / 7) + 5 * 11 = 9 ^ 2 + 0
+
+limeric
+a dozen a gross and a score
+plus three times the square root of four
+divided by seven
+plus five times eleven
+
+last line:  "is nine squared and not a bit more"
+
+--------------------
+
+Loopback audio modifications
+
+There are applications for SoDaRadio that require it to send
+its audio to a loopback device so that another program can
+process it (e.g. fldigi, wsjt...) and to listen on a loopback
+device to handle audio produced by a second program.
+
+ALSA isn't very helpful, and we're not going back to PA.
+
+There are lots of ways to do fancy configuration in ALSA to
+make this work, but alas, all of them are delicate, poorly documented,
+irrational, and <rant> generally representative of the sorry state of linux
+audio support. </endrant>
+
+The simple thing would be to have AudioRX open two outbound ports, and
+AudioTX open two inbound ports.   Sigh, that doesn't work for spit.
+ALSA doesn't like two ports open from the same process.  
+
+I could modify Audio?X to disconnect from one port and open another, and
+that sounds like the simplest choice...
+
+Sigh... none of this works.  ALSA is pretty frustrating.
+
+How about Jack?
+No.
+
+I did get some audio from a loopback device into fldigi.
+
+fldigi capture device Loopback: PCM(hw:0,1)
+aplay -D hw:Loopback,0,0 -c 1 ~/test_fp8k.wav
+Playing WAVE '/home/mhr/test_fp8k.wav' : Float 32 bit Little Endian, Rate 8000 Hz, Mono
+
+after I set the sample rate explicitly to 48000, then I could do this:
+aplay -D hw:Loopback,0,0 -c 1 ~/test_fp.wav
+Playing WAVE '/home/mhr/test_fp.wav' : Float 32 bit Little Endian, Rate 48000 Hz, Mono
+
+Then I did this:
+mhr@i7 build]$ exp/Audio_test --out0 hw:Loopback,0,0 --out1 hw:Loopback,0,0
+linux; GNU C++ version 5.3.1 20160406 (Red Hat 5.3.1-6); Boost_105800; UHD_003.009.004-0-g2b5a88bb
+
+About to open [hw:Loopback,0,0] for output
+About to open [default] for capture
+Gain set to 0.08
+Wow!  the recv buffer isn't ready....
+got recv response. 240000 entries
+About to call sendBufferReady...
+snd_pcm_avail returns EPIPE -- current state is SND_PCM_STATE_XRUN  ready_frames = -32
+Exception caught in Audio_test:
+	SoDa Object [AudioALSA ALSA Interface] threw exception [AudioALSA::wakeOut() Failed to wake after sleepOut() -- Broken pipe]
+
+
+---------
+
+It got some audio to FLDIGI, right where it should have been, but
+then we failed on wakeup.... sigh.
+This appears to be caused by the loopback channel running dry... This
+seems to cause the PIPE to be closed and put in a state where we
+can't recover. 
+
+-----
+
+OK there is a problem with snd_pcm_start where it returns EPIPE if
+a loopback channel doesn't have data ready.  We don't care, so we
+(along with lots of other folks, apparently) ignore the error return.
+
+So, now I have something where we can pass a port name on the command
+line to route all audio to a designated device.  This isn't exactly
+satisfactory.
+
+FLDIGI worked when configured with
+configure->soundcard->devices->capture = loopback PCM(hw:0,1)
+and SoDaradio was configured with
+$ gui/SoDaRadio --audio_out hw:Loopback,0,0 --server=src/SoDaServer
+
+Next, we'll work on audio_in
+
+Well, this isn't going well at all.... do we need to switch to
+PulseAudio?
+
+No... we should use pulseaudio as the inter-switch.
+[mhr@i7 src]$ sudo dnf install pulseaudio-utils alsa-plugins-pulseaudio pavucontrol pavumeter paman paprefs
+
+
+OK.... I think I understand now.
+
+
+0. put this in ~/.asoundrc
+
+pcm.pulse {
+  type pulse
+}
+
+ctl.pulse {
+  type pulse
+}
+
+1. For SoDaRadio set the audio_in and audio_out to pulse
+
+start SoDaRadio
+
+2. for wsjtx select audio input and output as "pulse"
+
+3. for fldigi select audio input and output as "pulse"
+
+
+4. start pavucontrol
+
+under playback and recording, set all devices to "loopback analog" stereo or mono
+as appropriate. (recording is "monitor of loopback analog stereo"
+
+configuration: loopback is Analog Stereo Output + Analog Mono Input
+
+------------------------
+
+Holy cow!   I think we can throw all this stuff away and just use
+PulseAudio's pavucontrol program.
+
+
+1. Start SoDaRadio normally.
+
+2. Start fldigi
+    configure fldigi
+    configure->soundcard->audio->devices   PortAudio capture: Pulse   Playback: Pulse
+    configure->soundcard->audio->settings  sample rate "native" for both.
+
+3. start pavucontrol (this may only need to be done once?)
+   Playback Alsa plugin [SoDaServer]: built-in Audio digital stereo
+   Playback ALSA plug-in [fldigi] : Loopback Analog Stereo
+
+   Recording ALSA plug-in SoDaServer  Monitor of Loopback Analog Stereo
+   Recording ALSA plug-in [fldigi] from Monitor of Built-in Audio Digital Stereo (IEC958)
+
+
+

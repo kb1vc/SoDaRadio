@@ -134,20 +134,28 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
   // do we care?  If the tx_fe_subtree doesn't have an enable property,
   // we want to avoid setting and getting it....
   if(tx_fe_subtree != NULL) {
-    tx_fe_has_enable = tx_fe_subtree->hasProperty("enabled"); 
+    tx_fe_has_enable = tx_fe_subtree->hasProperty("enabled");
+    tx_fe_subtree->setStringProp("power_mode/value","powersave"); // "performance");     
   }
 
 
   // get the rx front end subtree
   rx_fe_has_enable = false; 
-  rx_fe_subtree = getFrontEnd(tree, 'T');
+  rx_fe_subtree = getFrontEnd(tree, 'R');
 
   // do we care?  If the rx_fe_subtree doesn't have an enable property, 
   // we want to avoid setting and getting it....
   if(rx_fe_subtree != NULL) {
     rx_fe_has_enable = rx_fe_subtree->hasProperty("enabled");
+    if(rx_fe_subtree->hasProperty("power_mode")) {
+      std::cerr << "*****Setting power save mode for RX front end.******" << std::endl;
+      // powersave may be the right choice, see 
+      // http://lists.ettus.com/pipermail/usrp-users_lists.ettus.com/2016-April/019784.html
+      rx_fe_subtree->setStringProp("power_mode/value","powersave"); // "performance"); 
+    }
   }
   if(rx_fe_has_enable) rx_fe_subtree->setBoolProp("enabled",true);
+
 
   // do we have lock sensors? 
   std::vector<std::string> rx_snames, tx_snames; 
