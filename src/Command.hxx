@@ -426,7 +426,7 @@ namespace SoDa {
     /**
      * @brief modulation selector targets take one of these values
      */
-    enum ModulationType { LSB, USB, CW_U, CW_L, AM, WBFM, NBFM };
+    enum ModulationType { LSB, USB, CW_U, CW_L, AM, WBFM, NBFM, WBAM };
 
     /**
      * @brief these are the possible audio filter bandwidths

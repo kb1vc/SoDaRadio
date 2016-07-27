@@ -33,8 +33,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Command.hxx"
 #include "Params.hxx"
 #include "UI.hxx"
-#include "UDSockets.hxx"
-#include "Spectrogram.hxx"
+#include "IPSockets.hxx"
+
+#include <uhd/types/ranges.hpp>
 
 namespace SoDa {
 
@@ -62,61 +63,38 @@ namespace SoDa {
 
   class HLCSetFreq : public HLCmdFunc {
   public:
-    HLCSetFreq() : HLCmdFunc("F", "set_freq") {}
+    HLCSetFreq() : HLCmdFunc("F", "get_freq", "set_freq") {}
   };
 
   class HamlibListener : public SoDaThread {
   public:
-    HamlibListener(Params * params, CmdMBox * cwtxt_stream,
-       CmdMBox * cmd_stream);
+    HamlibListener(Params * params, 
+		   uhd::freq_range_t & rx_range, 
+		   uhd::freq_range_t & tx_range, 
+		   CmdMBox * cmd_stream);
     ~HamlibListener();
     
     void run();
 
-  private:
-    // Do an FFT on an rx buffer and send the positive
-    // frequencies to any network listeners. 
-    void sendFFT(SoDaBuf * buf);
+  protected:
+
+    void cmdDumpState();
+
+    // frequency ranges for tx and rx
+    double rx_freq_min, rx_freq_max; 
+    double tx_freq_min, tx_freq_max; 
 
     // the internal communications paths -- between the SoDa threads. 
-    CmdMBox * cwtxt_stream, * cmd_stream, * gps_stream;
-    DatMBox * rx_stream;
-    DatMBox * if_stream; 
-    unsigned int if_subs, cmd_subs, gps_subs;
+    CmdMBox * cmd_stream;
 
+    unsigned int cmd_subs;
 
     // these are the pieces of the posix message queue interface to the GUI or whatever.
-    SoDa::UD::ServerSocket * server_socket, * wfall_socket; 
+    SoDa::IP::ServerSocket * server_socket;
 
-    // we ship a spectrogram of the RX IF stream to the GUI
-    Spectrogram * spectrogram;
-    unsigned int spectrogram_buckets; 
-
-    Spectrogram * lo_spectrogram; 
-    unsigned int lo_spectrogram_buckets;
-    double lo_hz_per_bucket;
-    float * lo_spectrum; 
-    
-    double baseband_rx_freq;
-    double spectrum_center_freq;
-    double hz_per_bucket; 
-    int required_spect_buckets;
-    float * spectrum, * log_spectrum;
-    bool new_spectrum_setting;
-    float fft_acc_gain;
-    int fft_update_interval;
-
-    unsigned int fft_send_counter;
-    
-    // flag to signal that we're in microwave LO search mode.
-    bool lo_check_mode;
-
-    void updateSpectrumState();
     void execSetCommand(Command * cmd);
     void execGetCommand(Command * cmd);
     void execRepCommand(Command * cmd);
-
-    void reportSpectrumCenterFreq();
   }; 
 }
 

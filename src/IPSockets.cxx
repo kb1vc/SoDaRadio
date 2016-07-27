@@ -272,9 +272,9 @@ int SoDa::IP::NetSocket::getRaw(const void * ptr, unsigned int size, unsigned in
         timeout_count++; 
 	if(timeout_count > 2) {
 	  if(left == size) {
-	    throw ReadTimeoutExc("Client");
+	    throw ReadTimeoutExc("Client _ ??");
 	  }
-	  else return size - (left + ls); 
+	  else return size - (left + ls);
 	}
 	continue; 
       }
@@ -285,7 +285,8 @@ int SoDa::IP::NetSocket::getRaw(const void * ptr, unsigned int size, unsigned in
     }
     else {
 	left -= ls;
-	bptr += ls; 
+	bptr += ls;
+	if(left > 0) *bptr = '\000';	
     }
   }
   

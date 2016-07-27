@@ -123,6 +123,7 @@
 #include "AudioPA.hxx"
 #include "AudioALSA.hxx"
 #include "Command.hxx"
+#include "HamlibListener.hxx"
 #include "Debug.hxx"
 
 /// do the work of creating the SoDa threads
@@ -158,7 +159,6 @@ int doWork(int argc, char * argv[])
   SoDa::USRPCtrl ctrl(&params, &cmd_stream);
   SoDa::USRPRX rx(&params, ctrl.getUSRP(), &rx_stream, &if_stream, &cmd_stream); 
   SoDa::USRPTX tx(&params, ctrl.getUSRP(), &tx_stream, &cw_env_stream, &cmd_stream);
-  
 
   /// doWork creates the audio server on the host machine.
   /// choices include a PortAudio interface and an ALSA interface.
@@ -179,6 +179,8 @@ int doWork(int argc, char * argv[])
   /// doWork creates the user interface (UI) thread @see SoDa::UI
   SoDa::UI ui(&params, &cwtxt_stream, &rx_stream, &if_stream, &cmd_stream, &gps_stream);
 
+  SoDa::HamlibListener hll(&params, ctrl.getRxRange(), ctrl.getTxRange(), &cmd_stream);
+
   SoDa::GPS_TSIPmon gps(&params, &gps_stream); 
 
   d.debugMsg("Created units.");
@@ -197,6 +199,7 @@ int doWork(int argc, char * argv[])
   bbrx.start();
   bbtx.start();
   cwtx.start();
+  hll.start();
 
   // now the gps...
   d.debugMsg("Starting gps");
@@ -211,6 +214,8 @@ int doWork(int argc, char * argv[])
   bbtx.join();
   cwtx.join();
   gps.join();
+  std::cerr << "waiting for hll to exit\n";
+  hll.join();  
   d.debugMsg("Exit");
   
   // when we get here, we are done... (UI should not return until it gets an "exit/quit" command.)

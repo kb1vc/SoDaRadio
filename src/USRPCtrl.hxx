@@ -90,6 +90,10 @@ namespace SoDa {
     /// it is necessary to provide context to the error message handlers.
     static SoDa::USRPCtrl * singleton_ctrl_obj;
     
+
+    uhd::freq_range_t & getRxRange() { return rx_rf_freq_range; }
+    uhd::freq_range_t & getTxRange() { return tx_rf_freq_range; }
+
   private:
     Params * params;
 

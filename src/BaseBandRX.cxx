@@ -261,7 +261,11 @@ void SoDa::BaseBandRX::demodulate(SoDaBuf * rxbuf)
     
     // now do the low pass filter
     if(rx_modulation == SoDa::Command::AM) {
-      am_pre_filter->apply(dbufi, dbufo, *cur_af_gain); 
+      //      am_pre_filter->apply(dbufi, dbufo, *cur_af_gain);
+      am_pre_filter->apply(dbufi, dbufo, *cur_af_gain);       
+    }
+    else if(rx_modulation == SoDa::Command::WBAM) {
+      wbam_pre_filter->apply(dbufi, dbufo, *cur_af_gain); 
     }
     else {
       cur_audio_filter->apply(dbufi, dbufo, *cur_af_gain);
@@ -603,6 +607,7 @@ void SoDa::BaseBandRX::buildFilterMap()
   am_audio_filter = filter_map[SoDa::Command::BW_6000]; 
 
   am_pre_filter = new SoDa::OSFilter(0.0, 0.0, 8000.0, 9000.0, 512, 1.0, audio_sample_rate, audio_buffer_size);
+  wbam_pre_filter = new SoDa::OSFilter(0.0, 0.0, 38000.0, 40000.0, 512, 1.0, audio_sample_rate, audio_buffer_size);
 
   nbfm_pre_filter = new SoDa::OSFilter(0.0, 0.0, 25000.0, 32000.0, 512, 1.0, rf_sample_rate, rf_buffer_size);
 

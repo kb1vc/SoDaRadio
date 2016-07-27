@@ -250,6 +250,7 @@ namespace SoDa {
     SoDa::OSFilter * cur_audio_filter; ///< currently selected audio filter
     SoDa::OSFilter * fm_audio_filter; ///< audio filter for FM (wider passband)
     SoDa::OSFilter * am_pre_filter; ///< Before AM demod, we do some (6KHz) prefilter
+    SoDa::OSFilter * wbam_pre_filter; ///< Before wideband AM demod, we do a wide prefilter    
     SoDa::OSFilter * nbfm_pre_filter; ///< Before NBFM demod, we do some (15KHz) prefilter -- rf rate
     SoDa::OSFilter * am_audio_filter; ///< After AM demod, we do a second filter
 
