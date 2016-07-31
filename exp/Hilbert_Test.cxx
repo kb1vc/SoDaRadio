@@ -149,9 +149,8 @@ int dumpTest(int argc, char * argv[])
       }
       for(j = 0; j < num_freqs; j++) {
 	inbuf[i] += gain * sin(angles[j]);
-	cinbuf[i].real() += gain * sin(angles[j]);
-	checkbuf[i].real() = checkbuf[i].real() + gain * sin(angles[j]);
-	checkbuf[i].imag() = checkbuf[i].imag() - gain * cos(angles[j]);
+	cinbuf[i] += std::complex<float>(gain * sin(angles[j]),0.0);
+	checkbuf[i] += std::complex<float>(gain * sin(angles[j]), -1.0 * gain * cos(angles[j]));
 	angles[j] += ang_incs[j];
 	if(angles[j] > M_PI) angles[j] -= (2.0 * M_PI);
       }
@@ -188,10 +187,12 @@ int dumpTest(int argc, char * argv[])
 	gain = 1.0; 
       }
       for(j = 0; j < num_freqs; j++) {
-	cinbuf[i].real() += gain * sin(angles[j]);
-	cinbuf[i].imag() += gain * cos(angles[j]);
-	checkbuf[i].real() = checkbuf[i].real() + gain * sin(angles[j]);
-	checkbuf[i].imag() = checkbuf[i].imag() - gain * cos(angles[j]);
+	cinbuf[i] += gain * std::complex<float>(sin(angles[j]), cos(angles[j]));
+	// cinbuf[i].real() += gain * sin(angles[j]);
+	// cinbuf[i].imag() += gain * cos(angles[j]);
+	checkbuf[i] += gain * std::complex<float>(sin(angles[j]), -1.0 * cos(angles[j]));
+	// checkbuf[i].real() = checkbuf[i].real() + gain * sin(angles[j]);
+	// checkbuf[i].imag() = checkbuf[i].imag() - gain * cos(angles[j]);
 	angles[j] += ang_incs[j];
 	if(angles[j] > M_PI) angles[j] -= (2.0 * M_PI);
       }

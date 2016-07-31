@@ -245,8 +245,8 @@ unsigned int SoDa::HilbertTransformer::apply(std::complex<float> * inbuf,
   // quadrature sampler is just not quite right for
   for(i = 0, j = Q-1; i < M; i++, j++) {
     // seems like it worked once... but apparent shift is same for either sideband
-    outbuf[i].real() = ifft_I_output[j].real() * passthrough_gain * gain;
-    outbuf[i].imag() = ifft_Q_output[j].real() * H_transform_gain * gain;
+    outbuf[i] = std::complex<float>(ifft_I_output[j].real() * passthrough_gain * gain,
+				    ifft_Q_output[j].real() * H_transform_gain * gain);
   }
 
   dbgctr++;
@@ -323,8 +323,8 @@ unsigned int SoDa::HilbertTransformer::applyIQ(std::complex<float> * inbuf,
   // Note that we're shifting the normal sampling window.  This is because the
   // quadrature sampler is just not quite right for
   for(i = 0, j = Q-1; i < M; i++, j++) {
-    outbuf[i].real() = ifft_I_output[j].real() * passthrough_gain * gain;
-    outbuf[i].imag() = ifft_Q_output[j].real() * H_transform_gain * gain;
+    outbuf[i] = std::complex<float>(ifft_I_output[j].real() * passthrough_gain * gain,
+				    ifft_Q_output[j].real() * H_transform_gain * gain);
   }
 
   dbgctr++;
