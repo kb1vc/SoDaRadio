@@ -56,7 +56,7 @@ int main(int argc, char * argv[])
     int con_count = 0; 
     while(con_count < 20) {
       while(!s->isReady()) {
-	usleep(1000); 
+	usleep(10000); 
       }
       con_count++; 
       char buf[1024];
@@ -69,7 +69,7 @@ int main(int argc, char * argv[])
 	  retcount = 0; 
 	}
 	else {
-	  usleep(10000);
+	  usleep(1000000);
 	}
       }
       std::cout << "Disconnect." << std::endl; 

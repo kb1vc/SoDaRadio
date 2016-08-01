@@ -67,17 +67,28 @@ namespace SoDa {
 	if(ready_lines == 0) {
 	  // get a buffer; 
 	  int gotbytes = read(conn_socket, temp_buf, temp_buf_size);
-	  std::cerr << boost::format("Got ret = %d errno = %d ready = %c\n")
+	  std::cerr << boost::format("READ Got ret = %d errno = %d ready = %c\n")
 	     % gotbytes % errno % ((char) (isReady() ? 'T' : 'F')); 
 	  if(gotbytes < 0) {
-	    if((errno != EWOULDBLOCK) && (errno != EAGAIN)) return -1; 
+	    if((errno != EWOULDBLOCK) && (errno != EAGAIN)) {
+	      std::cerr << boost::format("READ got ret = %d  errno = %d\n")
+		% gotbytes % errno; 
+	      perror("READ: ");
+	      return -1; 
+	    }
 	  }
 	  if(gotbytes == 0) {
-	    empty_count++; 
-	    if(empty_count == 10) {
-	      empty_count = 0; 
-	      return checkForClosed(); 
-	    }
+	    // a nonblocking read that returns 0 is directed at 
+	    // a closed socket.  An open socket with nothing in it
+	    // will return -1 with EWOULDBLOCK
+	    close(conn_socket);
+	    ready = false; 
+	    return -1; 
+	    // empty_count++; 
+	    // if(empty_count == 10) {
+	    //   empty_count = 0; 
+	    //   return checkForClosed(); 
+	    // }
 	  }
 	  if(gotbytes > 0) {
 	    for(int i = 0; i < gotbytes; i++) {
