@@ -40,19 +40,36 @@ namespace SoDa {
 
   namespace IP {
 
+    /**
+     * This is an IP socket that returns newline-delimited
+     * strings arriving on the socket.  LineServerSocket builds
+     * on the IP::ServerSocket class. 
+     */
     class LineServerSocket : public ServerSocket {
     public:
+      /**
+       * @brief constructor
+       * 
+       * @param portnum the port number for this server
+       * @param transport one of IP::UDP or IP::TCP 
+       */ 
       LineServerSocket(int portnum, 
 		       TransportType transport = TCP) :
 	ServerSocket(portnum, transport) {
-	ready_lines = 0; 
-	empty_count = 0; 
+	ready_line_count = 0; 
 
 	// we want to use the nonblocking read.
 	setNonBlocking();
       }
 
-      static const unsigned int temp_buf_size = 128; 
+      /**
+       * This is the size of the running buffer that we read into
+       * from the socket.  This is NOT the maximum length of an 
+       * unterminated string, as characters are read from the temp_buf
+       * and then pushed onto a queue. 
+       */
+      static const unsigned int temp_buf_size = 128;
+      
       /**
        * @brief capture a newline-terminated buffer from the socket
        * This is a non-blocking method. 
@@ -61,10 +78,11 @@ namespace SoDa {
        * -- newline is removed.
        * @param maxsize maximum allowed length of string. 
        * @return 0 if no newline terminated string is available, 
-       *  length of the buffer, otherwise. 
+       *         -1 if the client has disconnected, 
+       *         and length of the buffer, otherwise. 
        */
       int getLine(char * buf, unsigned int maxsize) {
-	if(ready_lines == 0) {
+	if(ready_line_count == 0) {
 	  // get a buffer; 
 	  int gotbytes = read(conn_socket, temp_buf, temp_buf_size);
 	  std::cerr << boost::format("READ Got ret = %d errno = %d ready = %c\n")
@@ -80,27 +98,23 @@ namespace SoDa {
 	  if(gotbytes == 0) {
 	    // a nonblocking read that returns 0 is directed at 
 	    // a closed socket.  An open socket with nothing in it
-	    // will return -1 with EWOULDBLOCK
+	    // will return -1 with EWOULDBLOCK.  So, if we get here, 
+	    // the remote connection has been closed.
 	    close(conn_socket);
 	    ready = false; 
 	    return -1; 
-	    // empty_count++; 
-	    // if(empty_count == 10) {
-	    //   empty_count = 0; 
-	    //   return checkForClosed(); 
-	    // }
 	  }
 	  if(gotbytes > 0) {
 	    for(int i = 0; i < gotbytes; i++) {
 	      inbuf.push(temp_buf[i]); 
-	      if(temp_buf[i] == '\n') ready_lines++; 
+	      if(temp_buf[i] == '\n') ready_line_count++; 
 	    }
 	  }
 	}
 
-	if(ready_lines > 0) {
+	if(ready_line_count > 0) {
 	  // scan the buffer until we get to the newline. 
-	  ready_lines--;
+	  ready_line_count--;
 	  char ch; 
 	  for(unsigned int i = 0; i < maxsize; i++) {
 	    ch = inbuf.front(); inbuf.pop();
@@ -126,29 +140,25 @@ namespace SoDa {
       }
 
 
-      /**
-       * @brief check to see if this socket has been closed by 
-       * the client end. 
-       * @return 0 for open, -1 for connection closed.
-       */
-      int checkForClosed() {
-	int stat; 
-	char b; 
-	stat = write(conn_socket, &b, 0);
-	std::cout << boost::format("zero write got stat = %d errno = %d\n") % stat % errno; 
-	return stat; 
-      }
-
     protected:
-      // Do this the simple way -- accumulate characters in a buffer
-      // then return each command as it happens. 
+      /**
+       * Do this the simple way -- accumulate characters in a queue
+       * then return each "\n" terminated substring as we find it.
+       */
       std::queue<char> inbuf; 
-      // keep a count of the number of "\n" we've seen. 
-      int ready_lines; 
 
-      // keep a count of the number of times we got an empty read buffer.
-      int empty_count; 
-      // we need a cheap input buffer...
+      /**
+       * keep a count of the number of "\n" delimited strings
+       * we've seen that haven't yet been returned from getLine()
+       */
+      int ready_line_count; 
+
+      /**
+       * This is the running buffer that we read into
+       * from the socket.  This is NOT the maximum length of an 
+       * unterminated string, as characters are read from the temp_buf
+       * and then pushed onto a queue. 
+       */
       char temp_buf[temp_buf_size]; 
     }; 
   }
