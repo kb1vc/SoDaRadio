@@ -311,6 +311,9 @@ void SoDa::BaseBandRX::execSetCommand(SoDa::Command * cmd)
   switch (cmd->target) {
   case SoDa::Command::RX_MODE:
     rx_modulation = SoDa::Command::ModulationType(cmd->iparms[0]); 
+    cmd_stream->put(new Command(Command::REP, Command::RX_MODE, 
+				rx_modulation));
+    
     break;
   case SoDa::Command::TX_MODE:
     txmod = SoDa::Command::ModulationType(cmd->iparms[0]);
@@ -598,7 +601,8 @@ void SoDa::BaseBandRX::buildFilterMap()
   filter_map[SoDa::Command::BW_2000] = new SoDa::OSFilter(200.0, 300.0, 2300.0, 2400.0, 512, 1.0, audio_sample_rate, audio_buffer_size);
   filter_map[SoDa::Command::BW_500] = new SoDa::OSFilter(300.0, 400.0, 900.0, 1000.0, 512, 1.0, audio_sample_rate, audio_buffer_size);
 
-  filter_map[SoDa::Command::BW_100] = new SoDa::OSFilter(300.0, 400.0, 500.0, 600.0, 512, 1.0, audio_sample_rate, audio_buffer_size);
+  // setup like this, it is a little on the low side... 300,400,500,600   better bump up about 100 hz
+  filter_map[SoDa::Command::BW_100] = new SoDa::OSFilter(400.0, 500.0, 600.0, 700.0, 512, 1.0, audio_sample_rate, audio_buffer_size);
 
   filter_map[SoDa::Command::BW_6000] = new SoDa::OSFilter(200.0, 300.0, 6300.0, 6400.0, 512, 1.0, audio_sample_rate, audio_buffer_size);
   filter_map[SoDa::Command::BW_PASS] = new SoDa::OSFilter(0.0, 10.0, 15000.0, 18000.0, 512, 1.0, audio_sample_rate, audio_buffer_size);

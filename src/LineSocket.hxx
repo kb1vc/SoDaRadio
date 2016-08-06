@@ -85,8 +85,8 @@ namespace SoDa {
 	if(ready_line_count == 0) {
 	  // get a buffer; 
 	  int gotbytes = read(conn_socket, temp_buf, temp_buf_size);
-	  std::cerr << boost::format("READ Got ret = %d errno = %d ready = %c\n")
-	     % gotbytes % errno % ((char) (isReady() ? 'T' : 'F')); 
+	  // std::cerr << boost::format("READ Got ret = %d errno = %d ready = %c\n")
+	  //    % gotbytes % errno % ((char) (isReady() ? 'T' : 'F')); 
 	  if(gotbytes < 0) {
 	    if((errno != EWOULDBLOCK) && (errno != EAGAIN)) {
 	      std::cerr << boost::format("READ got ret = %d  errno = %d\n")

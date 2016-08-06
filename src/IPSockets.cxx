@@ -159,6 +159,7 @@ int SoDa::IP::NetSocket::loopWrite(int fd, const void * ptr, unsigned int nbytes
   }
 }
 
+
 int SoDa::IP::NetSocket::put(const void * ptr, unsigned int size)
 {
   // we always put a buffer of bytes, preceded by a count of bytes to be sent.

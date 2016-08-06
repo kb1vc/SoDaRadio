@@ -138,7 +138,9 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
   // we want to avoid setting and getting it....
   if(tx_fe_subtree != NULL) {
     tx_fe_has_enable = tx_fe_subtree->hasProperty("enabled");
-    tx_fe_subtree->setStringProp("power_mode/value","powersave"); // "performance");     
+    if(tx_fe_subtree->hasProperty("power_mode")) {    
+      tx_fe_subtree->setStringProp("power_mode/value","powersave"); // "performance");     
+    }
   }
 
 
@@ -445,6 +447,9 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
       cmd_stream->put(new Command(Command::SET, Command::RX_LO3_FREQ, fdiff)); 
       cmd_stream->put(new Command(Command::REP, Command::RX_FE_FREQ, 
 				  last_rx_tune_result.actual_rf_freq - last_rx_tune_result.actual_dsp_freq));
+      cmd_stream->put(new Command(Command::REP, Command::RX_TUNE_FREQ, 
+				  fdiff + (last_rx_tune_result.actual_rf_freq - last_rx_tune_result.actual_dsp_freq))); 
+      
       break; 
     }
     // else -- treat this as a RX_TUNE_FREQ request.
@@ -457,6 +462,8 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
     cmd_stream->put(new Command(Command::SET, Command::RX_LO3_FREQ, fdiff));     
     cmd_stream->put(new Command(Command::REP, Command::RX_FE_FREQ, 
 			       last_rx_tune_result.actual_rf_freq - last_rx_tune_result.actual_dsp_freq)); 
+    cmd_stream->put(new Command(Command::REP, Command::RX_TUNE_FREQ, 
+				fdiff + (last_rx_tune_result.actual_rf_freq - last_rx_tune_result.actual_dsp_freq))); 
     break;
 
   case Command::LO_CHECK:
@@ -480,7 +487,10 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
     set1stLOFreq(cmd->dparms[0] + tx_freq_rxmode_offset, 't', false);
     tx_freq = cmd->dparms[0]; 
     cmd_stream->put(new Command(Command::REP, Command::TX_FE_FREQ, 
+			       last_tx_tune_result.actual_rf_freq + last_tx_tune_result.actual_dsp_freq));
+    cmd_stream->put(new Command(Command::REP, Command::TX_TUNE_FREQ, 
 			       last_tx_tune_result.actual_rf_freq + last_tx_tune_result.actual_dsp_freq)); 
+    
     break; 
 
   case Command::RX_SAMP_RATE:

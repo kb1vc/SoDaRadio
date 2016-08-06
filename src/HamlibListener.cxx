@@ -28,8 +28,9 @@
 
 #include "HamlibListener.hxx"
 #include "version.h"
-#include <hamlib/rig.h>
 #include <boost/format.hpp>
+#include <boost/algorithm/string.hpp>
+
 SoDa::HamlibListener::HamlibListener(Params * params, 
 				     uhd::freq_range_t & rx_range, 
 				     uhd::freq_range_t & tx_range, 
@@ -47,9 +48,39 @@ SoDa::HamlibListener::HamlibListener(Params * params,
   tx_freq_min = tx_range.start();
   if(tx_freq_min < 0.0) tx_freq_min = 1.0;   
   tx_freq_max = tx_range.stop();
+
+
+  // setup all the commands
+  registerCommand("", "\\dump_state", &HamlibListener::cmdDumpState);
+  registerCommand("v", "get_vfo", &HamlibListener::cmdVFO);
+  registerCommand("V", "set_vfo", &HamlibListener::cmdVFO);  
+  current_VFO = std::string("Main");
+  registerCommand("f", "get_freq", &HamlibListener::cmdFreq);
+  registerCommand("F", "set_freq", &HamlibListener::cmdFreq);  
+  registerCommand("m", "get_mode", &HamlibListener::cmdMode);
+  registerCommand("M", "set_mode", &HamlibListener::cmdMode);  
+  registerCommand("t", "get_ptt", &HamlibListener::cmdPTT);
+  registerCommand("T", "set_ptt", &HamlibListener::cmdPTT);  
+
+  // setup the mode map
+  soda2hl_modmap[SoDa::Command::LSB] = std::string("LSB");
+  soda2hl_modmap[SoDa::Command::USB] = std::string("USB");
+  soda2hl_modmap[SoDa::Command::AM] = std::string("AMS");
+  soda2hl_modmap[SoDa::Command::NBFM] = std::string("FM");
+  soda2hl_modmap[SoDa::Command::WBFM] = std::string("FMS");
+  soda2hl_modmap[SoDa::Command::CW_U] = std::string("CW");
+  soda2hl_modmap[SoDa::Command::CW_L] = std::string("CWR");  
+  
+  hl2soda_modmap[std::string("LSB")] = SoDa::Command::LSB;
+  hl2soda_modmap[std::string("USB")] = SoDa::Command::USB;
+  hl2soda_modmap[std::string("AMS")] = SoDa::Command::AM;
+  hl2soda_modmap[std::string("FM")] = SoDa::Command::NBFM;
+  hl2soda_modmap[std::string("CW")] = SoDa::Command::CW_U;
+  hl2soda_modmap[std::string("CWR")]  = SoDa::Command::CW_L;
+
   // create the network ports
   // This UI object is a server.
-  server_socket = new SoDa::IP::ServerSocket(5901);
+  server_socket = new SoDa::IP::LineServerSocket(5900);
 }
 
 
@@ -75,41 +106,25 @@ void SoDa::HamlibListener::run()
 
   int max_buf_size = 1024;
   char * net_msg_buf = new char[max_buf_size];
-  int cur_msg_buf_idx = 0; 
   while(1) {
     iter_count++;
-    bool didwork = false;
-    bool got_new_netmsg = false; 
-    // listen on the socket.
+    bool did_work = false;
 
+    // listen on the socket.
     if(server_socket->isReady()) {
       if(new_connection) {
-	new_connection = false; 
+	new_connection = false;
+	std::cerr << "HamlibListener got connection.\n"; 
       }
       
-      if(net_cmd == NULL) {
-	net_cmd = new SoDa::Command();
+      int stat = server_socket->getLine(net_msg_buf, max_buf_size);
+      if(stat < 0) {
+	new_connection = true;
+	std::cerr << "HamlibListener broke connection.\n"; 	
       }
-      int bufsize = max_buf_size - cur_msg_buf_idx; 
-      int stat = server_socket->getRaw(&(net_msg_buf[cur_msg_buf_idx], bufsize, 100); // 100 uSec timeout
-      if(stat <= 0) {
-	socket_empty_count++; 
-      }
-      else {
-	cur_msg_buf_idx += stat;
-	// scan the buffer until we find a \n
-	// then process the command
-	// and shift the remaining bytes to the start of the buffer.
-	asdf
-	if(net_msg_buf[cur_msg_buf_idx - 1] == "\n") {
-	  socket_read_count++;
-	  std::cerr << boost::format("Hamlib: [%s]\n") % net_msg_buf; 
-	  if (std::string(net_msg_buf) == std::string("\\dump_state")) {
-	    cmdDumpState();
-	  }
-	  got_new_netmsg = true; 
-	  cur_msg_buf_idx = 0; 
-	}
+      else if(stat > 0) {
+	handleCommand(net_msg_buf); 
+	did_work = true; 
       }
     }
     else {
@@ -121,17 +136,19 @@ void SoDa::HamlibListener::run()
       if(ring_cmd->target == SoDa::Command::STOP) {
 	return; 
       }
+      std::cerr << boost::format("HamlibListener got ring command : [%s]\n") % ring_cmd->toString();
+      execCommand(ring_cmd);
     }
     // if there are commands arriving from the socket port, handle them.
     // if there is nothing to do, sleep for a little while.
-    if(!didwork) usleep(10000);
+    if(!did_work) usleep(10000);
   }
 
 
   return; 
 }
 
-void SoDa::HamlibListener::cmdDumpState()
+bool SoDa::HamlibListener::cmdDumpState(const std::vector<std::string> cmdvec)
 {
   std::string resp; 
 
@@ -233,13 +250,22 @@ void SoDa::HamlibListener::cmdDumpState()
 
 
   std::cerr << boost::format("hamlib dumping [%s]\n") % resp; 
-  server_socket->put(resp.c_str(), resp.length());
+  sendResponse(resp); 
 
+  return true;
 }
 
 
 void SoDa::HamlibListener::execSetCommand(Command * cmd)
 {
+  switch (cmd->target) {
+  case SoDa::Command::RX_MODE:
+  case SoDa::Command::TX_MODE:    
+    mod_type = SoDa::Command::ModulationType(cmd->iparms[0]);
+    std::cerr << boost::format("HamlibListener: got new mode %d type = [%s]\n") 
+      % cmd->iparms[0] % soda2hl_modmap[mod_type]; 
+    break; 
+  }
 }
 
 void SoDa::HamlibListener::execGetCommand(Command * cmd)
@@ -248,5 +274,44 @@ void SoDa::HamlibListener::execGetCommand(Command * cmd)
 
 void SoDa::HamlibListener::execRepCommand(Command * cmd)
 {
+  switch (cmd->target) {
+  case SoDa::Command::RX_TUNE_FREQ:
+    rx_freq = cmd->dparms[0]; 
+    break; 
+  case SoDa::Command::TX_TUNE_FREQ:
+    tx_freq = cmd->dparms[0]; 
+    break; 
+  case SoDa::Command::TX_STATE:
+    ptt_state = (cmd->iparms[0] & 2) != 0; 
+    break; 
+  }
 }
 
+
+void SoDa::HamlibListener::registerCommand(const std::string & short_cmd, 
+					   const std::string & long_cmd, 
+					   bool(HamlibListener::*fptr)(const std::vector<std::string>))
+{
+  // store a pointer to the command handler for each type. 
+  if(short_cmd.length() != 0) {
+    command_map[short_cmd] = fptr; 
+  }
+  if(long_cmd.length() != 0) {
+    command_map[long_cmd] = fptr; 
+  }
+}
+
+void SoDa::HamlibListener::handleCommand(const std::string & cmd_buf)
+{
+  // find first token -- use it as the key
+  std::vector<std::string> cmdvec; 
+  cmdvec = boost::split(cmdvec, cmd_buf, boost::is_any_of(" \t"), boost::token_compress_on);
+  if(command_map.find(cmdvec[0]) != command_map.end()) {
+    (this->*command_map[cmdvec[0]])(cmdvec);
+  }
+  else {
+    std::cerr << boost::format("Could not handle command buffer [%s] (cmd = [%s])\n") % cmd_buf % cmdvec[0];
+    std::string erresp = (boost::format("%s %d\n") % NETRIGCTL_RET % RIG_ENAVAIL).str();
+    sendResponse(erresp);
+  }
+}
