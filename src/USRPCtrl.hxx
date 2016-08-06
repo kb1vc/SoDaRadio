@@ -220,7 +220,7 @@ namespace SoDa {
     // to move the transmit birdie out of band.
     double tx_freq; ///< remember current tx freq 
     double tx_freq_rxmode_offset; ///< when in RX mode, move tx off frequency to put the tx birdie out of band, when in TX mode, this is 0
-    static const double rxmode_offset = 1.0e6; ///< tx offset when in RX mode
+    static const double rxmode_offset; ///< tx offset when in RX mode
 
     double tx_samp_rate; ///< sample rate to USRP TX chain. 
     std::string tx_ant;  ///< TX antenna choice (usually has to be TX or TX/RX1?

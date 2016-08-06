@@ -45,7 +45,7 @@ namespace SoDa {
   /**
    * @class AudioALSA
    *
-   * @brief the ALSA audio interface class
+   * @brief ALSA audio interface class
    *
    * AudioALSA implements the interface specified by AudioIfc.  It should
    * be interchangable with other audio interface handlers.
@@ -107,10 +107,10 @@ namespace SoDa {
     int recv(void * buf, unsigned int len, bool block = true) ALSA_DEF ; 
 
     /**
-     * recvBufferReady -- is there enough space in the audio device
-     *                    recv buffer for a call from recv?
+     * recvBufferReady -- are there samples waiting in the audio device?
+     *                    
      * @param len the number of samples that we wish to get
-     * @return true if there is sufficient space. 
+     * @return true if len samples are waiting in in the device buffer
      */
     bool recvBufferReady(unsigned int len) ALSA_DEF ;
 
@@ -151,6 +151,7 @@ namespace SoDa {
       snd_pcm_drop(pcm_in); 
 #endif
     }
+
     /**
      * start the input stream
      */

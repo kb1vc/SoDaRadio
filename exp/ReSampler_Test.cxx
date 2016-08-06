@@ -174,8 +174,7 @@ void aliasingPlot()
     for(i = 0; i < 100; i++) {
       int j;
       for(j = 0; j < 30000; j++) {
-	cin[j].real() = cos(angle);
-	cin[j].imag() = sin(angle);
+	cin[j] = std::complex<float>(cos(angle), sin(angle));
 	angle += phase_advance_per_tic;
 	if(angle > M_PI) angle -= (2.0 * M_PI);
 	if(angle < -M_PI) angle += (2.0 * M_PI);

@@ -116,7 +116,7 @@ namespace SoDa {
 	if(rv < 0) ready = false;
 	return rv; 
       }
-    private:
+    protected:
       bool ready; 
     };
 

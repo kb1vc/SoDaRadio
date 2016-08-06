@@ -47,6 +47,9 @@
 const unsigned int SoDa::USRPCtrl::TX_RELAY_CTL = 0x1000;
 const unsigned int SoDa::USRPCtrl::TX_RELAY_MON = 0x0800;
 
+const double SoDa::USRPCtrl::rxmode_offset = 1.0e6;
+
+
 SoDa::USRPCtrl * SoDa::USRPCtrl::singleton_ctrl_obj = NULL; 
 
 SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaThread("USRPCtrl")

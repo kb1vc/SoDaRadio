@@ -33,6 +33,17 @@ add_executable(Sockets_Test ${Sockets_Test_SRCS})
 
 target_link_libraries(Sockets_Test ${TEST_LIBS})
 
+
+set(LineSockets_Test_SRCS
+    LineSockets_Test.cxx
+    ../src/IPSockets.cxx
+    ../src/IPSockets.hxx
+    ../src/LineSocket.hxx)
+
+add_executable(LineSockets_Test ${LineSockets_Test_SRCS})
+
+target_link_libraries(LineSockets_Test ${TEST_LIBS})
+
 #install(TARGETS Sockets_Test DESTINATION tests)
 
 
