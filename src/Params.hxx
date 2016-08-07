@@ -111,6 +111,8 @@ namespace SoDa {
 
     unsigned int getDebugLevel() { return debug_level; }
 
+    unsigned int getHamlibPort() { return hamlib_port; }
+
   private:
     
     boost::program_options::variables_map pmap;
@@ -133,6 +135,8 @@ namespace SoDa {
     bool force_integer_N_mode;
 
     unsigned int debug_level; 
+
+    unsigned int hamlib_port; 
   };
 }
 #endif

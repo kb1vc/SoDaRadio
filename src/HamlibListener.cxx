@@ -80,7 +80,7 @@ SoDa::HamlibListener::HamlibListener(Params * params,
 
   // create the network ports
   // This UI object is a server.
-  server_socket = new SoDa::IP::LineServerSocket(5900);
+  server_socket = new SoDa::IP::LineServerSocket(params->getHamlibPort());
 }
 
 

@@ -193,7 +193,8 @@ namespace SoDaRadio_GUI {
     // plot maintenance
     void UpdateAxes(); 
 
-    void SetRXFreqFromDisp(double freq);
+    void SetRXFreqDisp(double freq, bool check_rxtx_lock = true);
+    void SetTXFreqDisp(double freq, bool check_rxtx_lock = true);
 	
     double spectrum_center_freq;
     float spectrum_bandspread;

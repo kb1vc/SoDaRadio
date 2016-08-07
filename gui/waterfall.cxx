@@ -111,7 +111,7 @@ namespace SoDaRadio_GUI {
       double fx, fy;
       UnScaleX(wxPoint(x, y), fx);
       // std::cerr << "Got a new frequency selection = " << fx << std::endl;
-      radio->SetRXFreqFromDisp(fx); 
+      radio->SetRXFreqDisp(fx); 
     }
     if (refresh_required) Refresh(); 
     event.Skip(); 

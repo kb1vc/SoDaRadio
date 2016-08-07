@@ -108,7 +108,7 @@ namespace SoDaRadio_GUI {
     if((x > ll.x) && (x < ur.x) && (y < ll.y) && (y > ur.y)) {
       double fx, fy;
       UnScaleXY(wxPoint(x, y), fx, fy);
-      radio->SetRXFreqFromDisp(fx); 
+      radio->SetRXFreqDisp(fx); 
     }
     if (refresh_required) Refresh(); 
     event.Skip(); 
