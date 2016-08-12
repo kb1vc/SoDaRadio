@@ -46,12 +46,16 @@ namespace SoDa {
     std::string getUHDArgs() { return uhd_args; }
     unsigned int getDebugLevel() { return debug_level; }
     std::string getAudioPortName() { return audio_portname; }
+
+    unsigned int getHamlibPort() { return hamlib_port; }    
   private:
     // this is really quite gross -- wxApp is not very nice about this. 
     char ** convertWXargs2Cargs(int argc, wxChar ** argv);
     
     boost::program_options::variables_map pmap;
 
+    unsigned int hamlib_port;
+    
     std::string server_name;     ///< Where do we find the server?
     std::string server_args; ///< server control arguments.
     // message socket params

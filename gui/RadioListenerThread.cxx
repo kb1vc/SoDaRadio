@@ -53,6 +53,7 @@ namespace SoDaRadio_GUI {
     freq_buffer = new double[spect_buflen];
     spect_buffer = new float[spect_buflen]; 
 
+    wait_for_display = true;
   }
 
   void RadioListenerThread::setupFreqBuffer()
@@ -206,14 +207,6 @@ namespace SoDaRadio_GUI {
     case SoDa::Command::RX_ANT:
       debugMsg(boost::format("Got RX antenna report [%s]\n") % cmd->sparm);
       radio_gui->setAntennaName(wxString((char*) cmd->sparm, wxConvUTF8));
-      break;
-    case SoDa::Command::TX_TUNE_FREQ:
-      std::cerr << boost::format("Got TX_TUNE_FREQ cmd for freq %12g\n") % cmd->dparms[0];
-      // radio_gui->SetTXFreqDisp(cmd->dparms[0]);
-      break;
-    case SoDa::Command::RX_TUNE_FREQ:
-      std::cerr << boost::format("Got RX_TUNE_FREQ cmd for freq %12g\n") % cmd->dparms[0];
-      // radio_gui->SetRXFreqDisp(cmd->dparms[0]);
       break;
     default:
       break; 

@@ -28,12 +28,20 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef HAMLIB_LISTENER_HDR
 #define HAMLIB_LISTENER_HDR
-#include "SoDaBase.hxx"
-#include "MultiMBox.hxx"
-#include "Command.hxx"
-#include "Params.hxx"
-#include "UI.hxx"
-#include "LineSocket.hxx"
+
+#include "../src/LineSocket.hxx"
+#include "../src/Command.hxx"
+#include "../src/Debug.hxx"
+extern "C" {
+#include <signal.h>
+#include <stdio.h>
+#include <unistd.h>
+}
+
+#include <wx/wx.h>
+#include <wx/thread.h>
+
+
 
 #include <boost/foreach.hpp>
 
@@ -43,20 +51,18 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <hamlib/rig.h>
 
-namespace SoDa {
+namespace SoDaRadio_GUI {
 
+  class SoDaRadio_Top;
   class HamlibListener; 
 
 
-  class HamlibListener : public SoDaThread {
+  class HamlibListener : public wxThread, public SoDa::Debug { 
   public:
-    HamlibListener(Params * params, 
-		   uhd::freq_range_t & rx_range, 
-		   uhd::freq_range_t & tx_range, 
-		   CmdMBox * cmd_stream);
+    HamlibListener(SoDaRadio_Top * _radio, unsigned int _port_num);
     ~HamlibListener();
     
-    void run();
+    void * Entry();
 
     void sendResponse(std::string resp) {
       server_socket->putRaw(resp.c_str(), resp.length()); 
@@ -94,9 +100,7 @@ namespace SoDa {
 	    sendResponse((boost::format("RPRT %d\n") % RIG_EINVAL).str());
 	  }
 	  else {
-	    SoDa::Command *ncmd = new SoDa::Command(Command::SET, Command::TX_FE_FREQ, setfreq);
-	    std::cerr << boost::format("Hamlib sending tx freq cmd freq=%12g [%s]\n") % setfreq % ncmd->toString();
-	    cmd_stream->put(ncmd);
+	    std::cerr << "don't know what to do\n";
 	  }
 	}
 	if((current_VFO == std::string("RX")) || (current_VFO == std::string("Main"))) {
@@ -104,9 +108,7 @@ namespace SoDa {
 	    sendResponse((boost::format("RPRT %d\n") % RIG_EINVAL).str());
 	  }
 	  else {
-	    SoDa::Command *ncmd = new SoDa::Command(Command::SET, Command::RX_FE_FREQ, setfreq);	    
-	    std::cerr << boost::format("Hamlib sending tx freq cmd freq=%12g [%s]\n") % setfreq % ncmd->toString();	    
-	    cmd_stream->put(ncmd);	    
+	    std::cerr << "don't know what to do\n";	    
 	  }
 	}
 	sendResponse("RPRT 0\n");
@@ -120,8 +122,7 @@ namespace SoDa {
       }
       else if((cmdvec[0] == std::string("T")) || (cmdvec[0] == std::string("set_ptt"))) {
 	int ptt = (cmdvec[1] == std::string("0")) ? 0 : 2;
-	cmd_stream->put(new SoDa::Command(Command::SET, Command::TX_STATE, ptt));
-	sendResponse("RPRT 0\n");	
+	std::cerr << "don't know what to do\n";	    
       }
       return true; 
     }
@@ -150,8 +151,7 @@ namespace SoDa {
 	  std::cerr << boost::format("\n\n\n\nHamlibListener: SET MODE to [%s]\n\n\n\n") % cmdvec[1]; 	
 	  std::cerr << "\n\n\n\n\n\n\n"; 
 	  SoDa::Command::ModulationType mod = hl2soda_modmap[cmdvec[1]];
-	  cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_MODE, mod));
-	  cmd_stream->put(new SoDa::Command(Command::SET, Command::TX_MODE, mod));	  
+	  std::cerr << "don't know what to do\n";	    
 	  sendResponse("RPRT 0\n");	
 	}
 	else {
@@ -178,10 +178,6 @@ namespace SoDa {
     double rx_freq_min, rx_freq_max; 
     double tx_freq_min, tx_freq_max; 
 
-    // the internal communications paths -- between the SoDa threads. 
-    CmdMBox * cmd_stream;
-
-    unsigned int cmd_subs;
 
     // current state of the radio:
     double rx_freq, tx_freq; 
@@ -197,9 +193,10 @@ namespace SoDa {
     // these are the pieces of the posix message queue interface to the GUI or whatever.
     SoDa::IP::LineServerSocket * server_socket;
 
-    void execSetCommand(Command * cmd);
-    void execGetCommand(Command * cmd);
-    void execRepCommand(Command * cmd);
+    SoDaRadio_Top * radio_gui; 
+
+    /// port number that we're listening on. 
+    unsigned int port_num; 
   }; 
 }
 

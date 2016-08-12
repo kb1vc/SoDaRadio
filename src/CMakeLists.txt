@@ -67,8 +67,6 @@ set(SoDaServer_SRCS
     B200Control.cxx
     Demod.hxx
     Demod.cxx
-    HamlibListener.hxx
-    HamlibListener.cxx
     PropTree.hxx
     FrontEnd.hxx)
 

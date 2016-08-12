@@ -18,6 +18,7 @@ set(SoDaRadio_SRCS
     SoDaRadio_Top_Events.cxx
     SoDaRadio_Top_Config.cxx
     ../src/UDSockets.cxx
+    ../src/IPSockets.cxx
     ../src/Command.cxx
     Navigation.cxx
     dem-gridlib.c
@@ -37,6 +38,8 @@ set(SoDaRadio_SRCS
     xyplot.hxx
     FindHome.hxx
     FindHome.cxx
+    HamlibListener.hxx
+    HamlibListener.cxx
     Default.soda_cfg.h
     SoDaRadio_Band.hxx
     ../src/Debug.hxx

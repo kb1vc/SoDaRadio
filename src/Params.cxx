@@ -47,8 +47,6 @@ SoDa::Params::Params(int argc, char * argv[])
      "Force Integer-N synthesis for front-end local oscillators")
     ("fracN", po::value<bool>(&force_frac_N_mode)->default_value(false)->implicit_value(true),
      "Force Fractional-N synthesis for front-end local oscillators")
-    ("hamlib_port", po::value<unsigned int>(&hamlib_port)->default_value(5900)->implicit_value(5900), 
-     "port number for hamlib control link")
     ("debug", po::value<unsigned int>(&debug_level)->default_value(0)->implicit_value(1),
      "Enable debug messages for value > 0.  Higher values may produce more detail.")
     ;

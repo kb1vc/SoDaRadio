@@ -172,8 +172,8 @@ namespace SoDaRadio_GUI {
     void sendCWText( const wxString & cwstr, int repeat_count = 1, bool append_cr = true);
     void sendCWMarker(int marker_id); 
 
-    void UpdateRXFreq(double freq);
-    void UpdateTXFreq(double freq);
+    void UpdateRXFreq(double freq, bool display_only = false);
+    void UpdateTXFreq(double freq, bool display_only = false);
   public:
 
     double GetLOMult() { return lo_multiplier; }
@@ -187,14 +187,19 @@ namespace SoDaRadio_GUI {
     wxString getModeString() { return m_ModeBox->GetStringSelection(); }
 
     // message types. 
-    enum MSG_ID { MSG_UPDATE_SPECTRUM, MSG_HANDLE_CMD, MSG_UPDATE_GPSLOC, MSG_UPDATE_GPSTIME, MSG_TERMINATE_TX, MSG_UPDATE_MODELNAME, MSG_UPDATE_ANTNAME };
+    enum MSG_ID { MSG_UPDATE_SPECTRUM, MSG_HANDLE_CMD, MSG_UPDATE_GPSLOC, 
+		  MSG_UPDATE_GPSTIME, MSG_TERMINATE_TX, 
+		  MSG_UPDATE_MODELNAME, MSG_UPDATE_ANTNAME,  
+		  MSG_UPDATE_RXFREQ, MSG_UPDATE_TXFREQ
+    };
+
     /** Constructor */
     SoDaRadio_Top( SoDa::GuiParams & parms, wxWindow* parent );
     // plot maintenance
     void UpdateAxes(); 
 
-    void SetRXFreqDisp(double freq, bool check_rxtx_lock = true);
-    void SetTXFreqDisp(double freq, bool check_rxtx_lock = true);
+    void SetRXFreqDisp(double freq, bool display_only = false);
+    void SetTXFreqDisp(double freq, bool display_only = false);
 	
     double spectrum_center_freq;
     float spectrum_bandspread;
@@ -254,13 +259,39 @@ namespace SoDaRadio_GUI {
     }
 
     wxString rx_antenna_name;
-    
+    double tx_new_freq; 
+    double rx_new_freq; 
+
+    void setRXFreq(double freq) {
+      wxMutexLocker lock(ctrl_mutex);
+      rx_new_freq = freq; 
+      wxCommandEvent event(wxEVT_COMMAND_MENU_SELECTED,
+			   SoDaRadio_Top::MSG_UPDATE_RXFREQ);
+      pendEvent(event); 
+    }
+
+    void setTXFreq(double freq) {
+      wxMutexLocker lock(ctrl_mutex);
+      tx_new_freq = freq; 
+      wxCommandEvent event(wxEVT_COMMAND_MENU_SELECTED,
+			   SoDaRadio_Top::MSG_UPDATE_TXFREQ);
+      pendEvent(event); 
+    }
+
     void setAntennaName(const wxString & name) {
       wxMutexLocker lock(ctrl_mutex);
       rx_antenna_name = name;
       wxCommandEvent event(wxEVT_COMMAND_MENU_SELECTED,
 			   SoDaRadio_Top::MSG_UPDATE_ANTNAME);
       pendEvent(event); 
+    }
+
+    void OnUpdateRXFreq(wxCommandEvent & event) {
+      SetRXFreqDisp(rx_new_freq, true); 
+    }
+
+    void OnUpdateTXFreq(wxCommandEvent & event) {
+      SetTXFreqDisp(tx_new_freq, true); 
     }
 
     void OnUpdateAntName(wxCommandEvent & event) {

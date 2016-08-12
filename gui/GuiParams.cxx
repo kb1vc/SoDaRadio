@@ -50,6 +50,8 @@ SoDa::GuiParams::GuiParams(int argc, wxChar ** wxargv)
      )
     ("log", po::value<std::string>(&log_filename)->default_value("SoDa.soda_log"),
      "Log filename")
+    ("hamlib_port", po::value<unsigned int>(&hamlib_port)->default_value(5900)->implicit_value(5900), 
+     "port number for hamlib control link")
     ("audio", po::value<std::string>(&audio_portname)->default_value("default"), 
      "Audio device name for ALSA audio.")
     ("debug", po::value<unsigned int>(&debug_level)->default_value(0)->implicit_value(1),

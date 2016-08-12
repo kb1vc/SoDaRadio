@@ -250,6 +250,10 @@ namespace SoDaRadio_GUI {
 	    wxCommandEventHandler(SoDaRadio_Top::OnUpdateModelName));
     Connect(MSG_UPDATE_ANTNAME, wxEVT_COMMAND_MENU_SELECTED,
 	    wxCommandEventHandler(SoDaRadio_Top::OnUpdateAntName));
+    Connect(MSG_UPDATE_RXFREQ, wxEVT_COMMAND_MENU_SELECTED,
+	    wxCommandEventHandler(SoDaRadio_Top::OnUpdateRXFreq));
+    Connect(MSG_UPDATE_TXFREQ, wxEVT_COMMAND_MENU_SELECTED,
+	    wxCommandEventHandler(SoDaRadio_Top::OnUpdateTXFreq));
 
     
     
@@ -326,7 +330,7 @@ namespace SoDaRadio_GUI {
     return s;
   }
 
-  void SoDaRadio_Top::UpdateRXFreq(double freq)
+  void SoDaRadio_Top::UpdateRXFreq(double freq, bool display_only)
   {
     // update the rx frequency field and all display markers.
     rx_frequency = freq;
@@ -346,15 +350,17 @@ namespace SoDaRadio_GUI {
     // update the waterfall/periodogram
     debugMsg("Updating markers\n");
     updateMarkers();
-    
-    // and update the radio
-    SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::RX_RETUNE_FREQ,
-		       applyRXTVOffset(rx_frequency));
-    sendMsg(&ncmd);
+
+    if(!display_only) {
+      // and update the radio
+      SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::RX_RETUNE_FREQ,
+			 applyRXTVOffset(rx_frequency));
+      sendMsg(&ncmd);
+    }
 
   }
 
-  void SoDaRadio_Top::UpdateTXFreq(double freq)
+  void SoDaRadio_Top::UpdateTXFreq(double freq, bool display_only)
   {
     // update the tx frequency field and all display markers.
     tx_frequency = freq;
@@ -366,10 +372,12 @@ namespace SoDaRadio_GUI {
     wxString freqstring = freq2wxString(freq); 
     m_TXFreqText->SetLabel(freqstring);
 
-    // and update the radio
-    SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::TX_RETUNE_FREQ,
-		       applyTXTVOffset(tx_frequency));
-    sendMsg(&ncmd);
+    if(!display_only) {
+      // and update the radio
+      SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::TX_RETUNE_FREQ,
+			 applyTXTVOffset(tx_frequency));
+      sendMsg(&ncmd);
+    }
   }
 
   void SoDaRadio_Top::setRXAnt(const std::string & rx_ant_sel)

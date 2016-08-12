@@ -1125,7 +1125,7 @@ namespace SoDaRadio_GUI {
   }
 
 
-  void SoDaRadio_Top::SetRXFreqDisp(double freq, bool check_rxtx_lock)
+  void SoDaRadio_Top::SetRXFreqDisp(double freq, bool display_only)
   {
     last_rx_frequency = rx_frequency;
     // adjust freq based on mode
@@ -1134,14 +1134,14 @@ namespace SoDaRadio_GUI {
       freq = freq + (cw_upper ? -500.0 : 500.0); 
     }
   
-    UpdateRXFreq(freq);
+    UpdateRXFreq(freq, display_only);
     tuner->newRXFreq();
-    if(tx_rx_locked && check_rxtx_lock) {
-      UpdateTXFreq(freq);
+    if(tx_rx_locked) {
+      UpdateTXFreq(freq, display_only);
     }
   }
 
-  void SoDaRadio_Top::SetTXFreqDisp(double freq, bool check_rxtx_lock)
+  void SoDaRadio_Top::SetTXFreqDisp(double freq, bool display_only)
   {
     last_tx_frequency = tx_frequency;
     // adjust freq based on mode
@@ -1150,10 +1150,10 @@ namespace SoDaRadio_GUI {
       freq = freq + (cw_upper ? -500.0 : 500.0); 
     }
   
-    UpdateTXFreq(freq);
+    UpdateTXFreq(freq, display_only);
     tuner->newTXFreq();
-    if(tx_rx_locked && check_rxtx_lock) {
-      UpdateRXFreq(freq);
+    if(tx_rx_locked) {
+      UpdateRXFreq(freq, display_only);
     }
   }
 

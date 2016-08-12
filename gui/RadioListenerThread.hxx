@@ -73,6 +73,8 @@ namespace SoDaRadio_GUI {
     int spect_buflen, old_spect_buflen;
     float spectrum_low_freq, spectrum_hi_freq, spectrum_step_freq;
 
+    bool wait_for_display; 
+
     static void segfault_handler(int sig) {
       std::cerr << "Radio Listener Thread got a segfault." << std::endl;
       exit(-1);
