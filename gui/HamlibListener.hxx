@@ -197,6 +197,9 @@ namespace SoDaRadio_GUI {
 
     /// port number that we're listening on. 
     unsigned int port_num; 
+
+    /// while true, we loop waiting for commands. 
+    bool exitflag; 
   }; 
 }
 

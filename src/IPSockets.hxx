@@ -43,6 +43,8 @@
 namespace SoDa {
   namespace IP {
 
+    enum BlockingMode { BLOCKING, NONBLOCKING, TIMEOUT };
+
     class ReadTimeoutExc : public std::runtime_error {
     public:
       ReadTimeoutExc(std::string sockname) : 
@@ -74,7 +76,30 @@ namespace SoDa {
        * @return 0 if we got all &lt;size&gt; bytes, -1 if we timed out. 
        */
       int getRaw(const void * ptr, unsigned int size, unsigned int usec_timeout = 0);       
-    
+
+      void setBlockingMode(BlockingMode blocking_mode) {
+	switch (blocking_mode) {
+	case BLOCKING: 
+	  setBlocking(); 
+	  break; 
+	case NONBLOCKING:
+	  setNonBlocking(); 
+	  break; 
+	case TIMEOUT:
+	  setTimeout(); 
+	  break; 
+	}
+      }
+
+      void setTimeout() {
+	std::cout << "in setTimeout\n"; 
+	struct timeval t; 
+	t.tv_sec = 1; // one second timeout. 
+	t.tv_usec = 0; 
+	int stat = setsockopt(conn_socket, SOL_SOCKET, 
+			      SO_RCVTIMEO, ((void *)(&t)), sizeof(t));
+	if(stat < 0) perror("setsockopt: ");
+      }
       /** 
        *
        */

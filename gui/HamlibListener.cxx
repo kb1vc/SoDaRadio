@@ -77,7 +77,8 @@ namespace SoDaRadio_GUI {
 
     // create the network ports
     // This UI object is a server.
-    server_socket = new SoDa::IP::LineServerSocket(port_num);
+    // set the socket listener to "blocking" mode. 
+    server_socket = new SoDa::IP::LineServerSocket(port_num, SoDa::IP::TCP, SoDa::IP::TIMEOUT);
   }
 
 
@@ -88,9 +89,7 @@ namespace SoDaRadio_GUI {
 
   void * HamlibListener::Entry()
   {
-  
-    char buf[1024];
-
+    exitflag = false; 
 
     unsigned int socket_read_count = 0;
     unsigned int socket_empty_count = 0;
@@ -99,7 +98,7 @@ namespace SoDaRadio_GUI {
 
     int max_buf_size = 1024;
     char * net_msg_buf = new char[max_buf_size];
-    while(1) {
+    while(!exitflag) {
       iter_count++;
       bool did_work = false;
 

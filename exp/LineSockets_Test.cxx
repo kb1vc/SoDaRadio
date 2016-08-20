@@ -52,7 +52,7 @@ int main(int argc, char * argv[])
   if(strncmp(argv[1], "is", 2) == 0) {
     // server.
     portnum = atoi(argv[2]);
-    s = new SoDa::IP::LineServerSocket(portnum);
+    s = new SoDa::IP::LineServerSocket(portnum, SoDa::IP::TCP, SoDa::IP::TIMEOUT);
     int con_count = 0; 
     while(con_count < 20) {
       while(!s->isReady()) {
@@ -69,7 +69,8 @@ int main(int argc, char * argv[])
 	  retcount = 0; 
 	}
 	else {
-	  usleep(1000000);
+	  std::cerr << "."; 
+	  usleep(10000);
 	}
       }
       std::cout << "Disconnect." << std::endl; 

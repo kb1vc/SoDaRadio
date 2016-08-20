@@ -54,12 +54,12 @@ namespace SoDa {
        * @param transport one of IP::UDP or IP::TCP 
        */ 
       LineServerSocket(int portnum, 
-		       TransportType transport = TCP) :
+		       TransportType transport = TCP, 
+		       BlockingMode _blocking_mode = NONBLOCKING) : 
 	ServerSocket(portnum, transport) {
 	ready_line_count = 0; 
 
-	// we want to use the nonblocking read.
-	setNonBlocking();
+	blocking_mode = blocking_mode; 
       }
 
       /**
@@ -82,6 +82,8 @@ namespace SoDa {
        *         and length of the buffer, otherwise. 
        */
       int getLine(char * buf, unsigned int maxsize) {
+	setBlockingMode(blocking_mode); 
+
 	if(ready_line_count == 0) {
 	  // get a buffer; 
 	  int gotbytes = read(conn_socket, temp_buf, temp_buf_size);
@@ -93,6 +95,9 @@ namespace SoDa {
 		% gotbytes % errno; 
 	      perror("READ: ");
 	      return -1; 
+	    }
+	    else {
+	      perror("READ block?: ");
 	    }
 	  }
 	  if(gotbytes == 0) {
@@ -160,6 +165,9 @@ namespace SoDa {
        * and then pushed onto a queue. 
        */
       char temp_buf[temp_buf_size]; 
+
+      /// if true, we are in non-blocking read mode
+      BlockingMode blocking_mode; 
     }; 
   }
 }
