@@ -43,7 +43,8 @@ set(SoDaRadio_SRCS
     ../src/Debug.cxx
     )
 
-
+  ### wxWidgets 3.0 is a trainwreck
+set(wxWidgets_CONFIG_OPTIONS --version=2.8)
 find_package(wxWidgets COMPONENTS core base richtext aui xrc qa html adv  )
 include(${wxWidgets_USE_FILE})
   

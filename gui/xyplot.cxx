@@ -91,8 +91,8 @@ namespace SoDaRadio_GUI {
     Connect(wxEVT_MIDDLE_UP, wxMouseEventHandler(XYPlot::OnMB2Up)); 
     Connect(wxEVT_PAINT, wxPaintEventHandler(XYPlot::OnPaint));
     Connect(wxEVT_SIZE, wxSizeEventHandler(XYPlot::OnSize));
-  
-    ReSize(); 
+
+    ReSize();
   }
 
   void XYPlot::OnMB2Up(wxMouseEvent & event) {
@@ -162,7 +162,7 @@ namespace SoDaRadio_GUI {
     wxSize size = GetSize();
     int width = size.GetWidth();
     int height = size.GetHeight();
-    
+
     // Draw the grid.
     DrawGrid(dc);
 

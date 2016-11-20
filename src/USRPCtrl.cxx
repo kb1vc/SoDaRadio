@@ -138,7 +138,13 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
   // we want to avoid setting and getting it....
   if(tx_fe_subtree != NULL) {
     tx_fe_has_enable = tx_fe_subtree->hasProperty("enabled");
-    tx_fe_subtree->setStringProp("power_mode/value","powersave"); // "performance");     
+#if 0    
+    std::cerr << "Testing for tx power_mode prop." << std::endl; 
+    if(tx_fe_subtree->hasProperty("power_mode")) {
+      std::cerr << "Found for tx power_mode prop." << std::endl;       
+      tx_fe_subtree->setStringProp("power_mode/value","powersave"); // "performance");     
+    }
+#endif    
   }
 
 
@@ -150,12 +156,14 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
   // we want to avoid setting and getting it....
   if(rx_fe_subtree != NULL) {
     rx_fe_has_enable = rx_fe_subtree->hasProperty("enabled");
+#if 0    
     if(rx_fe_subtree->hasProperty("power_mode")) {
       std::cerr << "*****Setting power save mode for RX front end.******" << std::endl;
       // powersave may be the right choice, see 
       // http://lists.ettus.com/pipermail/usrp-users_lists.ettus.com/2016-April/019784.html
       rx_fe_subtree->setStringProp("power_mode/value","powersave"); // "performance"); 
     }
+#endif    
   }
   if(rx_fe_has_enable) rx_fe_subtree->setBoolProp("enabled",true);
 

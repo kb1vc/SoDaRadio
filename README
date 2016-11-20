@@ -16,10 +16,10 @@ SoDaRadio is built on the Ettus libuhd library, the FFTW library,
 ALSA linux sound support, and the wxWidgets toolset.
 
 
-Boost version 1.33 or later -- current builds are against boost 1.57
-wxWidgets -- current build is against version 2.8
-libuhd -- builds against version 003.009.001
-fftw3 -- builds against version 3.3.0
+Boost version 1.33 or later -- current builds are against boost 1.60 
+wxWidgets -- current build is against version 2.8 -- version 3.x is a train wreck.
+libuhd -- builds against version 003.010.001
+fftw3 -- builds against version 3.4.4
 libasound
 
 There may be information on building SoDaRadio for your
