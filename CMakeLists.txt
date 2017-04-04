@@ -41,7 +41,7 @@ message("SoDaRadio_VERSION=[${SoDaRadio_VERSION}]")
 find_package(Git)
 
 if((EXISTS "${CMAKE_SOURCE_DIR}/.git/") AND GIT_FOUND)
-  message("Recording GIT version info in ${PROJECT_SOURCE_DIR}/saved_git_version.txt")
+  message("Recording GIT version info in ${CMAKE_BINARY_DIR}/saved_git_version.txt")
   execute_process(
     COMMAND git rev-parse --abbrev-ref HEAD
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
@@ -55,11 +55,11 @@ if((EXISTS "${CMAKE_SOURCE_DIR}/.git/") AND GIT_FOUND)
     OUTPUT_STRIP_TRAILING_WHITESPACE
     )
   set(SoDaRadio_GIT_ID "${GIT_BRANCH}:${GIT_COMMIT_HASH}")
-  file(WRITE ${PROJECT_SOURCE_DIR}/saved_git_version.txt "${GIT_BRANCH}\n")
-  file(APPEND ${PROJECT_SOURCE_DIR}/saved_git_version.txt "${GIT_COMMIT_HASH}\n")    
-elseif(EXISTS ${PROJECT_SOURCE_DIR}/saved_git_version.txt)
+  file(WRITE ${CMAKE_BINARY_DIR}/saved_git_version.txt "${GIT_BRANCH}\n")
+  file(APPEND ${CMAKE_BINARY_DIR}/saved_git_version.txt "${GIT_COMMIT_HASH}\n")    
+elseif(EXISTS ${CMAKE_BINARY_DIR}/saved_git_version.txt)
   message("Retrieving GIT version info from saved_git_version.txt")
-  file(STRINGS ${PROJECT_SOURCE_DIR}/saved_git_version.txt git_version_strings)
+  file(STRINGS ${CMAKE_BINARY_DIR}/saved_git_version.txt git_version_strings)
   list(GET git_version_strings 0 GIT_BRANCH)
   list(GET git_version_strings 1 GIT_COMMIT_HASH)
   set(SoDaRadio_GIT_ID "${GIT_BRANCH}:${GIT_COMMIT_HASH}")
