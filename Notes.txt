@@ -149,3 +149,50 @@ PulseAudio's pavucontrol program.
 
 
 
+----------------------------
+
+Working on "dynamic range" and related issues.
+
+Tuned to 144.281
+Fluke 6080 at 144.280 -35 dBm + 12dB of attenuation
+RF gain to max
+10Hz spectrogram buckets
+
+Above -47dBm input, the radio saturates and the noise floor
+rises > 20dB. 
+
+Power In      Waterfall Peak       SFDR
+-47           60                   70
+-60           50                   70
+-70	      40		   70
+-80	      30		   70
+-90	      20		   60
+-100	      10		   50
+-110	      0			   40
+-120	      -10		   30
+-130	      -20		   20
+-140	      -30		   10
+-145	      -35.5		   6
+-150	      -39		   3
+
+Hmm... a little nonlinearity at the bottom.
+But at 625kHz/16Kbuckets -- this is a 38 Hz bucket
+Noise power in 38Hz is
+-174dBm + 10*log10(38) = -174 + 16 = -158 dBm for the ideal noise floor.
+Ours is measured at
+-153, giving a noise figure of about 5dB.   Which is pretty darned close
+to the spec.
+
+Note though that our maximum signal before distortion is -47dBm and our
+MDS is about -150, giving a dynamic range of 103dB.
+
+That's about 17 bits of ADC accuracy.  We started out with 14 bits and
+decimated by 100e6/625000 or 160.  log2(160) ~ 7.3 so we should get about
+3 extra bits of dynamic range.    And we did.
+
+BTW, the signal pretty much disappears on the waterfall at about -154 dBm
+when the window length is 4, but I can see it down to about -157 with a
+window length of 12.
+
+
+

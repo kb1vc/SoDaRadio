@@ -47,7 +47,7 @@ namespace SoDaRadio_GUI {
     cmd_q = radio_gui->GetCmdQueue();
     fft_q = radio_gui->GetFFTQueue();
 
-    spect_buflen = 4096;
+    spect_buflen = 4 * 4096;  // really should get this from server...
     old_spect_buflen = spect_buflen;
     spectrum_step_freq = spectrum_low_freq = spectrum_hi_freq = 0.0; 
     freq_buffer = new double[spect_buflen];

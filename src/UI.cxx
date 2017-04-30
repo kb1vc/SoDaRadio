@@ -55,7 +55,7 @@ SoDa::UI::UI(Params * params, CmdMBox * _cwtxt_stream,
   
   // create the spectrogram object -- it eats RX IF buffers and produces
   // power spectral density plots.
-  spectrogram_buckets = 4096;
+  spectrogram_buckets = 4 * 4096;
   spectrogram = new Spectrogram(spectrogram_buckets);
 
   // we also need an LO check spectrogram.  In particular we want

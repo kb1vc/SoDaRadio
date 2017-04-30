@@ -853,7 +853,7 @@ m_SpectConfigDialog::m_SpectConfigDialog( wxWindow* parent, wxWindowID id, const
 	wxStaticBoxSizer* sbSizer191;
 	sbSizer191 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("Y RefLevel (dB)") ), wxVERTICAL );
 	
-	m_RefLevel = new wxSpinCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, -150, 40, 0 );
+	m_RefLevel = new wxSpinCtrl( this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, -150, 80, 0 );
 	sbSizer191->Add( m_RefLevel, 0, wxALL, 5 );
 	
 	sbPgSettingsSizer->Add( sbSizer191, 1, wxEXPAND|wxTOP, 5 );
