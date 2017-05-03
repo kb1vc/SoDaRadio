@@ -64,7 +64,7 @@ namespace SoDa {
     /// @param params Pointer to a parameter object with all the initial settings
     /// and identification for the attached USRP
     /// @param _cmd_stream Pointer to the command stream message channel.
-    RadioCtrl(Params * params, CmdMBox * _cmd_stream);
+    RadioCtrl(Params * params, CmdMBox * _cmd_stream, const std::string unit_name);
     /// start the thread
     void run();
 

@@ -52,7 +52,7 @@ const double SoDa::USRPCtrl::rxmode_offset = 1.0e6;
 
 SoDa::USRPCtrl * SoDa::USRPCtrl::singleton_ctrl_obj = NULL; 
 
-SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaThread("USRPCtrl") : SoDa::RadioCtrl(_params, _cmd_stream)
+SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::RadioCtrl(_params, _cmd_stream, "USRPCtrl")
 {
   // point to myself.... 
   SoDa::USRPCtrl::singleton_ctrl_obj = this;
