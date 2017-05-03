@@ -26,16 +26,9 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "USRPCtrl.hxx"
+#include "RadioCtrl.hxx"
 #include "SoDaBase.hxx"
 #include "FrontEnd.hxx"
-#include <uhd/utils/thread_priority.hpp>
-#include <uhd/utils/safe_main.hpp>
-#include <uhd/usrp/multi_usrp.hpp>
-#include <uhd/usrp/multi_usrp.hpp>
-#include <uhd/utils/msg.hpp>
-#include <uhd/types/tune_request.hpp>
-#include <uhd/types/tune_result.hpp>
 #include <boost/format.hpp>
 #include <boost/property_tree/exceptions.hpp>
 
@@ -44,174 +37,35 @@
 // the microsecond resolution gettimeofday. 
 #include <sys/time.h>
 
-const unsigned int SoDa::USRPCtrl::TX_RELAY_CTL = 0x1000;
-const unsigned int SoDa::USRPCtrl::TX_RELAY_MON = 0x0800;
+SoDa::RadioCtrl * SoDa::RadioCtrl::singleton_ctrl_obj = NULL; 
 
-const double SoDa::USRPCtrl::rxmode_offset = 1.0e6;
-
-
-SoDa::USRPCtrl * SoDa::USRPCtrl::singleton_ctrl_obj = NULL; 
-
-SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaThread("USRPCtrl") : SoDa::RadioCtrl(_params, _cmd_stream)
+SoDa::RadioCtrl::RadioCtrl(Params * _params, CmdMBox * _cmd_stream, const std::string unit_name) : SoDa::SoDaThread(unit_name)
 {
   // point to myself.... 
-  SoDa::USRPCtrl::singleton_ctrl_obj = this;
+  SoDa::RadioCtrl::singleton_ctrl_obj = this;
 
-  // setup a normal message handler that doesn't babble
-  // so much. 
-  uhd::msg::register_handler(normal_message_handler);
-  
-  // initialize variables
-  last_rx_req_freq = 0.0; // at least this is a number...
-  tx_on = false;
-  first_gettime = 0.0;
-  rx_rf_gain = 0.0;
-  tx_rf_gain = 0.0;
-  tx_freq = 0.0;
-  tx_freq_rxmode_offset = 0.0;
-  tx_samp_rate = 625000;
-  tx_ant = std::string("TX");
-  platform_name = std::string("UNKNOWN_MB");
-  
+  // setup the subscriptions
   cmd_stream = _cmd_stream;
   params = _params;
-
   // subscribe to the command stream.
   subid = cmd_stream->subscribe();
-  
-  // make the device.
-  usrp = uhd::usrp::multi_usrp::make(params->getUHDArgs());
 
-  if(usrp == NULL) {
-    throw SoDaException((boost::format("Unable to allocate USRP unit with arguments = [%]\n") % params->getUHDArgs()).str(), this);
-  }
+  // what kind of radio is this? 
+  platform_name = readPlatformName(); 
 
-  // We need to find out if this is a B2xx or something like it -- they don't
-  // have daughter cards and there are other things to watch out for....
-  PropTree tree(usrp, getObjName()); 
-
-  platform_name = tree.getStringProp("name", "unknown");
-
-  if((platform_name == "B200") || (platform_name == "B210")) {
-    // B2xx needs a master clock rate of 50 MHz to generate a sample rate of 625 kS/s.
-    // B2xx needs a master clock rate of 25 MHz to generate a sample rate of 625 kS/s.
-    usrp->set_master_clock_rate(25.0e6);
-    debugMsg(boost::format("Initial setup %s") % usrp->get_pp_string());
-    is_B2xx = true;
-    is_B210 = (platform_name == "B210");
-  }
-  else {
-    is_B2xx = false; 
-    is_B210 = false;
-  }
-
-  // we need to setup the subdevices
-  if(is_B2xx) {
-    usrp->set_rx_subdev_spec(std::string("A:A"), 0);
-    std::cerr << "DISABLING TVRT LO" << std::endl;
-    if(0 && is_B210) {
-      debugMsg("Setup two subdevices -- TVRT_LO Capable");
-      usrp->set_tx_subdev_spec(std::string("A:A A:B"), 0);
-      tvrt_lo_capable = true;
-    }
-    else {
-      debugMsg("Setup one subdevice -- NOT TVRT_LO Capable");
-      usrp->set_tx_subdev_spec(std::string("A:A"), 0);
-      tvrt_lo_capable = false;
-    }
-  }
-  else {
-    debugMsg("Setup one subdevice -- NOT TVRT_LO Capable");
-    tvrt_lo_capable = false;
-  }
+  // the rest is up to the particular radio interface.  
 
   first_gettime = 0.0;
   double tmp = getTime();
   // truncate to whole number of seconds -- paranoia
   first_gettime = floor(tmp); 
-
-  // get the tx front end subtree
-  tx_fe_has_enable = false; 
-  tx_fe_subtree = getFrontEnd(tree, 'T');
-
-  // do we care?  If the tx_fe_subtree doesn't have an enable property,
-  // we want to avoid setting and getting it....
-  if(tx_fe_subtree != NULL) {
-    tx_fe_has_enable = tx_fe_subtree->hasProperty("enabled");
-#if 0    
-    std::cerr << "Testing for tx power_mode prop." << std::endl; 
-    if(tx_fe_subtree->hasProperty("power_mode")) {
-      std::cerr << "Found for tx power_mode prop." << std::endl;       
-      tx_fe_subtree->setStringProp("power_mode/value","powersave"); // "performance");     
-    }
-#endif    
-  }
-
-
-  // get the rx front end subtree
-  rx_fe_has_enable = false; 
-  rx_fe_subtree = getFrontEnd(tree, 'R');
-
-  // do we care?  If the rx_fe_subtree doesn't have an enable property, 
-  // we want to avoid setting and getting it....
-  if(rx_fe_subtree != NULL) {
-    rx_fe_has_enable = rx_fe_subtree->hasProperty("enabled");
-#if 0    
-    if(rx_fe_subtree->hasProperty("power_mode")) {
-      std::cerr << "*****Setting power save mode for RX front end.******" << std::endl;
-      // powersave may be the right choice, see 
-      // http://lists.ettus.com/pipermail/usrp-users_lists.ettus.com/2016-April/019784.html
-      rx_fe_subtree->setStringProp("power_mode/value","powersave"); // "performance"); 
-    }
-#endif    
-  }
-  if(rx_fe_has_enable) rx_fe_subtree->setBoolProp("enabled",true);
-
-
-  // do we have lock sensors? 
-  std::vector<std::string> rx_snames, tx_snames; 
-  rx_snames = usrp->get_rx_sensor_names(0);
-  tx_snames = usrp->get_tx_sensor_names(0);
-  rx_has_lo_locked_sensor = std::find(rx_snames.begin(), rx_snames.end(), "lo_locked") != rx_snames.end();
-  tx_has_lo_locked_sensor = std::find(tx_snames.begin(), tx_snames.end(), "lo_locked") != tx_snames.end();
-
-
-  // find the gain ranges
-  rx_rf_gain_range = usrp->get_rx_gain_range();
-  tx_rf_gain_range = usrp->get_tx_gain_range();
-
-  // find the frequency ranges
-  rx_rf_freq_range = usrp->get_rx_freq_range();
-  tx_rf_freq_range = usrp->get_tx_freq_range();
-
-  // set the sample rates
-  usrp->set_rx_rate(params->getRXRate());
-  usrp->set_tx_rate(params->getTXRate());
-  
-  // setup the control IO pins (for TX/RX external relay)
-  // Note that there are no GPIOs available for the B2xx right now.
-  initControlGPIO();
-
-  // setup a widget to control external devices 
-  tr_control = SoDa::TRControl::makeTRControl(usrp);     
-
-  // turn off the transmitter
-  setTXEna(false);
-
-  // turn of the LO
-  tvrt_lo_mode = false;
-
-  // if we are in integer-N mode, setup the step table.
-  testIntNMode(params->forceIntN(), params->forceFracN()); 
 }
 
 
-void SoDa::USRPCtrl::run()
+void SoDa::RadioCtrl::run()
 {
-  uhd::set_thread_priority_safe(); 
-  // now do the event loop.  we watch
-  // for commands and responses on the command stream.
-  
+  run_prefix(); 
+
   // do the initial commands
   cmd_stream->put(new Command(Command::SET, Command::RX_SAMP_RATE,
 			     params->getRXRate())); 
@@ -246,7 +100,7 @@ void SoDa::USRPCtrl::run()
     else {
       // process the command.
       if((cmds_processed & 0xff) == 0) {
-	debugMsg(boost::format("USRPCtrl processed %d commands") % cmds_processed);
+	debugMsg(boost::format("RadioCtrl processed %d commands") % cmds_processed);
       }
       cmds_processed++; 
       execCommand(cmd);
@@ -256,7 +110,7 @@ void SoDa::USRPCtrl::run()
   }
 }
 
-double SoDa::USRPCtrl::getTime()
+double SoDa::RadioCtrl::getTime()
 {
   double ret; 
   struct timeval tv;
@@ -265,7 +119,7 @@ double SoDa::USRPCtrl::getTime()
   return ret; 
 }
 
-void SoDa::USRPCtrl::execCommand(Command * cmd)
+void SoDa::RadioCtrl::execCommand(Command * cmd)
 {
   switch (cmd->cmd) {
   case Command::GET:
@@ -282,7 +136,7 @@ void SoDa::USRPCtrl::execCommand(Command * cmd)
   }
 }
 
-uhd::tune_result_t SoDa::USRPCtrl::checkLock(uhd::tune_request_t & req, char sel, uhd::tune_result_t & cur)
+uhd::tune_result_t SoDa::RadioCtrl::checkLock(uhd::tune_request_t & req, char sel, uhd::tune_result_t & cur)
 {
   int lock_itercount = 0;
   uhd::tune_result_t ret = cur;
@@ -308,7 +162,7 @@ uhd::tune_result_t SoDa::USRPCtrl::checkLock(uhd::tune_request_t & req, char sel
   return ret; 
 }
 
-void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
+void SoDa::RadioCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
 {
   // select "r" for rx and "t" for tx.
   // We only want to tune for one band :: 2m 144 to 148.
@@ -432,7 +286,7 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
  * @li RX_ANT set the receive antenna port
  * @li TX_ANT set the transmit antenna port
  */
-void SoDa::USRPCtrl::execSetCommand(Command * cmd)
+void SoDa::RadioCtrl::execSetCommand(Command * cmd)
 {
   double freq, fdiff; 
   if(cmd->cmd != Command::SET) {
@@ -621,7 +475,7 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
   }
 }
 
-void SoDa::USRPCtrl::execGetCommand(Command * cmd)
+void SoDa::RadioCtrl::execGetCommand(Command * cmd)
 {
   int res;
 
@@ -668,7 +522,7 @@ void SoDa::USRPCtrl::execGetCommand(Command * cmd)
   case Command::HWMB_REP:
     cmd_stream->put(new Command(Command::REP, Command::HWMB_REP,
 				(boost::format("%s\t%6.1f to %6.1f MHz")
-				 % platform_name
+				 % motherboard_name
 				 % (rx_rf_freq_range.start() * 1e-6)
 				 % (rx_rf_freq_range.stop() * 1e-6)).str()));
     break; 
@@ -677,7 +531,7 @@ void SoDa::USRPCtrl::execGetCommand(Command * cmd)
   }
 }
 
-void SoDa::USRPCtrl::execRepCommand(Command * cmd)
+void SoDa::RadioCtrl::execRepCommand(Command * cmd)
 {
   switch (cmd->target) {
   default:
@@ -685,7 +539,7 @@ void SoDa::USRPCtrl::execRepCommand(Command * cmd)
   }
 }
 
-void SoDa::USRPCtrl::initControlGPIO()
+void SoDa::RadioCtrl::initControlGPIO()
 {
   supports_tx_gpio = true;
 
@@ -728,7 +582,7 @@ void SoDa::USRPCtrl::initControlGPIO()
   }
 }
 
-void SoDa::USRPCtrl::setTXEna(bool val)
+void SoDa::RadioCtrl::setTXEna(bool val)
 {
   unsigned short enabits = val ? TX_RELAY_CTL : 0;
   if(supports_tx_gpio) {
@@ -764,7 +618,7 @@ void SoDa::USRPCtrl::setTXEna(bool val)
   
 }
 
-void SoDa::USRPCtrl::setTXFrontEndEnable(bool val) 
+void SoDa::RadioCtrl::setTXFrontEndEnable(bool val) 
 {
   if(!tx_fe_has_enable) return; 
 
@@ -779,7 +633,7 @@ void SoDa::USRPCtrl::setTXFrontEndEnable(bool val)
   }
 }
  
-bool SoDa::USRPCtrl::getTXEna()
+bool SoDa::RadioCtrl::getTXEna()
 {
   unsigned int enabits = 0; 
   if(supports_tx_gpio) {
@@ -790,7 +644,7 @@ bool SoDa::USRPCtrl::getTXEna()
 }
 
 
-bool SoDa::USRPCtrl::getTXRelayOn()
+bool SoDa::RadioCtrl::getTXRelayOn()
 {
   unsigned int enabits = 0; 
   if(supports_tx_gpio) {
@@ -800,7 +654,7 @@ bool SoDa::USRPCtrl::getTXRelayOn()
   return ((enabits & TX_RELAY_MON) != 0); 
 }
 
-void SoDa::USRPCtrl::setTransverterLOFreqPower(double freq, double power)
+void SoDa::RadioCtrl::setTransverterLOFreqPower(double freq, double power)
 {
   uhd::gain_range_t tx_gain_range = usrp->get_tx_gain_range(1);
   double plo = tx_gain_range.start();
@@ -815,7 +669,7 @@ void SoDa::USRPCtrl::setTransverterLOFreqPower(double freq, double power)
 
 }
 
-void SoDa::USRPCtrl::enableTransverterLO()
+void SoDa::RadioCtrl::enableTransverterLO()
 {
   if(!tvrt_lo_capable) {
     tvrt_lo_mode = false; 
@@ -839,7 +693,7 @@ void SoDa::USRPCtrl::enableTransverterLO()
   tvrt_lo_fe_freq = tres.target_rf_freq; 
 }
 
-void SoDa::USRPCtrl::disableTransverterLO()
+void SoDa::RadioCtrl::disableTransverterLO()
 {
   tvrt_lo_mode = false;
   if(!tvrt_lo_capable) return; 
@@ -847,7 +701,7 @@ void SoDa::USRPCtrl::disableTransverterLO()
   usrp->set_tx_freq(100.0e6, 1);
 }
 
-void SoDa::USRPCtrl::applyTargetFreqCorrection(double target_freq, double avoid_freq, uhd::tune_request_t * treq)
+void SoDa::RadioCtrl::applyTargetFreqCorrection(double target_freq, double avoid_freq, uhd::tune_request_t * treq)
 {
   debugMsg(boost::format("######   aTFC(%lf...)") % target_freq); 
 
@@ -908,7 +762,7 @@ void SoDa::USRPCtrl::applyTargetFreqCorrection(double target_freq, double avoid_
 
 
 
-void SoDa::USRPCtrl::normal_message_handler(uhd::msg::type_t type, const std::string & msg)
+void SoDa::RadioCtrl::normal_message_handler(uhd::msg::type_t type, const std::string & msg)
 {
   switch (type) {
   case uhd::msg::error:
@@ -918,12 +772,12 @@ void SoDa::USRPCtrl::normal_message_handler(uhd::msg::type_t type, const std::st
     std::cerr << "UHD WARNING: " << msg << std::flush;
     break;
   default:
-    SoDa::USRPCtrl::singleton_ctrl_obj->debugMsg(msg);
+    SoDa::RadioCtrl::singleton_ctrl_obj->debugMsg(msg);
     break; 
   }
 }
 
-void SoDa::USRPCtrl::testIntNMode(bool force_int_N, bool force_frac_N)
+void SoDa::RadioCtrl::testIntNMode(bool force_int_N, bool force_frac_N)
 {
   uhd::tune_result_t tunres_int, tunres_frac;  
 
