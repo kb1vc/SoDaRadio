@@ -324,3 +324,12 @@ cd SoDaRadio
 mkdir build
 cd build
 cmake ../
+make 2>&1 | tee make.log
+sudo make install
+
+
+------------------
+
+Now you can run SoDaRadio
+
+SoDaRadio
