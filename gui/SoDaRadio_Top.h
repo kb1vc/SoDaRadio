@@ -249,6 +249,7 @@ namespace SoDaRadio_GUI {
     }
 
     void OnUpdateModelName(wxCommandEvent & event) {
+      (void) event; 
       this->SetTitle(radio_modelname); 
     }
 
@@ -263,6 +264,7 @@ namespace SoDaRadio_GUI {
     }
 
     void OnUpdateAntName(wxCommandEvent & event) {
+      (void) event; 
       wxString lab = wxT("RX_Ant: ") + rx_antenna_name;
       m_ClueBar->SetStatusText(lab, 2);
       // also update the choice box. 
@@ -323,6 +325,8 @@ namespace SoDaRadio_GUI {
       case SoDa::Command::BW_6000:
 	lo_off = 300.0;
 	hi_off = 6300.0; 
+	break; 
+      default:
 	break; 
       }
       
@@ -760,8 +764,8 @@ namespace SoDaRadio_GUI {
       radio_top->OnScrollSpeedUpdate(event); 
     }
     
-    void OnDone( wxCommandEvent& event ) { closeWindow(); }
-    void OnDone(wxCloseEvent & event) { closeWindow(); }
+    void OnDone( wxCommandEvent& event ) { (void) event; closeWindow(); }
+    void OnDone(wxCloseEvent & event) { (void) event; closeWindow(); }
 
     int getPerWindowLen() {
       return m_PeriodogramWindowSel->GetValue(); 

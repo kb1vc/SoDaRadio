@@ -63,7 +63,7 @@ SoDa::UI::UI(Params * params, CmdMBox * _cwtxt_stream,
   lo_spectrogram_buckets = 16384;
   lo_spectrogram = new Spectrogram(lo_spectrogram_buckets);
   lo_spectrum = new float[lo_spectrogram_buckets * 4];
-  for(int i = 0; i < lo_spectrogram_buckets; i++) {
+  for(unsigned int i = 0; i < lo_spectrogram_buckets; i++) {
     lo_spectrum[i] = 0.0; 
   }
 
@@ -78,7 +78,7 @@ SoDa::UI::UI(Params * params, CmdMBox * _cwtxt_stream,
   spectrum = new float[spectrogram_buckets * 4];
   log_spectrum = new float[spectrogram_buckets * 4];
   // make it a little large, and "zero" it out to account for walking off the end...
-  for(int i = 0; i < spectrogram_buckets * 4; i++) {
+  for(unsigned int i = 0; i < spectrogram_buckets * 4; i++) {
     spectrum[i] = 1e-20; 
     log_spectrum[i] = -200.0; 
   }
@@ -116,8 +116,6 @@ void SoDa::UI::run()
   net_cmd = NULL;
   ring_cmd = NULL;
   
-  char buf[1024];
-
   cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_FE_FREQ, 144.2e6));
   cmd_stream->put(new SoDa::Command(Command::SET, Command::TX_FE_FREQ, 144.2e6));
   cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_LO3_FREQ, 100e3));
@@ -272,6 +270,9 @@ void SoDa::UI::execGetCommand(Command * cmd)
     // the offset of the LO microwave oscillator on the next FFT event.
     lo_check_mode = true;
     fft_send_counter = 0; 
+    break; 
+  default:
+    break;
   }
 }
 
@@ -317,7 +318,7 @@ void SoDa::UI::sendFFT(SoDa::SoDaBuf * buf)
   new_spectrum_setting = false; 
   calc_max_first = false; 
 
-  float * slice;
+  float * slice = spectrum;
   
   if(!lo_check_mode) {
     // find the right slice
@@ -329,8 +330,8 @@ void SoDa::UI::sendFFT(SoDa::SoDaBuf * buf)
     // now we've got the index for the center.
     // correct it to be the start...
     idx -= required_spect_buckets / 2; 
-    
-    if((idx < 0) || (idx > spectrogram_buckets)) {
+    int sbuck_target = (int) spectrogram_buckets;
+    if((idx < 0) || (idx > sbuck_target)) {
       slice = NULL; 
     }
     else {
@@ -342,7 +343,7 @@ void SoDa::UI::sendFFT(SoDa::SoDaBuf * buf)
     // scan the buffer. Then find the peak.
     // scan from lo_spectrum midpoint minus 2KHz to plus 2KHz
     float magmax = 0.0;
-    int maxi;
+    int maxi = 0;
     int idxrange = ((int) (2000.0 / lo_hz_per_bucket));
     int i, j; 
     for(i = -idxrange, j = (lo_spectrogram_buckets / 2) - idxrange; i < idxrange; i++, j++) {
@@ -376,11 +377,10 @@ void SoDa::UI::sendFFT(SoDa::SoDaBuf * buf)
     fft_send_counter = 0;
     calc_max_first = true; 
     float maxmag = 0.0;
-    int bigidx = -1; 
-    for(int ii = 0; ii < spectrogram_buckets; ii++) {
+
+    for(unsigned int ii = 0; ii < spectrogram_buckets; ii++) {
       if(spectrum[ii] > maxmag) {
 	maxmag = spectrum[ii];
-	bigidx = ii; 
       }
     }
   }

@@ -88,7 +88,7 @@ CWGenerator::CWGenerator(DatMBox * cw_env_stream, double _samp_rate, unsigned in
   in_digraph = false; 
 }
 
-static bool toggle = false; 
+
 bool CWGenerator::readyForMore()
 {
   // if we've got less than 1 second's worth of
@@ -150,11 +150,11 @@ void CWGenerator::setCWSpeed(unsigned int wpm)
   words_per_minute = wpm;
 
   float dot_time_s = 1.20 / ((float) wpm);
-  int dot_samples = (int) round(sample_rate * dot_time_s);
-  int dah_samples = dot_samples * 3; 
+  unsigned int dot_samples = (int) round(sample_rate * dot_time_s);
+  unsigned int dah_samples = dot_samples * 3; 
 
   // now create the dit, dah, and space pattern.
-  int i, j;
+  unsigned int i, j;
   for(i = 0; i < edge_sample_count; i++) {
     dit[i] = rising_edge[i]; 
   }
@@ -194,7 +194,6 @@ void CWGenerator::setCWSpeed(unsigned int wpm)
 
 void CWGenerator::appendToOut(const float * v, unsigned int vlen)
 {
-  int i;
   int svlen = vlen; 
   while(svlen != 0) {
     int left = cur_buf_len - (cur_buf_idx + 1);

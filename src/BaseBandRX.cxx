@@ -72,7 +72,7 @@ SoDa::BaseBandRX::BaseBandRX(Params * params,
   af_sidetone_gain = 1.0;
   cur_af_gain = &af_gain; 
 
-  int i, j;
+  unsigned int i, j;
   // prime the audio stream so that we don't fall behind
   // right away.
   for(j = 0; j < 6; j++) {
@@ -127,11 +127,11 @@ SoDa::BaseBandRX::BaseBandRX(Params * params,
 
 void SoDa::BaseBandRX::demodulateWBFM(SoDaBuf * rxbuf, SoDa::Command::ModulationType mod, float af_gain)
 {
+  (void) mod;
   // now allocate a new audio buffer from the buffer ring
   float * audio_buffer = getFreeAudioBuffer(); 
   float demod_out[rf_buffer_size];
-  float angle;
-  int i;
+  unsigned int i;
 
   std::complex<float> * dbuf = rxbuf->getComplexBuf();
 
@@ -164,6 +164,7 @@ void SoDa::BaseBandRX::demodulateWBFM(SoDaBuf * rxbuf, SoDa::Command::Modulation
 
 void SoDa::BaseBandRX::demodulateNBFM(std::complex<float> * dbuf, SoDa::Command::ModulationType mod, float af_gain)
 {
+  (void) mod;
   // now allocate a new audio buffer from the buffer ring
   float * audio_buffer = getFreeAudioBuffer(); 
   std::complex<float> demod_out[audio_buffer_size];
@@ -175,7 +176,7 @@ void SoDa::BaseBandRX::demodulateNBFM(std::complex<float> * dbuf, SoDa::Command:
   // In this case, dphase will be much bigger than M_PI, and it should be
   // "corrected".  We're really trying to find the angular diference between
   // samples, so the wraparound is important. 
-  int i; 
+  unsigned int i; 
   for(i = 0; i < audio_buffer_size; i++) {
     // do the atan demod
     // measure the phase of the incoming signal.
@@ -213,7 +214,7 @@ void SoDa::BaseBandRX::demodulateSSB(std::complex<float> * dbuf, SoDa::Command::
 
   // then add/subtract I/Q to a single real channel
   float sbmul = ((mod == SoDa::Command::LSB) || (mod == SoDa::Command::CW_L)) ? 1.0 : -1.0;
-  int i; 
+  unsigned int i; 
   for(i = 0; i < audio_buffer_size; i++) {
     audio_buffer[i] = (float) (dbuf[i].real() + sbmul * dbuf[i].imag()); 
   }
@@ -226,7 +227,7 @@ void SoDa::BaseBandRX::demodulateAM(std::complex<float> * dbuf)
   // now allocate a new audio buffer from the buffer ring
   float * audio_buffer = getFreeAudioBuffer(); 
 
-  int i;
+  unsigned int i;
   float maxval = 0.0;
   float sumsq = 0.0; 
   for(i = 0; i < audio_buffer_size; i++) {
@@ -254,8 +255,6 @@ void SoDa::BaseBandRX::demodulate(SoDaBuf * rxbuf)
   std::complex<float> dbufo[audio_buffer_size]; 
   // Note that audio_buffer_size must be (sample_length / decimation rate)
   
-  unsigned int reslen;
-
   if((rx_modulation != SoDa::Command::WBFM) && (rx_modulation != SoDa::Command::NBFM)) {
     rf_resampler->apply(rxbuf->getComplexBuf(), dbufi);
     
@@ -366,6 +365,8 @@ void SoDa::BaseBandRX::execSetCommand(SoDa::Command * cmd)
     cmd_stream->put(new Command(Command::REP, Command::RX_AF_GAIN, 
 				50. + 4.0 * log10(af_gain)));
     break; 
+  default:
+    break; 
   }
 }
 
@@ -387,12 +388,15 @@ void SoDa::BaseBandRX::execGetCommand(SoDa::Command * cmd)
       std::cerr << boost::format("%s ready_buffers.size = %d free_buffers.size = %d\n") % getObjName() % readyAudioBuffers() % free_buffers.size();
     }
     break; 
+  default:
+    break; 
   }
 
 }
 
 void SoDa::BaseBandRX::execRepCommand(SoDa::Command * cmd)
 {
+  (void) cmd; 
 }
 
 void SoDa::BaseBandRX::run()
@@ -402,7 +406,6 @@ void SoDa::BaseBandRX::run()
   Command * cmd; 
 
   int rxbufcount = 0;
-  int last_rxbufcount = 10;
   int afbufcount = 0;
 
   int trim_count = 0; 
@@ -411,7 +414,6 @@ void SoDa::BaseBandRX::run()
   int null_audio_buf_count = 0;
   int sleep_count = 0; 
   int catchup_count = 0;
-  int fallback_count = 0;
 
   int restart_count = 0;
   while(!exitflag) {

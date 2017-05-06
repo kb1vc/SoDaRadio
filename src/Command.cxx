@@ -217,6 +217,8 @@ std::string & SoDa::Command::toString()
     break; 
   case REP: oss <<  "REP ";
     break; 
+  default:
+    break; 
   }
 
   if(target_map_v2s[target] != NULL) { 

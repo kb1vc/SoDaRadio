@@ -67,6 +67,7 @@ namespace SoDaRadio_GUI {
 		 )
     : wxPanel(parent, id, pos, size, wxSUNKEN_BORDER)
   {
+    (void) flags; 
     m_parent = parent;
     radio = _radio;
 
@@ -115,6 +116,7 @@ namespace SoDaRadio_GUI {
   }
 
   void XYPlot::OnSize(wxSizeEvent & event) {
+    (void) event;
     ReSize(); 
   }
 
@@ -127,7 +129,7 @@ namespace SoDaRadio_GUI {
     dc.DrawRectangle(3, 3, width-6, height-6);
 
     // draw vertical marks.
-    int i, j;
+    int i;
     int x;
     int y;
     x = ll.x;
@@ -158,10 +160,6 @@ namespace SoDaRadio_GUI {
     // setup the panel with the DC.
     wxBufferedPaintDC dc(this);
 
-    // how big is the window?
-    wxSize size = GetSize();
-    int width = size.GetWidth();
-    int height = size.GetHeight();
 
     // Draw the grid.
     DrawGrid(dc);
@@ -227,10 +225,10 @@ namespace SoDaRadio_GUI {
 
   void XYPlot::DrawMarker(int marker_idx, double x, double y, wxDC &dc)
   {
+    (void) x; (void) y; 
     int idx = marker_idx % 2;
     wxPoint pt;
 
-    bool onscr = ScaleXY(x, y, pt);
     if(pt.x < ll.x) pt.x = ll.x;
     if(pt.x > ur.x) pt.x = ur.x;
     if(pt.y < ur.y) pt.y = ur.y; 
@@ -466,6 +464,7 @@ namespace SoDaRadio_GUI {
 
   void XYPlot::OnPaint(wxPaintEvent & event)
   {
+    (void) event; 
     Draw(); 
   }
 

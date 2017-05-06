@@ -27,6 +27,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 static unsigned int tx_IF_filt_len_48K = 511;
+
 static float tx_IF_filt_48K[511] = {
 	1.680273904475e-06,
 	-1.6244566929945e-06,
@@ -540,4 +541,5 @@ static float tx_IF_filt_48K[511] = {
 	-1.6244566929945e-06,
 	1.680273904475e-06
 };
+
 static float tx_IF_filt_gain_48K =    1.0000036955016;

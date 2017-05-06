@@ -35,6 +35,7 @@
 
 int dbgctr = 0;
 
+static unsigned int ipow(unsigned int x, unsigned int y) __attribute__ ((unused));
 static unsigned int ipow(unsigned int x, unsigned int y)
 {
   unsigned int ret;
@@ -67,7 +68,6 @@ SoDa::HilbertTransformer::HilbertTransformer(unsigned int inout_buffer_length,
   //  std::cerr << "\n\nHILBERT picked N = " << N << " Q = " << Q << " M = " << M << std::endl;
 
 
-  float flen = (float) filter_length;
   std::complex<float> htu[N], htl[N]; 
 
   // create the impulse response images
@@ -91,7 +91,7 @@ SoDa::HilbertTransformer::HilbertTransformer(unsigned int inout_buffer_length,
   }
 
   // now build the time domain image of the filter.
-  int i, j;
+  unsigned int i, j;
   for(i = 0; i < N; i++) {
     htu[i] = htl[i] = std::complex<float>(0.0, 0.0);
   }
@@ -206,7 +206,7 @@ unsigned int SoDa::HilbertTransformer::apply(std::complex<float> * inbuf,
 					     std::complex<float> * outbuf,
 					     bool pos_sided, float gain)
 {
-  int i, j;
+  unsigned int i, j;
 
   std::complex<float> *HT_F;
   std::complex<float> *PA_F;
@@ -260,7 +260,7 @@ unsigned int SoDa::HilbertTransformer::apply(float * inbuf,
 					     std::complex<float> * outbuf,
 					     bool pos_sided, float gain)
 {
-  int i, j;
+  unsigned int i;
   // This creates an analytic signal from a single input buffer.
 
   // Note we're using overlap-and-save  see the OSFilter implementation
@@ -285,7 +285,7 @@ unsigned int SoDa::HilbertTransformer::applyIQ(std::complex<float> * inbuf,
 					       std::complex<float> * outbuf,
 					       float gain)
 {
-  int i, j;
+  unsigned int i, j;
   // This creates an analytic signal from a single input buffer.
 
   // Note we're using overlap-and-save  see the OSFilter implementation
@@ -336,7 +336,7 @@ unsigned int SoDa::HilbertTransformer::applyIQ(std::complex<float> * inbuf,
 
 std::ostream & SoDa::HilbertTransformer::dump(std::ostream & os)
 {
-  int i, j;
+  unsigned int i, j;
   for(i = 0; i < N; i++) {
     j = i; 
     float mag = std::abs(HTl_filter[i]);

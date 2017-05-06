@@ -116,6 +116,7 @@ namespace SoDa
 
   bool SerialDev::getString(std::string & str, unsigned int maxlen)
   {
+    (void) maxlen; 
     if(!serial_port_open) return false;
 
     str = std::string("");

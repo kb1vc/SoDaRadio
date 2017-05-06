@@ -28,6 +28,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Spectrogram.hxx"
 #include <math.h>
 #include <iostream>
+#include <boost/format.hpp>
+#include <stdexcept>
 
 SoDa::Spectrogram::Spectrogram(unsigned int fftlen)
 {
@@ -52,7 +54,7 @@ SoDa::Spectrogram::Spectrogram(unsigned int fftlen)
 
 float * SoDa::Spectrogram::initBlackmanHarris()
 {
-  int i;
+  unsigned int i;
   float a0 = 0.35875;
   float a1 = 0.48829;
   float a2 = 0.14128;
@@ -72,7 +74,7 @@ float * SoDa::Spectrogram::initBlackmanHarris()
 void SoDa::Spectrogram::apply_common(std::complex<float> * invec,
 				     unsigned int inveclen)
 {
-  int i, j;
+  unsigned int i, j;
   float repl_count;
 
   repl_count = floor(((float) inveclen) / ((float) fft_len));
@@ -80,7 +82,9 @@ void SoDa::Spectrogram::apply_common(std::complex<float> * invec,
 
   // zero the result accumulate buffer. 
   for(j = 0; j < fft_len; j++) result[j] = 0.0;
-  
+  if(fft_len > inveclen) {
+    throw std::runtime_error((boost::format("inveclen %d less than fftlen %d\n") % inveclen % fft_len).str()); 
+  }
   // accumulate FFT results over the length of the buffer.
   for(i = 0; i < (inveclen + 1 - fft_len); i += (fft_len / 2)) {
     std::complex<float> *v = &(invec[i]);
@@ -122,7 +126,7 @@ void SoDa::Spectrogram::apply_acc(std::complex<float> * invec,
   // now copy to the output buffer
   // this is mag^2 divided by the square of of the
   // number of segments we FFTd.
-  int j, k;
+  unsigned int j, k;
 
   for(j = 0, k = (fft_len / 2); j < (fft_len / 2); j++, k++) {
     outvec[j] = result[k] * (1.0 - accumulation_gain) +
@@ -146,7 +150,7 @@ void SoDa::Spectrogram::apply_max(std::complex<float> * invec,
   // now copy to the output buffer
   // this is mag^2 divided by the square of of the
   // number of segments we FFTd.
-  int j, k;
+  unsigned int j, k;
 
   for(j = 0, k = (fft_len / 2); j < (fft_len / 2); j++, k++) {
     if(first) outvec[j] = result[k];

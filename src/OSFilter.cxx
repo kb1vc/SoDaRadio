@@ -89,7 +89,7 @@ SoDa::OSFilter::OSFilter(float * filter_impulse_response,
   
   // now build the filter
   // fill with zeros
-  int i; 
+  unsigned int i; 
   for(i = 0; i < N; i++) filter_in[i] = std::complex<float>(0.0,0.0);
   // fill in the impulse response
   float gain_corr = 1.0 / ((float) N) * filter_gain;
@@ -156,7 +156,7 @@ SoDa::OSFilter::OSFilter(float low_cutoff,
   std::complex<float> * filter_in = (std::complex<float> *) fftwf_malloc(sizeof(std::complex<float>) * N);
   filter_fft = (std::complex<float> *) fftwf_malloc(sizeof(std::complex<float>) * N);
 
-  int i, j;
+  unsigned int i, j;
   for(i = 0; i < N; i++) filter_in[i] = std::complex<float>(0.0,0.0);
   filter_in[Q/2] = std::complex<float>(1.0, 0.0);
   // we'll use the image of this filter for the phase part of our filter.
@@ -247,6 +247,7 @@ int SoDa::OSFilter::guessN()
     // a multiple of 2^a * 3^b * 5^c where b and c are in the range 0..3
     // and a is in the range 1..16
   unsigned int N_guess, N_best, E_best;
+  N_best = 2; 
   E_best = 0x80000000;
   int i; 
   for(i = 1; i <= 0xff; i++) {
@@ -268,7 +269,7 @@ int SoDa::OSFilter::guessN()
 
 void SoDa::OSFilter::setupFFT()
 {
-  int i; 
+  unsigned int i; 
   // now allocate all the storage vectors
   fft_input = (std::complex<float> *) fftwf_malloc(sizeof(std::complex<float>) * N);
   fft_output = (std::complex<float> *) fftwf_malloc(sizeof(std::complex<float>) * N);
@@ -291,7 +292,7 @@ void SoDa::OSFilter::setupFFT()
 
 unsigned int SoDa::OSFilter::apply(float * inbuf, float * outbuf, float outgain, int instride, int outstride)
 {
-  int i, j;
+  unsigned int i, j;
   // copy the input buffer.
   for(i = 0, j = Q-1; i < (M * instride); i += instride, j++) {
     fft_input[j] = std::complex<float>(inbuf[i], 0.0); 
@@ -340,7 +341,7 @@ unsigned int SoDa::OSFilter::apply(std::complex<float> * inbuf, std::complex<flo
   memcpy(fft_input, &(inbuf[tail_index]), sizeof(std::complex<float>) * (Q-1));
 
   // apply the filter.
-  int i;
+  unsigned int i;
   for(i = 0; i < N; i++) {
     fft_output[i] = (fft_output[i] * filter_fft[i]) * outgain; 
   }
@@ -357,7 +358,7 @@ unsigned int SoDa::OSFilter::apply(std::complex<float> * inbuf, std::complex<flo
 
 void SoDa::OSFilter::dump(std::ostream & os)
 {
-  int i;
+  unsigned int i;
   os << "# idx  real   imag   abs   arg" << std::endl; 
   for(i = 0; i < N; i++) {
     float mag = abs(filter_fft[i]);

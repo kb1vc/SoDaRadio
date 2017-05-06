@@ -70,15 +70,18 @@ void SoDa::GPS_TSIPmon::run()
 
 void SoDa::GPS_TSIPmon::execGetCommand(Command * cmd)
 {
+  (void) cmd; 
   return; 
 }
 
 void SoDa::GPS_TSIPmon::execSetCommand(Command * cmd)
 {
+  (void) cmd; 
   return; 
 }
 
 void SoDa::GPS_TSIPmon::execRepCommand(Command * cmd)
 {
+  (void) cmd;
   return;
 }

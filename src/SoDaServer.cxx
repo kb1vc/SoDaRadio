@@ -111,15 +111,20 @@
 #include "MultiMBox.hxx"
 
 // the radio parts. 
-#include "Params.hxx"
+#include "Params.hxx" 
 // For USRP devices
-#include "USRPCtrl.hxx"
-#include "USRPRX.hxx"
-#include "USRPTX.hxx"
+#if HAVE_UHD
+#  include "USRPCtrl.hxx"
+#  include "USRPRX.hxx"
+#  include "USRPTX.hxx"
+#endif
+
 // For LimeSDR devices
-#include "SoapyCtrl.hxx"
-//#include "SoapyRX.hxx"
-//#include "SoapyTX.hxx"
+#if HAVE_SOAPY_SDR
+#  include "SoapyCtrl.hxx"
+//#  include "SoapyRX.hxx"
+//#  include "SoapyTX.hxx"
+#endif
 
 #include "BaseBandRX.hxx"
 #include "BaseBandTX.hxx"

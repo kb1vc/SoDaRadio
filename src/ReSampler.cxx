@@ -34,7 +34,8 @@
 #include <iostream>
 #include <boost/format.hpp>
 
-static void bindump(char * fn, std::complex<float> * buf, unsigned int num_elts, int append = 0)
+static void bindump(char * fn, std::complex<float> * buf, unsigned int num_elts, int append = 0) __attribute__ ((unused));
+static void bindump(char * fn, std::complex<float> * buf, unsigned int num_elts, int append)
 {
   FILE * of;
   if(append != 0) {
@@ -43,18 +44,19 @@ static void bindump(char * fn, std::complex<float> * buf, unsigned int num_elts,
   else {
     of = fopen(fn, "w");
   }
-  int i;
+  unsigned int i;
   for(i = 0; i < num_elts; i++) {
     fprintf(of, "%d %g %g\n", i + (append * num_elts), buf[i].real(), buf[i].imag()); 
   }
   fclose(of); 
 }
 
-static void bindump_2(char * fn, std::complex<float> * buf, unsigned int num_elts, int num_cols)
+static void bindump_2(char * fn, std::complex<float> * buf, unsigned int num_elts, unsigned int num_cols) __attribute__ ((unused));
+static void bindump_2(char * fn, std::complex<float> * buf, unsigned int num_elts, unsigned int num_cols)
 {
   FILE * of;
   of = fopen(fn, "w");
-  int i, j;
+  unsigned int i, j;
   for(i = 0; i < num_elts; i++) {
     fprintf(of, "%d ", i);
     for(j = 0; j < num_cols; j++) {
@@ -96,8 +98,9 @@ SoDa::ReSampler::ReSampler(unsigned int interpolate_ratio,
   // a multiple of 2^a * 3^b * 5^c where b and c are in the range 0..3
   // and a is in the range 1..16
   unsigned int N_guess, N_best, E_best;
+  N_best = 2; 
   E_best = 0x80000000;
-  int i; 
+  unsigned int i; 
   for(i = 1; i <= 0xff; i++) {
     unsigned int a = i & 0xf;
     unsigned int b = (i >> 4) & 0x3;
@@ -170,9 +173,8 @@ void SoDa::ReSampler::CreateFilter(unsigned int filter_len)
   // filter_len must be odd
   int fN = filter_len;
   if((fN & 1) == 0) fN--; 
-  int hfN = (fN - 1) / 2;
   
-  int i, j, k;
+  unsigned int i, j, k;
 
   // Use the plan of fischer in "The mkfilter Digital Filter Generation Program" mkshape...
   // This is borrowed quite heavily and with tremendous gratitude from 
@@ -267,12 +269,11 @@ void SoDa::ReSampler::CreateFilter(unsigned int filter_len)
   fftwf_free(filt_FD);  
 }
 
-static int app_count = 0; 
 unsigned int SoDa::ReSampler::apply(std::complex<float> * in,
 				    std::complex<float> * out,
 				    float gain)
 {
-  int i, j;
+  unsigned int i, j;
   // copy the input buffer
   memcpy(&(inbuf[Q-1]), in, sizeof(std::complex<float>) * M);
   
@@ -298,7 +299,7 @@ unsigned int SoDa::ReSampler::apply(std::complex<float> * in,
 
   // now downsample by a factor of dN.
   int idx = 0; 
-  int mctr = 0;
+  unsigned int mctr = 0;
   unsigned int out_lim = (M * iM) / dN;
   std::complex<float> * ir_clean = &(interp_res[(Q-1)]); 
   // std::cerr << " iM, dN, M, N, out_lim = "
@@ -312,6 +313,8 @@ unsigned int SoDa::ReSampler::apply(std::complex<float> * in,
     }
   }
   //  bindump("out.dat", out, j); 
+
+  return 0; 
 }
 
 
@@ -320,7 +323,7 @@ unsigned int SoDa::ReSampler::apply(float * in,
 				    float * out,
 				    float gain)
 {
-  int i, j;
+  unsigned int i, j;
   
   for(i = 0; i < M; i++) {
     inbuf[i+(Q-1)] = std::complex<float>(in[i], 0.0);
@@ -350,7 +353,7 @@ unsigned int SoDa::ReSampler::apply(float * in,
 
   // now downsample by a factor of dN.
   int idx = 0; 
-  int mctr = 0;
+  unsigned int mctr = 0;
   unsigned int out_lim = (M * iM) / dN;
   std::complex<float> * ir_clean = &(interp_res[(Q-1)]); 
   for(j = 0; j < out_lim; j++) {
@@ -361,4 +364,6 @@ unsigned int SoDa::ReSampler::apply(float * in,
       idx += 1; 
     }
   }
+
+  return 0; 
 }

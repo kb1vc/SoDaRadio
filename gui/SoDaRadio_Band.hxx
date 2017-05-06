@@ -139,9 +139,9 @@ public:
     tx_rx_locked = true;
   }
 
-  void setupTransverter(double lo_freq, double mult, bool low_side, bool local_lo) {
+  void setupTransverter(double lo_freq, double mult, bool low_side, bool _local_lo) {
     transverter_mode = true;
-    transverter_local_lo = local_lo;
+    transverter_local_lo = _local_lo;
     transverter_lo_freq = lo_freq; 
     transverter_multiplier = mult; 
     low_side_injection = low_side; 

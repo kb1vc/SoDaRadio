@@ -157,6 +157,7 @@ int SoDa::UD::NetSocket::loopWrite(int fd, const void * ptr, unsigned int nbytes
       bptr += stat; 
     }
   }
+  return 0; 
 }
 int SoDa::UD::NetSocket::put(const void * ptr, unsigned int size)
 {
@@ -188,7 +189,6 @@ int SoDa::UD::NetSocket::get(void * ptr, unsigned int size)
     }
   }
 
-  int got = 0;
   int left = rsize;
   char * bptr = (char*) ptr; 
   while(left > 0) {

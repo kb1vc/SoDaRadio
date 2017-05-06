@@ -55,6 +55,7 @@ namespace SoDa {
 
   void AudioALSA::setupPlayback(std::string audio_port_name)
   {
+    (void) audio_port_name; 
     // setup the playback (output) stream
     char pcm_name[] = "default";
     
@@ -107,7 +108,6 @@ namespace SoDa {
 
   void AudioALSA::setupParams(snd_pcm_t * dev, snd_pcm_hw_params_t *  & hw_params_ptr)
   {
-    int err;
     snd_pcm_hw_params_t * hw_paramsp;
     
     snd_pcm_hw_params_alloca(&hw_paramsp);
@@ -145,7 +145,7 @@ namespace SoDa {
     if(sframes_ready == -EPIPE) {
       // we got an under-run... just ignore it.
       int err; 
-      if(err = snd_pcm_recover(pcm_in, sframes_ready, 1) < 0) {
+      if((err = snd_pcm_recover(pcm_in, sframes_ready, 1)) < 0) {
 	checkStatus(err, "recvBufferReady got EPIPE, tried recovery", false);
       }
       sframes_ready = snd_pcm_avail(pcm_in);
@@ -168,7 +168,7 @@ namespace SoDa {
 	// if pcm_avail returns -EPIPE we need to recover and restart the pipe... sigh.
 	// std::cerr << boost::format("snd_pcm_avail returns EPIPE -- current state is %s\n") % currentPlaybackState();
 	int err; 
-	if(err = snd_pcm_recover(pcm_out, sframes_ready, 1) < 0) {
+	if((err = snd_pcm_recover(pcm_out, sframes_ready, 1)) < 0) {
 	  checkStatus(err, "sendBufferReady got EPIPE, tried recovery", false);
 	}
 	if((err = snd_pcm_start(pcm_out)) < 0) {
@@ -193,18 +193,18 @@ namespace SoDa {
     while(1) {
       err = snd_pcm_writei(pcm_out, cbuf, len);
       
-      if(err == len) return len; 
+      if(err == (int) len) return len; 
       else if(err == -EAGAIN) continue;
       else if(err == -EPIPE) {
 	// we got an under-run... just ignore it.
-	if(err = snd_pcm_recover(pcm_out, err, 1) < 0) {
+	if((err = snd_pcm_recover(pcm_out, err, 1)) < 0) {
 	checkStatus(err, "send got EPIPE, tried recovery", false);
 	}
       }
       else if(err < 0) {
 	checkStatus(err, "send", true);
       }
-      else if(err != len) {
+      else if(err != (int)len) {
 	len -= err;
 	cbuf += (err * datatype_size);
       }
@@ -214,21 +214,21 @@ namespace SoDa {
   }
 
   int AudioALSA::recv(void * buf, unsigned int len, bool block) {
+    (void) block;
     int err;
     int olen = len;
 
-    int v1, v2;
 
     char * cbuf = (char *) buf; 
     while(1) {
       err = snd_pcm_readi(pcm_in, cbuf, len);
 
-      if(err == len) return len; 
+      if(err == (int)len) return len; 
       else if(err == -EAGAIN) continue; 
       else if(err < 0) {
 	checkStatus(err, "recv", true);
       }
-      else if(err != len) {
+      else if(err != (int)len) {
 	len -= err;
 	cbuf += (err * datatype_size);
       }

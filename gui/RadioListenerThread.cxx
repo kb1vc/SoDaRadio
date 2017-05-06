@@ -101,9 +101,6 @@ namespace SoDaRadio_GUI {
     //listen on the gui's command queue and on the fft queue.
     exitflag = false;
 
-    pid_t pid = getpid(); 
-
-
     SoDa::Command * ncmd;
 
     ncmd = new SoDa::Command();

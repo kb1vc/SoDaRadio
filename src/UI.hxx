@@ -77,7 +77,7 @@ namespace SoDa {
     float * spectrum, * log_spectrum;
     bool new_spectrum_setting;
     float fft_acc_gain;
-    int fft_update_interval;
+    unsigned int fft_update_interval;
 
     unsigned int fft_send_counter;
     

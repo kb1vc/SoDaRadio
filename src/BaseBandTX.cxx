@@ -40,7 +40,7 @@
 #include "ReSamplers625x48.hxx"
 #include <cstdlib>
 
-#include "SoDa_tx_filter_tables.hxx" 
+// Don't need these anymore #include "SoDa_tx_filter_tables.hxx" 
 
 SoDa::BaseBandTX::BaseBandTX(Params * params, DatMBox * _tx_stream,
 		       CmdMBox * _cmd_stream,
@@ -86,7 +86,7 @@ SoDa::BaseBandTX::BaseBandTX(Params * params, DatMBox * _tx_stream,
   // use the same random init every time -- counterintuitive, but 
   // I want this to be "repeatable" noise.
   srandom(0x92314159);
-  for(int i = 0; i < audio_buffer_size; i++) {
+  for(unsigned int i = 0; i < audio_buffer_size; i++) {
     float rfl = ((float) random()) / ((float) RAND_MAX);
     rfl = rfl - 0.5; // make the mean 0
     noise_buffer[i] = rfl * 0.5; 
@@ -111,7 +111,6 @@ SoDa::BaseBandTX::BaseBandTX(Params * params, DatMBox * _tx_stream,
 void SoDa::BaseBandTX::run()
 {
   bool exitflag = false;
-  SoDaBuf * rxbuf;
   Command * cmd; 
   float audio_buf[audio_buffer_size];
 
@@ -197,6 +196,7 @@ SoDa::SoDaBuf * SoDa::BaseBandTX::modulateAM(float * audio_buf,
 					  bool is_usb,
 					  bool is_lsb)
 {
+  (void) len; 
   /// If the modulation scheme is USB or SSB,
   /// we need to make an analytic signal from the scalar real audio_buf.
   
@@ -208,7 +208,7 @@ SoDa::SoDaBuf * SoDa::BaseBandTX::modulateAM(float * audio_buf,
   else {
     /// if neither is_usb is_lsb is true, then we want to produce
     /// an AM envelope.  Put the same signal in both I and Q.
-    int i;
+    unsigned int i;
     for(i = 0; i < audio_buffer_size; i++) {
       audio_IQ_buf[i] = std::complex<float>(audio_buf[i], 0.0) * mic_gain;
     }
@@ -236,7 +236,8 @@ SoDa::SoDaBuf * SoDa::BaseBandTX::modulateAM(float * audio_buf,
 
 SoDa::SoDaBuf * SoDa::BaseBandTX::modulateFM(float *audio_buf, unsigned int len, double deviation)
 {
-  int i;
+  (void) len; 
+  unsigned int i;
   
   for(i=0; i < audio_buffer_size; i++) {
     double audio_amp = audio_buf[i] * fm_mic_gain;
@@ -277,7 +278,6 @@ SoDa::SoDaBuf * SoDa::BaseBandTX::modulateFM(float *audio_buf, unsigned int len,
 
 void SoDa::BaseBandTX::execSetCommand(SoDa::Command * cmd)
 {
-  SoDa::Command::AudioFilterBW fbw;
 
   switch (cmd->target) {
   case SoDa::Command::TX_MODE:
@@ -339,16 +339,18 @@ void SoDa::BaseBandTX::execSetCommand(SoDa::Command * cmd)
     }
     break;
     
+  default:
+    break; 
   }
 }
 
 void SoDa::BaseBandTX::execGetCommand(SoDa::Command * cmd)
 {
-  switch (cmd->target) {
-  }
+  (void) cmd; 
 }
 
 void SoDa::BaseBandTX::execRepCommand(SoDa::Command * cmd)
 {
+  (void) cmd; 
 }
 

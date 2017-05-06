@@ -54,9 +54,11 @@ namespace SoDa {
     }
 
     virtual bool demodAudio(SoDaBuf * in, float * out, float gain) {
+      (void) in; (void) out; (void) gain; 
       return false; 
     }
     virtual bool demodDigital(SoDaBuf * in, std::vector<char> out) {
+      (void) in; (void) out;
       return false;
     }
 
@@ -82,6 +84,7 @@ namespace SoDa {
     DemodUSB() : DemodSSB(true) { }
 
     bool demodAudio(SoDaBuf * in, float * out, float gain) {
+      (void) in; (void) out; (void) gain;             
       std::cerr << "Here in DemodUSB" << std::endl;
       return true;      
     }
@@ -92,6 +95,7 @@ namespace SoDa {
     DemodLSB() : DemodSSB(false) { }
     
     bool demodAudio(SoDaBuf * in, float * out, float gain) {
+      (void) in; (void) out; (void) gain;                   
       std::cerr << "Here in DemodLSB" << std::endl; 
       return true;
     }

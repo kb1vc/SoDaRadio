@@ -116,6 +116,8 @@ namespace SoDaRadio_GUI {
     {
       _xmin = xmin;
       _xmax = xmax;
+      _ymin = ymin; 
+      _ymax = ymax; 
     }
 
   

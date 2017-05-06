@@ -59,6 +59,7 @@ namespace SoDaRadio_GUI {
 		       )
     : wxPanel(parent, id, pos, size, wxSUNKEN_BORDER)
   {
+    (void) flags; 
     enable_draw_events = false; 
     m_parent = parent;
     radio = _radio;
@@ -108,7 +109,7 @@ namespace SoDaRadio_GUI {
     //   % spec_line_y_pos % bitmap_y_pos % bitmap_y_incr % spec_height << std::endl;
   
     if((x > ll.x) && (x < ur.x) && (y < ll.y) && (y > ur.y)) {
-      double fx, fy;
+      double fx;
       UnScaleX(wxPoint(x, y), fx);
       // std::cerr << "Got a new frequency selection = " << fx << std::endl;
       radio->SetRXFreqFromDisp(fx); 
@@ -118,6 +119,7 @@ namespace SoDaRadio_GUI {
   }
 
   void Waterfall::OnSize(wxSizeEvent & event) {
+    (void) event; 
     ReSize(); 
   }
 
@@ -283,7 +285,6 @@ namespace SoDaRadio_GUI {
 
   void Waterfall::InterpolateColor(int idx, wxColour & from, wxColour & to, wxColour & res)
   {
-    int r, g, b;
     unsigned char rr, rg, rb;
     float dr = (float) (to.Red() - from.Red());
     float dg = (float) (to.Green() - from.Green());
@@ -325,7 +326,7 @@ namespace SoDaRadio_GUI {
 
   bool Waterfall::UnScaleX(const wxPoint & pt, double & x)
   {
-    double ix, iy;
+    double ix;
     ix = (double) (pt.x - ll.x);
 
     x = xmin + ix / x_scale;
@@ -364,6 +365,7 @@ namespace SoDaRadio_GUI {
 
   void Waterfall::DrawData(wxDC & dc)
   {
+    (void) dc; 
     // iterate through each trace and draw it.
   
   }
@@ -474,6 +476,7 @@ namespace SoDaRadio_GUI {
 
   void Waterfall::OnPaint(wxPaintEvent & event)
   {
+    (void) event; 
     Draw(true); 
   }
 

@@ -92,8 +92,6 @@ void Reader::initializeSurvey()
 
 void Command::sendCommand(boost::asio::serial_port * portp)
 {
-  char buf[Reader::BUFSIZE];
-
   // first send a DLE
   unsigned char c = Reader::DLE; 
   bs::write(*portp, bs::buffer(&c,1));
@@ -190,6 +188,7 @@ Report * Reader::readStream()
 
 bool PrimaryTimingReport::parseBuf(unsigned char * buf, int buflen)
 {
+  (void) buflen; 
   // check the buffer. The first char must be 0xAB
   if((buf[0] != 0x8F) || (buf[1] != 0xAB)) return false;
 
@@ -225,10 +224,12 @@ bool PrimaryTimingReport::updateStatus()
   std::cout << boost::format("Time: %02d:%02d:%02d") % ((unsigned int) TimeHours) %
     ((unsigned int) TimeMinutes) % ((unsigned int) TimeSeconds)
 	    << std::endl; 
+  return true; 
 }
 
 bool SuplementalTimingReport::parseBuf(unsigned char * buf, int buflen)
 {
+  (void) buflen; 
   // check the buffer. The first char must be 0xAB
   if((buf[0] != 0x8F) || (buf[1] != 0xAC)) return false;
 
@@ -278,4 +279,5 @@ bool SuplementalTimingReport::updateStatus()
 {
   std::cout << boost::format("Temperature: %5f  Altitude %lf Lat = %f  Lon = %lf GPDdecode = %02x") % Temperature % Altitude % Latitude % Longitude % ((unsigned int) GPSDecodeStatus)
 	    << std::endl; 
+  return true; 
 }
