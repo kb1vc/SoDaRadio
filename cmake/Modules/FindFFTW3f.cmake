@@ -4,7 +4,7 @@
 # Find single-precision (float) version of FFTW3
 
 INCLUDE(FindPkgConfig)
-PKG_CHECK_MODULES(PC_FFTW3F "fftw3f >= 3.0")
+PKG_CHECK_MODULES(PC_FFTW3F "fftw3f >= 3.0" QUIET)
 
 FIND_PATH(
     FFTW3F_INCLUDE_DIRS
@@ -34,7 +34,6 @@ FIND_LIBRARY(
           /usr/lib
           /usr/lib64
 )
-
 
 INCLUDE(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(FFTW3F DEFAULT_MSG FFTW3F_LIBRARIES FFTW3F_INCLUDE_DIRS)

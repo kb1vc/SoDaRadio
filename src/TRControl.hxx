@@ -79,7 +79,7 @@ namespace SoDa {
      * @param state true to enable band, false otherwise. 
      * @return true if band state was changed. 
      */
-    virtual bool setBand(unsigned int band, bool state) { return false; }
+    virtual bool setBand(unsigned int band, bool state) { (void) band; (void) state; return false; }
 
     /**
      * @brief query state of signal path for selected band
@@ -87,7 +87,7 @@ namespace SoDa {
      * @param band band selector (typically index from 1...7)
      * @return true if band signal path is enabled. 
      */
-    virtual bool getBand(unsigned int band) { return false; }
+    virtual bool getBand(unsigned int band) { (void) band; return false; }
 
     /**
      * @brief set state of selected servo
@@ -96,7 +96,7 @@ namespace SoDa {
      * @param val -- the setting for the actuator
      * @return true if the actuator command was executed.
      */
-    virtual bool setServo(unsigned int servo_sel, double val) { return false; }
+    virtual bool setServo(unsigned int servo_sel, double val) { (void) servo_sel; (void) val; return false; }
 
     /** 
      * @brief make the appropriate TR control widget given a pointer to a 

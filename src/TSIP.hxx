@@ -89,7 +89,7 @@ namespace TSIP {
 
     void dumpBuffer(std::ostream & os) {
       
-      for(int i = 0; i < buflen; i++) {
+      for(unsigned int i = 0; i < buflen; i++) {
 	unsigned int v = inbuf[i]; 
 	if((i & 0xf) == 0) {
 	  os << boost::format("\n%02x  ") % inbuf; 

@@ -106,7 +106,7 @@ namespace SoDa {
       catch (std::runtime_error e) {
 	complain("Exception while looking for property", fqpn + "/" + propname, e, false);
       }
-
+      return ret; 
     }
 
     std::vector<std::string> getPropNames(const std::string & path = std::string("")) 

@@ -124,8 +124,8 @@ namespace SoDa
   }
 
   bool N200Control::setBand(unsigned int band, bool state) 
-  { return false; }
+  { (void) band; (void) state; return false; }
   bool N200Control::getBand(unsigned int band) 
-  { return false; }
+  { (void) band; return false; }
 
 }

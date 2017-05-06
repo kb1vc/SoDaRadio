@@ -326,17 +326,17 @@ namespace SoDa {
     /**
      * optional method to handle "GET" commands -- commands that request a response
      */
-    virtual void execGetCommand(Command * cmd) { }
+    virtual void execGetCommand(Command * cmd) { (void) cmd; }
 
     /**
      * optional method to handle "SET" commands -- commands that set internal state in the object.
      */
-    virtual void execSetCommand(Command * cmd) { }
+    virtual void execSetCommand(Command * cmd) { (void) cmd; }
 
     /**
      * optional method that reports status or the result of some action. 
      */
-    virtual void execRepCommand(Command * cmd) { }; 
+    virtual void execRepCommand(Command * cmd) { (void) cmd; } 
 
   private:
     boost::thread * th;

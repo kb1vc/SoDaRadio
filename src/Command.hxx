@@ -542,7 +542,6 @@ namespace SoDa {
     {
       cmd = _ct;
       target = _tgt;
-      const char * ocp = cp; 
       int i;
       for(i = 0; i < 64; i++) {
 	sparm[i] = *cp;
@@ -550,7 +549,6 @@ namespace SoDa {
 	cp++; 
       }
       parm_type = 'S';
-      char * p = sparm; 
       id = command_sequence_number++;
     }
 

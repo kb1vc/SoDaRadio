@@ -129,18 +129,16 @@ namespace SoDa {
     }
 
     /**
-     * set the gain for the output device.
-     * @param gain -- range from 0 to 1.0
-     * @return true if gain was set, false otherwise.
+     * get the gain for the output device.
+     * @return the gain; 
      */
-    virtual float getOutGain(float gain) { return out_gain; }
+    virtual float getOutGain() { return out_gain; }
 
     /**
-     * set the gain for the input device.
-     * @param gain -- range from 0 to 1.0
-     * @return true if gain was set, false otherwise.
+     * get the gain for the input device.
+     * @return input gain
      */
-    virtual float getInGain(float gain) { return in_gain; }
+    virtual float getInGain() { return in_gain; }
 
     /**
      * stop the output stream so that we don't encounter a buffer underflow

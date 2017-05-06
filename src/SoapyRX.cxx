@@ -87,8 +87,6 @@ SoDa::USRPRX::USRPRX(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
 #endif
 }
 
-static void doFFTandDump(int fd, std::complex<float> * in, int len) __attribute__ ((unused));
-
 static void doFFTandDump(int fd, std::complex<float> * in, int len)
 {
   std::complex<float> out[len];
@@ -186,7 +184,7 @@ void SoDa::USRPRX::run()
 
 void SoDa::USRPRX::doMixer(SoDaBuf * inout)
 {
-  unsigned int i;
+  int i;
   std::complex<float> o;
   std::complex<float> * ioa = inout->getComplexBuf();
   for(i = 0; i < inout->getComplexMaxLen(); i++) {
@@ -279,11 +277,9 @@ void SoDa::USRPRX::execSetCommand(Command * cmd)
 
 void SoDa::USRPRX::execGetCommand(Command * cmd)
 {
-  (void) cmd; 
 }
 
 void SoDa::USRPRX::execRepCommand(Command * cmd)
 {
-  (void) cmd; 
 }
 

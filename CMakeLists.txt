@@ -1,99 +1,129 @@
-cmake_minimum_required(VERSION 2.8)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
 # only works for versions > 3.0 cmake_policy(SET CMP0048 NEW)
 
-project(SoDaRadio)
+PROJECT(SoDaRadio)
 
-option(BUILD_UNIT_TESTS "Build the unit tests -- not normally useful" ON)
+OPTION(BUILD_UNIT_TESTS "Build the unit tests -- not normally useful" ON)
 
-set(SoDaRadio_VERSION_MAJOR 4)
-set(SoDaRadio_VERSION_MINOR 1)
-set(SoDaRadio_VERSION_PATCH 1)
-set(SoDaRadio_VERSION "${SoDaRadio_VERSION_MAJOR}.${SoDaRadio_VERSION_MINOR}.${SoDaRadio_VERSION_PATCH}")
+SET(SoDaRadio_VERSION_MAJOR 4)
+SET(SoDaRadio_VERSION_MINOR 1)
+SET(SoDaRadio_VERSION_PATCH 1)
+SET(SoDaRadio_VERSION "${SoDaRadio_VERSION_MAJOR}.${SoDaRadio_VERSION_MINOR}.${SoDaRadio_VERSION_PATCH}")
 
 # Package generation for the source tarball
-set(CPACK_PACKAGE_VERSION_MAJOR ${SoDaRadio_VERSION_MAJOR})
-set(CPACK_PACKAGE_VERSION_MINOR ${SoDaRadio_VERSION_MINOR})
-set(CPACK_PACKAGE_VERSION_PATCH ${SoDaRadio_VERSION_PATCH})
-set(CPACK_PACKAGE_VERSION ${SoDaRadio_VERSION})
-set(CPACK_PACKAGE_NAME "SoDaRadio")
-set(CPACK_PACKAGE_RELEASE 1)
-set(CPACK_PACKAGE_CONTACT "Matt Reilly kb1vc")
-set(CPACK_PACKAGE_VENDOR "Matt Reilly -- radiogeek381@gmail.com")
-set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_PACKAGE_RELEASE}.${CMAKE_SYSTEM_PROCESSOR}.${CMAKE_SYSTEM_VERSION}")
-set(CPACK_SOURCE_GENERATOR TGZ)
-set(CPACK_PACKAGING_INSTALL_PREFIX "")
-set(CPACK_SOURCE_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}_src")
-set(CPACK_SOURCE_IGNORE_FILES "/build/" "~$" "SoDa.soda_cfg$" "SoDa.soda_log$" "ckp$" "/.git/")
+SET(CPACK_PACKAGE_VERSION_MAJOR ${SoDaRadio_VERSION_MAJOR})
+SET(CPACK_PACKAGE_VERSION_MINOR ${SoDaRadio_VERSION_MINOR})
+SET(CPACK_PACKAGE_VERSION_PATCH ${SoDaRadio_VERSION_PATCH})
+SET(CPACK_PACKAGE_VERSION ${SoDaRadio_VERSION})
+SET(CPACK_PACKAGE_NAME "SoDaRadio")
+SET(CPACK_PACKAGE_RELEASE 1)
+SET(CPACK_PACKAGE_CONTACT "Matt Reilly kb1vc")
+SET(CPACK_PACKAGE_VENDOR "Matt Reilly -- radiogeek381@gmail.com")
+SET(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_PACKAGE_RELEASE}.${CMAKE_SYSTEM_PROCESSOR}.${CMAKE_SYSTEM_VERSION}")
+SET(CPACK_SOURCE_GENERATOR TGZ)
+SET(CPACK_PACKAGING_INSTALL_PREFIX "")
+SET(CPACK_SOURCE_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}_src")
+SET(CPACK_SOURCE_IGNORE_FILES "/build/" "~$" "SoDa.soda_cfg$" "SoDa.soda_log$" "ckp$" "/.git/")
 
-configure_file(
+CONFIGURE_FILE(
   "${CMAKE_CURRENT_SOURCE_DIR}/project_rpm.spec.in"
   "${CMAKE_CURRENT_BINARY_DIR}/project_rpm.spec" @ONLY)
-set(CPACK_RPM_USER_BINARY_SPECFILE "${CMAKE_CURRENT_BINARY_DIR}/project_rpm.spec")
-include(CPack)
+SET(CPACK_RPM_USER_BINARY_SPECFILE "${CMAKE_CURRENT_BINARY_DIR}/project_rpm.spec")
+INCLUDE(CPack)
 
 
 
 
-message("SoDaRadio_VERSION=[${SoDaRadio_VERSION}]")
+MESSAGE("SoDaRadio_VERSION=[${SoDaRadio_VERSION}]")
 
 
-find_package(Git)
+FIND_PACKAGE(Git QUIET)
 
-if((EXISTS "${CMAKE_SOURCE_DIR}/.git/") AND GIT_FOUND)
-  message("Recording GIT version info in ${CMAKE_BINARY_DIR}/saved_git_version.txt")
-  execute_process(
+IF((EXISTS "${CMAKE_SOURCE_DIR}/.git/") AND GIT_FOUND)
+  EXECUTE_PROCESS(
     COMMAND git rev-parse --abbrev-ref HEAD
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     OUTPUT_VARIABLE GIT_BRANCH
     OUTPUT_STRIP_TRAILING_WHITESPACE
     )
-  execute_process(
+  EXECUTE_PROCESS(
     COMMAND git log -1 --format=%h
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     OUTPUT_VARIABLE GIT_COMMIT_HASH
     OUTPUT_STRIP_TRAILING_WHITESPACE
     )
-  set(SoDaRadio_GIT_ID "${GIT_BRANCH}:${GIT_COMMIT_HASH}")
-  file(WRITE ${CMAKE_BINARY_DIR}/saved_git_version.txt "${GIT_BRANCH}\n")
-  file(APPEND ${CMAKE_BINARY_DIR}/saved_git_version.txt "${GIT_COMMIT_HASH}\n")    
-elseif(EXISTS ${CMAKE_BINARY_DIR}/saved_git_version.txt)
-  message("Retrieving GIT version info from saved_git_version.txt")
-  file(STRINGS ${CMAKE_BINARY_DIR}/saved_git_version.txt git_version_strings)
-  list(GET git_version_strings 0 GIT_BRANCH)
-  list(GET git_version_strings 1 GIT_COMMIT_HASH)
-  set(SoDaRadio_GIT_ID "${GIT_BRANCH}:${GIT_COMMIT_HASH}")
+  SET(SoDaRadio_GIT_ID "${GIT_BRANCH}:${GIT_COMMIT_HASH}")
+  FILE(WRITE ${CMAKE_BINARY_DIR}/saved_git_version.txt "${GIT_BRANCH}\n")
+  FILE(APPEND ${CMAKE_BINARY_DIR}/saved_git_version.txt "${GIT_COMMIT_HASH}\n")    
+elseIF(EXISTS ${CMAKE_BINARY_DIR}/saved_git_version.txt)
+  MESSAGE("Retrieving GIT version info from saved_git_version.txt")
+  FILE(STRINGS ${CMAKE_BINARY_DIR}/saved_git_version.txt git_version_strings)
+  LIST(GET git_version_strings 0 GIT_BRANCH)
+  LIST(GET git_version_strings 1 GIT_COMMIT_HASH)
+  SET(SoDaRadio_GIT_ID "${GIT_BRANCH}:${GIT_COMMIT_HASH}")
 else()
-  set(SoDaRadio_GIT_ID "UNKNOWN")  
-endif()
+  SET(SoDaRadio_GIT_ID "UNKNOWN")  
+ENDIF()
 
-set(DOXY_PROJECT_VERSION "${SoDaRadio_VERSION}-${SoDaRadio_GIT_ID}")
-set(DOXY_EXCLUDE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/gui/Default.soda_cfg.h ${CMAKE_CURRENT_BINARY_DIR}/SoDaRadio_GUI.cxx")
+SET(DOXY_PROJECT_VERSION "${SoDaRadio_VERSION}-${SoDaRadio_GIT_ID}")
+SET(DOXY_EXCLUDE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/gui/Default.soda_cfg.h ${CMAKE_CURRENT_BINARY_DIR}/SoDaRadio_GUI.cxx")
 
-configure_file (
+CONFIGURE_FILE (
 "${PROJECT_SOURCE_DIR}/version.h.in"
 "${PROJECT_BINARY_DIR}/version.h"
   )
-include_directories("${PROJECT_BINARY_DIR}")
+INCLUDE_DIRECTORIES("${PROJECT_BINARY_DIR}")
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
+SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
 
 
-find_package(Boost 1.45 REQUIRED COMPONENTS program_options thread date_time system filesystem serialization regex)
+FIND_PACKAGE(Boost 1.45 REQUIRED COMPONENTS program_options thread date_time system filesystem serialization regex QUIET)
 
-add_subdirectory(src)
-add_subdirectory(gui)
-if(BUILD_UNIT_TESTS)
-  add_subdirectory(exp)
-endif()
+IF(${NO_UHD})
+  MESSAGE("libUHD Support disabled.")
+  SET(HAVE_UHD 0)  
+ELSE()
+  # Enable UHD support
+  FIND_PACKAGE(UHD QUIET)
+  IF(NOT UHD_FOUND)
+    MESSAGE("UHD Library NOT FOUND!")
+    SET(HAVE_UHD 0)  
+  ELSE()
+    SET(HAVE_UHD 1)
+  ENDIF()
+ENDIF()
 
-find_package(Doxygen)
+IF(${NO_SOAPY_SDR})
+  MESSAGE("SoapySDR Support disabled.")
+  SET(HAVE_SOAPY_SDR 0)
+ELSE()
+  # Enable Soapy Support
+  FIND_PACKAGE(SoapySDRasdf QUIET)
+  IF(NOT SoapySDR_LIBRARIES)
+    MESSAGE("SoapySDR NOT FOUND!")
+    SET(HAVE_SOAPY_SDR 0)
+  ELSE()
+    SET(HAVE_SOAPY_SDR 1)  
+  ENDIF()
+ENDIF()  
 
-if(DOXYGEN_FOUND)
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
-  add_custom_target(doc
+
+
+
+ADD_SUBDIRECTORY(src)
+ADD_SUBDIRECTORY(gui)
+IF(BUILD_UNIT_TESTS)
+  ADD_SUBDIRECTORY(exp)
+ENDIF()
+
+FIND_PACKAGE(Doxygen QUIET)
+
+IF(DOXYGEN_FOUND)
+  CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
+  ADD_CUSTOM_TARGET(doc
     ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile 
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     COMMENT "Generating API documentation with Doxygen" VERBATIM
     )
-endif()
+ENDIF()

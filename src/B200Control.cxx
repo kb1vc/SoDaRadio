@@ -52,8 +52,6 @@ namespace SoDa
 
     std::vector<std::string> port = usrp->get_gpio_banks(0); 
 
-    unsigned int st; 
-
     // we set J400 pin 1 HIGH on transmit, LOW on RX.   
     // this is becaus the "default" drive on the pins
     // if the wrong fpga binary is loaded, the transmitter
@@ -89,7 +87,7 @@ namespace SoDa
   }
 
   bool B200Control::setBand(unsigned int band, bool state) 
-  { return false; }
+  { (void) band; (void) state; return false; }
   bool B200Control::getBand(unsigned int band) 
-  { return false; }
+  { (void) band; return false; }
 }

@@ -65,6 +65,7 @@ namespace SoDa {
       else {
 	reader_count--;
       }
+      return true;
     }
 
     // these are to detect "free" actions on the wrong mailbox. 
@@ -94,7 +95,7 @@ namespace SoDa {
     int getSubscriberCount() { return subscriber_count; }
     
     void put(T * m) {
-      int i;
+      unsigned int i;
       m->setReaderCount(subscriber_count);
       m->setMBoxTag(this); 
       for(i = 0; i < subscriber_count; i++) {

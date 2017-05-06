@@ -157,6 +157,8 @@ int SoDa::IP::NetSocket::loopWrite(int fd, const void * ptr, unsigned int nbytes
       bptr += stat; 
     }
   }
+
+  return 0; 
 }
 
 int SoDa::IP::NetSocket::put(const void * ptr, unsigned int size)
@@ -189,7 +191,6 @@ int SoDa::IP::NetSocket::get(void * ptr, unsigned int size)
     }
   }
 
-  int got = 0;
   int left = rsize;
   char * bptr = (char*) ptr; 
   while(left > 0) {
@@ -243,7 +244,6 @@ int SoDa::IP::NetSocket::putRaw(const void * ptr, unsigned int size)
 
 int SoDa::IP::NetSocket::getRaw(const void * ptr, unsigned int size, unsigned int usec_timeout)
 {
-  int stat;
 
   if(usec_timeout != 0) {
     if(non_blocking_mode) setBlocking(); 
@@ -259,8 +259,7 @@ int SoDa::IP::NetSocket::getRaw(const void * ptr, unsigned int size, unsigned in
     if(!non_blocking_mode) setNonBlocking(); 
   }
 
-  int got = 0;
-  int left = size;
+  unsigned int left = size;
   char * bptr = (char*) ptr; 
   int timeout_count = 0; 
   while(left > 0) {

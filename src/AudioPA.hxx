@@ -68,21 +68,20 @@ namespace SoDa {
     AudioPA(unsigned int _sample_rate, AudioIfc::DataFormat _fmt, unsigned int _sample_count_hint = 1024) ;
 
     ~AudioPA() { }
-    
     /**
      * sendBuf -- send a buffer to the audio output
      * @param buf buffer of type described by the DataFormat selected at init
      * @param len number of elements in the buffer to send
      * @return number of elements transferred to the audio output
      */
-    int send(void * buf, unsigned int len) PORTAUDIO_DEF ;
+    int send(void * buf, unsigned int len) { (void) buf; (void) len; PORTAUDIO_DEF }
 
     /**
      * sendBufferReady -- is there enough space in the audio device send buffer for a call from send?
      * @param len the number of samples that we wish to send
      * @return true if there is sufficient space. 
      */
-    bool sendBufferReady(unsigned int len) PORTAUDIO_DEF ; 
+    bool sendBufferReady(unsigned int len) { (void) len; PORTAUDIO_DEF } 
 
     /**
      * recvBuf -- get a buffer of data from the audio input
@@ -91,14 +90,14 @@ namespace SoDa {
      * @param block block on this call if data is not ready (assumed true).
      * @return number of elements transferred from the audio input
      */
-    int recv(void * buf, unsigned int len, bool block = true) PORTAUDIO_DEF ; 
+    int recv(void * buf, unsigned int len, bool block = true) { (void) buf; (void) len; (void) block; PORTAUDIO_DEF }
 
     /**
      * recvBufferReady -- is there enough space in the audio device recv buffer for a call from recv?
      * @param len the number of samples that we wish to get
      * @return true if there is sufficient space. 
      */
-    bool recvBufferReady(unsigned int len) PORTAUDIO_DEF ;
+    bool recvBufferReady(unsigned int len) { (void) len; PORTAUDIO_DEF }
 
     /**
      * stop the output stream so that we don't encounter a buffer underflow

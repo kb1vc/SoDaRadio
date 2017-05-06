@@ -71,6 +71,7 @@ namespace SoDa {
       for(i = 0; i < len; i++) {
 	outbuf[i] = outgain * findMedian(inbuf[i]);
       }
+      return 0; 
     }
       
   private:

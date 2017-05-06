@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2013,2014,2015,2016,2017 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -112,9 +112,15 @@
 
 // the radio parts. 
 #include "Params.hxx"
+// For USRP devices
 #include "USRPCtrl.hxx"
 #include "USRPRX.hxx"
 #include "USRPTX.hxx"
+// For LimeSDR devices
+#include "SoapyCtrl.hxx"
+//#include "SoapyRX.hxx"
+//#include "SoapyTX.hxx"
+
 #include "BaseBandRX.hxx"
 #include "BaseBandTX.hxx"
 #include "CWTX.hxx"
@@ -158,14 +164,30 @@ int doWork(int argc, char * argv[])
   SoDa::SoDaThread * tx;
 
   if(params.isRadioType("USRP")) {
+#if HAVE_UHD    
     /// create the USRP Control, RX Streamer, and TX Streamer threads
     /// @see SoDa::USRPCtrl @see SoDa::USRPRX @see SoDa::USRPTX
-
     ctrl = new SoDa::USRPCtrl(&params, &cmd_stream);
     rx = new SoDa::USRPRX(&params, ((SoDa::USRPCtrl *)ctrl)->getUSRP(), &rx_stream, &if_stream, &cmd_stream); 
     tx = new SoDa::USRPTX(&params, ((SoDa::USRPCtrl *)ctrl)->getUSRP(), &tx_stream, &cw_env_stream, &cmd_stream);
+#else    
+    std::cerr << "lib UHD support not included in this build.\n^C to exit.\n";
+    exit(-1);
+#endif    
+  }
+  else if(params.isRadioType("Lime")) {
+#if HAVE_SOAPY_SDR    
+    ctrl = new SoDa::SoapyCtrl("lime", &params, &cmd_stream); 
+    //    rx = new SoDa::SoapyRX(&params, ((SoDa::SoapyCtrl *)ctrl)->getDevice(), &rx_stream, &if_stream, &cmd_stream); 
+    //    tx = new SoDa::SoapyTX(&params, ((SoDa::SoapyCtrl *)ctrl)->getDevice(), &tx_stream, &cw_env_stream, &cmd_stream);
+    exit(-1);
+#else
+    std::cerr << "SoapySDR support not included in this build.\n^C to exit.\n";
+    exit(-1); 
+#endif    
   }
   else {
+
     std::cerr << boost::format("Radio type [%s] is not yet supported\nHit ^C to exit.\n") % params.getRadioType(); 
     exit(-1);
   }

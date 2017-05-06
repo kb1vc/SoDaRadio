@@ -1,7 +1,6 @@
 #find_package(Portaudio)
-find_package(ALSA REQUIRED)
-find_package(UHD REQUIRED)
-find_package(FFTW3f REQUIRED)
+find_package(ALSA REQUIRED QUIET)
+find_package(FFTW3f REQUIRED QUIET)
 
 add_definitions(-DHAVE_LIBASOUND=1)
 
@@ -237,12 +236,13 @@ target_link_libraries(Demod_test ${TEST_LIBS})
 
 
 ########### next target ###############
+IF(${HAVE_UHD})
+  set(USRPFrontEnd_test_SRCS USRPFrontEnd_test.cxx ../src/USRPFrontEnd.cxx ../src/PropTree.hxx)
 
-set(USRPFrontEnd_test_SRCS USRPFrontEnd_test.cxx ../src/USRPFrontEnd.cxx ../src/PropTree.hxx)
+  add_executable(USRPFrontEnd_test ${USRPFrontEnd_test_SRCS})
 
-add_executable(USRPFrontEnd_test ${USRPFrontEnd_test_SRCS})
-
-target_link_libraries(USRPFrontEnd_test ${TEST_LIBS})
+  target_link_libraries(USRPFrontEnd_test ${TEST_LIBS})
+ENDIF()
 
 #install(TARGETS USRPFrontEnd_test DESTINATION tests)
 

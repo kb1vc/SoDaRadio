@@ -87,7 +87,7 @@ SoDa::USRPTX::USRPTX(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
   // build the beacon buffer, and the zero buffer.
   beacon_env = new float[tx_buffer_size];
   zero_env = new float[tx_buffer_size];
-  for(unsigned int i = 0; i < tx_buffer_size; i++) {
+  for(int i = 0; i < tx_buffer_size; i++) {
     beacon_env[i] = 1.0;
     zero_env[i] = 0.0; 
   }
@@ -101,7 +101,7 @@ SoDa::USRPTX::USRPTX(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
   // build the zero buffer and the transverter lo buffer
   zero_buf = new std::complex<float>[tx_buffer_size];
   const_buf = new std::complex<float>[tx_buffer_size];
-  for(unsigned int i = 0; i < tx_buffer_size; i++) {
+  for(int i = 0; i < tx_buffer_size; i++) {
     zero_buf[i] = std::complex<float>(0.0, 0.0);
     const_buf[i] = std::complex<float>(1.0, 0.0);
   }
@@ -126,6 +126,7 @@ void SoDa::USRPTX::run()
   Command * cmd; 
   std::vector<std::complex<float> *> buffers(LO_capable ? 2 : 1);
 
+  int debug_ctr = 0; 
   while(!exitflag) {
     bool didwork = false; 
     if(LO_capable && LO_enabled && LO_configured) buffers[1] = const_buf;
@@ -211,7 +212,7 @@ void SoDa::USRPTX::run()
 
 void SoDa::USRPTX::doCW(std::complex<float> * out, float * envelope, unsigned int env_len)
 {
-  unsigned int i;
+  int i;
   std::complex<float> c;
   
   for(i = 0; i < env_len; i++) {

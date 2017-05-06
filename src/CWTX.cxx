@@ -47,7 +47,7 @@ SoDa::CWTX::CWTX(Params * params, CmdMBox * _cwtxt_stream, DatMBox * _cw_env_str
   
   // build the beacon buffer.
   beacon_envelope = new float[rf_buffer_size];
-  for(int i = 0; i < rf_buffer_size; i++) {
+  for(unsigned int i = 0; i < rf_buffer_size; i++) {
     beacon_envelope[i] = 0.0;
   }
 
@@ -59,9 +59,7 @@ SoDa::CWTX::CWTX(Params * params, CmdMBox * _cwtxt_stream, DatMBox * _cw_env_str
 void SoDa::CWTX::run()
 {
   bool exitflag = false;
-  SoDaBuf * txbuf;
   Command * cmd, *txtcmd; 
-  double cw_deadline;
   
   while(!exitflag) {
     bool workdone = false; 
@@ -258,6 +256,8 @@ void SoDa::CWTX::execRepCommand(Command * cmd)
 	cmd_stream->put(ncmd); 	  
       }
     }
+    break;
+  default:
     break;
   }
 }

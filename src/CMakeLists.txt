@@ -1,14 +1,14 @@
 
-
 ########### next target ###############
 
 set(SoDaServer_SRCS
     Params.cxx
     SoDaServer.cxx
     SoDaBase.cxx
-    USRPCtrl.cxx
-    USRPRX.cxx
-    USRPTX.cxx
+
+
+
+
     CWTX.cxx
     BaseBandRX.cxx
     BaseBandTX.cxx
@@ -44,9 +44,6 @@ set(SoDaServer_SRCS
     TSIP.hxx
     UDSockets.hxx
     UI.hxx
-    USRPCtrl.hxx
-    USRPRX.hxx
-    USRPTX.hxx
     AudioALSA.hxx
     AudioALSA.cxx
     AudioIfc.hxx
@@ -68,20 +65,39 @@ set(SoDaServer_SRCS
     Demod.hxx
     Demod.cxx
     PropTree.hxx
-    USRPFrontEnd.cxx)
+
+    )
 
 #find_package(Portaudio)
-find_package(ALSA REQUIRED)
-find_package(UHD REQUIRED)
-find_package(FFTW3f REQUIRED)
+find_package(ALSA REQUIRED QUIET)
+find_package(FFTW3f REQUIRED QUIET)
 
 add_definitions(-DHAVE_LIBASOUND=1)
+add_definitions(-DHAVE_SOAPY_SDR=${HAVE_SOAPY_SDR})
+add_definitions(-DHAVE_UHD=${HAVE_UHD})
 
-include_directories(SYSTEM ${Boost_INCLUDE_DIRS} ${UHD_INCLUDE_DIRS} ${ALSA_INCLUDE_DIRS} ${FFTW3F_INCLUDE_DIRS})
+IF(${HAVE_SOAPY_SDR})
+  LIST(APPEND  SoDaServer_SRCS
+    SoapyCtrl.cxx
+    )
+ENDIF()
+
+IF(${HAVE_UHD})
+  LIST(APPEND SoDaServer_SRCS
+    USRPCtrl.cxx
+    USRPRX.cxx
+    USRPTX.cxx
+    USRPFrontEnd.cxx
+    )
+ENDIF()
+
+
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS} ${SoapySDR_INCLUDE_DIRS} ${UHD_INCLUDE_DIRS} ${ALSA_INCLUDE_DIRS} ${FFTW3F_INCLUDE_DIRS})
+
 
 add_executable(SoDaServer ${SoDaServer_SRCS})
 
-target_link_libraries(SoDaServer rt ${Boost_LIBRARIES} ${UHD_LIBRARIES} ${ALSA_LIBRARIES} ${FFTW3F_LIBRARIES})
+target_link_libraries(SoDaServer rt ${Boost_LIBRARIES} ${SoapySDR_LIBRARIES} ${UHD_LIBRARIES} ${ALSA_LIBRARIES} ${FFTW3F_LIBRARIES})
 
 
 install(TARGETS SoDaServer DESTINATION bin)

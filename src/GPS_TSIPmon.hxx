@@ -80,7 +80,6 @@ namespace SoDa {
       SoDaSuplementalTimingReport(CmdMBox * _mbox) : mbox(_mbox) {
       }
       bool updateStatus() {
-	unsigned int p = ((unsigned int) SelfSurveyProgress); 
 	mbox->put(new SoDa::Command(Command::REP, Command::GPS_LATLON, Latitude, Longitude));
 	return true; 
 
