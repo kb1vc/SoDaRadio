@@ -33,6 +33,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <boost/program_options.hpp>
 #include <string>
 #include <algorithm>
+#include <iostream>
 
 namespace SoDa {
   /**
@@ -118,11 +119,14 @@ namespace SoDa {
     std::string getRadioType() const { return radio_type; }
 
     bool isRadioType(const std::string & rtype) {
-      std::string rt;
-      std::transform(rtype.begin(), rtype.end(), rt.begin(), ::toupper);
-      std::transform(radio_type.begin(), radio_type.end(), radio_type.begin(), ::toupper);
+      std::string rt = rtype;
 
-      return (rtype == radio_type);
+      std::transform(rt.begin(), rt.end(), rt.begin(), ::toupper);
+      std::transform(radio_type.begin(), radio_type.end(), radio_type.begin(), ::toupper);
+      bool res = (rt == radio_type);
+
+      std::cerr << boost::format("comparing [%s] to [%s] got [%c]\n") % radio_type % rt % ((char) res ? 'T' : 'F');
+      return res; 
     }
   private:
     

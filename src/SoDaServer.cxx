@@ -192,7 +192,7 @@ int doWork(int argc, char * argv[])
 #endif    
   }
   else {
-
+    
     std::cerr << boost::format("Radio type [%s] is not yet supported\nHit ^C to exit.\n") % params.getRadioType(); 
     exit(-1);
   }
