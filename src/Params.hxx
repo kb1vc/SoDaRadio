@@ -31,6 +31,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <boost/format.hpp>
 #include <boost/program_options.hpp>
+#include <string>
+#include <algorithm>
 
 namespace SoDa {
   /**
@@ -50,25 +52,27 @@ namespace SoDa {
      * @brief return args that point to a particular USRP unit
      * @return string identifying which USRP we are selecting
      */
-    std::string & getUHDArgs() { return uhd_args; }
+    std::string getRadioArgs() const { return radio_args; }
+
+    
 
     /**
      * @brief where does the reference come from?
      * @return "EXTERNAL" or "INTERNAL" 
      */
-    std::string & getClockSource() { return clock_source; }
+    std::string getClockSource() const { return clock_source; }
 
 
     /**
      * @brief which port is the RX channel?
      * @return string RX2 or TX/RX
      */
-    std::string & getRXAnt() { return rx_ant; }
+    std::string getRXAnt() const { return rx_ant; }
     /**
      * @brief which port is the TX channel?
      * @return string TX
      */
-    std::string & getTXAnt() { return tx_ant; }
+    std::string getTXAnt() const { return tx_ant; }
 
     /**
      * @brief read a configuration file (for now, just setup the default config.)
@@ -90,32 +94,42 @@ namespace SoDa {
      * size of 30000 samples 30,000 * 48 / 625 = 2304 --
      * the size of the RX buffer
      */
-    double getRXRate() { return 625000; }
+    double getRXRate() const { return 625000; }
     /**
      * @brief TX rate will always be 625K
      */
-    double getTXRate() { return 625000; }
+    double getTXRate() const { return 625000; }
 
-    double getAudioSampleRate() { return 48000.0 ; }
-    unsigned int getRFBufferSize() { return (unsigned int) 30000; }
-    unsigned int getAFBufferSize() { return (unsigned int) 2304; }
+    double getAudioSampleRate() const { return 48000.0 ; }
+    unsigned int getRFBufferSize() const { return (unsigned int) 30000; }
+    unsigned int getAFBufferSize() const { return (unsigned int) 2304; }
 
-    std::string getServerSocketBasename() { return server_sock_basename; }
+    std::string getServerSocketBasename() const { return server_sock_basename; }
 
-    std::string getAudioPortName() { return audio_portname; }
+    std::string getAudioPortName() const { return audio_portname; }
     
-    std::string getGPSDev() { return "/dev/ttyGPS"; }
+    std::string getGPSDev() const { return "/dev/ttyGPS"; }
 
     bool forceFracN() { return force_frac_N_mode && !force_integer_N_mode; }
     bool forceIntN() { return !force_frac_N_mode && force_integer_N_mode; }
 
-    unsigned int getDebugLevel() { return debug_level; }
+    unsigned int getDebugLevel() const { return debug_level; }
 
+    std::string getRadioType() const { return radio_type; }
+
+    bool isRadioType(const std::string & rtype) {
+      std::string rt;
+      std::transform(rtype.begin(), rtype.end(), rt.begin(), ::toupper);
+      std::transform(radio_type.begin(), radio_type.end(), radio_type.begin(), ::toupper);
+
+      return (rtype == radio_type);
+    }
   private:
     
     boost::program_options::variables_map pmap;
 
-    std::string uhd_args;
+    std::string radio_type; 
+    std::string radio_args;
     std::string config_filename;
 
     std::string clock_source;

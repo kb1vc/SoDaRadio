@@ -238,13 +238,13 @@ target_link_libraries(Demod_test ${TEST_LIBS})
 
 ########### next target ###############
 
-set(FrontEnd_test_SRCS FrontEnd_test.cxx ../src/FrontEnd.hxx ../src/PropTree.hxx)
+set(USRPFrontEnd_test_SRCS USRPFrontEnd_test.cxx ../src/USRPFrontEnd.cxx ../src/PropTree.hxx)
 
-add_executable(FrontEnd_test ${FrontEnd_test_SRCS})
+add_executable(USRPFrontEnd_test ${USRPFrontEnd_test_SRCS})
 
-target_link_libraries(FrontEnd_test ${TEST_LIBS})
+target_link_libraries(USRPFrontEnd_test ${TEST_LIBS})
 
-#install(TARGETS FrontEnd_test DESTINATION tests)
+#install(TARGETS USRPFrontEnd_test DESTINATION tests)
 
 
 set(OneFilterTest_SRCS OneFilterTest.cxx ../src/OSFilter.cxx)

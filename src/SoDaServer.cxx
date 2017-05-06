@@ -153,11 +153,22 @@ int doWork(int argc, char * argv[])
   SoDa::CmdMBox gps_stream(false);
   SoDa::CmdMBox cwtxt_stream(false);
 
-  /// doWork creates the USRP Control, RX Streamer, and TX Streamer threads
-  /// @see SoDa::USRPCtrl @see SoDa::USRPRX @see SoDa::USRPTX
-  SoDa::USRPCtrl ctrl(&params, &cmd_stream);
-  SoDa::USRPRX rx(&params, ctrl.getUSRP(), &rx_stream, &if_stream, &cmd_stream); 
-  SoDa::USRPTX tx(&params, ctrl.getUSRP(), &tx_stream, &cw_env_stream, &cmd_stream);
+  SoDa::SoDaThread * ctrl;
+  SoDa::SoDaThread * rx;
+  SoDa::SoDaThread * tx;
+
+  if(params.isRadioType("USRP")) {
+    /// create the USRP Control, RX Streamer, and TX Streamer threads
+    /// @see SoDa::USRPCtrl @see SoDa::USRPRX @see SoDa::USRPTX
+
+    ctrl = new SoDa::USRPCtrl(&params, &cmd_stream);
+    rx = new SoDa::USRPRX(&params, ((SoDa::USRPCtrl *)ctrl)->getUSRP(), &rx_stream, &if_stream, &cmd_stream); 
+    tx = new SoDa::USRPTX(&params, ((SoDa::USRPCtrl *)ctrl)->getUSRP(), &tx_stream, &cw_env_stream, &cmd_stream);
+  }
+  else {
+    std::cerr << boost::format("Radio type [%s] is not yet supported\nHit ^C to exit.\n") % params.getRadioType(); 
+    exit(-1);
+  }
   
 
   /// doWork creates the audio server on the host machine.
@@ -191,9 +202,9 @@ int doWork(int argc, char * argv[])
   ui.start();
   d.debugMsg("Starting radio units");
   // start command consumers first.
-  ctrl.start();
-  rx.start();
-  tx.start();
+  ctrl->start();
+  rx->start();
+  tx->start();
   bbrx.start();
   bbtx.start();
   cwtx.start();
@@ -204,9 +215,9 @@ int doWork(int argc, char * argv[])
 
   // wait for the user interface to tell us that it is time to quit.
   ui.join();
-  ctrl.join();
-  rx.join();
-  tx.join();
+  ctrl->join();
+  rx->join();
+  tx->join();
   bbrx.join();
   bbtx.join();
   cwtx.join();

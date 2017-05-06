@@ -28,7 +28,7 @@
 
 #include "USRPCtrl.hxx"
 #include "SoDaBase.hxx"
-#include "FrontEnd.hxx"
+#include "USRPFrontEnd.hxx"
 #include <uhd/utils/thread_priority.hpp>
 #include <uhd/utils/safe_main.hpp>
 #include <uhd/usrp/multi_usrp.hpp>
@@ -80,10 +80,10 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
   subid = cmd_stream->subscribe();
   
   // make the device.
-  usrp = uhd::usrp::multi_usrp::make(params->getUHDArgs());
+  usrp = uhd::usrp::multi_usrp::make(params->getRadioArgs());
 
   if(usrp == NULL) {
-    throw SoDaException((boost::format("Unable to allocate USRP unit with arguments = [%]\n") % params->getUHDArgs()).str(), this);
+    throw SoDaException((boost::format("Unable to allocate USRP unit with arguments = [%]\n") % params->getRadioArgs()).str(), this);
   }
 
   // We need to find out if this is a B2xx or something like it -- they don't
@@ -132,7 +132,7 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
 
   // get the tx front end subtree
   tx_fe_has_enable = false; 
-  tx_fe_subtree = getFrontEnd(tree, 'T');
+  tx_fe_subtree = getUSRPFrontEnd(tree, 'T');
 
   // do we care?  If the tx_fe_subtree doesn't have an enable property,
   // we want to avoid setting and getting it....
@@ -150,7 +150,7 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
 
   // get the rx front end subtree
   rx_fe_has_enable = false; 
-  rx_fe_subtree = getFrontEnd(tree, 'R');
+  rx_fe_subtree = getUSRPFrontEnd(tree, 'R');
 
   // do we care?  If the rx_fe_subtree doesn't have an enable property, 
   // we want to avoid setting and getting it....

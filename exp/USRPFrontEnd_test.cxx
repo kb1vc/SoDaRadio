@@ -26,7 +26,7 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "../src/FrontEnd.hxx"
+#include "../src/USRPFrontEnd.hxx"
 #include <iostream>
 #include <stdlib.h>
 #include <unistd.h>
@@ -79,7 +79,7 @@ void dumpProps(uhd::usrp::multi_usrp::sptr usrp)
 int main(int argc, char ** argv)
 {
   if(argc < 2) {
-    std::cerr << "Usage:  FrontEnd_test  dev-arg-string" << std::endl;
+    std::cerr << "Usage:  USRPFrontEnd_test  dev-arg-string" << std::endl;
     exit(-1); 
   }
 
@@ -93,8 +93,8 @@ int main(int argc, char ** argv)
   // make the proptree
   SoDa::PropTree tree(usrp, "Test");
 
-  SoDa::PropTree * rx_fe = getFrontEnd(&tree, 'R');
-  SoDa::PropTree * tx_fe = getFrontEnd(&tree, 'T');  
+  SoDa::PropTree * rx_fe = getUSRPFrontEnd(&tree, 'R');
+  SoDa::PropTree * tx_fe = getUSRPFrontEnd(&tree, 'T');  
 
   BOOST_FOREACH(std::string prn, rx_fe->getPropNames()) {
     std::cerr << boost::format("RXFE prop [%s]\n") % prn; 
