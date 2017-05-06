@@ -246,7 +246,7 @@ int DEM_GridtoDMS(const char * in_gridsq, struct DMSpoint * point)
 {
   /*finds the lat/lon of center of the sub-square*/
   /* return 1 if the grid is bad, 0 otherwise. */
-  int latsec, lonsec, londeg;
+  int latsec;
   double flondeg, flonmin, ffrac, fint;
   char gridsq[7];
   int i;
@@ -387,14 +387,14 @@ void DEM_DMStoFloat(struct DMSpoint * point, double * lat, double * lon)
 
 
   
-  if(latsign = point->lat.deg & DEM_SIGN_MASK) {
+  if((latsign = (point->lat.deg & DEM_SIGN_MASK))) {
     latdeg = point->lat.deg ^ DEM_SIGN_MASK;
   }
   else {
     latdeg = point->lat.deg;
   }
 
-  if(lonsign = point->lon.deg & DEM_SIGN_MASK) {
+  if((lonsign = (point->lon.deg & DEM_SIGN_MASK))) {
     londeg = point->lon.deg ^ DEM_SIGN_MASK;
   }
   else {
@@ -416,8 +416,8 @@ void DEM_DMStoFloat(struct DMSpoint * point, double * lat, double * lon)
 
 
 /*------------------------------------------------------------*/
-static int In_Range(Value, LowVal, HighVal)
-double Value, LowVal, HighVal;
+static int In_Range(double Value, double LowVal, double HighVal) __attribute__ ((unused)); 
+static int In_Range(double Value, double LowVal, double HighVal)
 {
   /*checks that the value is between Lowval and Highval*/
   return (Value >= LowVal && Value <= HighVal);
@@ -561,7 +561,6 @@ void DEM_Bearing2LL(
     double f = 1.0/298.25722210088; 
 
     /* System generated locals */
-    double d1;
 
     /* Builtin functions */
     double sin(), cos(), atan2(), sqrt();

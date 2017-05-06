@@ -43,12 +43,8 @@ int main(int argc, char * argv[])
 
   if(argc < 3) usage(); 
 
-  int empty_count = 0;
-  int iter_count = 0;
-  int found_count = 0;
   
   SoDa::IP::LineServerSocket * s;
-  SoDa::IP::ClientSocket * c; 
   if(strncmp(argv[1], "is", 2) == 0) {
     // server.
     portnum = atoi(argv[2]);

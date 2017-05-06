@@ -57,8 +57,6 @@ double curtime()
 
 SoDa::OSFilter ** buildFilterMap(int inbuflen)
 {
-  float ugain[9] = { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 };
-
   SoDa::OSFilter ** filter_map = new SoDa::OSFilter*[5]; 
   
   filter_map[0] = new SoDa::OSFilter(300.0, 400.0, 500.0, 600.0, 512, 1.0, 48000.0, inbuflen); 
@@ -105,6 +103,8 @@ void add_sig(complex<float> * in, float freq, int len, float acc)
 
 int main(int argc, char * argv[])
 {
+  (void) argc; (void) argv; 
+  
   int i, j;
   const int samp_len = 65536;
   int inbuflen = 2304; 

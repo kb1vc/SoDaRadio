@@ -86,6 +86,7 @@ complex<float> doWork(complex<float> * in, complex<float> * out, unsigned int vs
 
 int main(int argc, char * argv[])
 {
+  (void) argc; (void) argv; 
   // try various sizes of FFT inputs from powers of two between 8 and 32K
   // and for multiples of 2^N * 3 from 48 through 49152  (48 * 1024)
 

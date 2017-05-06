@@ -53,7 +53,7 @@ public:
     num_buckets = nb;
     min = _min;
     max = _max;
-    float spread = _max - _min;
+
     bucket_size = (_max - _min) / ((float) num_buckets); 
     buckets = new unsigned int[num_buckets];
     underflow = 0; overflow = 0;
@@ -72,7 +72,7 @@ public:
 
   void dump(ostream & os, const std::string & tag) {
     os << boost::format("%s %f %d\n") % tag % (min - bucket_size) % underflow;
-    int i;
+    unsigned int i;
     for(i = 0; i < num_buckets; i++) {
       if(buckets[i] == 0) continue;
       float b = min + ((float) i) * bucket_size; 
@@ -106,6 +106,7 @@ double curtime()
 #define BUFLEN 1024
 int dumpTest(int argc, char * argv[])
 {
+  (void) argc; (void) argv; 
   SoDa::HilbertTransformer htR(BUFLEN);
   SoDa::HilbertTransformer htC(BUFLEN);
   float inbuf[BUFLEN];
@@ -225,6 +226,7 @@ int dumpTest(int argc, char * argv[])
  */
 int doSSBTest(int argc, char * argv[])
 {
+  (void) argc; (void) argv; 
   // create an HT for an audio buffer size of 2304
   // (This corresponds to the magic choice in Params.hxx.)
   int buflen = 2304;
@@ -330,6 +332,7 @@ int doSSBTest(int argc, char * argv[])
  */
 int doPMTest(int argc, char * argv[])
 {
+  (void) argc; (void) argv;   
   // make a PM signal and find it. 
   // create an HT for an audio buffer size of 2304
   // (This corresponds to the magic choice in Params.hxx.)

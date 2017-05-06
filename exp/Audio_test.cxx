@@ -5,13 +5,13 @@
 #include <time.h>
 int main(int argc, char * argv[])
 {
-  struct timespec interval;
-  interval.tv_sec = 0; interval.tv_nsec =  2L * 2L * 2L * 20000000L; 
+
   // SoDa::AudioALSA audio(48000, SoDa::AudioIfc::FLOAT, false);
   // SoDa::AudioALSA audioI(48000, SoDa::AudioIfc::INT16, false);
   // SoDa::AudioALSA audioI(48000, SoDa::AudioIfc::FLOAT);
-  SoDa::AudioIfc * audioI; 
+  SoDa::AudioIfc * audioI = NULL; 
 
+  if(argc < 2) exit(-1); 
   if(argv[1][0] == 'a') {
     audioI = new SoDa::AudioALSA(48000, SoDa::AudioIfc::FLOAT);
   }
@@ -21,7 +21,6 @@ int main(int argc, char * argv[])
     
 
   float buf[1000];
-  short ibuf[1000];
 
 #define CAPSAMPS (48 * 1000 * 5)  
   float capture_buf[CAPSAMPS]; 

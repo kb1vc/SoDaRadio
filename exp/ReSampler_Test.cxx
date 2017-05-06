@@ -58,11 +58,12 @@ double curtime()
   return ret; 
 }
 
+static void bindump(char * fn, std::complex<float> * buf, unsigned int num_elts) __attribute__ ((unused)); 
 static void bindump(char * fn, std::complex<float> * buf, unsigned int num_elts)
 {
   FILE * of;
   of = fopen(fn, "w");
-  int i;
+  unsigned int i;
   for(i = 0; i < num_elts; i++) {
     fprintf(of, "%d %g %g\n", i, buf[i].real(), buf[i].imag()); 
   }
@@ -74,6 +75,7 @@ void checkResult(FILE * ofile,
 		 unsigned int inlen,
 		 std::complex<float> * invec, std::complex<float> * outvec, int idx = 0)
 {
+  (void) invec; 
   // sweep through the output.
 
   // how long is the output?
@@ -83,7 +85,7 @@ void checkResult(FILE * ofile,
   // what is the scale factor for the angle increment?
   float oanginc = anginc * ((float) dN) / ((float) iM);
 
-  int i;
+  unsigned int i;
   float ang = 0.0;
   float err_sq_sum[2] = { 0.0, 0.0 }; 
   for(i = 0; i < outlen; i++) {
@@ -204,6 +206,7 @@ void aliasingPlot()
 
 int main(int argc, char * argv[])
 {
+  (void) argc; (void) argv; 
   // create various ReSampler ratios, especially the ones I care
   // about. 
   unsigned int resampler_ratio[][2] = { { 5, 1 },
@@ -212,7 +215,6 @@ int main(int argc, char * argv[])
 					{ 5, 2 },
 					{ 0, 0} };
   // create the input and output buffers.
-  const unsigned int min_mult_size = 5 * 4 * 3;
   // max size of outvec/invec = 5:1.  
   std::complex<float> invec[30000]; 
   std::complex<float> outvec[30000]; 
@@ -313,6 +315,7 @@ int main(int argc, char * argv[])
   std::cout << "Upsampled from 2304 to 30000 in 5/4 5/4 5/3 5/1 in "
 	    << (ttend - ttstart) << " seconds" << std::endl; 
   int stat = write(uf, out2vec, sizeof(std::complex<float>) * 30000); 
+  (void) stat; 
   rs54a.apply(invec, outvec);
   rs54b.apply(outvec, out2vec); 
   rs53.apply(out2vec, outvec); 

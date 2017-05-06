@@ -59,7 +59,6 @@ double curtime()
 
 SoDa::OSFilter ** buildFilterMap(int inbuflen)
 {
-  float ugain[9] = { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 };
 
   SoDa::OSFilter ** filter_map = new SoDa::OSFilter*[5]; 
   
@@ -107,6 +106,8 @@ void add_sig(complex<float> * in, float freq, int len, float acc)
 
 int main(int argc, char * argv[])
 {
+  (void) argc; 
+  (void) argv; 
   SoDa::OSFilter ** filter_map; 
   int i, j;
   fprintf(stderr, "Hey there!\n");
@@ -131,7 +132,6 @@ int main(int argc, char * argv[])
 
   // four
 
-  float freqlist[] = { 50.0, 100.0, 300.0, 500.0, 800.0, 1000.0, 1500.0, 2500.0, 3500.0, 5500.0, 7500.0, -1.0 }; 
   std::complex<float> sout[6][samp_len];
   fftwf_plan sp = fftwf_plan_dft_1d(samp_len, (fftwf_complex *) out[0], (fftwf_complex *) sout[0],
 				    FFTW_FORWARD, FFTW_ESTIMATE);
@@ -150,7 +150,6 @@ int main(int argc, char * argv[])
     }
 
     // not this
-    struct timespec te, ts; 
 
     for(i = 0; i < samp_len; i++) {
       out[0][i] = in[i]; 

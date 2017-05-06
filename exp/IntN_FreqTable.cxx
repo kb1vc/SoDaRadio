@@ -98,7 +98,7 @@ int main(int argc, char ** argv)
   
   // Now sweep from min to max freq, and find the steps along the way.
   double ff_incr = 1.0e6; // start with a small step...
-  double r_st, r_en, target, target2;
+  double r_st, r_en, target;
 
 
   // now look through the range
