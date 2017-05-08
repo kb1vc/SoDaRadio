@@ -26,16 +26,17 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef USRPRX_HDR
-#define USRPRX_HDR
+#ifndef SoapyRX_HDR
+#define SoapyRX_HDR
 #include "SoDaBase.hxx"
 #include "MultiMBox.hxx"
 #include "Command.hxx"
 #include "Params.hxx"
 #include "UI.hxx"
 #include "QuadratureOscillator.hxx"
-#include <uhd/usrp/multi_usrp.hpp>
-#include <uhd/stream.hpp>
+
+#include <SoapySDR/Device.hpp>
+#include <SoapySDR/Types.hpp>
 
 namespace SoDa {
   /**
@@ -43,7 +44,7 @@ namespace SoDa {
    *
    * @image html SoDa_Radio_RX_Signal_Path.svg
    */
-  class USRPRX : public SoDaThread {
+  class SoapyRX : public SoDaThread {
   public:
     /**
      * The constructor
@@ -56,12 +57,12 @@ namespace SoDa {
      * @param _if_stream data mailbox used to pass the IF2 data to the spectrum units
      * @param _cmd_stream data mailbox used to carry command, query, and report messages
      */
-    USRPRX(Params * params, uhd::usrp::multi_usrp::sptr usrp,
+    SoapyRX(Params * params, SoapySDR::Device * _radio, 
 	   DatMBox * _rx_stream, DatMBox * _if_stream,
 	   CmdMBox * _cmd_stream);
 
     /**
-     * USRPRX is a thread -- this is its run loop. 
+     * SoapyRX is a thread -- this is its run loop. 
      */
     void run();
     
@@ -90,8 +91,8 @@ namespace SoDa {
     unsigned int cmd_subs; 
 
     // state for the USRP widget
-    uhd::rx_streamer::sptr rx_bits;
-    uhd::usrp::multi_usrp::sptr usrp; 
+    SoapySDR::Stream * rx_bits;
+    SoapySDR::Device * radio; 
 
     unsigned int rx_buffer_size;
 

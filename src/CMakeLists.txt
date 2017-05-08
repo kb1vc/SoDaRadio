@@ -79,6 +79,8 @@ add_definitions(-DHAVE_UHD=${HAVE_UHD})
 IF(${HAVE_SOAPY_SDR})
   LIST(APPEND  SoDaServer_SRCS
     SoapyCtrl.cxx
+    SoapyRX.cxx
+    SoapyTX.cxx    
     )
 ENDIF()
 

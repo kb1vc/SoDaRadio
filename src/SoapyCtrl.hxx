@@ -69,6 +69,11 @@ namespace SoDa {
     /// and identification for the attached SoapySDR
     /// @param _cmd_stream Pointer to the command stream message channel.
     SoapyCtrl(const std::string & driver_name, Params * params, CmdMBox * _cmd_stream);
+
+    void close() {
+      SoapySDR::Device::unmake(radio);
+    }
+
     /// start the thread
     void run();
 
@@ -80,14 +85,16 @@ namespace SoDa {
   private:
     Params * params;
 
-    double last_rx_req_freq;
-    double last_tx_req_freq; 
+    double last_rx_tune_freq;
+    double last_tx_tune_freq; 
 
     bool tx_on; 
 
     float rx_rf_gain, tx_rf_gain; 
+    
     double tx_freq, rx_freq; 
     double tx_freq_rxmode_offset; 
+    double rxmode_offset; 
     double tx_samp_rate; 
 
     std::string tx_ant; 
@@ -100,6 +107,11 @@ namespace SoDa {
 
     // SoapySDR stuff.
     SoapySDR::Device * radio; ///< to which SoapySDR unit is this connected?
+    SoapySDR::Range tx_rf_gain_range, rx_rf_gain_range; 
+    SoapySDR::Range tx_freq_range, rx_freq_range; 
+
+    std::vector<std::string> GPIO_list;
+    std::string tr_control_reg; 
 
     /// external control widget for TR switching and other things. 
     SoDa::TRControl * tr_control; 
@@ -118,6 +130,12 @@ namespace SoDa {
     /// Dispatch an incoming REPort command
     /// @param cmd a command record
     void execRepCommand(Command * cmd); 
+
+    void initControlGPIO();
+
+    void setTXEna(bool tx_on);
+
+    void set1stLOFreq(double freq, int sel, bool set_if_freq);
   };
 }
 

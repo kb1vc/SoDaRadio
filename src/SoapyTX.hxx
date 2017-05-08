@@ -26,15 +26,17 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef USRPTX_HDR
-#define USRPTX_HDR
+#ifndef SoapyTX_HDR
+#define SoapyTX_HDR
 #include "SoDaBase.hxx"
 #include "MultiMBox.hxx"
 #include "Command.hxx"
 #include "Params.hxx"
 #include "QuadratureOscillator.hxx"
-#include <uhd/usrp/multi_usrp.hpp>
-#include <uhd/stream.hpp>
+
+#include <SoapySDR/Device.hpp>
+#include <SoapySDR/Types.hpp>
+
 
 namespace SoDa {
   /**
@@ -42,35 +44,35 @@ namespace SoDa {
    *
    * @image html SoDa_Radio_TX_Signal_Path.svg
    *
-   * In SSB/AM/FM modes, the USRPTX unit accepts an I/Q audio
+   * In SSB/AM/FM modes, the SoapyTX unit accepts an I/Q audio
    * stream from the BaseBandTX unit and forwards it to the USRP.
-   * In CW mode, the USRPTX unit impresses a CW envelope (received
+   * In CW mode, the SoapyTX unit impresses a CW envelope (received
    * from the CW unit) onto a carrier and passes this to the USRP. 
    *
    */
-  class USRPTX : public SoDaThread {
+  class SoapyTX : public SoDaThread {
   public:
     /**
      * @brief Constructor for RF Transmit/modulator process
      *
      * @param params block describing intial setup of the radio
-     * @param _usrp libuhd handle for the USRP radio
+     * @param _radio SoapySDR handle for the radio
      * @param _tx_stream audio transmit stream to be used in modulator
      * @param _cw_env_stream envelope stream from text-to-CW converter
      * @param _cmd_stream command stream
      *
      */
-    USRPTX(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
-	   DatMBox * _tx_stream, DatMBox * _cw_env_stream,
-	   CmdMBox * _cmd_stream);
+    SoapyTX(Params * params, SoapySDR::Device * _radio, 
+	    DatMBox * _tx_stream, DatMBox * _cw_env_stream,
+	    CmdMBox * _cmd_stream);
     /**
-     * @brief USRPTX run loop: handle commands, and modulate the tx carrier
+     * @brief SoapyTX run loop: handle commands, and modulate the tx carrier
      */
     void run(); 
 
   private:
 
-    uhd::usrp::multi_usrp::sptr usrp; ///< the radio.
+    SoapySDR::Device * radio; ///< the radio.
     
     /**
      * @brief start/stop transmit stream
@@ -138,18 +140,17 @@ namespace SoDa {
 
     float * zero_env; ///< envelope for dead silence
 
-    std::complex<float> * cw_buf; ///< CW modulated envelope to send to USRP
+    std::complex<float> * cw_buf; ///< CW modulated envelope to send to radio
     std::complex<float> * zero_buf; ///< zero signal envelope to fill in end of transmit stream
 
-    double tx_sample_rate; ///< sample rate for buffer going to USRP (UHD)
-    unsigned int tx_buffer_size; ///< size of buffer going to USRP
+    double tx_sample_rate; ///< sample rate for buffer going to radio
+    unsigned int tx_buffer_size; ///< size of buffer going to radio
     float cw_env_amplitude;  ///< used to set CW output envelope, constant at 0.7
     
     bool waiting_to_run_dry; ///< When set, we should send out a report when we run out of CW buffer
     
-    uhd::stream_args_t * stream_args;
-    uhd::tx_streamer::sptr tx_bits; ///< USRP (UHD) transmit stream handle
-    uhd::tx_metadata_t md; ///< metadata describing USRP transmit buffer
+    SoapySDR::Stream * tx_bits; ///< radio transmit stream handle
+    bool first_burst; 
 
     // transverter local oscillator support
     bool LO_enabled; ///< if true, we're in local transverter mode

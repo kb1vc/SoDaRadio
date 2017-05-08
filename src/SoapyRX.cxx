@@ -26,12 +26,12 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "USRPRX.hxx"
+#include "SoapyRX.hxx"
 #include "QuadratureOscillator.hxx"
 
-#include <uhd/utils/safe_main.hpp>
-#include <uhd/utils/thread_priority.hpp>
-#include <uhd/usrp/multi_usrp.hpp>
+#include <SoapySDR/Device.hpp>
+#include <SoapySDR/Types.hpp>
+
 #include <fftw3.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -39,28 +39,29 @@
 
 #include <fstream>
 
-SoDa::USRPRX::USRPRX(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
+SoDa::SoapyRX::SoapyRX(Params * params, SoapySDR::Device * _radio, 
 		     DatMBox * _rx_stream, DatMBox * _if_stream,
-		     CmdMBox * _cmd_stream) : SoDa::SoDaThread("USRPRX")
+		     CmdMBox * _cmd_stream) : SoDa::SoDaThread("SoapyRX")
 {
   cmd_stream = _cmd_stream;
   rx_stream = _rx_stream;
   if_stream = _if_stream; 
 
-  usrp = _usrp; 
+  radio = _radio; 
   
   // subscribe to the command stream.
   cmd_subs = cmd_stream->subscribe();
 
   // create the rx buffer streamers.
-  uhd::stream_args_t stream_args("fc32", "sc16");
   std::vector<size_t> channel_nums;
-  channel_nums.push_back(0);
-  stream_args.channels = channel_nums;
-  rx_bits = usrp->get_rx_stream(stream_args);
+  channel_nums.push_back(0);  
+  rx_bits = radio->setupStream(SOAPY_SDR_RX, "CF32", channel_nums); 
 
-  usrp->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_STOP_CONTINUOUS);
-  
+  int stat = radio->deactivateStream(rx_bits);
+  if(stat != 0) {
+    throw(new SoDa::SoDaException((boost::format("SoapyRX couldn't deactivate stream err = %d") % stat).str(), this));     
+  }
+
   // no UI listening for spectrum dumps yet.
   ui = NULL; 
 
@@ -81,12 +82,9 @@ SoDa::USRPRX::USRPRX(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
   // enable spectrum reporting at startup
   enable_spectrum_report = true; 
 
-#if 0
-  rf_dumpfile.open("RFDump.dat", std::ios::out | std::ios::binary);
-  if_dumpfile.open("IFDump.dat", std::ios::out | std::ios::binary);
-#endif
 }
 
+static void doFFTandDump(int fd, std::complex<float> * in, int len) __attribute__ ((unused));
 static void doFFTandDump(int fd, std::complex<float> * in, int len)
 {
   std::complex<float> out[len];
@@ -99,9 +97,8 @@ static void doFFTandDump(int fd, std::complex<float> * in, int len)
   fftwf_destroy_plan(tplan); 
 }
 
-void SoDa::USRPRX::run()
+void SoDa::SoapyRX::run()
 {
-  uhd::set_thread_priority_safe(); 
   // now do the event loop.  we watch
   // for commands and responses on the command stream.
   // and we watch for data in the input buffer. 
@@ -125,18 +122,22 @@ void SoDa::USRPRX::run()
 	buf = new SoDaBuf(rx_buffer_size); 
       }
 
-      if(buf == NULL) throw(new SoDa::SoDaException("USRPRX couldn't allocate SoDaBuf object", this)); 
-      if(buf->getComplexBuf() == NULL) throw(new SoDa::SoDaException("USRPRX allocated empty SoDaBuf object", this));
+      if(buf == NULL) throw(new SoDa::SoDaException("SoapyRX couldn't allocate SoDaBuf object", this)); 
+      if(buf->getComplexBuf() == NULL) throw(new SoDa::SoDaException("SoapyRX allocated empty SoDaBuf object", this));
       
       unsigned int left = rx_buffer_size;
       unsigned int coll_so_far = 0;
-      uhd::rx_metadata_t md;
+
       std::complex<float> *dbuf = buf->getComplexBuf();
+      std::complex<float> * dbufptr[1]; 
       while(left != 0) {
-	unsigned int got = rx_bits->recv(&(dbuf[coll_so_far]), left, md);
-	if(got == 0) {
+	dbufptr[0] = &(dbuf[coll_so_far]); 
+	int flags; 
+	long long tstamp; 
+	int got = radio->readStream(rx_bits, (void**) dbufptr, left, flags, tstamp);
+	if(got <= 0) {
 	  debugMsg("****************************************");
-	  debugMsg(boost::format("RECV got error -- md = [%s]\n") % md.to_pp_string());
+	  debugMsg(boost::format("RECV got error -- flags = [%s]\n") % flags);
 	  debugMsg("****************************************");	  
 	}
 	coll_so_far += got;
@@ -182,9 +183,9 @@ void SoDa::USRPRX::run()
   stopStream(); 
 }
 
-void SoDa::USRPRX::doMixer(SoDaBuf * inout)
+void SoDa::SoapyRX::doMixer(SoDaBuf * inout)
 {
-  int i;
+  unsigned int i;
   std::complex<float> o;
   std::complex<float> * ioa = inout->getComplexBuf();
   for(i = 0; i < inout->getComplexMaxLen(); i++) {
@@ -193,7 +194,7 @@ void SoDa::USRPRX::doMixer(SoDaBuf * inout)
   }
 }
 
-void SoDa::USRPRX::set3rdLOFreq(double IF_tuning)
+void SoDa::SoapyRX::set3rdLOFreq(double IF_tuning)
 {
   // calculate the advance of phase for the IF
   // oscilator in terms of radians per sample
@@ -201,9 +202,9 @@ void SoDa::USRPRX::set3rdLOFreq(double IF_tuning)
   debugMsg(boost::format("Changed 3rdLO to freq = %g\n") % IF_tuning);
 }
 
-void SoDa::USRPRX::execCommand(Command * cmd)
+void SoDa::SoapyRX::execCommand(Command * cmd)
 {
-  //  std::cerr << "In USRPRX execCommand" << std::endl;
+  //  std::cerr << "In SoapyRX execCommand" << std::endl;
   switch (cmd->cmd) {
   case Command::GET:
     execGetCommand(cmd); 
@@ -219,25 +220,25 @@ void SoDa::USRPRX::execCommand(Command * cmd)
   }
 }
 
-void SoDa::USRPRX::startStream()
+void SoDa::SoapyRX::startStream()
 {
   if(!audio_rx_stream_enabled) {
-    //  std::cerr << "Starting RX Stream from USRP" << std::endl;
-    usrp->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_START_CONTINUOUS, 0);
+    //  std::cerr << "Starting RX Stream from Radio" << std::endl;
+    radio->activateStream(rx_bits);
     audio_rx_stream_enabled = true; 
   }
 }
 
-void SoDa::USRPRX::stopStream()
+void SoDa::SoapyRX::stopStream()
 {
-  //  std::cerr << "Stoping RX Stream from USRP" << std::endl; 
-  usrp->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_STOP_CONTINUOUS, 0);
+  //  std::cerr << "Stoping RX Stream from Radio" << std::endl;
+  radio->deactivateStream(rx_bits);  
   audio_rx_stream_enabled = false;
 }
 
-void SoDa::USRPRX::execSetCommand(Command * cmd)
+void SoDa::SoapyRX::execSetCommand(Command * cmd)
 {
-  //  std::cerr << "In USRPRX execSetCommand" << std::endl;
+  //  std::cerr << "In SoapyRX execSetCommand" << std::endl;
   switch(cmd->target) {
   case SoDa::Command::RX_MODE:
     rx_modulation = SoDa::Command::ModulationType(cmd->iparms[0]); 
@@ -250,7 +251,7 @@ void SoDa::USRPRX::execSetCommand(Command * cmd)
     if(cmd->iparms[0] == 3) {
       if((rx_modulation == SoDa::Command::CW_L) || (rx_modulation == SoDa::Command::CW_U)) {
 	// If we're in a CW mode, set the RF gain to zip.
-	// this is already done in the USRPCtrl thread.
+	// this is already done in the SoapyCtrl thread.
 	// and adjust the AF gain.
 	debugMsg("In TX ON -- stream continues");
       }
@@ -275,11 +276,13 @@ void SoDa::USRPRX::execSetCommand(Command * cmd)
   }
 }
 
-void SoDa::USRPRX::execGetCommand(Command * cmd)
+void SoDa::SoapyRX::execGetCommand(Command * cmd)
 {
+  (void) cmd; 
 }
 
-void SoDa::USRPRX::execRepCommand(Command * cmd)
+void SoDa::SoapyRX::execRepCommand(Command * cmd)
 {
+  (void) cmd; 
 }
 
