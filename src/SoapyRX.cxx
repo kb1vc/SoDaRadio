@@ -31,6 +31,7 @@
 
 #include <SoapySDR/Device.hpp>
 #include <SoapySDR/Types.hpp>
+#include <SoapySDR/Errors.hpp>
 
 #include <fftw3.h>
 #include <sys/types.h>
@@ -105,6 +106,7 @@ void SoDa::SoapyRX::run()
 
   bool exitflag = false;
 
+  startStream();
   while(!exitflag) {
     Command * cmd = cmd_stream->get(cmd_subs);
     if(cmd != NULL) {
@@ -137,7 +139,7 @@ void SoDa::SoapyRX::run()
 	int got = radio->readStream(rx_bits, (void**) dbufptr, left, flags, tstamp);
 	if(got <= 0) {
 	  debugMsg("****************************************");
-	  debugMsg(boost::format("RECV got error -- flags = [%s]\n") % flags);
+	  debugMsg(boost::format("RECV got error -- flags = [%d] return = [%d] error = [%s]\n") % flags % got % SoapySDR::errToStr(got));
 	  debugMsg("****************************************");	  
 	}
 	coll_so_far += got;
@@ -223,7 +225,8 @@ void SoDa::SoapyRX::execCommand(Command * cmd)
 void SoDa::SoapyRX::startStream()
 {
   if(!audio_rx_stream_enabled) {
-    //  std::cerr << "Starting RX Stream from Radio" << std::endl;
+    std::cerr << "Starting RX Stream from Radio" << std::endl;
+    debugMsg("Starting RX Stream from Radio");
     radio->activateStream(rx_bits);
     audio_rx_stream_enabled = true; 
   }
