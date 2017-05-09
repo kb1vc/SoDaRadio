@@ -323,6 +323,7 @@ void SoDa::BaseBandRX::execSetCommand(SoDa::Command * cmd)
       debugMsg("In TX ON");      
       flushAudioBuffers(); 
       if (sidetone_stream_enabled) {
+	debugMsg("sidetone mode\n"); 
 	cur_af_gain = &af_sidetone_gain;
       }
       else {

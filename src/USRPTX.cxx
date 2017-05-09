@@ -154,31 +154,29 @@ void SoDa::USRPTX::run()
     }
     else if(tx_enabled &&
 	    tx_bits &&
-	    ((tx_modulation != SoDa::Command::CW_L) ||
-	     (tx_modulation != SoDa::Command::CW_U)) &&
-	    ((cwenv = cw_env_stream->get(cw_subs)) != NULL)) {
-      // modulate a carrier with a cw message
-      doCW(cw_buf, cwenv->getFloatBuf(), cwenv->getComplexLen());
-      // now send it to the USRP
-      buffers[0] = cw_buf;
-      tx_bits->send(buffers, cwenv->getComplexLen(), md);
-      cw_env_stream->free(cwenv);
-      md.start_of_burst = false; 
-      didwork = true; 
-    }
-    else if(tx_enabled && 
-	    tx_bits &&
-	    ((tx_modulation != SoDa::Command::CW_L) ||
-	     (tx_modulation != SoDa::Command::CW_U)) &&
-	    ((cwenv = cw_env_stream->get(cw_subs)) == NULL)) {
-      // we have an empty CW buffer -- we've run out of text.
-      doCW(cw_buf, zero_env, tx_buffer_size);
-      buffers[0] = cw_buf;
-      tx_bits->send(buffers, tx_buffer_size, md); 
-      // are we supposed to tell anybody about this? 
-      if(waiting_to_run_dry) {
-	cmd_stream->put(new Command(Command::REP, Command::TX_CW_EMPTY, 0));
-	waiting_to_run_dry = false; 
+	    ((tx_modulation == SoDa::Command::CW_L) ||
+	     (tx_modulation == SoDa::Command::CW_U))) {
+      cwenv = cw_env_stream->get(cw_subs);
+      if(cwenv != NULL) {
+	// modulate a carrier with a cw message
+	doCW(cw_buf, cwenv->getFloatBuf(), cwenv->getComplexLen());
+	// now send it to the USRP
+	buffers[0] = cw_buf;
+	tx_bits->send(buffers, cwenv->getComplexLen(), md);
+	cw_env_stream->free(cwenv);
+	md.start_of_burst = false; 
+	didwork = true; 
+      }
+      else {
+	// we have an empty CW buffer -- we've run out of text.
+	doCW(cw_buf, zero_env, tx_buffer_size);
+	buffers[0] = cw_buf;
+	tx_bits->send(buffers, tx_buffer_size, md); 
+	// are we supposed to tell anybody about this? 
+	if(waiting_to_run_dry) {
+	  cmd_stream->put(new Command(Command::REP, Command::TX_CW_EMPTY, 0));
+	  waiting_to_run_dry = false; 
+	}
       }
     }
     else if(tx_enabled &&

@@ -105,7 +105,8 @@
  *
  * @image html SoDa_Radio_TX_Signal_Path.svg
  */
-#include <uhd/usrp/multi_usrp.hpp>
+// #include <uhd/usrp/multi_usrp.hpp>
+#include <unistd.h>
 
 #include "SoDaBase.hxx"
 #include "MultiMBox.hxx"
@@ -183,8 +184,8 @@ int doWork(int argc, char * argv[])
   else if(params.isRadioType("Lime")) {
 #if HAVE_SOAPY_SDR    
     ctrl = new SoDa::SoapyCtrl("lime", &params, &cmd_stream); 
-    rx = new SoDa::SoapyRX(&params, ((SoDa::SoapyCtrl *)ctrl)->getSoapySDR(), &rx_stream, &if_stream, &cmd_stream); 
-    tx = new SoDa::SoapyTX(&params, ((SoDa::SoapyCtrl *)ctrl)->getSoapySDR(), &tx_stream, &cw_env_stream, &cmd_stream);
+    rx = new SoDa::SoapyRX(&params, (SoDa::SoapyCtrl *)ctrl, &rx_stream, &if_stream, &cmd_stream); 
+    tx = new SoDa::SoapyTX(&params, (SoDa::SoapyCtrl *)ctrl, &tx_stream, &cw_env_stream, &cmd_stream);
 #else
     std::cerr << "SoapySDR support not included in this build.\n^C to exit.\n";
     exit(-1); 

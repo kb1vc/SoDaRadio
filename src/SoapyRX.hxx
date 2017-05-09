@@ -34,6 +34,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Params.hxx"
 #include "UI.hxx"
 #include "QuadratureOscillator.hxx"
+#include "SoapyCtrl.hxx"
 
 #include <SoapySDR/Device.hpp>
 #include <SoapySDR/Types.hpp>
@@ -57,7 +58,7 @@ namespace SoDa {
      * @param _if_stream data mailbox used to pass the IF2 data to the spectrum units
      * @param _cmd_stream data mailbox used to carry command, query, and report messages
      */
-    SoapyRX(Params * params, SoapySDR::Device * _radio, 
+    SoapyRX(Params * params, SoDa::SoapyCtrl * _ctrl, 
 	   DatMBox * _rx_stream, DatMBox * _if_stream,
 	   CmdMBox * _cmd_stream);
 
@@ -90,7 +91,10 @@ namespace SoDa {
     CmdMBox * cmd_stream;
     unsigned int cmd_subs; 
 
-    // state for the USRP widget
+    // the controller
+    SoDa::SoapyCtrl * ctrl; 
+    
+    // state for the SDR widget
     SoapySDR::Stream * rx_bits;
     SoapySDR::Device * radio; 
 

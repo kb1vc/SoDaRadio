@@ -82,12 +82,14 @@ namespace SoDa {
     /// @return a pointer to the SoapySDR radio object
     SoapySDR::Device * getSoapySDR() { return radio; }
 
+    bool isReady() { return is_ready; }
   private:
     Params * params;
 
     double last_rx_tune_freq;
     double last_tx_tune_freq; 
 
+    bool is_ready; /// true if we're done with the post START initialization
     bool tx_on; 
 
     float rx_rf_gain, tx_rf_gain; 

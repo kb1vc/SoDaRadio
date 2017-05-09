@@ -33,6 +33,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Command.hxx"
 #include "Params.hxx"
 #include "QuadratureOscillator.hxx"
+#include "SoapyCtrl.hxx"
 
 #include <SoapySDR/Device.hpp>
 #include <SoapySDR/Types.hpp>
@@ -62,7 +63,7 @@ namespace SoDa {
      * @param _cmd_stream command stream
      *
      */
-    SoapyTX(Params * params, SoapySDR::Device * _radio, 
+    SoapyTX(Params * params, SoDa::SoapyCtrl * _ctrl, 
 	    DatMBox * _tx_stream, DatMBox * _cw_env_stream,
 	    CmdMBox * _cmd_stream);
     /**
@@ -71,6 +72,10 @@ namespace SoDa {
     void run(); 
 
   private:
+
+    // the controller
+    SoDa::SoapyCtrl * ctrl; 
+    
 
     SoapySDR::Device * radio; ///< the radio.
     

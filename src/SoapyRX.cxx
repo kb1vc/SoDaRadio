@@ -40,7 +40,7 @@
 
 #include <fstream>
 
-SoDa::SoapyRX::SoapyRX(Params * params, SoapySDR::Device * _radio, 
+SoDa::SoapyRX::SoapyRX(Params * params, SoDa::SoapyCtrl * _ctrl, 
 		     DatMBox * _rx_stream, DatMBox * _if_stream,
 		     CmdMBox * _cmd_stream) : SoDa::SoDaThread("SoapyRX")
 {
@@ -48,7 +48,8 @@ SoDa::SoapyRX::SoapyRX(Params * params, SoapySDR::Device * _radio,
   rx_stream = _rx_stream;
   if_stream = _if_stream; 
 
-  radio = _radio; 
+  ctrl = _ctrl; 
+  radio = ctrl->getSoapySDR(); 
   
   // subscribe to the command stream.
   cmd_subs = cmd_stream->subscribe();
@@ -59,6 +60,7 @@ SoDa::SoapyRX::SoapyRX(Params * params, SoapySDR::Device * _radio,
   rx_bits = radio->setupStream(SOAPY_SDR_RX, "CF32", channel_nums); 
 
   int stat = radio->deactivateStream(rx_bits);
+  debugMsg("RX Stream deactivated");
   if(stat != 0) {
     throw(new SoDa::SoDaException((boost::format("SoapyRX couldn't deactivate stream err = %d") % stat).str(), this));     
   }
@@ -105,6 +107,10 @@ void SoDa::SoapyRX::run()
   // and we watch for data in the input buffer. 
 
   bool exitflag = false;
+
+  while(!ctrl->isReady()) {
+    usleep(1000);
+  }
 
   startStream();
   while(!exitflag) {
@@ -234,7 +240,7 @@ void SoDa::SoapyRX::startStream()
 
 void SoDa::SoapyRX::stopStream()
 {
-  //  std::cerr << "Stoping RX Stream from Radio" << std::endl;
+  debugMsg("Stopping RX Stream from Radio");  
   radio->deactivateStream(rx_bits);  
   audio_rx_stream_enabled = false;
 }
@@ -251,7 +257,9 @@ void SoDa::SoapyRX::execSetCommand(Command * cmd)
     set3rdLOFreq(cmd->dparms[0]); 
     break;
   case SoDa::Command::TX_STATE: // SET TX_ON
+    debugMsg(boost::format("TX_STATE parm = %d\n") % cmd->iparms[0]); 
     if(cmd->iparms[0] == 3) {
+      // TX on. 
       if((rx_modulation == SoDa::Command::CW_L) || (rx_modulation == SoDa::Command::CW_U)) {
 	// If we're in a CW mode, set the RF gain to zip.
 	// this is already done in the SoapyCtrl thread.

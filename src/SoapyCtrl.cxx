@@ -40,21 +40,25 @@ static void SoDaLogHandler(const SoapySDRLogLevel lev, const char * message)
 {
   switch(lev) {
   case SoapySDRLogLevel::SOAPY_SDR_FATAL:
-    std::cout << boost::format("Holy cow!  message = [%s]\n") % message;     
+    std::cerr << boost::format("FATAL: [%s]\n") % message;     
     break; 
   case SoapySDRLogLevel::SOAPY_SDR_INFO:
     // do nothing
     // break; 
   default:
-    std::cout << boost::format("Holy cow!  message = [%s]  level = %d\n") % message % lev;       
+    std::cerr << boost::format("[%s]  level = %d\n") % message % lev;       
     break; 
   }
+
 }
 
 SoDa::SoapyCtrl::SoapyCtrl(const std::string & driver_name, Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaThread("SoapyCTRL")
 {
   // register a log handler.  
   SoapySDR::registerLogHandler(SoDaLogHandler);
+
+  // we're not ready yet. 
+  is_ready = false; 
 
   // initialize variables
   last_rx_tune_freq = 0.0; // at least this is a number...
@@ -63,6 +67,7 @@ SoDa::SoapyCtrl::SoapyCtrl(const std::string & driver_name, Params * _params, Cm
   tx_rf_gain = 0.0;
   tx_freq = 0.0;
   tx_freq_rxmode_offset = 0.0;
+  rxmode_offset = 1.52e6; // oddball offset. 
   tx_samp_rate = 625000;
   tx_ant = std::string("TX");
   model_name = std::string("UNKNOWN");
@@ -129,7 +134,7 @@ void SoDa::SoapyCtrl::initControlGPIO()
 void SoDa::SoapyCtrl::setTXEna(bool tx_on)
 {
   unsigned int dir = tx_on ? 1 : 2; 
-  radio->writeGPIO(tr_control_reg, dir, 0x3); 
+  // radio->writeGPIO(tr_control_reg, dir, 0x3); 
 }
 
 void SoDa::SoapyCtrl::makeRadio(const std::string & driver_name)
@@ -330,12 +335,17 @@ void SoDa::SoapyCtrl::execSetCommand(Command * cmd)
     if(cmd->iparms[0] == 1) {
       // set the txgain to where it is supposed to be.
       tx_on = true; 
-      radio->setGain(SOAPY_SDR_RX, 0, 0.0);
+      // set the rxgain to "a little bit" as the LimeSDR 
+      // seems to have a little bit more isolation on tx to rx 
+      // than the USRP. 
+      radio->setGain(SOAPY_SDR_RX, 0, 20.0);
       radio->setGain(SOAPY_SDR_TX, 0, tx_rf_gain);      
+      debugMsg(boost::format("TX gain set to %f got %f\n") % tx_rf_gain % radio->getGain(SOAPY_SDR_TX, 0));
       cmd_stream->put(new Command(Command::REP, Command::TX_RF_GAIN, 
 				  radio->getGain(SOAPY_SDR_TX, 0)));
       // to move a birdie away, we bumped the TX LO,, move it back. 
       tx_freq_rxmode_offset = 0.0; // so tuning works.
+      set1stLOFreq(tx_freq + tx_freq_rxmode_offset, 't', false);
 
       // tickle the transmit relay
       setTXEna(true);
@@ -358,8 +368,16 @@ void SoDa::SoapyCtrl::execSetCommand(Command * cmd)
       // the above tx_freq_rxmode  trick may not be necessary
       // We keep the rxmode_offset here in case other modules
       // leave the TXLO on.
-      setTXEna(false); 
+      setTXEna(false);
+
+      // and tell the RX unit to turn on the RX
+      // This avoids the race between CTRL and TX/RX units for setup and teardown.... 
+      cmd_stream->put(new Command(Command::SET, Command::TX_STATE, 
+				  2));
     }
+    // the first time we get this message, it is time to 
+    // set the ready flag. 
+    is_ready = true; 
     break; 
 
   case Command::CLOCK_SOURCE:
@@ -456,15 +474,17 @@ void SoDa::SoapyCtrl::set1stLOFreq(double freq, int sel, bool set_if_freq)
     // baseband between 150 and 250 KHz below the requested
     // frequency. and an even 100kHz multiple.
     target_rx_freq = 100e3 * floor(freq / 100e3);
-    debugMsg(boost::format("freq = %lf 1st target = %lf\n") % freq % target_rx_freq);
+    debugMsg(boost::format("RX freq = %lf 1st target = %lf\n") % freq % target_rx_freq);
     while((freq - target_rx_freq) < 100e3) {
       target_rx_freq -= 100.0e3;
-      debugMsg(boost::format("\tfreq = %lf new target = %lf\n") % freq % target_rx_freq);
+      debugMsg(boost::format("\tRX freq = %lf new target = %lf\n") % freq % target_rx_freq);
     }
 
     // just use the vanilla tuning....
     radio->setFrequency(SOAPY_SDR_RX, 0, target_rx_freq);
     last_rx_tune_freq = radio->getFrequency(SOAPY_SDR_RX, 0);
+    debugMsg(boost::format("RX RF freq = %lf   RX BB freq = %lf\n")
+	     % radio->getFrequency(SOAPY_SDR_RX, 0, "RF") % radio->getFrequency(SOAPY_SDR_RX, 0, "BB"));
   }
   else {
     // On the transmit side, we're using a minimal IF rate and
@@ -474,6 +494,7 @@ void SoDa::SoapyCtrl::set1stLOFreq(double freq, int sel, bool set_if_freq)
     // transmit LO as far away as possible.   This is especially 
     // important for the UBX.
     radio->setFrequency(SOAPY_SDR_TX, 0, freq);
+    debugMsg(boost::format("TX freq = %lf \n") % freq);
     last_tx_tune_freq = radio->getFrequency(SOAPY_SDR_TX, 0);
   }
 
