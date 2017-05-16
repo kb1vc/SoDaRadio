@@ -108,6 +108,12 @@ void SoDa::SoapyRX::run()
 
   bool exitflag = false;
 
+  // build a buffer for 1 mS. 
+  unsigned int dummy_buffer_size = rx_sample_rate / 1000;
+  std::complex<float> dummy[dummy_buffer_size];
+  std::complex<float> * dummy_bufptr[1];
+  dummy_bufptr[0] = &(dummy[0]); 
+
   while(!ctrl->isReady()) {
     usleep(1000);
   }
@@ -184,7 +190,14 @@ void SoDa::SoapyRX::run()
       // write the buffer output
     }
     else {
-      usleep(1000);
+      int flags, got; 
+      long long tstamp; 
+      flags = 0; 
+      // leave the RX stream running at all times, as the LimeSDR needs it to advance the 
+      // clock.  
+      got = radio->readStream(rx_bits, (void**) dummy_bufptr, dummy_buffer_size, flags, tstamp);
+      (void) got; 
+      // usleep(1000);
     }
   }
 
@@ -241,7 +254,7 @@ void SoDa::SoapyRX::startStream()
 void SoDa::SoapyRX::stopStream()
 {
   debugMsg("Stopping RX Stream from Radio");  
-  radio->deactivateStream(rx_bits);  
+  //   radio->deactivateStream(rx_bits);  
   audio_rx_stream_enabled = false;
 }
 

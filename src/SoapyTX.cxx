@@ -110,9 +110,8 @@ void SoDa::SoapyTX::run()
   bool exitflag = false;
   SoDaBuf * txbuf, * cwenv;
   Command * cmd; 
-  std::complex<float> * buffers[1]; 
+  std::complex<float> * tbuf; 
 
-  int flags; 
   int stat;
   int Acount, Bcount, Ccount, Dcount, Ecount; 
 
@@ -122,6 +121,8 @@ void SoDa::SoapyTX::run()
     usleep(1000);
   }
   
+
+
   while(!exitflag) {
     bool didwork = false; 
 
@@ -139,19 +140,13 @@ void SoDa::SoapyTX::run()
 	    (txbuf = tx_stream->get(tx_subs)) != NULL) {
       // get a buffer and send it. 
       Acount++; 
-      if(first_burst) {
-	debugMsg("Activating TX stream A\n");
-	stat = radio->activateStream(tx_bits);
-	if(stat < 0) debugMsg(boost::format("A: activateStream returns [%d] [%s]\n") % stat % SoapySDR::errToStr(stat));      		
-	
-      }
-      first_burst = false; 
-      buffers[0] = txbuf->getComplexBuf();
-      flags = 0;       
-      stat = radio->writeStream(tx_bits, (void**) buffers, txbuf->getComplexLen(), flags);
-      if(stat < 0) debugMsg(boost::format("A: writeStream returns [%d] [%s] tx_modulation = %d\n") % stat % SoapySDR::errToStr(stat) % tx_modulation);
+      std::cerr << ".";
+      tbuf = txbuf->getComplexBuf(); 
+      stat = sendBuffer(tbuf, txbuf->getComplexLen()); 
+      std::cerr << ".";   
+      if(stat < 0) debugMsg(boost::format("A: writeStream returns [%d] [%s] tx_modulation = %d\n") 
+			    % stat % SoapySDR::errToStr(stat) % tx_modulation);
       didwork = true; 
-
       // now free the buffer up.
       tx_stream->free(txbuf);
     }
@@ -161,22 +156,15 @@ void SoDa::SoapyTX::run()
 	     (tx_modulation == SoDa::Command::CW_U))) {
       cwenv = cw_env_stream->get(cw_subs); 
       if(cwenv != NULL) {
-     
 	Bcount++; 
 	// modulate a carrier with a cw message
 	doCW(cw_buf, cwenv->getFloatBuf(), cwenv->getComplexLen());
 	// now send it to the radio
-	if(first_burst) {
-	  debugMsg("Activating TX stream B\n");
-	  stat = radio->activateStream(tx_bits);
-	  if(stat < 0) debugMsg(boost::format("B: activateStream returns [%d] [%s]\n") % stat % SoapySDR::errToStr(stat));      		
-	}
-
-	first_burst = false; 
-	buffers[0] = cw_buf;
-	flags = 0; 
-	stat = radio->writeStream(tx_bits, (void**) buffers, cwenv->getComplexLen(), flags);
-	if(stat < 0) debugMsg(boost::format("B: writeStream returns [%d] [%s] Bc = %d Cc = %d\n") % stat % SoapySDR::errToStr(stat) % Bcount % Ccount);      
+	std::cerr << ",";
+	stat = sendBuffer(cw_buf, cwenv->getComplexLen()); 
+	std::cerr << ",";	
+	if(stat < 0) debugMsg(boost::format("B: writeStream returns [%d] [%s] Bc = %d Cc = %d\n") 
+			      % stat % SoapySDR::errToStr(stat) % Bcount % Ccount);      
 	cw_env_stream->free(cwenv);
 	didwork = true; 
       }
@@ -184,35 +172,8 @@ void SoDa::SoapyTX::run()
 	// we have an empty CW buffer -- we've run out of text.
 	Ccount++; 
 	doCW(cw_buf, zero_env, tx_buffer_size);
-	if(first_burst) {
-	  debugMsg("Activating TX stream C\n");
-	  stat = radio->activateStream(tx_bits);
-	  if(stat < 0) debugMsg(boost::format("C: activateStream returns [%d] [%s]\n") % stat % SoapySDR::errToStr(stat));
-	  flags = 0; 
-	  long long tns;
-	  size_t cmsk; 
-	  cmsk = 1; 
-	  tns = 0; 
-	  stat = radio->readStreamStatus(tx_bits, cmsk, flags, tns, 10000);
-	  debugMsg(boost::format("C: readStreamstatus returns stat = %d [%s] flags = 0x%x tns = %ld Bc = %d Cc = %d\n")
-		   % stat % SoapySDR::errToStr(stat) % flags % tns % Bcount % Ccount);
-	}
+	// what if we just don't do anything??? 
 
-	first_burst = false; 
-	buffers[0] = cw_buf;
-	flags = 0; 
-	stat = radio->writeStream(tx_bits, (void**) buffers, tx_buffer_size, flags);
-	if(stat < 0) {
-	  debugMsg(boost::format("C: writeStream returns [%d] [%s]\n") % stat % SoapySDR::errToStr(stat));
-	  flags = 0; 
-	  long long tns;
-	  size_t cmsk; 
-	  cmsk = 1; 
-	  tns = 0; 
-	  stat = radio->readStreamStatus(tx_bits, cmsk, flags, tns, 10000);
-	  debugMsg(boost::format("C: readStreamstatus returns stat = %d [%s] flags = 0x%x tns = %ld\n")
-		   % stat % SoapySDR::errToStr(stat) % flags % tns);
-	}	
 	// are we supposed to tell anybody about this? 
 	if(waiting_to_run_dry) {
 	  debugMsg("clear waiting_to_run_dry\n");
@@ -227,34 +188,15 @@ void SoDa::SoapyTX::run()
       // modulate a carrier with a constant envelope
       doCW(cw_buf, beacon_env, tx_buffer_size);
       // now send it to the radio
-      if(first_burst) {
-	debugMsg("Activating TX stream D\n");
-	stat = radio->activateStream(tx_bits);
-	if(stat < 0) debugMsg(boost::format("D: activateStream returns [%d] [%s]\n") % stat % SoapySDR::errToStr(stat));      	
-      }
-
-      first_burst = false; 
-      buffers[0] = cw_buf;
-      flags = 0; 
-      stat = radio->writeStream(tx_bits, (void**) buffers, tx_buffer_size, flags);
+      std::cerr << ";";
+      stat = sendBuffer(cw_buf, tx_buffer_size); 
+      std::cerr << ";";      
       if(stat < 0) debugMsg(boost::format("D: writeStream returns [%d] [%s]\n") % stat % SoapySDR::errToStr(stat));      
       didwork = true; 
     }
     else if(tx_enabled && 
 	    tx_bits) {
-      // all other cases -- we still want to send the LO buffer
-      buffers[0] = zero_buf;
-      if(first_burst) {
-	debugMsg("Activating TX stream E\n");
-	stat = radio->activateStream(tx_bits);
-	if(stat < 0) debugMsg(boost::format("E: activateStream returns [%d] [%s]\n") % stat % SoapySDR::errToStr(stat));      		
-      }
-
-      first_burst = false; 
-      flags = 0; 
-      stat = radio->writeStream(tx_bits, (void**) buffers, tx_buffer_size, flags);
-      if(stat < 0) debugMsg(boost::format("E: writeStream returns [%d] [%s]\n") % stat % SoapySDR::errToStr(stat));      
-      didwork = true; 
+      // nothing to do here. send nothing? 
     }
 
     if(!didwork) {
@@ -286,41 +228,70 @@ void SoDa::SoapyTX::setCWFreq(bool usb, double freq)
 
 void SoDa::SoapyTX::transmitSwitch(bool tx_on)
 {
-  std::complex<float> * buffers[1]; 
   int flags; 
   int stat; 
   if(tx_on) {
     debugMsg(boost::format("transmitSwitch(ON) tx_enabled = %c\n") % ((char) (tx_enabled ? 'T' : 'F')));
     if(tx_enabled) return;
-    debugMsg("Setting first_burst\n");
+    debugMsg("Activating TX stream A\n");
+    stat = radio->activateStream(tx_bits);
+    if(stat < 0) debugMsg(boost::format("A: activateStream returns [%d] [%s]\n") 
+			  % stat % SoapySDR::errToStr(stat));      		
+    long long tns = 0;
+    size_t cmsk = 1; 
+    flags = 0; 
+    stat = radio->readStreamStatus(tx_bits, cmsk, flags, tns, 1000000);
+    debugMsg(boost::format("txSwitch: readStreamstatus returns stat = %d [%s] flags = 0x%x tns = %ld\n")
+	       % stat % SoapySDR::errToStr(stat) % flags % tns);
+    
     waiting_to_run_dry = false;
-    first_burst = true; 
     tx_enabled = true; 
+    
   }
   else {
     debugMsg("transmitSwitch off\n");
     if(!tx_enabled && !LO_enabled) return;
     if(!LO_enabled) {
       // If LO is enabled, we always send SOMETHING....
-      buffers[0] = zero_buf; 
-      debugMsg("Writing zero_buf, deactivating txt stream\n");
-      flags = SOAPY_SDR_END_BURST; 
-      stat = radio->writeStream(tx_bits, (void**) buffers, 10, flags);
-      if(stat < 0) debugMsg(boost::format("txSwitch: writeStream returns [%d] [%s]\n") % stat % SoapySDR::errToStr(stat));      
-      stat = radio->deactivateStream(tx_bits);
-      if(stat < 0) debugMsg(boost::format("txSwitch: deactivateStream returns [%d] [%s]\n") % stat % SoapySDR::errToStr(stat));
+      debugMsg("Writing zero_buf, deactivating txt stream\n");      
+      std::cerr << "&";      
+      sendBuffer(zero_buf, 10, true);
+      std::cerr << "&";      	
+
       flags = 0; 
-      long long tns;
-      size_t cmsk; 
-      cmsk = 1; 
-      tns = 0; 
+      long long tns = 0;
+      size_t cmsk = 1; 
       stat = radio->readStreamStatus(tx_bits, cmsk, flags, tns, 1000000);
       debugMsg(boost::format("txSwitch: readStreamstatus returns stat = %d [%s] flags = 0x%x tns = %ld\n")
 	       % stat % SoapySDR::errToStr(stat) % flags % tns);
+      stat = radio->deactivateStream(tx_bits);
+      if(stat < 0) debugMsg(boost::format("txSwitch: deactivateStream returns [%d] [%s]\n") % stat % SoapySDR::errToStr(stat));
       
     }
     tx_enabled = false;
   }
+}
+
+int SoDa::SoapyTX::sendBuffer(std::complex<float> * buf, size_t len, bool end_burst) {
+  std::complex<float> * buflist[1]; 
+  buflist[0] = buf;
+
+  size_t left = len;   
+  int flags = end_burst ? SOAPY_SDR_END_BURST : 0; 
+
+  while(left > 0) {
+    int stat = radio->writeStream(tx_bits, (void**) buflist, left, flags); 
+    if(stat < 0) {
+      return stat; 
+    }
+    else {
+      left -= stat; 
+      flags = 0; 
+      buflist[0] += stat; 
+    }
+  }
+
+  return len; 
 }
 
 void SoDa::SoapyTX::execSetCommand(Command * cmd)

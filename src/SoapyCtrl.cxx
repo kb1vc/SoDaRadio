@@ -113,6 +113,10 @@ SoDa::SoapyCtrl::SoapyCtrl(const std::string & driver_name, Params * _params, Cm
   // put us in RX mode. 
   setTXEna(false);
 
+  // now report out
+  debugMsg(boost::format("\n\n\n\nTX sample rate: %g RX sample rate: %g\n\n\n\n") 
+	   % radio->getSampleRate(SOAPY_SDR_TX, 0) % radio->getSampleRate(SOAPY_SDR_RX, 0));
+
   // 
 }
 
@@ -134,7 +138,8 @@ void SoDa::SoapyCtrl::initControlGPIO()
 void SoDa::SoapyCtrl::setTXEna(bool tx_on)
 {
   unsigned int dir = tx_on ? 1 : 2; 
-  // radio->writeGPIO(tr_control_reg, dir, 0x3); 
+
+  radio->writeGPIO(tr_control_reg, dir, 0x3); 
 }
 
 void SoDa::SoapyCtrl::makeRadio(const std::string & driver_name)

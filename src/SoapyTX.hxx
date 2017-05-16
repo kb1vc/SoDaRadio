@@ -125,7 +125,19 @@ namespace SoDa {
      *
      */
     void doCW(std::complex<float> * out, float * envelope, unsigned int env_len);
-    
+
+  protected:
+
+    /**
+     * @brief send a buffer to the transmit streamer. (block on busy)
+     * 
+     * @param buf pointer to an IQ buffer
+     * @param len length of the buffer in samples
+     * @param end_burst iff true, mark this as the last buffer in a burst. 
+     * @return number of elements sent, or < 0 for error
+     */
+    int sendBuffer(std::complex<float> * buf, size_t len, bool end_burst = false); 
+
     unsigned int tx_subs;  ///< subscription handle for transmit audio stream (from BaseBandTX)
     unsigned int cmd_subs; ///< subscription handle for command stream
     unsigned int cw_subs;  ///< subscription handle for cw envelope stream (from CW unit)
