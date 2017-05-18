@@ -61,9 +61,13 @@ SoDa::SoapyTX::SoapyTX(Params * params, SoDa::SoapyCtrl * _ctrl,
   std::vector<size_t> channel_nums;
   channel_nums.push_back(0);  
   tx_bits = radio->setupStream(SOAPY_SDR_TX, "CF32", channel_nums); 
-
+#if 0
   int stat = radio->deactivateStream(tx_bits);
-  if(stat < 0) debugMsg(boost::format("constructor: writeStream returns [%d] [%s]\n") % stat % SoapySDR::errToStr(stat));        
+  if(stat < 0) debugMsg(boost::format("constructor: deactivateStream returns [%d] [%s]\n") % stat % SoapySDR::errToStr(stat));          
+#endif  
+  tx_activated = false; 
+
+  radio->setDCOffsetMode(SOAPY_SDR_TX, 0, true); // set to automatic compensation
 
   // find out how to configure the transmitter
   tx_sample_rate = params->getTXRate();
@@ -91,7 +95,7 @@ SoDa::SoapyTX::SoapyTX(Params * params, SoDa::SoapyCtrl * _ctrl,
   cw_buf = new std::complex<float>[tx_buffer_size];
 
   // set the initial envelope amplitude
-  cw_env_amplitude = 0.7;  // more or less sqrt2/2
+  cw_env_amplitude = 0.7; 
   
   // build the zero buffer and the transverter lo buffer
   zero_buf = new std::complex<float>[tx_buffer_size];
@@ -204,6 +208,13 @@ void SoDa::SoapyTX::run()
     }
   }
 
+  if(tx_activated) {
+    debugMsg("Deactivate TX Stream\n");
+    radio->deactivateStream(tx_bits);
+    debugMsg("Close TX Stream\n");    
+    radio->closeStream(tx_bits);
+    debugMsg("Closed TX Stream\n");    
+  }
   debugMsg("Leaving\n");
 }
 
@@ -228,15 +239,15 @@ void SoDa::SoapyTX::setCWFreq(bool usb, double freq)
 
 void SoDa::SoapyTX::transmitSwitch(bool tx_on)
 {
+  std::complex<double> IQBal, DCOffset; 
+  IQBal = radio->getIQBalance(SOAPY_SDR_TX, 0); 
+  DCOffset = radio->getDCOffset(SOAPY_SDR_TX, 0);
+  std::cerr << boost::format("********\nDC Offset [%g, %g]   IQBal [%g, %g]\n") % DCOffset.real() % DCOffset.imag() % IQBal.real() % IQBal.imag();
   int flags; 
   int stat; 
   if(tx_on) {
     debugMsg(boost::format("transmitSwitch(ON) tx_enabled = %c\n") % ((char) (tx_enabled ? 'T' : 'F')));
     if(tx_enabled) return;
-    debugMsg("Activating TX stream A\n");
-    stat = radio->activateStream(tx_bits);
-    if(stat < 0) debugMsg(boost::format("A: activateStream returns [%d] [%s]\n") 
-			  % stat % SoapySDR::errToStr(stat));      		
     long long tns = 0;
     size_t cmsk = 1; 
     flags = 0; 
@@ -251,28 +262,35 @@ void SoDa::SoapyTX::transmitSwitch(bool tx_on)
   else {
     debugMsg("transmitSwitch off\n");
     if(!tx_enabled && !LO_enabled) return;
-    if(!LO_enabled) {
-      // If LO is enabled, we always send SOMETHING....
-      debugMsg("Writing zero_buf, deactivating txt stream\n");      
-      std::cerr << "&";      
-      sendBuffer(zero_buf, 10, true);
-      std::cerr << "&";      	
-
-      flags = 0; 
-      long long tns = 0;
-      size_t cmsk = 1; 
-      stat = radio->readStreamStatus(tx_bits, cmsk, flags, tns, 1000000);
-      debugMsg(boost::format("txSwitch: readStreamstatus returns stat = %d [%s] flags = 0x%x tns = %ld\n")
-	       % stat % SoapySDR::errToStr(stat) % flags % tns);
-      stat = radio->deactivateStream(tx_bits);
-      if(stat < 0) debugMsg(boost::format("txSwitch: deactivateStream returns [%d] [%s]\n") % stat % SoapySDR::errToStr(stat));
-      
-    }
+    debugMsg("Writing zero_buf, deactivating txt stream\n");      
+    std::cerr << "&";      
+    sendBuffer(zero_buf, 10, true);
+    std::cerr << "&";      	
+#if 0
+    // let's try a scheme where we just set the TX power to zero 
+    flags = 0; 
+    long long tns = 0;
+    size_t cmsk = 1; 
+    stat = radio->readStreamStatus(tx_bits, cmsk, flags, tns, 1000000);
+    debugMsg(boost::format("txSwitch: readStreamstatus returns stat = %d [%s] flags = 0x%x tns = %ld\n")
+	     % stat % SoapySDR::errToStr(stat) % flags % tns);
+    stat = radio->deactivateStream(tx_bits);
+    if(stat < 0) debugMsg(boost::format("txSwitch: deactivateStream returns [%d] [%s]\n") % stat % SoapySDR::errToStr(stat));
+#endif      
     tx_enabled = false;
   }
 }
 
 int SoDa::SoapyTX::sendBuffer(std::complex<float> * buf, size_t len, bool end_burst) {
+
+  if(!tx_activated) {
+    debugMsg("Activating TX stream A\n");
+    int stat = radio->activateStream(tx_bits);
+    if(stat < 0) debugMsg(boost::format("A: activateStream returns [%d] [%s]\n") 
+			  % stat % SoapySDR::errToStr(stat));      		
+    tx_activated = true; 
+  }
+
   std::complex<float> * buflist[1]; 
   buflist[0] = buf;
 

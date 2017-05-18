@@ -147,6 +147,7 @@ namespace SoDa {
     CmdMBox * cmd_stream; ///< command stream
     
     bool tx_enabled; ///< if true, we're transmitting. 
+    bool tx_activated; ///< if true, we've activated the stream for the first time.
     SoDa::Command::ModulationType tx_modulation; ///< type of transmit modulation (CW_U,CW_L,USB,LSB...)
 
     double CW_tone_freq;
