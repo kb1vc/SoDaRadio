@@ -167,7 +167,10 @@ void SoDa::UI::run()
     // if there are commands arriving from the socket port, handle them.
     if(got_new_netmsg) {
       cmd_stream->put(net_cmd);
-      didwork = true; 
+      didwork = true;
+      if(net_cmd->target == SoDa::Command::TX_CW_EMPTY) {
+       	debugMsg("got TX_CW_EMPTY command from socket.\n"); 
+      }
       if(net_cmd->target == SoDa::Command::STOP) {
 	// relay "stop" commands to the GPS unit. 
 	gps_stream->put(new SoDa::Command(Command::SET, Command::STOP, 0));
@@ -180,6 +183,10 @@ void SoDa::UI::run()
       if(ring_cmd->cmd == SoDa::Command::REP) {
 	server_socket->put(ring_cmd, sizeof(SoDa::Command));
       }
+      // if(net_cmd->target == SoDa::Command::TX_CW_EMPTY) {
+      // 	debugMsg("send TX_CW_EMPTY report to socket.\n"); 
+      // }
+      
       execCommand(ring_cmd); 
       cmd_stream->free(ring_cmd);
       didwork = true; 

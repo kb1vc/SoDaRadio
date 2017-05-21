@@ -188,6 +188,15 @@ namespace SoDa {
      * @return a pointer to the SoDaBase object (NULL if the name isn't found)
      */
     SoDaBase * findSoDaObject(const std::string & oname); 
+
+    /**
+     * Get a time stamp in nS resolution that monotonically increases
+     * and that is very inexpensive (typically < 100nS). 
+     * 
+     * @return a monotonically increasing timestamp in nS since an arbitrary time in the past.
+     */
+    double getTime(); 
+
   private:
     std::string objname; ///< the name of the object
     

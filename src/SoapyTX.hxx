@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012,2013,2014 Matthew H. Reilly (kb1vc)
+Copyright (c) 2017 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Params.hxx"
 #include "QuadratureOscillator.hxx"
 #include "SoapyCtrl.hxx"
+#include "Histogram.hxx"
+
 
 #include <SoapySDR/Device.hpp>
 #include <SoapySDR/Types.hpp>
@@ -138,6 +140,21 @@ namespace SoDa {
      */
     int sendBuffer(std::complex<float> * buf, size_t len, bool end_burst = false); 
 
+    /**
+     * @brief check the tx stream status and look for an indication that the
+     * transmitter has processed the buffer marked with an EndOfBurst flag. 
+     * 
+     * @param timeout_us return false if no indication is received in timeout_us microseconds
+     * @return true if EOB was found, false otherwise.
+     */
+    bool lookForEOB(unsigned long timeout_us); 
+
+    /**
+     * @brief send an EOB marker into the radio and wait for it to make it to
+     * the hardware transmit stream.  Then return. 
+     */
+    bool drainTXStream(); 
+
     unsigned int tx_subs;  ///< subscription handle for transmit audio stream (from BaseBandTX)
     unsigned int cmd_subs; ///< subscription handle for command stream
     unsigned int cw_subs;  ///< subscription handle for cw envelope stream (from CW unit)
@@ -164,7 +181,11 @@ namespace SoDa {
     double tx_sample_rate; ///< sample rate for buffer going to radio
     unsigned int tx_buffer_size; ///< size of buffer going to radio
     float cw_env_amplitude;  ///< used to set CW output envelope, constant at 0.7
-    
+
+    double seconds_per_sample; ///< time per sample. 
+    long  samples_in_flight; ///< the number of samples currently "in flight"
+    long in_flight_limit; ///< number of samples we want to have "in flight"
+
     bool waiting_to_run_dry; ///< When set, we should send out a report when we run out of CW buffer
     
     SoapySDR::Stream * tx_bits; ///< radio transmit stream handle
@@ -176,6 +197,9 @@ namespace SoDa {
     bool LO_capable; ///< if true, this hardware model supports LO config
 
     std::complex<float> * const_buf; ///< envelope for dead silence
+
+    SoDa::Histogram * send_histo;
+    SoDa::Histogram * write_stream_histo;
   }; 
 
 }

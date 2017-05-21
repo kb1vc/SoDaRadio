@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2017, Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -33,10 +33,12 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <iostream>
+#include <fstream>
 
 SoDa::SoapyTX::SoapyTX(Params * params, SoDa::SoapyCtrl * _ctrl, 
-		     DatMBox * _tx_stream, DatMBox * _cw_env_stream,
-		     CmdMBox * _cmd_stream) : SoDa::SoDaThread("SoapyTX")
+		       DatMBox * _tx_stream, DatMBox * _cw_env_stream,
+		       CmdMBox * _cmd_stream) : SoDa::SoDaThread("SoapyTX")
 {
   cmd_stream = _cmd_stream;
   tx_stream = _tx_stream;
@@ -44,7 +46,7 @@ SoDa::SoapyTX::SoapyTX(Params * params, SoDa::SoapyCtrl * _ctrl,
 
   ctrl = _ctrl; 
   radio = ctrl->getSoapySDR(); 
-
+  
   // subscribe to the command stream.
   cmd_subs = cmd_stream->subscribe();
   // subscribe to the tx data stream
@@ -72,7 +74,16 @@ SoDa::SoapyTX::SoapyTX(Params * params, SoDa::SoapyCtrl * _ctrl,
   // find out how to configure the transmitter
   tx_sample_rate = params->getTXRate();
   tx_buffer_size = params->getRFBufferSize();
-  
+
+  // we need to put some artificial backpressure on sending, since the Lime support
+  // for SoapySDR has very very deep buffers (18 seconds at 625ksamp/sec!)  
+  seconds_per_sample = 1.0 / ((double) tx_sample_rate); 
+
+  // we want to keep about 1 second in flight
+  in_flight_limit = tx_sample_rate; 
+  // reset the samples_in_flight counter
+  samples_in_flight = 0; 
+
   // 400 Hz is a nice tone
   // but 400 doesn't really work that well.
   // 650 is better.  but all the RX filters
@@ -104,6 +115,9 @@ SoDa::SoapyTX::SoapyTX(Params * params, SoDa::SoapyCtrl * _ctrl,
     zero_buf[i] = std::complex<float>(0.0, 0.0);
     const_buf[i] = std::complex<float>(1.0, 0.0);
   }
+
+  send_histo = new SoDa::Histogram(1000, 100e-6, 100e-3);
+  write_stream_histo = new SoDa::Histogram(1000, 100e-6, 100e-3); 
 
   tx_enabled = false;
 }
@@ -146,7 +160,10 @@ void SoDa::SoapyTX::run()
       Acount++; 
       std::cerr << ".";
       tbuf = txbuf->getComplexBuf(); 
+      double ts = getTime();
       stat = sendBuffer(tbuf, txbuf->getComplexLen()); 
+      double te = getTime();
+      send_histo->updateTable(te - ts); 
       std::cerr << ".";   
       if(stat < 0) debugMsg(boost::format("A: writeStream returns [%d] [%s] tx_modulation = %d\n") 
 			    % stat % SoapySDR::errToStr(stat) % tx_modulation);
@@ -164,9 +181,10 @@ void SoDa::SoapyTX::run()
 	// modulate a carrier with a cw message
 	doCW(cw_buf, cwenv->getFloatBuf(), cwenv->getComplexLen());
 	// now send it to the radio
-	std::cerr << ",";
+	double ts = getTime();	
 	stat = sendBuffer(cw_buf, cwenv->getComplexLen()); 
-	std::cerr << ",";	
+	double te = getTime();
+	send_histo->updateTable(te - ts); 
 	if(stat < 0) debugMsg(boost::format("B: writeStream returns [%d] [%s] Bc = %d Cc = %d\n") 
 			      % stat % SoapySDR::errToStr(stat) % Bcount % Ccount);      
 	cw_env_stream->free(cwenv);
@@ -176,12 +194,12 @@ void SoDa::SoapyTX::run()
 	// we have an empty CW buffer -- we've run out of text.
 	Ccount++; 
 	doCW(cw_buf, zero_env, tx_buffer_size);
-	// what if we just don't do anything??? 
 
 	// are we supposed to tell anybody about this? 
 	if(waiting_to_run_dry) {
-	  debugMsg("clear waiting_to_run_dry\n");
+	  drainTXStream();
 	  cmd_stream->put(new Command(Command::REP, Command::TX_CW_EMPTY, 0));
+	  debugMsg("clear waiting_to_run_dry\n");	  
 	  waiting_to_run_dry = false; 
 	}
       }
@@ -192,9 +210,11 @@ void SoDa::SoapyTX::run()
       // modulate a carrier with a constant envelope
       doCW(cw_buf, beacon_env, tx_buffer_size);
       // now send it to the radio
-      std::cerr << ";";
-      stat = sendBuffer(cw_buf, tx_buffer_size); 
-      std::cerr << ";";      
+      double ts = getTime();      
+      stat = sendBuffer(cw_buf, tx_buffer_size);
+      double te = getTime();
+      send_histo->updateTable(te - ts); 
+      
       if(stat < 0) debugMsg(boost::format("D: writeStream returns [%d] [%s]\n") % stat % SoapySDR::errToStr(stat));      
       didwork = true; 
     }
@@ -204,7 +224,7 @@ void SoDa::SoapyTX::run()
     }
 
     if(!didwork) {
-      usleep(100);
+      usleep(10);
     }
   }
 
@@ -215,6 +235,10 @@ void SoDa::SoapyTX::run()
     radio->closeStream(tx_bits);
     debugMsg("Closed TX Stream\n");    
   }
+
+  send_histo->writeTable("SendHisto.dat");
+  write_stream_histo->writeTable("WriteStreamHisto.dat");  
+
   debugMsg("Leaving\n");
 }
 
@@ -237,48 +261,52 @@ void SoDa::SoapyTX::setCWFreq(bool usb, double freq)
   // likely to be extremely small... 
 }
 
+bool SoDa::SoapyTX::drainTXStream()
+{
+  debugMsg("Writing zero_buf, draining tx stream\n");      
+  std::cerr << "&";      
+  // send a zero filled buffer. 
+  sendBuffer(zero_buf, tx_buffer_size, true);
+  std::cerr << "&";      	    
+  // now wait for the end of buffer marker
+  int itercount = 0; 
+  while(!lookForEOB(10000)) {
+    itercount++; 
+    if((itercount & 0xff) == 0) {
+      std::cerr << boost::format("Still looking for EOB after %d iterations.\n") % itercount;
+    }
+  }
+
+  return true; 
+}
+
 void SoDa::SoapyTX::transmitSwitch(bool tx_on)
 {
-  std::complex<double> IQBal, DCOffset; 
-  IQBal = radio->getIQBalance(SOAPY_SDR_TX, 0); 
-  DCOffset = radio->getDCOffset(SOAPY_SDR_TX, 0);
-  std::cerr << boost::format("********\nDC Offset [%g, %g]   IQBal [%g, %g]\n") % DCOffset.real() % DCOffset.imag() % IQBal.real() % IQBal.imag();
-  int flags; 
-  int stat; 
   if(tx_on) {
     debugMsg(boost::format("transmitSwitch(ON) tx_enabled = %c\n") % ((char) (tx_enabled ? 'T' : 'F')));
     if(tx_enabled) return;
-    long long tns = 0;
-    size_t cmsk = 1; 
-    flags = 0; 
-    stat = radio->readStreamStatus(tx_bits, cmsk, flags, tns, 1000000);
-    debugMsg(boost::format("txSwitch: readStreamstatus returns stat = %d [%s] flags = 0x%x tns = %ld\n")
-	       % stat % SoapySDR::errToStr(stat) % flags % tns);
-    
-    waiting_to_run_dry = false;
     tx_enabled = true; 
-    
+    samples_in_flight = 0; 
   }
   else {
     debugMsg("transmitSwitch off\n");
     if(!tx_enabled && !LO_enabled) return;
-    debugMsg("Writing zero_buf, deactivating txt stream\n");      
-    std::cerr << "&";      
-    sendBuffer(zero_buf, 10, true);
-    std::cerr << "&";      	
-#if 0
-    // let's try a scheme where we just set the TX power to zero 
-    flags = 0; 
-    long long tns = 0;
-    size_t cmsk = 1; 
-    stat = radio->readStreamStatus(tx_bits, cmsk, flags, tns, 1000000);
-    debugMsg(boost::format("txSwitch: readStreamstatus returns stat = %d [%s] flags = 0x%x tns = %ld\n")
-	     % stat % SoapySDR::errToStr(stat) % flags % tns);
-    stat = radio->deactivateStream(tx_bits);
-    if(stat < 0) debugMsg(boost::format("txSwitch: deactivateStream returns [%d] [%s]\n") % stat % SoapySDR::errToStr(stat));
-#endif      
     tx_enabled = false;
   }
+}
+
+bool SoDa::SoapyTX::lookForEOB(unsigned long timeout_us) {
+  int flags = 0; 
+  size_t chan_mask = 1; 
+  long long tns; 
+  int stat = radio->readStreamStatus(tx_bits, chan_mask, flags, tns, timeout_us); 
+  debugMsg(boost::format("lookForEOB read status returns [%d] [%s]  flags [%d], time %ld\n")
+	   % stat % SoapySDR::errToStr(stat) % flags % tns); 
+  // if(stat != 0) return false; 
+  if(flags & SOAPY_SDR_END_BURST) { 
+    return true; 
+  }
+  else return false; 
 }
 
 int SoDa::SoapyTX::sendBuffer(std::complex<float> * buf, size_t len, bool end_burst) {
@@ -297,8 +325,12 @@ int SoDa::SoapyTX::sendBuffer(std::complex<float> * buf, size_t len, bool end_bu
   size_t left = len;   
   int flags = end_burst ? SOAPY_SDR_END_BURST : 0; 
 
+  double tst, ten; 
   while(left > 0) {
+    tst = getTime(); 
     int stat = radio->writeStream(tx_bits, (void**) buflist, left, flags); 
+    ten = getTime();
+    write_stream_histo->updateTable(ten - tst); 
     if(stat < 0) {
       return stat; 
     }
@@ -306,6 +338,26 @@ int SoDa::SoapyTX::sendBuffer(std::complex<float> * buf, size_t len, bool end_bu
       left -= stat; 
       flags = 0; 
       buflist[0] += stat; 
+    }
+  }
+
+  // how many samples outstanding so far? 
+  samples_in_flight += (long) len; 
+  // sleep long enough to let the radio digest a little bit. 
+  // but don't do this just for the heck of it... 
+  if((samples_in_flight - in_flight_limit) > (in_flight_limit / 8)) {
+    double wait_time = seconds_per_sample * ((double) len);  // (samples_in_flight - in_flight_limit));
+    double start_time = getTime();
+    double target_time = start_time + wait_time;
+    while(getTime() < target_time) {
+      // usleep(10); 
+    }
+    double time_span = getTime() - start_time; 
+    samples_in_flight -= ((long) (tx_sample_rate * time_span));
+    if(samples_in_flight < 0) {
+      std::cerr << boost::format("Holy cow!  s_i_f = %ld  wait_time = %g\n") 
+	% samples_in_flight % wait_time; 
+      samples_in_flight = 0; 
     }
   }
 
@@ -368,4 +420,3 @@ void SoDa::SoapyTX::execRepCommand(Command * cmd)
     break;
   }
 }
-

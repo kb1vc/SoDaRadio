@@ -52,5 +52,12 @@ namespace SoDa {
       return NULL; 
     }
   }
+
+  double SoDaBase::getTime() {
+    struct timespec tp; 
+    clock_gettime(CLOCK_MONOTONIC, &tp); // 60nS average in tight loops, 160nS cold.
+    double ret = ((double) tp.tv_sec) + (1.0e-9 * ((double) tp.tv_nsec)); 
+    return ret; 
+  }
 }
 
