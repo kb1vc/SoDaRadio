@@ -59,6 +59,8 @@ SoDa::SoapyTX::SoapyTX(Params * params, SoDa::SoapyCtrl * _ctrl,
   LO_configured = false;
   LO_capable = false;
 
+  beacon_mode = false; 
+
   // create the tx buffer streamers.
   std::vector<size_t> channel_nums;
   channel_nums.push_back(0);  
@@ -78,11 +80,10 @@ SoDa::SoapyTX::SoapyTX(Params * params, SoDa::SoapyCtrl * _ctrl,
   // we need to put some artificial backpressure on sending, since the Lime support
   // for SoapySDR has very very deep buffers (18 seconds at 625ksamp/sec!)  
   seconds_per_sample = 1.0 / ((double) tx_sample_rate); 
+  // setup targets for flow control
+  target_backlog = 1 * lround(tx_sample_rate); // one second of backlog? 
+  undershoot_backlog = (target_backlog * 3) / 4; 
 
-  // we want to keep about 1 second in flight
-  in_flight_limit = tx_sample_rate; 
-  // reset the samples_in_flight counter
-  samples_in_flight = 0; 
 
   // 400 Hz is a nice tone
   // but 400 doesn't really work that well.
@@ -117,7 +118,9 @@ SoDa::SoapyTX::SoapyTX(Params * params, SoDa::SoapyCtrl * _ctrl,
   }
 
   send_histo = new SoDa::Histogram(1000, 100e-6, 100e-3);
-  write_stream_histo = new SoDa::Histogram(1000, 100e-6, 100e-3); 
+  write_stream_histo = new SoDa::Histogram(1000, 100e-6, 100e-3);
+  insert_delay_actual_histo = new SoDa::Histogram(1000, 1e-3, 1.0);
+  insert_delay_wait_histo = new SoDa::Histogram(1000, 1e-3, 1.0);
 
   tx_enabled = false;
 }
@@ -129,6 +132,8 @@ void SoDa::SoapyTX::run()
   SoDaBuf * txbuf, * cwenv;
   Command * cmd; 
   std::complex<float> * tbuf; 
+
+  debugMsg(boost::format("Start time = %g\n") % getTime()); 
 
   int stat;
   int Acount, Bcount, Ccount, Dcount, Ecount; 
@@ -157,14 +162,14 @@ void SoDa::SoapyTX::run()
 	    (tx_modulation != SoDa::Command::CW_U) &&
 	    (txbuf = tx_stream->get(tx_subs)) != NULL) {
       // get a buffer and send it. 
+      // We're in a modulation mode like USB, LSB, AM, NBFM, ...
       Acount++; 
-      std::cerr << ".";
       tbuf = txbuf->getComplexBuf(); 
+      std::cerr << "*";
       double ts = getTime();
       stat = sendBuffer(tbuf, txbuf->getComplexLen()); 
       double te = getTime();
       send_histo->updateTable(te - ts); 
-      std::cerr << ".";   
       if(stat < 0) debugMsg(boost::format("A: writeStream returns [%d] [%s] tx_modulation = %d\n") 
 			    % stat % SoapySDR::errToStr(stat) % tx_modulation);
       didwork = true; 
@@ -182,6 +187,7 @@ void SoDa::SoapyTX::run()
 	doCW(cw_buf, cwenv->getFloatBuf(), cwenv->getComplexLen());
 	// now send it to the radio
 	double ts = getTime();	
+	std::cerr << "C"; 
 	stat = sendBuffer(cw_buf, cwenv->getComplexLen()); 
 	double te = getTime();
 	send_histo->updateTable(te - ts); 
@@ -194,7 +200,8 @@ void SoDa::SoapyTX::run()
 	// we have an empty CW buffer -- we've run out of text.
 	Ccount++; 
 	doCW(cw_buf, zero_env, tx_buffer_size);
-
+	std::cerr << "E"; 
+	stat = sendBuffer(cw_buf, tx_buffer_size); 
 	// are we supposed to tell anybody about this? 
 	if(waiting_to_run_dry) {
 	  drainTXStream();
@@ -211,6 +218,7 @@ void SoDa::SoapyTX::run()
       doCW(cw_buf, beacon_env, tx_buffer_size);
       // now send it to the radio
       double ts = getTime();      
+      std::cerr << "B";
       stat = sendBuffer(cw_buf, tx_buffer_size);
       double te = getTime();
       send_histo->updateTable(te - ts); 
@@ -237,7 +245,18 @@ void SoDa::SoapyTX::run()
   }
 
   send_histo->writeTable("SendHisto.dat");
-  write_stream_histo->writeTable("WriteStreamHisto.dat");  
+  write_stream_histo->writeTable("WriteStreamHisto.dat");
+  insert_delay_actual_histo->writeTable("DelayActualHisto.dat");
+  insert_delay_wait_histo->writeTable("DelayWaitHisto.dat");      
+
+  std::ofstream dh("DelayHistory.lis");
+  BOOST_FOREACH(auto & tp, delay_history) {
+    unsigned long st, en; 
+    double wt, sst;
+    std::tie(st, en, wt, sst) = tp; 
+    dh << boost::format("%ld %ld %g %g\n") % st % en % wt % sst; 
+  }
+  dh.close(); 
 
   debugMsg("Leaving\n");
 }
@@ -286,7 +305,8 @@ void SoDa::SoapyTX::transmitSwitch(bool tx_on)
     debugMsg(boost::format("transmitSwitch(ON) tx_enabled = %c\n") % ((char) (tx_enabled ? 'T' : 'F')));
     if(tx_enabled) return;
     tx_enabled = true; 
-    samples_in_flight = 0; 
+    // reset the first_burst flag -- for buffer backlog book-keeping. 
+    first_burst = true; 
   }
   else {
     debugMsg("transmitSwitch off\n");
@@ -309,6 +329,70 @@ bool SoDa::SoapyTX::lookForEOB(unsigned long timeout_us) {
   else return false; 
 }
 
+/** 
+ * @page lime_buffer_management SoapyTX Buffer Management for LimeSDR
+ * 
+ * Buffer management in SoapySDR for the LimeSDR platform is complicated by 
+ * the fact that there is very little backpressure from the writeStream call. 
+ * In the implementation circa May 2017, buffers are sent through writeStream 
+ * to the Lime hardware until about 18seconds (!) (at 625ksamp/S) have been 
+ * queued up somwhere between the library and the hardware.   There is no 
+ * control flow information available from the hardware that passes through the
+ * SoapySDR interface. 
+ * 
+ * This is spectacularly inconvenient in CW mode where we process the CW 
+ * transmit envelope as it arrives and pass it through the pipe.  If we get
+ * 20 seconds of CW, then we send 20 seconds of CW right on through and commit
+ * ourselves to 20 seconds of transmit stream.  Ooops... This isn't such a 
+ * problem in SSB, as we only originate tx packets as fast as the audio arrives
+ * from the input stream.  (Note this is likely to be a problem if the audio
+ * stream originates from a modem or some other non-microphone source.)
+ *
+ * So, the rest of this only applies in the CW modes. 
+ *
+ * The libuhd version of the SoDa TX unit doesn't have this problem, as it
+ * provided backpressure pretty early on.  (The send call is a blocking call and
+ * returns once the buffer is committed to the transmitter.  However, the libuhd
+ * queues are apparently very shallow.) 
+ * 
+ * For this reason, we need to implement some book-keeping that maintains a count
+ * of samples transmitted, and samples passed. We need to keep ahead of the hardware
+ * by a modest amount, but it must not stretch out with time, or else we'll end up
+ * with a few seconds in the buffer and no way out.  (In practice, this is unachievable, 
+ * since the TX unit in the Lime is running off of a clock that is different from the
+ * TX unit in the host.  Yes, we could use the hardware clock, but its resolution and
+ * its behavior is not well documented. (For instance, it doesn't run if the RX streamer
+ * is stopped.(!)). 
+ *
+ * We'll manage the flow control in the sendBuffer method.  Only the sendBuffer method
+ * will ever call writeStream.  Here's how it works. 
+ * 
+ * Dramatis personae:
+ * Name | Description
+ * -----|------------
+ * `start_of_tx_time` | Time after the first return from writeStream after tx_on
+ * `cur_tx_time` | Time after return from writeStream for the current buffer
+ * `samples_sent` | Number of samples passed to writeStream since last tx_on
+ * `samples_consumed` | Number of samples consumed by the passage of time since last tx_on
+ * `samples_outstanding` | Difference between `samples_sent` and `samples_consumed`
+ * `target_backlog` | Number of samples we wish to maintain "in flight" 
+ * 
+ *
+ * Once we initiate the first transmission after the transmitter is enabled, we will
+ * set a timestamp from the `getTime()` call that marks the start of transmission -- this
+ * is called `start_of_tx_time`. We set `samples_sent` to the length of the first 
+ * transmitted buffer. 
+ *
+ * After each writeStream  we call `getTime()` and subtract the `start_of_tx_time`
+ * from it.  This delta is used to calculate the number of samples that have been 
+ * "consumed" by the passage of time: `samples_consumed`.  We add the number of samples we 
+ * just wrote to get `samples_sent` and then subtract `samples_consumed` to get 
+ * `samples_outstanding`.
+ * 
+ * If the `samples_outstanding` is greater than `target_backlog` we calculate a wait
+ * time to bring us back to about 3/4 of the target_backlog samples in the buffer. 
+ * We sleep for about that amount of time, and move on. 
+ */
 int SoDa::SoapyTX::sendBuffer(std::complex<float> * buf, size_t len, bool end_burst) {
 
   if(!tx_activated) {
@@ -328,6 +412,7 @@ int SoDa::SoapyTX::sendBuffer(std::complex<float> * buf, size_t len, bool end_bu
   double tst, ten; 
   while(left > 0) {
     tst = getTime(); 
+    std::cerr << "S"; 
     int stat = radio->writeStream(tx_bits, (void**) buflist, left, flags); 
     ten = getTime();
     write_stream_histo->updateTable(ten - tst); 
@@ -341,23 +426,27 @@ int SoDa::SoapyTX::sendBuffer(std::complex<float> * buf, size_t len, bool end_bu
     }
   }
 
-  // how many samples outstanding so far? 
-  samples_in_flight += (long) len; 
-  // sleep long enough to let the radio digest a little bit. 
-  // but don't do this just for the heck of it... 
-  if((samples_in_flight - in_flight_limit) > (in_flight_limit / 8)) {
-    double wait_time = seconds_per_sample * ((double) len);  // (samples_in_flight - in_flight_limit));
-    double start_time = getTime();
-    double target_time = start_time + wait_time;
+  // in SSB, AM, or FM modes we use the incoming audio stream for buffer flow management
+  if((tx_modulation != SoDa::Command::CW_U) && (tx_modulation != SoDa::Command::CW_L)) {
+    return len; 
+  }
+
+  double cur_tx_time = getTime(); ///< Time after return from writeStream for the current buffer  
+  if(first_burst) {
+    start_of_tx_time = cur_tx_time; 
+    samples_sent = len; 
+    first_burst = false; 
+  }
+  else {
+    samples_sent += len; 
+  }
+
+  long samples_consumed = lround((cur_tx_time - start_of_tx_time) * tx_sample_rate); 
+  long samples_outstanding = samples_sent - samples_consumed; 
+  if(samples_outstanding > target_backlog) {
+    double target_time = cur_tx_time + seconds_per_sample * ((double) (samples_outstanding - undershoot_backlog)); 
     while(getTime() < target_time) {
-      // usleep(10); 
-    }
-    double time_span = getTime() - start_time; 
-    samples_in_flight -= ((long) (tx_sample_rate * time_span));
-    if(samples_in_flight < 0) {
-      std::cerr << boost::format("Holy cow!  s_i_f = %ld  wait_time = %g\n") 
-	% samples_in_flight % wait_time; 
-      samples_in_flight = 0; 
+      usleep(10); 
     }
   }
 
@@ -370,9 +459,13 @@ void SoDa::SoapyTX::execSetCommand(Command * cmd)
   case SoDa::Command::TX_MODE:
     tx_modulation = SoDa::Command::ModulationType(cmd->iparms[0]);
     if(tx_modulation == SoDa::Command::CW_L) {
+      // if this is a mode change while we're in TX mode, setup the buffer management.
+      first_burst = true; 
       setCWFreq(false, CW_tone_freq); 
     }
     else if(tx_modulation == SoDa::Command::CW_U) {
+      // if this is a mode change while we're in TX mode, setup the buffer management.
+      first_burst = true; 
       setCWFreq(true, CW_tone_freq); 
     }
     break; 

@@ -37,7 +37,9 @@
 
 namespace SoDa {
   /** 
-   * @file Functions that return a property tree corresponding to 
+   * @file USRPFrontEnd.hxx
+   * Manage front end settings for Ettus USRP devices
+   * Functions that return a property tree corresponding to 
    * a TX or RX front end on the first daughterboard.  The "best" choice
    * will be returned.  Best is the first option that provides an IQ 
    * or QI connection type.

@@ -199,7 +199,10 @@ namespace SoDa {
 
   private:
     std::string objname; ///< the name of the object
-    
+
+    static bool first_time; ///< have we seen the first call to getTime? 
+    static double base_first_time; ///< time of first call to getTime from anyone. 
+
     static std::map<std::string, SoDaBase * > ObjectDirectory; ///< a class member -- directory of all registered objects.
   };
 

@@ -57,7 +57,13 @@ namespace SoDa {
     struct timespec tp; 
     clock_gettime(CLOCK_MONOTONIC, &tp); // 60nS average in tight loops, 160nS cold.
     double ret = ((double) tp.tv_sec) + (1.0e-9 * ((double) tp.tv_nsec)); 
-    return ret; 
+    if(first_time) {
+      base_first_time = ret; 
+      first_time = false; 
+    }
+    return ret - base_first_time; 
   }
 }
 
+bool SoDa::SoDaBase::first_time = true;
+double SoDa::SoDaBase::base_first_time;

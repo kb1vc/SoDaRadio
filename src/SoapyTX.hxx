@@ -36,6 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "SoapyCtrl.hxx"
 #include "Histogram.hxx"
 
+#include <tuple>
 
 #include <SoapySDR/Device.hpp>
 #include <SoapySDR/Types.hpp>
@@ -59,7 +60,7 @@ namespace SoDa {
      * @brief Constructor for RF Transmit/modulator process
      *
      * @param params block describing intial setup of the radio
-     * @param _radio SoapySDR handle for the radio
+     * @param _ctrl pointer to the SoapyCtrl object that controls the radio
      * @param _tx_stream audio transmit stream to be used in modulator
      * @param _cw_env_stream envelope stream from text-to-CW converter
      * @param _cmd_stream command stream
@@ -181,15 +182,16 @@ namespace SoDa {
     double tx_sample_rate; ///< sample rate for buffer going to radio
     unsigned int tx_buffer_size; ///< size of buffer going to radio
     float cw_env_amplitude;  ///< used to set CW output envelope, constant at 0.7
-
-    double seconds_per_sample; ///< time per sample. 
-    long  samples_in_flight; ///< the number of samples currently "in flight"
-    long in_flight_limit; ///< number of samples we want to have "in flight"
+    double seconds_per_sample; ///< time per sample -- reciprocal of tx_sample_rate
 
     bool waiting_to_run_dry; ///< When set, we should send out a report when we run out of CW buffer
     
     SoapySDR::Stream * tx_bits; ///< radio transmit stream handle
     bool first_burst; 
+    double start_of_tx_time; ///< Time afte rthe first return from writeStream after tx_on
+    long samples_sent; ///< Number of samples passed to writeStream since tx_on
+    long target_backlog; ///< Number of samples we wish to maintain "in flight"
+    long undershoot_backlog; ///< Typically 3/4 of target_backlog
 
     // transverter local oscillator support
     bool LO_enabled; ///< if true, we're in local transverter mode
@@ -200,6 +202,10 @@ namespace SoDa {
 
     SoDa::Histogram * send_histo;
     SoDa::Histogram * write_stream_histo;
+    SoDa::Histogram * insert_delay_wait_histo;
+    SoDa::Histogram * insert_delay_actual_histo;
+
+    std::list<std::tuple<unsigned long, unsigned long, double, double> > delay_history; 
   }; 
 
 }

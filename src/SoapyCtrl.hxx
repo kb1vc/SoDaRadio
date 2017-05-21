@@ -27,7 +27,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
  ///
- ///  @file SoapySDRCtrl.hxx
+ ///  @file SoapyCtrl.hxx
  ///  @brief Thread class that owns the SoapySDR control channel and functions
  ///
  ///
@@ -65,6 +65,8 @@ namespace SoDa {
   public:
     /// Constructor
     /// Build a SoapyCtrl thread
+    /// @param driver_name name of the hardware device class (typcially 'lime') that
+    /// will be used to find the radio. 
     /// @param params Pointer to a parameter object with all the initial settings
     /// and identification for the attached SoapySDR
     /// @param _cmd_stream Pointer to the command stream message channel.

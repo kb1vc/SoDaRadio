@@ -52,7 +52,7 @@ namespace SoDa {
      *
      * @param params a pointer to a params object that will tell us
      *        about sample rates and other configuration details.
-     * @param usrp a pointer to the UHD USRP object that we are streaming data from.
+     * @param _ctrl a pointer to the SoapySDR controller for this radio
      * @param _rx_stream data mailbox used to pass the baseband (IF3) shifted
      *        incoming RF samples to other units
      * @param _if_stream data mailbox used to pass the IF2 data to the spectrum units

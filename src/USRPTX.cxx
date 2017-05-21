@@ -55,6 +55,7 @@ SoDa::USRPTX::USRPTX(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
   LO_enabled = false;
   LO_configured = false;
   LO_capable = false;
+  beacon_mode = false; 
 
   // create the tx buffer streamers.
   stream_args = new uhd::stream_args_t("fc32", "sc16");
