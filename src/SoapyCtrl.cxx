@@ -75,6 +75,7 @@ SoDa::SoapyCtrl::SoapyCtrl(const std::string & driver_name, Params * _params, Cm
   cmd_stream = _cmd_stream;
   params = _params;
 
+
   // subscribe to the command stream.
   subid = cmd_stream->subscribe();
   
@@ -103,6 +104,10 @@ SoDa::SoapyCtrl::SoapyCtrl(const std::string & driver_name, Params * _params, Cm
   // set the sample rates  
   radio->setSampleRate(SOAPY_SDR_RX, 0, params->getRXRate());
   radio->setSampleRate(SOAPY_SDR_TX, 0, params->getTXRate());
+
+  // setup the DC correction to auto.
+  radio->setDCOffsetMode(SOAPY_SDR_RX, 0, true);
+  radio->setDCOffsetMode(SOAPY_SDR_TX, 0, true); 
 
   // initialize the GPIO pins (for TX/RX external relay)
   initControlGPIO();

@@ -125,7 +125,6 @@ namespace SoDa {
       std::transform(radio_type.begin(), radio_type.end(), radio_type.begin(), ::toupper);
       bool res = (rt == radio_type);
 
-      std::cerr << boost::format("comparing [%s] to [%s] got [%c]\n") % radio_type % rt % ((char) res ? 'T' : 'F');
       return res; 
     }
   private:

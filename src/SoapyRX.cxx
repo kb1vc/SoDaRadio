@@ -202,6 +202,10 @@ void SoDa::SoapyRX::run()
   }
 
   stopStream(); 
+
+  radio->deactivateStream(rx_bits); 
+  radio->closeStream(rx_bits); 
+  
 }
 
 void SoDa::SoapyRX::doMixer(SoDaBuf * inout)

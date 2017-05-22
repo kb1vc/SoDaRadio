@@ -123,6 +123,9 @@ SoDa::SoapyTX::SoapyTX(Params * params, SoDa::SoapyCtrl * _ctrl,
   insert_delay_wait_histo = new SoDa::Histogram(1000, 1e-3, 1.0);
 
   tx_enabled = false;
+
+  // send a zero buff for just a few samples to clear the TX
+  sendBuffer(zero_buf, 10); 
 }
 
 void SoDa::SoapyTX::run()
@@ -165,7 +168,6 @@ void SoDa::SoapyTX::run()
       // We're in a modulation mode like USB, LSB, AM, NBFM, ...
       Acount++; 
       tbuf = txbuf->getComplexBuf(); 
-      std::cerr << "*";
       double ts = getTime();
       stat = sendBuffer(tbuf, txbuf->getComplexLen()); 
       double te = getTime();
@@ -187,7 +189,6 @@ void SoDa::SoapyTX::run()
 	doCW(cw_buf, cwenv->getFloatBuf(), cwenv->getComplexLen());
 	// now send it to the radio
 	double ts = getTime();	
-	std::cerr << "C"; 
 	stat = sendBuffer(cw_buf, cwenv->getComplexLen()); 
 	double te = getTime();
 	send_histo->updateTable(te - ts); 
@@ -200,7 +201,6 @@ void SoDa::SoapyTX::run()
 	// we have an empty CW buffer -- we've run out of text.
 	Ccount++; 
 	doCW(cw_buf, zero_env, tx_buffer_size);
-	std::cerr << "E"; 
 	stat = sendBuffer(cw_buf, tx_buffer_size); 
 	// are we supposed to tell anybody about this? 
 	if(waiting_to_run_dry) {
@@ -218,7 +218,6 @@ void SoDa::SoapyTX::run()
       doCW(cw_buf, beacon_env, tx_buffer_size);
       // now send it to the radio
       double ts = getTime();      
-      std::cerr << "B";
       stat = sendBuffer(cw_buf, tx_buffer_size);
       double te = getTime();
       send_histo->updateTable(te - ts); 
@@ -265,8 +264,7 @@ void SoDa::SoapyTX::run()
 void SoDa::SoapyTX::doCW(std::complex<float> * out, float * envelope, unsigned int env_len)
 {
   unsigned int i;
-  std::complex<float> c;
-  
+  std::complex<float> c(1.0, 0.0);
   for(i = 0; i < env_len; i++) {
     c = CW_osc.stepOscCF(); 
     out[i] = c * envelope[i] * cw_env_amplitude;
@@ -283,16 +281,18 @@ void SoDa::SoapyTX::setCWFreq(bool usb, double freq)
 bool SoDa::SoapyTX::drainTXStream()
 {
   debugMsg("Writing zero_buf, draining tx stream\n");      
-  std::cerr << "&";      
   // send a zero filled buffer. 
   sendBuffer(zero_buf, tx_buffer_size, true);
-  std::cerr << "&";      	    
   // now wait for the end of buffer marker
   int itercount = 0; 
   while(!lookForEOB(10000)) {
     itercount++; 
     if((itercount & 0xff) == 0) {
       std::cerr << boost::format("Still looking for EOB after %d iterations.\n") % itercount;
+    }
+    if(itercount > 1024) {
+      std::cerr << "drainTXStream gives up after 1024 iterations." << std::endl;
+      return false; 
     }
   }
 
@@ -412,7 +412,6 @@ int SoDa::SoapyTX::sendBuffer(std::complex<float> * buf, size_t len, bool end_bu
   double tst, ten; 
   while(left > 0) {
     tst = getTime(); 
-    std::cerr << "S"; 
     int stat = radio->writeStream(tx_bits, (void**) buflist, left, flags); 
     ten = getTime();
     write_stream_histo->updateTable(ten - tst); 

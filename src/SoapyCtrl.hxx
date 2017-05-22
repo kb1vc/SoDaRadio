@@ -72,8 +72,15 @@ namespace SoDa {
     /// @param _cmd_stream Pointer to the command stream message channel.
     SoapyCtrl(const std::string & driver_name, Params * params, CmdMBox * _cmd_stream);
 
+    ~SoapyCtrl() {
+      if(radio != NULL) {
+	close();
+      }
+    }
+
     void close() {
       SoapySDR::Device::unmake(radio);
+      radio = NULL; 
     }
 
     /// start the thread
@@ -108,11 +115,12 @@ namespace SoDa {
     SoDa::CmdMBox * cmd_stream; 
     int subid; 
 
-
     // SoapySDR stuff.
     SoapySDR::Device * radio; ///< to which SoapySDR unit is this connected?
     SoapySDR::Range tx_rf_gain_range, rx_rf_gain_range; 
     SoapySDR::Range tx_freq_range, rx_freq_range; 
+
+    
 
     std::vector<std::string> GPIO_list;
     std::string tr_control_reg; 
