@@ -114,6 +114,8 @@ void SoDa::SoapyRX::run()
   std::complex<float> * dummy_bufptr[1];
   dummy_bufptr[0] = &(dummy[0]); 
 
+  dump_buf = new SoDaBuf(rx_buffer_size); 
+
   while(!ctrl->isReady()) {
     usleep(1000);
   }
@@ -158,6 +160,9 @@ void SoDa::SoapyRX::run()
 	left -= got;
       }
 
+
+      dump_buf->copy(buf); // CLIP LEAD!!!! remove for release
+      
       // If the anybody cares, send the IF buffer out.
       // If the UI is listening, it will do an FFT on the buffer
       // and send the positive spectrum via the UI to any listener.
@@ -205,7 +210,13 @@ void SoDa::SoapyRX::run()
 
   radio->deactivateStream(rx_bits); 
   radio->closeStream(rx_bits); 
-  
+
+  std::ofstream df("if_dump.dat"); 
+  std::complex<float> * ib = dump_buf->getComplexBuf(); 
+  for(unsigned int i = 0; i < rx_buffer_size; i++) {
+    df << boost::format("%d %g %g\n") % i % ib[i].real() % ib[i].imag(); 
+  }
+  df.close();
 }
 
 void SoDa::SoapyRX::doMixer(SoDaBuf * inout)

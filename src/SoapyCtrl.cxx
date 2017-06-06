@@ -97,6 +97,12 @@ SoDa::SoapyCtrl::SoapyCtrl(const std::string & driver_name, Params * _params, Cm
   rx_freq_range = SoapySDR::Range(rxrl[0].minimum(), rxrl[rxrl.size()-1].maximum());
   tx_freq_range = SoapySDR::Range(txrl[0].minimum(), txrl[txrl.size()-1].maximum());  
 
+
+  // it appears that the only antenna port that works correctly on my
+  // widget is LNAH
+  radio->setAntenna(SOAPY_SDR_RX, 0, "LNAL");
+  radio->setAntenna(SOAPY_SDR_TX, 0, "BAND1");  
+
   // for now set the master clock rate to 40MHz as that gets us the 
   // sample rate we need. 
   radio->setMasterClockRate(40.0e6);
@@ -107,8 +113,10 @@ SoDa::SoapyCtrl::SoapyCtrl(const std::string & driver_name, Params * _params, Cm
 
   // setup the DC correction to auto.
   radio->setDCOffsetMode(SOAPY_SDR_RX, 0, true);
-  radio->setDCOffsetMode(SOAPY_SDR_TX, 0, true); 
+  radio->setDCOffsetMode(SOAPY_SDR_TX, 0, false); 
 
+  // guess at the IQ balance for now
+  radio->setIQBalance(SOAPY_SDR_RX, 0, std::complex<double>(0.99, 0.01)); 
   // initialize the GPIO pins (for TX/RX external relay)
   initControlGPIO();
 
@@ -162,6 +170,7 @@ void SoDa::SoapyCtrl::makeRadio(const std::string & driver_name)
   }
 
   // make the radio
+  kwl[0]["cacheCalibrations"] = "1";
   radio = SoapySDR::Device::make(kwl[0]);
 
   model_name = kwl[0]["name"]; 
@@ -297,6 +306,11 @@ void SoDa::SoapyCtrl::execSetCommand(Command * cmd)
       radio->setFrequency(SOAPY_SDR_RX, 0, cmd->dparms[0]);
       // now send a GET lo offset command
       cmd_stream->put(new Command(Command::GET, Command::LO_OFFSET, 0));
+
+      std::cerr << "Temporary fix for DC OFFSET\n";     
+      radio->setIQBalance(SOAPY_SDR_TX, 0, std::complex<double>(0.999563,0.000293756));
+      radio->setDCOffset(SOAPY_SDR_TX, 0, std::complex<double>(-0.6, 0.1));
+      
     }
     break;
 
@@ -495,6 +509,15 @@ void SoDa::SoapyCtrl::set1stLOFreq(double freq, int sel, bool set_if_freq)
     last_rx_tune_freq = radio->getFrequency(SOAPY_SDR_RX, 0);
     debugMsg(boost::format("RX RF freq = %lf   RX BB freq = %lf\n")
 	     % radio->getFrequency(SOAPY_SDR_RX, 0, "RF") % radio->getFrequency(SOAPY_SDR_RX, 0, "BB"));
+    radio->setIQBalance(SOAPY_SDR_RX, 0, std::complex<double>(0.989624, 0.000244215));
+
+    std::cerr << "Temporary fix for DC OFFSET\n";     
+    radio->setIQBalance(SOAPY_SDR_TX, 0, std::complex<double>(0.999563,0.000293756));
+    radio->setDCOffset(SOAPY_SDR_TX, 0, std::complex<double>(-0.6, 0.1));
+    
+    std::complex<double> iqb = radio->getIQBalance(SOAPY_SDR_RX, 0); 
+    std::cerr << boost::format("Freq = %g MHz IQB [%g %g]\n")
+      % target_rx_freq % iqb.real() % iqb.imag();
   }
   else {
     // On the transmit side, we're using a minimal IF rate and
@@ -503,9 +526,15 @@ void SoDa::SoapyCtrl::set1stLOFreq(double freq, int sel, bool set_if_freq)
     // If the transmitter is off, we retune anyway to park the
     // transmit LO as far away as possible.   This is especially 
     // important for the UBX.
+
     radio->setFrequency(SOAPY_SDR_TX, 0, freq);
     debugMsg(boost::format("TX freq = %lf \n") % freq);
     last_tx_tune_freq = radio->getFrequency(SOAPY_SDR_TX, 0);
+
+    std::cerr << "Temporary fix for DC OFFSET\n";     
+    radio->setIQBalance(SOAPY_SDR_TX, 0, std::complex<double>(0.999563,0.000293756));
+    radio->setDCOffset(SOAPY_SDR_TX, 0, std::complex<double>(-0.6, 0.1));
+    
   }
 
   // If we are setting the RX mode, then we need to send

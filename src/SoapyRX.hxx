@@ -123,6 +123,7 @@ namespace SoDa {
     std::ofstream rf_dumpfile;
     std::ofstream if_dumpfile; 
     
+    SoDaBuf * dump_buf; 
   }; 
 }
 

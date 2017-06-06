@@ -71,7 +71,10 @@ SoDa::SoapyTX::SoapyTX(Params * params, SoDa::SoapyCtrl * _ctrl,
 #endif  
   tx_activated = false; 
 
-  radio->setDCOffsetMode(SOAPY_SDR_TX, 0, true); // set to automatic compensation
+  radio->setDCOffsetMode(SOAPY_SDR_TX, 0, false); // set to automatic compensation
+  std::cerr << "Temporary fix for DC OFFSET\n";
+  radio->setDCOffset(SOAPY_SDR_TX, 0, std::complex<double>(-0.6, 0.1));
+  // radio->setIQBalance(SOAPY_SDR_TX, 0, std::complex<double>(0.999563,0.000293756));          
 
   // find out how to configure the transmitter
   tx_sample_rate = params->getTXRate();
@@ -182,6 +185,10 @@ void SoDa::SoapyTX::run()
 	    tx_bits &&
 	    ((tx_modulation == SoDa::Command::CW_L) ||    
 	     (tx_modulation == SoDa::Command::CW_U))) {
+
+      // std::cerr << "Temporary fix for DC OFFSET\n";
+      // radio->setDCOffset(SOAPY_SDR_TX, 0, std::complex<double>(-0.6, 0.1));
+      // radio->setIQBalance(SOAPY_SDR_TX, 0, std::complex<double>(0.999563,0.000293756));          
       cwenv = cw_env_stream->get(cw_subs); 
       if(cwenv != NULL) {
 	Bcount++; 
@@ -306,7 +313,16 @@ void SoDa::SoapyTX::transmitSwitch(bool tx_on)
     if(tx_enabled) return;
     tx_enabled = true; 
     // reset the first_burst flag -- for buffer backlog book-keeping. 
-    first_burst = true; 
+    first_burst = true;
+
+    std::complex<double> dcoff = radio->getDCOffset(SOAPY_SDR_TX, 0); 
+    std::cerr << boost::format("TX DC Offset [%g %g]\n") % dcoff.real() % dcoff.imag();
+    std::cerr << "Temporary fix for DC OFFSET\n";     
+    radio->setIQBalance(SOAPY_SDR_TX, 0, std::complex<double>(0.999563,0.000293756));
+    radio->setDCOffset(SOAPY_SDR_TX, 0, std::complex<double>(-0.6, 0.1));
+    dcoff = radio->getDCOffset(SOAPY_SDR_TX, 0); 
+    std::cerr << boost::format("NOW TX DC Offset [%g %g]\n") % dcoff.real() % dcoff.imag();
+    
   }
   else {
     debugMsg("transmitSwitch off\n");
