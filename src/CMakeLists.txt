@@ -73,16 +73,8 @@ find_package(ALSA REQUIRED QUIET)
 find_package(FFTW3f REQUIRED QUIET)
 
 add_definitions(-DHAVE_LIBASOUND=1)
-add_definitions(-DHAVE_SOAPY_SDR=${HAVE_SOAPY_SDR})
 add_definitions(-DHAVE_UHD=${HAVE_UHD})
 
-IF(${HAVE_SOAPY_SDR})
-  LIST(APPEND  SoDaServer_SRCS
-    SoapyCtrl.cxx
-    SoapyRX.cxx
-    SoapyTX.cxx    
-    )
-ENDIF()
 
 IF(${HAVE_UHD})
   LIST(APPEND SoDaServer_SRCS
@@ -91,15 +83,17 @@ IF(${HAVE_UHD})
     USRPTX.cxx
     USRPFrontEnd.cxx
     )
+  LIST(APPEND Radio_INCLUDE_DIRS ${UHD_INCLUDE_DIRS})
+  LIST(APPEND Radio_LIBRARIES ${UHD_LIBRARIES})
 ENDIF()
 
 
-include_directories(SYSTEM ${Boost_INCLUDE_DIRS} ${SoapySDR_INCLUDE_DIRS} ${UHD_INCLUDE_DIRS} ${ALSA_INCLUDE_DIRS} ${FFTW3F_INCLUDE_DIRS})
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS} ${Radio_INCLUDE_DIRS} ${ALSA_INCLUDE_DIRS} ${FFTW3F_INCLUDE_DIRS})
 
 
 add_executable(SoDaServer ${SoDaServer_SRCS})
 
-target_link_libraries(SoDaServer rt ${Boost_LIBRARIES} ${SoapySDR_LIBRARIES} ${UHD_LIBRARIES} ${ALSA_LIBRARIES} ${FFTW3F_LIBRARIES})
+target_link_libraries(SoDaServer rt ${Boost_LIBRARIES}  ${Radio_LIBRARIES} ${ALSA_LIBRARIES} ${FFTW3F_LIBRARIES})
 
 
 install(TARGETS SoDaServer DESTINATION bin)

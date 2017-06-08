@@ -94,20 +94,6 @@ ELSE()
   ENDIF()
 ENDIF()
 
-IF(${NO_SOAPY_SDR})
-  MESSAGE("SoapySDR Support disabled.")
-  SET(HAVE_SOAPY_SDR 0)
-ELSE()
-  # Enable Soapy Support
-  FIND_PACKAGE(SoapySDR QUIET)
-  IF(NOT SoapySDR_LIBRARIES)
-    MESSAGE("SoapySDR NOT FOUND!")
-    SET(HAVE_SOAPY_SDR 0)
-  ELSE()
-    SET(HAVE_SOAPY_SDR 1)  
-  ENDIF()
-ENDIF()  
-
 
 
 

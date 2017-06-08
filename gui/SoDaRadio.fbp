@@ -40,7 +40,7 @@
             <property name="size">1280,810</property>
             <property name="style">wxDEFAULT_FRAME_STYLE</property>
             <property name="subclass"></property>
-            <property name="title">SoDa Radio </property>
+            <property name="title">SoDa Radio (by kb1vc)</property>
             <property name="tooltip"></property>
             <property name="validator_data_type"></property>
             <property name="validator_style">wxFILTER_NONE</property>
