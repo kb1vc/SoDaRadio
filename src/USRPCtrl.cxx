@@ -220,6 +220,7 @@ void SoDa::USRPCtrl::run()
 
   cmd_stream->put(new Command(Command::SET, Command::RX_ANT, 
 			     params->getRXAnt())); 
+  debugMsg(boost::format("Sending TX_ANT as [%s]\n") % params->getTXAnt());
   cmd_stream->put(new Command(Command::SET, Command::TX_ANT,
 			     params->getTXAnt()));
   cmd_stream->put(new Command(Command::SET, Command::CLOCK_SOURCE,
@@ -599,6 +600,7 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
   case Command::TX_ANT:
     tx_ant = cmd->sparm; 
     usrp->set_tx_antenna(cmd->sparm);
+    debugMsg(boost::format("Got TX antenna as [%s]\n") % usrp->get_tx_antenna());    
     cmd_stream->put(new Command(Command::REP, Command::TX_ANT, usrp->get_tx_antenna()));
     break;
 
@@ -671,6 +673,7 @@ void SoDa::USRPCtrl::execGetCommand(Command * cmd)
 				 % motherboard_name
 				 % (rx_rf_freq_range.start() * 1e-6)
 				 % (rx_rf_freq_range.stop() * 1e-6)).str()));
+    reportAntennas(); 
     break; 
   default:
     break; 
@@ -998,3 +1001,20 @@ void SoDa::USRPCtrl::testIntNMode(bool force_int_N, bool force_frac_N)
   return; 
 }
 
+void SoDa::USRPCtrl::reportAntennas() 
+{
+  std::vector<std::string> rx_ants = usrp->get_rx_antennas();
+  BOOST_FOREACH(std::string ant, rx_ants) {
+    debugMsg(boost::format("Sending RX antenna list element [%s]\n") % ant);
+    cmd_stream->put(new Command(Command::REP, Command::RX_ANT_NAME, 
+				ant)); 
+
+  }
+  std::vector<std::string> tx_ants = usrp->get_tx_antennas();
+  BOOST_FOREACH(std::string ant, tx_ants) {
+    debugMsg(boost::format("Sending TX antenna list element [%s]\n") % ant);    
+    cmd_stream->put(new Command(Command::REP, Command::TX_ANT_NAME, 
+				ant)); 
+
+  }
+}

@@ -250,7 +250,8 @@ namespace SoDaRadio_GUI {
 	    wxCommandEventHandler(SoDaRadio_Top::OnUpdateModelName));
     Connect(MSG_UPDATE_ANTNAME, wxEVT_COMMAND_MENU_SELECTED,
 	    wxCommandEventHandler(SoDaRadio_Top::OnUpdateAntName));
-
+    Connect(MSG_REPORT_SETTINGS, wxEVT_COMMAND_MENU_SELECTED,
+	    wxCommandEventHandler(SoDaRadio_Top::OnReportSettings));
     
     
     // setup status bar -- hardwire the accelerators for now.
@@ -258,7 +259,8 @@ namespace SoDaRadio_GUI {
     m_ClueBar->SetStatusWidths(3, widths);
     m_ClueBar->SetStatusText(wxT("^C Set To Call        ^G Set To Grid        ^L Enter Log Comment        ^X Enter CW Text"), 0);
 
-    setAntennaName(wxT("????"));
+    setAntennaName('R', wxT("????"));
+    setAntennaName('T', wxT("????"));    
   }
 
   void SoDaRadio_Top::configureRadio(SoDa::GuiParams & params) {
@@ -379,7 +381,15 @@ namespace SoDaRadio_GUI {
 		       rx_ant_sel);
     sendMsg(&ncmd);
   }
-  
+
+  void SoDaRadio_Top::setTXAnt(const std::string & tx_ant_sel)
+  {
+    debugMsg(boost::format("Sending TX ANT SEL message for ant [%s]\n") % tx_ant_sel); 
+    SoDa::Command ncmd(SoDa::Command::SET, SoDa::Command::TX_ANT,
+		       tx_ant_sel);
+    sendMsg(&ncmd);
+  }
+
   void SoDaRadio_Top::setGPSLoc(double lat, double lon)
   {
     wxMutexLocker lock(ctrl_mutex);

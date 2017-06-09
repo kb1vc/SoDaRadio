@@ -63,6 +63,48 @@ namespace SoDaRadio_GUI {
   class SpectConfigDialog;
   class TXAudioConfigDialog; 
 
+  class SettingReport { 
+  public:
+    enum REPORT_ID { RX_ANT_LIST, TX_ANT_LIST, RX_GAIN_RANGE, 
+		     TX_GAIN_RANGE, AF_GAIN_RANGE, FREQ_RANGE };     
+    SettingReport(REPORT_ID _repid, void * params)  
+    {
+      repid = _repid; 
+      double * dparm = (double*) params; 
+      switch (repid) {
+      case RX_ANT_LIST:
+      case TX_ANT_LIST:
+	list_el = std::string((char*) params); 
+	is_string = true; 
+	break; 
+      case RX_GAIN_RANGE:
+      case TX_GAIN_RANGE:
+      case AF_GAIN_RANGE:
+      case FREQ_RANGE:
+	min = dparm[0];
+	max = dparm[1];
+	is_string = false; 
+	break; 
+      }
+    }
+
+    bool IsString() const { return is_string; }
+
+    std::string GetString() const { return is_string ? list_el : ""; }
+
+    double GetMin() const { return min; }
+    double GetMax() const { return max; }    
+
+    REPORT_ID GetRepID() const { return repid; }
+    
+  protected:
+    std::string list_el; 
+    double min, max; 
+    REPORT_ID repid; 
+    bool is_string; 
+  }; 
+
+
   /**
    * The SoDaRadio object
    *
@@ -187,7 +229,7 @@ namespace SoDaRadio_GUI {
     wxString getModeString() { return m_ModeBox->GetStringSelection(); }
 
     // message types. 
-    enum MSG_ID { MSG_UPDATE_SPECTRUM, MSG_HANDLE_CMD, MSG_UPDATE_GPSLOC, MSG_UPDATE_GPSTIME, MSG_TERMINATE_TX, MSG_UPDATE_MODELNAME, MSG_UPDATE_ANTNAME };
+    enum MSG_ID { MSG_UPDATE_SPECTRUM, MSG_HANDLE_CMD, MSG_UPDATE_GPSLOC, MSG_UPDATE_GPSTIME, MSG_TERMINATE_TX, MSG_UPDATE_MODELNAME, MSG_UPDATE_ANTNAME, MSG_REPORT_SETTINGS };
     /** Constructor */
     SoDaRadio_Top( SoDa::GuiParams & parms, wxWindow* parent );
     // plot maintenance
@@ -254,24 +296,63 @@ namespace SoDaRadio_GUI {
     }
 
     wxString rx_antenna_name;
-    
-    void setAntennaName(const wxString & name) {
+    wxString tx_antenna_name;    
+
+    std::list<SettingReport> settings_list; 
+
+    void sendSettingsEvent(SettingReport::REPORT_ID repid, char * str) {
+      debugMsg(boost::format("post repid %d settings [%s]\n") % repid % str);
+      wxMutexLocker lock(ctrl_mutex);      
+      SettingReport rep(repid, str);
+      settings_list.push_back(rep); 
+      wxCommandEvent event(wxEVT_COMMAND_MENU_SELECTED,
+			   SoDaRadio_Top::MSG_REPORT_SETTINGS);
+      pendEvent(event); 
+    }
+
+    void sendSettingsEvent(SettingReport::REPORT_ID repid, double * param) {
+      debugMsg(boost::format("post repid %d settings [%g, %g]\n") % repid % param[0] % param[1]);
+      wxMutexLocker lock(ctrl_mutex);      
+      SettingReport rep(repid, param);
+      settings_list.push_back(rep); 
+
+      wxCommandEvent event(wxEVT_COMMAND_MENU_SELECTED,
+			   SoDaRadio_Top::MSG_REPORT_SETTINGS);
+      pendEvent(event); 
+    }
+
+
+    void setAntennaName(char dir, const wxString & name) {
       wxMutexLocker lock(ctrl_mutex);
-      rx_antenna_name = name;
+      debugMsg(boost::format("Set RX antenna name to [%s]\n") % std::string(name.mb_str()));
+      if(dir == 'R') {
+	rx_antenna_name = name;
+      }
+      else if(dir == 'T') {
+	tx_antenna_name = name; 
+      }
       wxCommandEvent event(wxEVT_COMMAND_MENU_SELECTED,
 			   SoDaRadio_Top::MSG_UPDATE_ANTNAME);
       pendEvent(event); 
     }
 
+    void OnReportSettings(wxCommandEvent & event);
+    
     void OnUpdateAntName(wxCommandEvent & event) {
       (void) event; 
-      wxString lab = wxT("RX_Ant: ") + rx_antenna_name;
+      wxString lab = wxT("RX_Ant: ") + rx_antenna_name + 
+	             wxT("   TX_Ant: ") + tx_antenna_name;      
       m_ClueBar->SetStatusText(lab, 2);
       // also update the choice box. 
-      wxString wx_rx_ant_name(rx_antenna_name); 
-      int sel = m_AntChoice->FindString(wx_rx_ant_name);
+      wxString wx_rx_ant_name(rx_antenna_name);
+      wxString wx_tx_ant_name(tx_antenna_name);       
+      int sel = m_RxAntChoice->FindString(wx_rx_ant_name);
       if(sel != wxNOT_FOUND) {
-	m_AntChoice->SetSelection(sel);
+	m_RxAntChoice->SetSelection(sel);
+      }
+      sel = m_TxAntChoice->FindString(wx_tx_ant_name);
+      if(sel != wxNOT_FOUND) {
+	m_TxAntChoice->SetSelection(sel);
       }
     }
 
@@ -398,6 +479,8 @@ namespace SoDaRadio_GUI {
 
     // the antenna choice
     void setRXAnt(const std::string & rx_ant_sel); 
+    // the antenna choice
+    void setTXAnt(const std::string & tx_ant_sel); 
 
     double tx_transverter_offset, rx_transverter_offset;
 
@@ -670,6 +753,15 @@ namespace SoDaRadio_GUI {
     /// load the configuration list with the bands we know about.
     void initBandList(SoDaRadio_BandSet * bandset);
 
+    void addAntItem(char dir, const wxString & ant_name) {
+      if (dir == 'R') {
+	m_RXAntChoice->Append(ant_name); 
+      }
+      else if (dir == 'T') {
+	m_TXAntChoice->Append(ant_name); 
+      }
+    }
+
     void clearTextBoxes() {
       m_BandName->Clear();
       m_low_edge->Clear();
@@ -863,5 +955,6 @@ namespace SoDaRadio_GUI {
   private:
     SoDaRadio_Top * radio_top; 
   }; 
+
 }
 #endif // __SoDaRadio_Top__

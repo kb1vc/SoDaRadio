@@ -125,6 +125,10 @@ namespace SoDa {
 				 char sel,
 				 uhd::tune_result_t & cur);
 
+    /**
+     * report the antennas that are available, send the report on cmd_stream
+     */
+    void reportAntennas(); 
 
     /// Set the front-end (LO + DDS) frequency to 'freq'
     /// This includes setting the PLL front end synthesizer

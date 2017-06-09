@@ -416,6 +416,26 @@ namespace SoDa {
        * Enable the TX audio bandpass filter (limit to 2.5 kHz) for SSB/AM/FM
        */
       TX_AUDIO_FILT_ENA, 
+
+      /** 
+       * Report min max RX Gain setting (dparm[0,1] = min, max)
+       */
+      RX_GAIN_RANGE, 
+
+      /** 
+       * Report min max TX Gain setting (dparm[0,1] = min, max)
+       */
+      TX_GAIN_RANGE, 
+
+      /** 
+       * Report RX antenna choice (asciiz string)
+       */
+      RX_ANT_NAME, 
+      
+      /** 
+       * Report TX antenna choice (asciiz string)
+       */
+      TX_ANT_NAME, 
       
       /**
        * No comment

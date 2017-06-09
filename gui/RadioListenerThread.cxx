@@ -202,8 +202,20 @@ namespace SoDaRadio_GUI {
       break;
     case SoDa::Command::RX_ANT:
       debugMsg(boost::format("Got RX antenna report [%s]\n") % cmd->sparm);
-      radio_gui->setAntennaName(wxString((char*) cmd->sparm, wxConvUTF8));
+      radio_gui->setAntennaName('R', wxString((char*) cmd->sparm, wxConvUTF8));
       break;
+    case SoDa::Command::TX_ANT:
+      debugMsg(boost::format("Got TX antenna report [%s]\n") % cmd->sparm);
+      radio_gui->setAntennaName('T', wxString((char*) cmd->sparm, wxConvUTF8));
+      break;
+    case SoDa::Command::RX_ANT_NAME:
+      debugMsg(boost::format("Got RX antenna list element [%s]\n") % cmd->sparm);      
+      radio_gui->sendSettingsEvent(SettingReport::RX_ANT_LIST, cmd->sparm);
+      break;
+    case SoDa::Command::TX_ANT_NAME:
+      debugMsg(boost::format("Got TX antenna list element [%s]\n") % cmd->sparm); 
+      radio_gui->sendSettingsEvent(SettingReport::TX_ANT_LIST, cmd->sparm);      
+      break; 
     default:
       break; 
     }

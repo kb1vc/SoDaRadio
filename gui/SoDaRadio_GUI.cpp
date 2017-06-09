@@ -404,7 +404,7 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 	sbSizer29 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("TX PTT") ), wxVERTICAL );
 	
 	m_PTT = new wxButton( this, wxID_ANY, wxT(" TX\nOFF"), wxDefaultPosition, wxDefaultSize, 0 );
-	m_PTT->SetFont( wxFont( 30, 70, 90, 92, false, wxEmptyString ) );
+	m_PTT->SetFont( wxFont( 20, 70, 90, 92, false, wxEmptyString ) );
 	m_PTT->SetForegroundColour( wxColour( 240, 240, 240 ) );
 	m_PTT->SetBackgroundColour( wxColour( 19, 43, 223 ) );
 	
@@ -461,16 +461,30 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 	
 	sbSizer29->Add( bSizer53, 1, wxEXPAND, 5 );
 	
-	wxStaticBoxSizer* sbSizer36;
-	sbSizer36 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("RX Ant:") ), wxVERTICAL );
+	wxBoxSizer* bSizer74;
+	bSizer74 = new wxBoxSizer( wxHORIZONTAL );
 	
-	wxString m_AntChoiceChoices[] = { wxT("RX2"), wxT("TX/RX") };
-	int m_AntChoiceNChoices = sizeof( m_AntChoiceChoices ) / sizeof( wxString );
-	m_AntChoice = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_AntChoiceNChoices, m_AntChoiceChoices, 0 );
-	m_AntChoice->SetSelection( 1 );
-	sbSizer36->Add( m_AntChoice, 0, wxALL, 5 );
+	wxStaticBoxSizer* sbSizer371;
+	sbSizer371 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("RX Ant") ), wxVERTICAL );
 	
-	sbSizer29->Add( sbSizer36, 1, wxEXPAND, 5 );
+	wxArrayString m_RxAntChoiceChoices;
+	m_RxAntChoice = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_RxAntChoiceChoices, 0 );
+	m_RxAntChoice->SetSelection( 1 );
+	sbSizer371->Add( m_RxAntChoice, 0, wxALL, 5 );
+	
+	bSizer74->Add( sbSizer371, 1, 0, 5 );
+	
+	wxStaticBoxSizer* sbSizer38;
+	sbSizer38 = new wxStaticBoxSizer( new wxStaticBox( this, wxID_ANY, wxT("TX Ant") ), wxVERTICAL );
+	
+	wxArrayString m_TxAntChoiceChoices;
+	m_TxAntChoice = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_TxAntChoiceChoices, 0 );
+	m_TxAntChoice->SetSelection( 1 );
+	sbSizer38->Add( m_TxAntChoice, 0, wxALL, 5 );
+	
+	bSizer74->Add( sbSizer38, 1, 0, 5 );
+	
+	sbSizer29->Add( bSizer74, 1, wxEXPAND, 5 );
 	
 	QSOSizer->Add( sbSizer29, 0, 0, 5 );
 	
@@ -551,7 +565,8 @@ SoDaRadioFrame::SoDaRadioFrame( wxWindow* parent, wxWindowID id, const wxString&
 	m_LogCommentBox->Connect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( SoDaRadioFrame::OnSaveComment ), NULL, this );
 	CtrlPopup->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnCtrlPopup ), NULL, this );
 	m_PTT->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnTXOnOff ), NULL, this );
-	m_AntChoice->Connect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnAntChoice ), NULL, this );
+	m_RxAntChoice->Connect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnAntChoice ), NULL, this );
+	m_TxAntChoice->Connect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnAntChoice ), NULL, this );
 }
 
 SoDaRadioFrame::~SoDaRadioFrame()
@@ -628,7 +643,8 @@ SoDaRadioFrame::~SoDaRadioFrame()
 	m_LogCommentBox->Disconnect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( SoDaRadioFrame::OnSaveComment ), NULL, this );
 	CtrlPopup->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnCtrlPopup ), NULL, this );
 	m_PTT->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( SoDaRadioFrame::OnTXOnOff ), NULL, this );
-	m_AntChoice->Disconnect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnAntChoice ), NULL, this );
+	m_RxAntChoice->Disconnect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnAntChoice ), NULL, this );
+	m_TxAntChoice->Disconnect( wxEVT_COMMAND_CHOICE_SELECTED, wxCommandEventHandler( SoDaRadioFrame::OnAntChoice ), NULL, this );
 	
 }
 
@@ -1753,11 +1769,19 @@ m_BandConfigDialog::m_BandConfigDialog( wxWindow* parent, wxWindowID id, const w
 	m_staticText27->Wrap( -1 );
 	bSizer62->Add( m_staticText27, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 	
-	wxString m_RXAntChoiceChoices[] = { wxT("TX/RX"), wxT("RX2") };
-	int m_RXAntChoiceNChoices = sizeof( m_RXAntChoiceChoices ) / sizeof( wxString );
-	m_RXAntChoice = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_RXAntChoiceNChoices, m_RXAntChoiceChoices, 0 );
+	wxArrayString m_RXAntChoiceChoices;
+	m_RXAntChoice = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_RXAntChoiceChoices, 0 );
 	m_RXAntChoice->SetSelection( 0 );
 	bSizer62->Add( m_RXAntChoice, 0, wxALL, 5 );
+	
+	m_staticText40 = new wxStaticText( this, wxID_ANY, wxT("TX Antenna"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText40->Wrap( -1 );
+	bSizer62->Add( m_staticText40, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+	
+	wxArrayString m_TXAntChoiceChoices;
+	m_TXAntChoice = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_TXAntChoiceChoices, 0 );
+	m_TXAntChoice->SetSelection( 0 );
+	bSizer62->Add( m_TXAntChoice, 0, wxALL, 5 );
 	
 	AntFreqRange->Add( bSizer62, 1, wxEXPAND, 5 );
 	

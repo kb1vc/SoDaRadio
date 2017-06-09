@@ -109,7 +109,8 @@ namespace SoDaRadio_GUI
 			wxStaticText* m_GPSGrid;
 			wxStaticText* m_GPSLat;
 			wxStaticText* m_GPSLon;
-			wxChoice* m_AntChoice;
+			wxChoice* m_RxAntChoice;
+			wxChoice* m_TxAntChoice;
 			
 			// Virtual event handlers, overide them in your derived class
 			virtual void OnClose( wxCloseEvent& event ) { event.Skip(); }
@@ -464,6 +465,8 @@ namespace SoDaRadio_GUI
 			wxTextCtrl* m_BandName;
 			wxStaticText* m_staticText27;
 			wxChoice* m_RXAntChoice;
+			wxStaticText* m_staticText40;
+			wxChoice* m_TXAntChoice;
 			wxStaticText* m_staticText31;
 			wxTextCtrl* m_low_edge;
 			wxStaticText* m_staticText34;

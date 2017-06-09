@@ -51,7 +51,18 @@ public:
     last_tx_freq = banditem->get<double>("last_tx_freq");
     last_rx_freq = banditem->get<double>("last_rx_freq");
 
-    rx_antenna_choice = banditem->get<std::string>("rx_antenna_choice");
+    if(banditem->count("rx_antenna_choice") != 0) {
+      rx_antenna_choice = banditem->get<std::string>("rx_antenna_choice");
+    } else {
+      rx_antenna_choice = "TX/RX"; 
+    }
+
+    if(banditem->count("tx_antenna_choice") != 0) {
+      tx_antenna_choice = banditem->get<std::string>("tx_antenna_choice");
+    } else {
+      tx_antenna_choice = "TX/RX"; 
+    }
+
     default_mode = banditem->get<std::string>("default_mode");
 
     enable_transmit = banditem->get<bool>("enable_transmit");
@@ -109,14 +120,16 @@ public:
   SoDaRadio_Band(std::string name, double lower, double upper,
 		 std::string mode, 
 		 std::string rx_ant,
+		 std::string tx_ant,		 
 		 unsigned char _band_id, 
 		 bool tx_ena) : SoDa::Debug("SoDaRadio_Band") {
-    setupBand(name, lower, upper, mode, rx_ant, _band_id, tx_ena);
+    setupBand(name, lower, upper, mode, rx_ant, tx_ant,_band_id, tx_ena);
   }
 
   void setupBand(std::string name, double lower, double upper,
 		 std::string mode, 
 		 std::string rx_ant,
+		 std::string tx_ant,		 
 		 unsigned char _band_id,
 		 bool tx_ena) {
     transverter_mode = false;
@@ -125,6 +138,7 @@ public:
     upper_band_edge = upper;
     lower_band_edge = lower;
     rx_antenna_choice = rx_ant;
+    tx_antenna_choice = tx_ena ? tx_ant : std::string("");    
     default_mode = mode;
     enable_transmit = tx_ena;
     band_id = _band_id; 
@@ -157,6 +171,7 @@ public:
     band.put("last_rx_freq", last_rx_freq);
     band.put("last_tx_freq", last_tx_freq);
     band.put("rx_antenna_choice", rx_antenna_choice);
+    band.put("tx_antenna_choice", tx_antenna_choice);    
     band.put("enable_transmit", enable_transmit); 
     band.put("default_mode", default_mode);
     band.put("band_id", band_id);
@@ -229,7 +244,8 @@ public:
   float rf_gain; ///< receiver RF gain
   int af_bw; ///< receiver AF bandwidth -- select filter
 
-  std::string rx_antenna_choice; ///< choose one port or the other for RX -- tx is always TX/RX port.
+  std::string rx_antenna_choice; ///< choose a port  for RX
+  std::string tx_antenna_choice; ///< choose a port  for TX
   
   unsigned char band_id; ///< an 8 bit specifier to select the band on an external bandswitch.
 }; 

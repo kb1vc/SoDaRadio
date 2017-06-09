@@ -434,11 +434,41 @@ namespace SoDaRadio_GUI {
     }
   }
 
+  void SoDaRadio_Top::OnReportSettings(wxCommandEvent & event) {
+    // page through the settings list
+    debugMsg("In OnReportSettings!\n");
+    wxMutexLocker lock(ctrl_mutex); 
+    while(!settings_list.empty()) {
+      SettingReport rep = settings_list.front(); settings_list.pop_front();
+      
+      switch (rep.GetRepID()) {
+      case SettingReport::RX_ANT_LIST:
+	debugMsg(boost::format("Appending [%s] to RX ant list\n") % rep.GetString());
+	m_RxAntChoice->Append(wxString(rep.GetString().c_str(),wxConvUTF8));
+	bandconf->addAntItem('R', wxString(rep.GetString().c_str(),wxConvUTF8));
+	break; 
+      case SettingReport::TX_ANT_LIST:
+	debugMsg(boost::format("Appending [%s] to TX ant list\n") % rep.GetString());	
+	m_TxAntChoice->Append(wxString(rep.GetString().c_str(),wxConvUTF8));
+	bandconf->addAntItem('T', wxString(rep.GetString().c_str(),wxConvUTF8));	
+	break; 
+      }
+    }
+    wxCommandEvent nevent(wxEVT_COMMAND_MENU_SELECTED,
+			 SoDaRadio_Top::MSG_UPDATE_ANTNAME);
+    pendEvent(nevent); 
+  }
+
   void SoDaRadio_Top::OnAntChoice( wxCommandEvent& event )
   {
-    (void) event;     
-    wxString ant_string = m_AntChoice->GetStringSelection();
-    setRXAnt(std::string(ant_string.mb_str()));
+    wxChoice * w = (wxChoice *) event.GetEventObject();
+    wxString ant_string = w->GetStringSelection();
+    if(w == m_RxAntChoice) {
+      setRXAnt(std::string(ant_string.mb_str()));
+    }
+    else if(w == m_TxAntChoice) {
+      setTXAnt(std::string(ant_string.mb_str()));
+    }
   }
 
   void SoDaRadio_Top::OnModeChoice( wxCommandEvent& event )
@@ -1499,12 +1529,13 @@ namespace SoDaRadio_GUI {
     }
     
     std::string mode = std::string(m_ModChoice->GetStringSelection().mb_str());
-    std::string ant = std::string(m_RXAntChoice->GetStringSelection().mb_str());
+    std::string rx_ant = std::string(m_RXAntChoice->GetStringSelection().mb_str());
+    std::string tx_ant = std::string(m_RXAntChoice->GetStringSelection().mb_str());    
     bool ena = m_TXEna->IsChecked();
     unsigned char bid = (unsigned char) (m_BandID->GetValue() & 0xff);
 
     if(!found_problem) {
-      newband->setupBand(bandname, le, ue, mode, ant, bid, ena);
+      newband->setupBand(bandname, le, ue, mode, rx_ant, tx_ant, bid, ena);
       if(m_TransverterMode->IsChecked()) {
 	newband->setupTransverter(tr_lo, tr_mult, lsi, local_lo); 
       }
