@@ -42,6 +42,7 @@
 			<last_rx_freq>50</last_rx_freq>
 			<last_tx_freq>50</last_tx_freq>
 			<rx_antenna_choice>RX2</rx_antenna_choice>
+			<tx_antenna_choice>TX/RX</tx_antenna_choice>		
 			<enable_transmit>true</enable_transmit>
 			<default_mode>CW_U</default_mode>
 			<band_id>1</band_id>
@@ -66,6 +67,7 @@
 			<last_rx_freq>144.2959444444444</last_rx_freq>
 			<last_tx_freq>144.2910555555555</last_tx_freq>
 			<rx_antenna_choice>RX2</rx_antenna_choice>
+			<tx_antenna_choice>TX/RX</tx_antenna_choice>
 			<enable_transmit>true</enable_transmit>
 			<default_mode>CW_U</default_mode>
 			<band_id>1</band_id>
@@ -90,6 +92,7 @@
 			<last_rx_freq>219</last_rx_freq>
 			<last_tx_freq>219</last_tx_freq>
 			<rx_antenna_choice>RX2</rx_antenna_choice>
+			<tx_antenna_choice>TX/RX</tx_antenna_choice>
 			<enable_transmit>true</enable_transmit>
 			<default_mode>CW_U</default_mode>
 			<band_id>2</band_id>
@@ -114,6 +117,7 @@
 			<last_rx_freq>420</last_rx_freq>
 			<last_tx_freq>420</last_tx_freq>
 			<rx_antenna_choice>RX2</rx_antenna_choice>
+			<tx_antenna_choice>TX/RX</tx_antenna_choice>
 			<enable_transmit>true</enable_transmit>
 			<default_mode>CW_U</default_mode>
 			<band_id>2</band_id>
@@ -138,6 +142,7 @@
 			<last_rx_freq>902</last_rx_freq>
 			<last_tx_freq>902</last_tx_freq>
 			<rx_antenna_choice>RX2</rx_antenna_choice>
+			<tx_antenna_choice>TX/RX</tx_antenna_choice>
 			<enable_transmit>true</enable_transmit>
 			<default_mode>CW_U</default_mode>
 			<band_id>2</band_id>
@@ -162,6 +167,7 @@
 			<last_rx_freq>1240</last_rx_freq>
 			<last_tx_freq>1240</last_tx_freq>
 			<rx_antenna_choice>RX2</rx_antenna_choice>
+			<tx_antenna_choice>TX/RX</tx_antenna_choice>
 			<enable_transmit>true</enable_transmit>
 			<default_mode>CW_U</default_mode>
 			<band_id>2</band_id>
@@ -186,6 +192,7 @@
 			<last_rx_freq>10368.09572222222</last_rx_freq>
 			<last_tx_freq>10368</last_tx_freq>
 			<rx_antenna_choice>RX2</rx_antenna_choice>
+			<tx_antenna_choice>TX/RX</tx_antenna_choice>
 			<enable_transmit>true</enable_transmit>
 			<default_mode>CW_U</default_mode>
 			<band_id>3</band_id>
@@ -213,6 +220,7 @@
 			<last_rx_freq>10368.09572222222</last_rx_freq>
 			<last_tx_freq>10368.09572222222</last_tx_freq>
 			<rx_antenna_choice>TX/RX</rx_antenna_choice>
+			<tx_antenna_choice>TX/RX</tx_antenna_choice>
 			<enable_transmit>true</enable_transmit>
 			<default_mode>CW_U</default_mode>
 			<band_id>3</band_id>
@@ -240,6 +248,7 @@
 			<last_rx_freq>88.5</last_rx_freq>
 			<last_tx_freq>87</last_tx_freq>
 			<rx_antenna_choice>RX2</rx_antenna_choice>
+			<tx_antenna_choice>TX/RX</tx_antenna_choice>
 			<enable_transmit>false</enable_transmit>
 			<default_mode>WBFM</default_mode>
 			<band_id>2</band_id>
@@ -264,6 +273,7 @@
 			<last_rx_freq>162.3997777777778</last_rx_freq>
 			<last_tx_freq>162.3</last_tx_freq>
 			<rx_antenna_choice>RX2</rx_antenna_choice>
+			<tx_antenna_choice>TX/RX</tx_antenna_choice>
 			<enable_transmit>false</enable_transmit>
 			<default_mode>NBFM</default_mode>
 			<band_id>4</band_id>
