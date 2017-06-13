@@ -8,7 +8,7 @@ OPTION(BUILD_UNIT_TESTS "Build the unit tests -- not normally useful" ON)
 
 SET(SoDaRadio_VERSION_MAJOR 4)
 SET(SoDaRadio_VERSION_MINOR 2)
-SET(SoDaRadio_VERSION_PATCH 1)
+SET(SoDaRadio_VERSION_PATCH 2)
 SET(SoDaRadio_VERSION "${SoDaRadio_VERSION_MAJOR}.${SoDaRadio_VERSION_MINOR}.${SoDaRadio_VERSION_PATCH}")
 
 # Package generation for the source tarball

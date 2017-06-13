@@ -35,7 +35,7 @@ SoDa::Params::Params(int argc, char * argv[])
   po::options_description desc("Allowed options");
   desc.add_options()
     ("help", "help message")
-    ("radioargs", po::value<std::string>(&radio_args)->default_value(""),
+    ("uhdargs", po::value<std::string>(&radio_args)->default_value(""),
      "extra parameters to pass to device creator (e.g. device id, address, type)")
     ("config",  po::value<std::string>(&config_filename)->default_value("~/.soda/config.xml"),
      "configuration file for initial settings")
