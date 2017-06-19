@@ -7,7 +7,6 @@ LogTable::LogTable(QWidget *parent) :
     horizontalHeader()->setStretchLastSection(true);
     setShowGrid(true);
 
-    //connect(this, &LogTable::cellChanged, this, &LogTable::reportChange);
     connect(this, &LogTable::cellChanged,
             [this](int row, int col) {
     emit entryUpdated(row, this->current_headers.at(col).toStdString(), this->item(row, col)->text().toStdString()); });
@@ -18,11 +17,6 @@ void LogTable::setKeys(QStringList headers)
     current_headers = headers; // save the header list -- they'll be used for keys.
     setColumnCount(headers.size());
     setHorizontalHeaderLabels(headers);
-}
-
-void LogTable::reportChange(int row, int col)
-{
-    emit entryUpdated(row, current_headers.at(col).toStdString(), item(row, col)->text().toStdString());
 }
 
 LogTable::~LogTable()
