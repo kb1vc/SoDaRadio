@@ -155,7 +155,7 @@ target_link_libraries(Hilbert_Test ${TEST_LIBS})
 
 ########### next target ###############
 
-set(FindHome_Test_SRCS FindHome_Test.cxx ../gui/FindHome.cxx ../gui/FindHome.hxx)
+set(FindHome_Test_SRCS FindHome_Test.cxx ../src/FindHome.cxx ../src/FindHome.hxx)
 
 add_executable(FindHome_Test ${FindHome_Test_SRCS})
 

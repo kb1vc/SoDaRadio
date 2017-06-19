@@ -4,12 +4,11 @@
 
 #build the GUI from the generated sources from wxFormBuilder
 #  SoDaRadio_GUI.cpp
-#execute_process(COMMAND /bin/bash ${PROJECT_SOURCE_DIR}/gui/adjust_GUI.sh ${PROJECT_SOURCE_DIR}/gui ${PROJECT_BINARY_DIR} ${PROJECT_BINARY_DIR})
 
 ADD_CUSTOM_COMMAND(OUTPUT
   ${PROJECT_BINARY_DIR}/SoDaRadio_GUI.cxx
-  COMMAND /bin/bash ${PROJECT_SOURCE_DIR}/gui/adjust_GUI.sh ${PROJECT_SOURCE_DIR}/gui ${PROJECT_BINARY_DIR} ${PROJECT_BINARY_DIR}  
-  DEPENDS ${PROJECT_SOURCE_DIR}/gui/SoDaRadio_GUI.cpp ${PROJECT_SOURCE_DIR}/gui/adjust_GUI.sh )
+  COMMAND /bin/bash ${CMAKE_CURRENT_SOURCE_DIR}/adjust_GUI.sh ${CMAKE_CURRENT_SOURCE_DIR} ${PROJECT_BINARY_DIR} ${PROJECT_BINARY_DIR}  
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/SoDaRadio_GUI.cpp ${CMAKE_CURRENT_SOURCE_DIR}/adjust_GUI.sh )
 
 set(SoDaRadio_SRCS
     SoDaRadio_App.cxx
@@ -35,22 +34,18 @@ set(SoDaRadio_SRCS
     TunerDigit.hxx
     waterfall.hxx
     xyplot.hxx
-    FindHome.hxx
-    FindHome.cxx
+    ../src/FindHome.hxx
+    ../src/FindHome.cxx
     Default.soda_cfg.h
     SoDaRadio_Band.hxx
     ../src/Debug.hxx
     ../src/Debug.cxx
     )
 
-  ### wxWidgets 3.0 is a trainwreck
-set(wxWidgets_CONFIG_OPTIONS --version=2.8)
-find_package(wxWidgets COMPONENTS core base richtext aui xrc qa html adv  QUIET)
-include(${wxWidgets_USE_FILE})
   
 add_executable(SoDaRadio ${SoDaRadio_SRCS})
 
-include_directories(SYSTEM ${Boost_INCLUDE_DIRS} ${wxWidgets_INCLUDE_DIRS} ${PROJECT_SOURCE_DIR}/gui)
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS} ${wxWidgets_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_compile_options(SoDaRadio BEFORE PUBLIC -Wno-deprecated-declarations)
 

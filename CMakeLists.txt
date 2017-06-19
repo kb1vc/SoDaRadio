@@ -1,14 +1,16 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8.9) # this lets out really old distros like CentOS 6
 
-# only works for versions > 3.0 cmake_policy(SET CMP0048 NEW)
+IF(CMAKE_VERSION VERSION_GREATER 3.0.0)
+  CMAKE_POLICY(SET CMP0048 NEW)
+ENDIF()
 
 PROJECT(SoDaRadio)
 
 OPTION(BUILD_UNIT_TESTS "Build the unit tests -- not normally useful" ON)
 
-SET(SoDaRadio_VERSION_MAJOR 4)
-SET(SoDaRadio_VERSION_MINOR 2)
-SET(SoDaRadio_VERSION_PATCH 2)
+SET(SoDaRadio_VERSION_MAJOR 5)
+SET(SoDaRadio_VERSION_MINOR 0)
+SET(SoDaRadio_VERSION_PATCH 0)
 SET(SoDaRadio_VERSION "${SoDaRadio_VERSION_MAJOR}.${SoDaRadio_VERSION_MINOR}.${SoDaRadio_VERSION_PATCH}")
 
 # Package generation for the source tarball
@@ -31,8 +33,6 @@ CONFIGURE_FILE(
   "${CMAKE_CURRENT_BINARY_DIR}/project_rpm.spec" @ONLY)
 SET(CPACK_RPM_USER_BINARY_SPECFILE "${CMAKE_CURRENT_BINARY_DIR}/project_rpm.spec")
 INCLUDE(CPack)
-
-
 
 
 MESSAGE("SoDaRadio_VERSION=[${SoDaRadio_VERSION}]")
@@ -95,10 +95,30 @@ ELSE()
 ENDIF()
 
 
-
-
+# This is the radio interface... 
 ADD_SUBDIRECTORY(src)
-ADD_SUBDIRECTORY(gui)
+
+
+IF(CMAKE_VERSION VERSION_GREATER 3.0.0)
+  ### new GUI is qt5 based -- but we don't want to fiddle with it
+  ### unless the cmake version is at 3+
+  FIND_PACKAGE(Qt5Widgets )
+  IF(Qt5Widgets_FOUND)
+    MESSAGE("Building qt gui")
+    ADD_SUBDIRECTORY(qtgui)
+  ENDIF()
+ENDIF()
+
+
+### wxWidgets 3.0 is a trainwreck
+set(wxWidgets_CONFIG_OPTIONS --version=2.8)
+find_package(wxWidgets COMPONENTS core base richtext aui xrc qa html adv  QUIET)
+include(${wxWidgets_USE_FILE})
+IF(wxWidgets_FOUND)
+  MESSAGE("Building wx gui")  
+  ADD_SUBDIRECTORY(wxgui)
+ENDIF()
+
 IF(BUILD_UNIT_TESTS)
   ADD_SUBDIRECTORY(exp)
 ENDIF()

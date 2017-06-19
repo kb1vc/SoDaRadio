@@ -37,7 +37,7 @@ extern "C" {
 #include "../src/Debug.hxx"
 #include <boost/format.hpp>
 #include "SoDaLogo.xpm"
-#include "FindHome.hxx"
+#include "../src/FindHome.hxx"
 /**
  * @file SoDaRadio_Top.cxx
  *

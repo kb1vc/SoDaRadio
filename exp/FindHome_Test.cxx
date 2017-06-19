@@ -1,4 +1,4 @@
-#include "../gui/FindHome.hxx"
+#include "../src/FindHome.hxx"
 #include <boost/format.hpp>
 #include <iostream>
 
