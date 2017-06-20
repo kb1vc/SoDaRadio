@@ -17,6 +17,7 @@ public:
 
 public slots:
     void newRXFreq(double freq);
+    void closeRadio();
 
 private:
     Ui::MainWindow *ui;

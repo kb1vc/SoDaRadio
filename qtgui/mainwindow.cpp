@@ -32,3 +32,8 @@ void MainWindow::newRXFreq(double freq)
 {
     std::cerr << boost::format("Got new RX frequency: [%15.6lf]\n") % freq;
 }
+
+void MainWindow::closeRadio()
+{
+    std::cerr << "Closing the radio." << std::endl;
+}
