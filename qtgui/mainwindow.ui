@@ -457,13 +457,17 @@
        </size>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="Waterfall">
        <attribute name="title">
         <string>Waterfall</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_9"/>
+       <layout class="QVBoxLayout" name="verticalLayout_9">
+        <item>
+         <widget class="QGraphicsView" name="Waterfall_view"/>
+        </item>
+       </layout>
       </widget>
       <widget class="QWidget" name="Periodogram">
        <attribute name="title">
