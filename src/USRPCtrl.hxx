@@ -130,6 +130,14 @@ namespace SoDa {
      */
     void reportAntennas(); 
 
+    /**
+     * Set the antenna choice.  Use "ant" if it is in the list
+     * of alternatives. Otherwise, choose the first alternative.
+     * @param req the requested frequency (and tuning discipline)
+     * @param sel 'r' for RX LO, 't' for TX LO
+     */
+    void setAntenna(const std::string & ant, char sel); 
+
     /// Set the front-end (LO + DDS) frequency to 'freq'
     /// This includes setting the PLL front end synthesizer
     /// as well as the FPGA resident digital synthesizer.

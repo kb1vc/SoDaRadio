@@ -316,13 +316,21 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
   // well... not really... I'd like to tune to 432 as well.
   // well.... this really should be made to work for all freqs.
   // 
-  
-  double target_rx_freq = freq;
- 
+
+  double target_rx_freq;
+
+
   if(sel == 'r') {
     // we round the target frequency to a point that puts the
     // baseband between 150 and 250 KHz below the requested
     // frequency. and an even 100kHz multiple.
+
+    // we need to fiddle this a bit, as we can hang the radio if 
+    // the requested frequency is out of range... 
+    if(freq < rx_rf_freq_range.start()) freq = rx_rf_freq_range.start();
+    if(freq > rx_rf_freq_range.stop()) freq = rx_rf_freq_range.stop();
+    
+    target_rx_freq = freq; 
 
     target_rx_freq = 100e3 * floor(freq / 100e3);
     debugMsg(boost::format("freq = %lf 1st target = %lf\n") % freq % target_rx_freq);
@@ -367,6 +375,9 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
     // If the transmitter is off, we retune anyway to park the
     // transmit LO as far away as possible.   This is especially 
     // important for the UBX.
+    if(freq < tx_rf_freq_range.start()) freq = tx_rf_freq_range.start();
+    if(freq > tx_rf_freq_range.stop()) freq = tx_rf_freq_range.stop();    
+
     
     uhd::tune_request_t tx_request(freq);
     
@@ -483,9 +494,6 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
   case Command::TX_RETUNE_FREQ:
   case Command::TX_TUNE_FREQ:
   case Command::TX_FE_FREQ:
-    debugMsg(boost::format("\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n!!! GOT TX TUNE REQ !!!!!!!!\n!!!!!!!!!!!!!!!!!!\n"));
-    debugMsg(boost::format(" freq = %10lg\n") % freq);
-    debugMsg(boost::format("\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n!!! GOT TX TUNE REQ !!!!!!!!\n!!!!!!!!!!!!!!!!!!"));
     set1stLOFreq(cmd->dparms[0] + tx_freq_rxmode_offset, 't', false);
     tx_freq = cmd->dparms[0]; 
     cmd_stream->put(new Command(Command::REP, Command::TX_FE_FREQ, 
@@ -592,14 +600,14 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
     break; 
 
   case Command::RX_ANT:
-    usrp->set_rx_antenna(cmd->sparm);
+    setAntenna(cmd->sparm, 'r');
     debugMsg(boost::format("Got RX antenna as [%s]\n") % usrp->get_rx_antenna());
     cmd_stream->put(new Command(Command::REP, Command::RX_ANT, usrp->get_rx_antenna()));
     break; 
 
   case Command::TX_ANT:
     tx_ant = cmd->sparm; 
-    usrp->set_tx_antenna(cmd->sparm);
+    setAntenna(cmd->sparm, 't');
     debugMsg(boost::format("Got TX antenna as [%s]\n") % usrp->get_tx_antenna());    
     cmd_stream->put(new Command(Command::REP, Command::TX_ANT, usrp->get_tx_antenna()));
     break;
@@ -751,7 +759,7 @@ void SoDa::USRPCtrl::setTXEna(bool val)
   if(val) {
     usleep(400);    
     // set the tx antenna
-    usrp->set_tx_antenna(tx_ant); 
+    setAntenna(tx_ant, 't');
     // set the tx gain. 
     usrp->set_tx_gain(tx_rf_gain);
     // tx freq
@@ -1017,4 +1025,32 @@ void SoDa::USRPCtrl::reportAntennas()
 				ant)); 
 
   }
+}
+
+
+void SoDa::USRPCtrl::setAntenna(const std::string & ant, char sel)
+{
+  std::vector<std::string> ants; 
+
+  ants = (sel == 'r') ? usrp->get_rx_antennas() : usrp->get_tx_antennas();  
+
+  std::string choice = ants[0];
+
+  BOOST_FOREACH(std::string a, ants) {
+    std::cerr << boost::format("comparing antenna for %c goal [%s] found [%s]\n") % sel % ant % a; 
+    if (ant == a) {
+      choice = ant; 
+      break; 
+    }
+  }
+
+  std::cerr << boost::format("chose antenna for %c goal [%s] selected [%s]\n") % sel % ant % choice;   
+  if(sel == 'r') {
+    usrp->set_rx_antenna(choice); 
+  }
+  if(sel == 't') {
+    usrp->set_rx_antenna(choice); 
+  }
+  
+  return; 
 }
