@@ -76,6 +76,7 @@ void SoDa::Command::initTables()
   target_map_s2v[std::string("SPEC_RANGE_HI")] = SPEC_RANGE_HI; 
   target_map_s2v[std::string("SPEC_STEP")] = SPEC_STEP; 
   target_map_s2v[std::string("SPEC_BUF_LEN")] = SPEC_BUF_LEN;
+  target_map_s2v[std::string("SPEC_DIMS")] = SPEC_DIMS; 
   target_map_s2v[std::string("SPEC_AVG_WINDOW")] = SPEC_AVG_WINDOW;
   target_map_s2v[std::string("SPEC_UPDATE_RATE")] = SPEC_UPDATE_RATE;
   target_map_s2v[std::string("DBG_REP")] = DBG_REP; 
@@ -128,6 +129,7 @@ void SoDa::Command::initTables()
   target_map_v2s[SPEC_RANGE_HI] = new std::string("SPEC_RANGE_HI");
   target_map_v2s[SPEC_STEP] = new std::string("SPEC_STEP");
   target_map_v2s[SPEC_BUF_LEN] = new std::string("SPEC_BUF_LEN");
+  target_map_v2s[SPEC_DIMS] = new std::string("SPEC_DIMS");
   target_map_v2s[SPEC_UPDATE_RATE] = new std::string("SPEC_UPDATE_RATE");
 
   target_map_v2s[HWMB_REP] = new std::string("HWMB_REP");

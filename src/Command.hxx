@@ -274,6 +274,8 @@ namespace SoDa {
       SPEC_STEP, ///< freqency step
       SPEC_BUF_LEN,    ///< number of samples in the buffer.
 
+      SPEC_DIMS, ///< all spec info in one call, cf, span, and buflen
+
       SPEC_AVG_WINDOW, ///< how many FFT samples contribute to a spectrum report
       SPEC_UPDATE_RATE, ///< how many FFT samples between spectrum reports
 

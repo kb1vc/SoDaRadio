@@ -16,9 +16,13 @@ public:
     ~MainWindow();
 
 public slots:
-    void newRXFreq(double freq);
+    void newFreq(double freq);
     void closeRadio();
 
+protected:
+  void setupWaterFall();
+  void setupSpectrum();
+  
 private:
     Ui::MainWindow *ui;
 };

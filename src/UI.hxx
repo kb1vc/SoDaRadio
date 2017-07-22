@@ -69,13 +69,18 @@ namespace SoDa {
     unsigned int lo_spectrogram_buckets;
     double lo_hz_per_bucket;
     float * lo_spectrum; 
+
+    // the spectrum runs from -100kHz below to 100kHz above the center freq. 
+    const double spectrum_span = 200e3; 
     
     double baseband_rx_freq;
     double spectrum_center_freq;
     double hz_per_bucket; 
     int required_spect_buckets;
+
     float * spectrum, * log_spectrum;
     bool new_spectrum_setting;
+
     float fft_acc_gain;
     unsigned int fft_update_interval;
 

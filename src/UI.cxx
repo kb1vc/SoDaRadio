@@ -71,7 +71,7 @@ SoDa::UI::UI(Params * params, CmdMBox * _cwtxt_stream,
   // spectrogram_buckets frequency buckets in the RF sample rate
   double rxrate = params->getRXRate();
   hz_per_bucket = rxrate / ((float) spectrogram_buckets);
-  required_spect_buckets = (int) (floor(0.5 + 200e3 / hz_per_bucket));
+  required_spect_buckets = (int) (floor(0.5 + spectrum_span / hz_per_bucket));
   lo_hz_per_bucket = rxrate / ((float) lo_spectrogram_buckets);
   
   // now allocate the buffer that we'll send to the UI
@@ -98,9 +98,13 @@ void SoDa::UI::updateSpectrumState()
   cmd_stream->put(new SoDa::Command(Command::REP, Command::SPEC_BUF_LEN,
 				    required_spect_buckets));
   cmd_stream->put(new SoDa::Command(Command::REP, Command::SPEC_RANGE_LOW,
-				    spectrum_center_freq - 100e3));
+				    spectrum_center_freq - 0.5 * spectrum_span));
   cmd_stream->put(new SoDa::Command(Command::REP, Command::SPEC_RANGE_HI,
-				    spectrum_center_freq + 100e3));
+				    spectrum_center_freq + 0.5 * spectrum_span));
+  cmd_stream->put(new SoDa::Command(Command::REP, Command::SPEC_DIMS, 
+				    spectrum_center_freq, 
+				    spectrum_span, 
+				    ((double) required_spect_buckets)));
 }
 
 SoDa::UI::~UI()
@@ -230,10 +234,10 @@ void SoDa::UI::run()
 void SoDa::UI::reportSpectrumCenterFreq()
 {
     server_socket->put(new SoDa::Command(Command::REP, Command::SPEC_RANGE_LOW,
-					 spectrum_center_freq - 100e3),
+					 spectrum_center_freq - 0.5 * spectrum_span),
 		       sizeof(SoDa::Command));
     server_socket->put(new SoDa::Command(Command::REP, Command::SPEC_RANGE_HI,
-					 spectrum_center_freq + 100e3),
+					 spectrum_center_freq + 0.5 * spectrum_span),
 		       sizeof(SoDa::Command));
     server_socket->put(new SoDa::Command(Command::REP, Command::SPEC_STEP,
 					 hz_per_bucket),
@@ -241,6 +245,12 @@ void SoDa::UI::reportSpectrumCenterFreq()
     server_socket->put(new SoDa::Command(Command::REP, Command::SPEC_BUF_LEN,
 					 required_spect_buckets),
 		       sizeof(SoDa::Command));
+    server_socket->put(new SoDa::Command(Command::REP, Command::SPEC_DIMS, 
+					 spectrum_center_freq, 
+					 spectrum_span, 
+					 ((double) required_spect_buckets)), 
+		       sizeof(SoDa::Command));
+    
 }
 
 
@@ -368,9 +378,13 @@ void SoDa::UI::sendFFT(SoDa::SoDaBuf * buf)
     cmd_stream->put(new SoDa::Command(Command::REP, Command::LO_OFFSET,
 				      freq)); 
     cmd_stream->put(new SoDa::Command(Command::REP, Command::SPEC_RANGE_LOW,
-				      spectrum_center_freq - 100e3));
+				      spectrum_center_freq - 0.5 * spectrum_span));
     cmd_stream->put(new SoDa::Command(Command::REP, Command::SPEC_RANGE_HI,
-				      spectrum_center_freq + 100e3));
+				      spectrum_center_freq + 0.5 * spectrum_span));
+    cmd_stream->put(new SoDa::Command(Command::REP, Command::SPEC_DIMS, 
+				      spectrum_center_freq, 
+				      spectrum_span, 
+				      ((double) required_spect_buckets)));
     // send the end-of-calib command
     cmd_stream->put(new SoDa::Command(Command::SET, Command::LO_CHECK,
 				      0.0)); 

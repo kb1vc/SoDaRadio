@@ -1,16 +1,32 @@
+SET(CMAKE_BUILD_TYPE "Debug")
 
 SET(SoDaRadioQT_SRCS
   main.cpp
   mainwindow.cpp
   freqlabel.cpp
   logtable.cpp
+  soda_wfall.cpp
+  soda_spect.cpp
+  soda_wfall_data.cpp
+  soda_comboboxes.cpp
   )
 
 SET(SoDaRadioQT_HDRS
   mainwindow.h
   freqlabel.h
   logtable.h
+  soda_spect.h
+  soda_wfall.h
+  soda_comboboxes.h    
   )
+
+SET(SoDaRadioQT_NOMOC_HDRS
+  soda_freq_scale_draw.h
+  soda_list_spinbox.h
+  soda_plot_picker.h
+  soda_wfall_data.h
+  soda_wfall_picker.h
+)
 
 SET(SoDaRadioQT_UIS
   mainwindow.ui
@@ -19,7 +35,9 @@ SET(SoDaRadioQT_UIS
 SET(CMAKE_AUTOMOC ON)  
 SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-INCLUDE_DIRECTORIES(SYSTEM ${Boost_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR})
+message("QWT_INCLUDE_DIRS = [${QWT_INCLUDE_DIRS}]")
+message("QWT_LIBRARIES = [${QWT_LIBRARIES}]")
+INCLUDE_DIRECTORIES(SYSTEM ${Boost_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR} ${QWT_INCLUDE_DIRS})
 ADD_DEFINITIONS(${Qt5Widgets_DEFINITIONS})
 
 QT5_WRAP_CPP(SoDaRadioQT_hdr_moc ${SoDaRadioQT_HDRS})
@@ -32,11 +50,11 @@ ADD_EXECUTABLE(SoDaRadioQT ${SoDaRadioQT_SRCS} mainwindow)
 
 TARGET_COMPILE_OPTIONS(SoDaRadioQT BEFORE PUBLIC -Wno-deprecated-declarations)
 
-TARGET_LINK_LIBRARIES(SoDaRadioQT m rt ${Boost_LIBRARIES} Qt5::Widgets )
+TARGET_LINK_LIBRARIES(SoDaRadioQT m rt ${Boost_LIBRARIES} Qt5::Widgets Qt5::PrintSupport ${QWT_LIBRARIES})
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
 
-QT5_USE_MODULES(SoDaRadioQT Core Gui Widgets)
+QT5_USE_MODULES(SoDaRadioQT Core Gui Widgets PrintSupport)
 
 
 INSTALL(TARGETS SoDaRadioQT DESTINATION bin)
