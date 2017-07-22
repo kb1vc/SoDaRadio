@@ -35,7 +35,7 @@
 
 #include "SoDaRadio_GUI.h"
 #include "SoDaRadio_Band.hxx"
-#include "GuiParams.hxx"
+#include "../common/GuiParams.hxx"
 #include "TunerDigit.hxx"
 #include "RadioListenerThread.hxx"
 #include "version.h"

@@ -22,10 +22,11 @@ set(SoDaRadio_SRCS
     dem-gridlib.c
     xyplot.cxx
     RadioListenerThread.cxx
-    GuiParams.cxx
+    ../common/GuiParams.cxx
     waterfall.cxx
     dem-gridlib.h
-    GuiParams.hxx
+    ../common/GuiParams.hxx
+    WXGuiParams.hxx    
     Navigation.hxx
     RadioListenerThread.hxx
     SoDaRadio_App.hxx

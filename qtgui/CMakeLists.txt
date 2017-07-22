@@ -9,6 +9,8 @@ SET(SoDaRadioQT_SRCS
   soda_spect.cpp
   soda_wfall_data.cpp
   soda_comboboxes.cpp
+  soda_listener.cpp
+  ../common/GuiParams.cxx  
   )
 
 SET(SoDaRadioQT_HDRS
@@ -18,6 +20,7 @@ SET(SoDaRadioQT_HDRS
   soda_spect.h
   soda_wfall.h
   soda_comboboxes.h    
+  soda_listener.h
   )
 
 SET(SoDaRadioQT_NOMOC_HDRS
@@ -26,6 +29,7 @@ SET(SoDaRadioQT_NOMOC_HDRS
   soda_plot_picker.h
   soda_wfall_data.h
   soda_wfall_picker.h
+  ../common/GuiParams.hxx
 )
 
 SET(SoDaRadioQT_UIS
@@ -54,7 +58,7 @@ TARGET_LINK_LIBRARIES(SoDaRadioQT m rt ${Boost_LIBRARIES} Qt5::Widgets Qt5::Prin
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
 
-QT5_USE_MODULES(SoDaRadioQT Core Gui Widgets PrintSupport)
+QT5_USE_MODULES(SoDaRadioQT Core Gui Widgets PrintSupport Network)
 
 
 INSTALL(TARGETS SoDaRadioQT DESTINATION bin)

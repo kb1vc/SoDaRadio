@@ -31,12 +31,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <boost/format.hpp>
 #include <boost/program_options.hpp>
-#include <wx/app.h>
 
 namespace SoDa {
   class GuiParams {
   public:
-    GuiParams(int argc, wxChar ** argv);
+    GuiParams(int argc, char ** argv);
 
     std::string getServerSocketBasename() { return server_sock_basename; }
     std::string getServerName() { return server_name; }
@@ -47,9 +46,6 @@ namespace SoDa {
     unsigned int getDebugLevel() { return debug_level; }
     std::string getAudioPortName() { return audio_portname; }
   private:
-    // this is really quite gross -- wxApp is not very nice about this. 
-    char ** convertWXargs2Cargs(int argc, wxChar ** argv);
-    
     boost::program_options::variables_map pmap;
 
     std::string server_name;     ///< Where do we find the server?

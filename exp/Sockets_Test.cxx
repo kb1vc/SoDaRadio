@@ -119,19 +119,26 @@ int main(int argc, char * argv[])
     us = new SoDa::UD::ServerSocket(argv[2]);
     int con_count = 0; 
     while(con_count < 20) {
+      us->put("Hey there sailor\n\n\n", 17);
       while(!us->isReady()) {
 	usleep(1000); 
       }
+      std::cerr << "About to get buffer\n"; 
       con_count++; 
       char buf[1024];
       int rsize;
       while((rsize = us->get(buf, 1024)) >= 0) {
 	iter_count++; 
 	if(rsize == 0) {
+	  if(!us->isReady()) {
+	    std::cerr << "socket no longer ready\n";
+	    break; 
+	  }
 	  empty_count++;
 	  usleep(10000);
+	  if((empty_count % 256) == 0) std::cerr << "Empty buffer\n"; 
 	}
-	if(rsize > 0) {
+	else if(rsize > 0) {
 	  found_count++; 
 	  const char * okmsg = "ok!";
 	  std::cout << "message: [" << buf << "] length = " << rsize << std::endl;
@@ -143,7 +150,7 @@ int main(int argc, char * argv[])
 	  us->put(okmsg, 4);
 	  std::cout << "Hmmmm>" << std::endl; 
 	}
-	if(rsize < 0) {
+	else if(rsize < 0) {
 	  perror("Hmmm... get returned a negative result."); 
 	}
       }

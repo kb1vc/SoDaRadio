@@ -27,8 +27,7 @@
 */
 #include "SoDaRadio_App.hxx"
 #include "SoDaRadio_Top.h"
-#include "GuiParams.hxx"
-
+#include "WXGuiParams.hxx"
 
 IMPLEMENT_APP(SoDaRadio_App)
 
@@ -43,7 +42,7 @@ SoDaRadio_App::~SoDaRadio_App()
 bool SoDaRadio_App::OnInit()
 {
   // get the args and argvs
-  SoDa::GuiParams  p(argc, argv);
+  SoDa::WXGuiParams  p(argc, argv);
   SoDaRadio_GUI::SoDaRadio_Top * top = new SoDaRadio_GUI::SoDaRadio_Top(p, (wxWindow*) NULL);
   top->Show();
   SetTopWindow(top);

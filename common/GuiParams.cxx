@@ -30,9 +30,8 @@
 #include <iostream>
 
 
-SoDa::GuiParams::GuiParams(int argc, wxChar ** wxargv)
+SoDa::GuiParams::GuiParams(int argc, char ** argv)
 {
-  char ** argv = convertWXargs2Cargs(argc, wxargv);
   namespace po = boost::program_options;
   po::options_description desc("Allowed options");
   desc.add_options()
@@ -66,21 +65,4 @@ SoDa::GuiParams::GuiParams(int argc, wxChar ** wxargv)
   }
 }
 
-char ** SoDa::GuiParams::convertWXargs2Cargs(int argc, wxChar ** argv)
-{
-  char ** ret;
-  ret = new char*[argc];
-  int i, j;
-  for(i = 0; i < argc; i++) {
-    int len;
-    for(j = 0; argv[i][j] != (wxChar(0)); j++);
-    len = j;
-    ret[i] = new char[len+1];
-    for(j = 0; j <= len; j++) {
-      ret[i][j] = (char) (argv[i][j] & 0xff); 
-    }
-  }
-
-  return ret; 
-}
 

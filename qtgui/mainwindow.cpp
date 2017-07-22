@@ -3,12 +3,16 @@
 #include <iostream>
 #include <boost/format.hpp>
 #include "soda_comboboxes.h"
+#include "soda_listener.h"
 
-MainWindow::MainWindow(QWidget *parent) :
+MainWindow::MainWindow(QWidget *parent, QString socket_basename) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    // setup the listener. 
+    listener = new SoDaListener(this, socket_basename); 
 
     connect(ui->RXFreq_lab, &FreqLabel::newFreq,
             this, &MainWindow::newFreq);
@@ -59,6 +63,7 @@ void MainWindow::setupWaterFall()
 {
     std::cerr << "in setupSpectrum\n";
     connect(ui->waterfall_plt,SIGNAL(xClick(double)), this, SLOT(newFreq(double)));
+    connect(ui->waterfall_plt, &SoDaWFall::xClick, listener, &SoDaListener::setRXFreq);
     connect(ui->wf_moveRight_btn, SIGNAL(clicked(bool)), 
 	    ui->waterfall_plt, SLOT(scrollRight(bool)));
     connect(ui->wf_moveLeft_btn, SIGNAL(clicked(bool)), 
