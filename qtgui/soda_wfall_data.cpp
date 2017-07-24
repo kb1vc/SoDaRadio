@@ -130,7 +130,7 @@ void SoDaWFallData::setRefLevel(double reflvl) {
   setZRange(); 	
 }
 
-void SoDaWFallData::updateData(double cfreq, double * spect) {
+void SoDaWFallData::updateData(double cfreq, float * spect) {
   if(!is_ready) return; 
   cur_row_idx += num_buckets;
   cur_freq_idx++; 
@@ -138,6 +138,10 @@ void SoDaWFallData::updateData(double cfreq, double * spect) {
     cur_row_idx = 0;
     cur_freq_idx = 0; 
   }
-  memcpy(heatmap + cur_row_idx, spect, num_buckets * sizeof(double));
+  
+  double * vec = heatmap + cur_row_idx; 
+  for(int i = 0; i < num_buckets; i++) {
+    vec[i] = spect[i]; 
+  }
   start_freq[cur_freq_idx] = cfreq - 0.5 * span_in_freq; 
 }

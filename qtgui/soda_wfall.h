@@ -37,7 +37,7 @@ class SoDaWFall : public QwtPlot
 
     
   public slots:
-    void updateData(double cf, double * y);
+    void updateData(double cf, float * y);
     void pickPoint(const QPointF & pos);
     void setDynamicRange(double drange);
     void setRefLevel(int rlvl);
@@ -54,6 +54,8 @@ class SoDaWFall : public QwtPlot
       std::cerr << "in SoDaWFall scrollLeft\n";      
       setFreqCenter(center_freq - freq_span * 0.25, true); }
     void configureSpectrum(double cfreq, double span, long buckets) {
+      std::cerr << boost::format("wfall configSpectrum (%g %g %d)\n")
+	% cfreq % span % buckets; 
       marker_freq = cfreq; 
       setFreqCenter(cfreq); 
       setFreqSpan(span);

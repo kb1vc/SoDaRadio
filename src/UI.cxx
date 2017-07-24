@@ -147,8 +147,9 @@ void SoDa::UI::run()
 	SoDa::Command * vers_cmd = new SoDa::Command(Command::REP,
 						     Command::SDR_VERSION,
 						     vers.c_str());
+	std::cerr << "About to send sdr version info\n";
 	server_socket->put(vers_cmd, sizeof(SoDa::Command));
-
+	std::cerr << "Sent sdr version info\n";
 	new_connection = false; 
       }
       
@@ -170,6 +171,7 @@ void SoDa::UI::run()
 
     // if there are commands arriving from the socket port, handle them.
     if(got_new_netmsg) {
+      debugMsg(boost::format("UI got message [%s]\n") % net_cmd->toString());
       cmd_stream->put(net_cmd);
       didwork = true;
       if(net_cmd->target == SoDa::Command::TX_CW_EMPTY) {

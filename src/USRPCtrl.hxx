@@ -131,6 +131,16 @@ namespace SoDa {
     void reportAntennas(); 
 
     /**
+     * report the modulation modes that are implemented, send the report on cmd_stream
+     */
+    void reportModes(); 
+
+    /**
+     * report the audio filters that are implemented, send the report on cmd_stream
+     */
+    void reportAFFilters(); 
+
+    /**
      * Set the antenna choice.  Use "ant" if it is in the list
      * of alternatives. Otherwise, choose the first alternative.
      * @param req the requested frequency (and tuning discipline)

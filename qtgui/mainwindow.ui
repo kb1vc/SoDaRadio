@@ -460,7 +460,7 @@
        </size>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="Waterfall">
        <attribute name="title">
@@ -681,8 +681,23 @@
                <layout class="QVBoxLayout" name="verticalLayout_13">
                 <item>
                  <widget class="QSlider" name="CWSpeed_sli">
+                  <property name="minimum">
+                   <number>3</number>
+                  </property>
+                  <property name="maximum">
+                   <number>30</number>
+                  </property>
+                  <property name="sliderPosition">
+                   <number>12</number>
+                  </property>
                   <property name="orientation">
                    <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="tickPosition">
+                   <enum>QSlider::TicksBothSides</enum>
+                  </property>
+                  <property name="tickInterval">
+                   <number>5</number>
                   </property>
                  </widget>
                 </item>
@@ -827,21 +842,21 @@
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_25">
              <item>
-              <widget class="QPushButton" name="pushButton_4">
+              <widget class="QPushButton" name="openLog_btn">
                <property name="text">
                 <string>Open Log</string>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="pushButton">
+              <widget class="QPushButton" name="saveLog_btn">
                <property name="text">
                 <string>Save Log</string>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="pushButton_5">
+              <widget class="QPushButton" name="saveLogAs_btn">
                <property name="text">
                 <string>Save Log As...</string>
                </property>
@@ -883,21 +898,21 @@
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_24">
              <item>
-              <widget class="QPushButton" name="pushButton_7">
+              <widget class="QPushButton" name="openConfig_btn">
                <property name="text">
                 <string>Open Config</string>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="pushButton_2">
+              <widget class="QPushButton" name="saveConfig_btn">
                <property name="text">
                 <string>Save Config</string>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="pushButton_6">
+              <widget class="QPushButton" name="saveConfigAs_btn">
                <property name="text">
                 <string>Save Config As...</string>
                </property>
@@ -954,9 +969,6 @@
                 </property>
                </widget>
               </item>
-              <item row="0" column="1">
-               <widget class="QComboBox" name="comboBox"/>
-              </item>
               <item row="1" column="0">
                <widget class="QPushButton" name="pushButton_3">
                 <property name="text">
@@ -975,7 +987,7 @@
                </widget>
               </item>
               <item row="2" column="1">
-               <widget class="QComboBox" name="comboBox_2"/>
+               <widget class="QComboBox" name="bc_rxAnt_cb"/>
               </item>
               <item row="3" column="0">
                <widget class="QLabel" name="label_3">
@@ -985,7 +997,7 @@
                </widget>
               </item>
               <item row="3" column="1">
-               <widget class="QComboBox" name="comboBox_3"/>
+               <widget class="QComboBox" name="bc_txAnt_cb"/>
               </item>
               <item row="4" column="0">
                <widget class="QLabel" name="label_4">
@@ -1015,7 +1027,10 @@
                </widget>
               </item>
               <item row="6" column="1">
-               <widget class="QComboBox" name="comboBox_4"/>
+               <widget class="IntValComboBox" name="bc_defMode_cb"/>
+              </item>
+              <item row="0" column="1">
+               <widget class="QComboBox" name="bc_bandSel_cb"/>
               </item>
              </layout>
             </item>
@@ -1754,43 +1769,7 @@
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_4">
          <item>
-          <widget class="QComboBox" name="Mode_combo">
-           <item>
-            <property name="text">
-             <string>CW_U</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>CW_L</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>USB</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>LSB</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>AM</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>NBFM</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>WBFM</string>
-            </property>
-           </item>
-          </widget>
+          <widget class="IntValComboBox" name="Mode_cb"/>
          </item>
         </layout>
        </widget>
@@ -1802,7 +1781,7 @@
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_3">
          <item>
-          <widget class="QComboBox" name="AFBw_combo"/>
+          <widget class="IntValComboBox" name="AFBw_cb"/>
          </item>
         </layout>
        </widget>
@@ -1817,6 +1796,9 @@
           <widget class="QSlider" name="AFGain_slide">
            <property name="mouseTracking">
             <bool>true</bool>
+           </property>
+           <property name="maximum">
+            <number>100</number>
            </property>
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
@@ -1846,6 +1828,9 @@
         <layout class="QVBoxLayout" name="verticalLayout_5">
          <item>
           <widget class="QSlider" name="RFGain_slide">
+           <property name="maximum">
+            <number>100</number>
+           </property>
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
            </property>
@@ -1959,19 +1944,12 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="0">
-         <widget class="QPushButton" name="DispDBox_btn">
-          <property name="text">
-           <string>Display...</string>
-          </property>
-         </widget>
-        </item>
        </layout>
       </item>
      </layout>
     </item>
     <item>
-     <layout class="QHBoxLayout" name="MidCtrls_lay" stretch="0,2,1,0">
+     <layout class="QHBoxLayout" name="MidCtrls_lay" stretch="1,4,1,1">
       <item>
        <layout class="QFormLayout" name="Nav_lay">
         <item row="0" column="0">
@@ -2198,6 +2176,12 @@
            </property>
           </widget>
           <widget class="QPushButton" name="MyGrid_btn">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="maximumSize">
             <size>
              <width>16777215</width>
@@ -2362,7 +2346,7 @@
             </property>
             <property name="sizeHint" stdset="0">
              <size>
-              <width>40</width>
+              <width>20</width>
               <height>20</height>
              </size>
             </property>
@@ -2922,7 +2906,7 @@
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_22">
            <item>
-            <widget class="QComboBox" name="comboBox_5"/>
+            <widget class="QComboBox" name="bandSel_cb"/>
            </item>
           </layout>
          </widget>
@@ -3198,6 +3182,11 @@
    <extends>QWidget</extends>
    <header>soda_spect.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>IntValComboBox</class>
+   <extends>QComboBox</extends>
+   <header>soda_comboboxes.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

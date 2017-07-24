@@ -71,10 +71,10 @@ void SoDaSpect::initPlot()
   show();
 }
 
-void SoDaSpect::updateData(double cfreq, double * y)
+void SoDaSpect::updateData(double cfreq, float * y)
 {
   if(cfreq != center_freq_in) resetFreqAxis(cfreq); 
-  memcpy(vals, y, sizeof(double) * num_buckets);
+  for(int i = 0; i < num_buckets; i++) vals[i] = y[i]; 
   curve_p->setSamples(freqs, vals, num_buckets);
   replot();
 }

@@ -195,7 +195,7 @@ void SoDaWFall::setFreqSpan(double span, bool check_boundary)
 }
 
 
-void SoDaWFall::updateData(double cfreq, double * spect)
+void SoDaWFall::updateData(double cfreq, float * spect)
 {
   last_input_cfreq = cfreq; 
   wfall_data->updateData(cfreq, spect);

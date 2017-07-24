@@ -11,6 +11,14 @@ SET(SoDaRadioQT_SRCS
   soda_comboboxes.cpp
   soda_listener.cpp
   ../common/GuiParams.cxx  
+  ../src/Command.cxx
+  main_setup_top.cpp
+  main_setup_mid.cpp
+  main_setup_loggps.cpp
+  main_setup_settings.cpp
+  main_setup_bandconfig.cpp
+  main_setup_logeditor.cpp  
+  main_setup_spect.cpp
   )
 
 SET(SoDaRadioQT_HDRS
@@ -30,6 +38,7 @@ SET(SoDaRadioQT_NOMOC_HDRS
   soda_wfall_data.h
   soda_wfall_picker.h
   ../common/GuiParams.hxx
+  ../src/Command.hxx  
 )
 
 SET(SoDaRadioQT_UIS

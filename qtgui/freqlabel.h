@@ -15,25 +15,32 @@ public:
 		    Qt::WindowFlags f = Qt::WindowFlags());
   ~FreqLabel();
 
-  void setFreq(double freq); 
 
   double getFreq() const {
-      std::cerr << "int_freq = [" << int_freq << "] frac_freq = [" << frac_freq << "]" << std::endl;
-      double dif = ((double) int_freq);
-      double dff = 1e-6 * ((double) frac_freq);
-      double ret = dif + dff;
-      std::cerr << "return freq = [" << ret << "] dif = [" << dif << "] dff = [" << dff << "]" << std::endl;
-      return ret;
+      return frequency; 
   }
 
 signals:
   void newFreq(double freq);
-  
+
+public slots:
+  void setFreq(double freq); 
+
 protected:
   void mousePressEvent(QMouseEvent * event);
+
+  double updateFrequency() {
+      std::cerr << "int_freq = [" << int_freq << "] frac_freq = [" << frac_freq << "]" << std::endl;
+      double dif = ((double) int_freq);
+      double dff = 1e-6 * ((double) frac_freq);
+      frequency = (dif + dff) * 1e6;
+      std::cerr << "return freq = [" << frequency << "] dif = [" << dif << "] dff = [" << dff << "]" << std::endl;
+      return frequency; 
+  }
   
 private:
-  long int_freq, frac_freq;
+  double frequency;  // in hz
+  long int_freq, frac_freq; // in MHz. 
 
   QString freq2String();
 

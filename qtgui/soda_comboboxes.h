@@ -60,4 +60,29 @@
     }
   }; 
 
+
+  class IntValComboBox : public QComboBox { 
+      Q_OBJECT
+  public:
+    explicit IntValComboBox(QWidget * parent = 0) : QComboBox(parent) {
+
+        clear();
+        connect(this, &QComboBox::currentTextChanged, this, &IntValComboBox::textChanged);
+    }
+
+  public slots:
+    void addValue(QString lab, int val); 
+
+    void setSelection(int v);
+    void setSelection(const QString & s);    
+    
+  signals:
+    void valueChanged(int v);
+
+  protected:
+    void textChanged(const QString & txt);
+    
+    std::map<QString, int> valmap;
+  };
+
 #endif

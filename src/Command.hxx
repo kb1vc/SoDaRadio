@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2017 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -50,12 +50,12 @@ namespace SoDa {
      * @brief Commands are of the form, SET, GET, or REPort some
      * parameter.
      */
-    enum cmd_type { SET, GET, REP, NONE };
+    enum CmdType { SET, GET, REP, NONE };
 
     /**
      * @brief Each command has a "target" state that it is meant to modify, query, or report
      */
-    enum cmd_target {
+    enum CmdTarget {
       /**
        * Set the RX front end (1st LO, the 2nd IF LO), and the 3rd LO
        * in a more-or-less optimal way to position the requested
@@ -430,14 +430,25 @@ namespace SoDa {
       TX_GAIN_RANGE, 
 
       /** 
-       * Report RX antenna choice (asciiz string)
+       * Report RX antenna choice (asciiz string, uint tag)
        */
       RX_ANT_NAME, 
       
       /** 
-       * Report TX antenna choice (asciiz string)
+       * Report TX antenna choice (asciiz string, uint tag)
        */
       TX_ANT_NAME, 
+      
+
+      /**
+       * Report a string/name pair for modulation mode
+       */
+      MOD_SEL_ENTRY, 
+
+      /**
+       * Report a string/name pair for AF filter bandwidth
+       */
+      AF_FILT_ENTRY,
       
       /**
        * No comment
@@ -471,7 +482,7 @@ namespace SoDa {
      * @param _ct the command type (SET, GET, REPort)
      * @param _tgt the state that we're setting, getting, reporting
      */
-    Command(cmd_type _ct, cmd_target _tgt) 
+    Command(CmdType _ct, CmdTarget _tgt) 
     {
       cmd = _ct;
       target = _tgt;
@@ -489,7 +500,7 @@ namespace SoDa {
      * @param p2 third integer parameter
      * @param p3 fourth integer parameter
      */
-    Command(cmd_type _ct, cmd_target _tgt,
+    Command(CmdType _ct, CmdTarget _tgt,
 	    int p0,
 	    int p1 = 0,
 	    int p2 = 0,
@@ -515,7 +526,7 @@ namespace SoDa {
      * @param p2 third double float parameter
      * @param p3 fourth double float parameter
      */
-    Command(cmd_type _ct, cmd_target _tgt,
+    Command(CmdType _ct, CmdTarget _tgt,
 	    double p0,
 	    double p1 = 0.0,
 	    double p2 = 0.0,
@@ -537,11 +548,13 @@ namespace SoDa {
      * @param _ct the command type (SET, GET, REPort)
      * @param _tgt the state that we're setting, getting, reporting
      * @param _str_arg the string we're passing
+     * @param _tag an integer tag to associate with the string.
      */
-    Command(cmd_type _ct, cmd_target _tgt, const std::string & _str_arg)
+    Command(CmdType _ct, CmdTarget _tgt, const std::string & _str_arg, unsigned int _tag = 0)
     {
       cmd = _ct;
       target = _tgt;
+      tag = _tag; 
       const char * cp = _str_arg.c_str();
       int i;
       for(i = 0; i < 64; i++) {
@@ -558,12 +571,14 @@ namespace SoDa {
      *
      * @param _ct the command type (SET, GET, REPort)
      * @param _tgt the state that we're setting, getting, reporting
-     * @param cp the string we're passing
+     * @param cp the asciiz string we're passing
+     * @param _tag an integer tag to associate with the string.
      */
-    Command(cmd_type _ct, cmd_target _tgt, const char * cp)
+    Command(CmdType _ct, CmdTarget _tgt, const char * cp, unsigned int _tag = 0)
     {
       cmd = _ct;
       target = _tgt;
+      tag = _tag; 
       int i;
       for(i = 0; i < 64; i++) {
 	sparm[i] = *cp;
@@ -603,6 +618,7 @@ namespace SoDa {
       target = NULL_CMD;
       parm_type = 'I';
       iparms[0] = 0;
+      tag = 0; 
     }
 
     /**
@@ -623,7 +639,7 @@ namespace SoDa {
      * @brief return a string that displays the command
      * @return the string
      */
-    std::string & toString();
+    std::string toString() const;
 
     /**
      * @brief how long can a string parameter to a command be?
@@ -631,13 +647,14 @@ namespace SoDa {
      */
     static int getMaxStringLen() { return 64; }
 
+    unsigned int tag; ///< used to pair an int with a string or other param.
     union {
       int iparms[4]; ///< integer parameters
       double dparms[4]; ///< double float parameters
       char sparm[64]; ///< a buffer holding the string
     };
-    cmd_type cmd; ///< the command type (SET, GET, REP)
-    cmd_target target; ///< the thing we're touching
+    CmdType cmd; ///< the command type (SET, GET, REP)
+    CmdTarget target; ///< the thing we're touching
 
     int id; ///< a sequential ID for each command -- used in debugging and sequencing
     char parm_type; ///< is this a double, int, string? 
@@ -645,8 +662,8 @@ namespace SoDa {
     static int command_sequence_number; ///< sequential ID applied to each command
     
     static bool table_needs_init; ///< if true, we need to call initTables()
-    static std::map<std::string, cmd_target> target_map_s2v; ///< mapping for parseCommandString
-    static std::map<cmd_target, std::string *> target_map_v2s; ///< mapping for toString
+    static std::map<std::string, CmdTarget> target_map_s2v; ///< mapping for parseCommandString
+    static std::map<CmdTarget, std::string> target_map_v2s; ///< mapping for toString
     /**
      * @brief setup maps to support parseCommandString and toString
      */

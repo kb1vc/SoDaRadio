@@ -7,74 +7,86 @@
 #include <boost/format.hpp>
 #include <errno.h>
 
-namespace Ui {
-  class SoDaListener;
-}
+#include "../src/Command.hxx"
+
 
 class SoDaListener : public QObject {
   Q_OBJECT
 
 public:
-  SoDaListener(QObject * parent = 0, QString socket_basename = "tmp") : QObject(parent) {
-    quit = false;
-    std::cerr << boost::format("Connecting to server socket [%s]\n") % socket_basename.toStdString(); 
-    cmd_socket = new QLocalSocket(this);
-    cmd_socket->connectToServer(socket_basename); 
-
-    if(cmd_socket->waitForConnected(3000)) {
-      std::cerr << "Got connected.\n"; 
-    }
-    else {
-      std::cerr << "No connection.\n";
-    }
-
-    
-    connect(cmd_socket, SIGNAL(readyRead()), 
-	    this, SLOT(getCmd())); 
-    connect(cmd_socket, SIGNAL(error(QLocalSocket::LocalSocketError)), 
-	    this, SLOT(cmdErrorHandler(QLocalSocket::LocalSocketError)));
-
-    cmd_stream = new QDataStream(cmd_socket);
-    
-  }
-
+  SoDaListener(QObject * parent = 0, QString socket_basename = "tmp");
   ~SoDaListener() {
   }
 
-  int get(char* buf, int maxlen); 
-
-  int put(const char * buf, int len); 
-
+  // initiate transfers on the socket.
+  
+  void start(); 
 signals:
-  void addModulation(const QString & modtype);
+  // when new spectrum data arrives
+  void updateData(double cfreq, float * y);
+
+  void configureSpectrum(double cfreq, double span, long buckets);
+  
+  void addModulation(QString modtype, int mod_id);
+  void addFilterWidth(double lo, double hi);
+  void addFilterName(QString filter_name, int filt_id);
+
+  void addRXAntName(const QString & ant_name);
+  void addTXAntName(const QString & ant_name);  
+  
+  void repFilterEdges(double lo, double hi);
+
+  void repGPSLatLon(double lat, double lon);
+  void repGPSTime(int hh, int mm, int ss);
+
+  void repGPSLock(bool is_locked);
+
+  void repSDRVersion(const QString & version);
+  void repHWMBVersion(const QString & version);
 
 public slots:
-  void setRXFreq(double freq) {
-    std::cerr << boost::format("In soda listener got setRXFreq command [%g] from gui\n") % freq;
-    cmd_socket->flush();
-    std::string msg("SET RX_FREQ D 1e9\n");
-    int len = msg.size();
-    int stat = put(msg.c_str(), len);
-    std::cerr << boost::format("socket write returned status = %d\n") % stat;
-    if(stat < 0) perror("What happened here?");
-  }
-  
-  void getCmd();
+  void setRXFreq(double freq);
+  void setTXFreq(double freq);
 
+  void setModulation(int mod_id); 
+
+  void setAFFilter(int id); 
+
+  void setRXGain(int gain);
+  void setTXGain(int gain);
+  void setAFGain(int gain);
+  void setAFSidetoneGain(int gain);  
+
+  void setRXAnt(const QString & antname);
+  void setTXAnt(const QString & antname);
+
+  void closeRadio();
+protected:
+  int get(char* buf, int maxlen); 
+  bool get(SoDa::Command & cmd); 
+  int put(const char * buf, int len); 
+  bool put(const SoDa::Command & cmd);
+
+  bool handleREP(const SoDa::Command & cmd);
+  bool handleSET(const SoDa::Command & cmd);
+  bool handleGET(const SoDa::Command & cmd); 
+
+private:
+  void setupSpectrumBuffer(double cfreq, double span, long buflen);
+  long spect_buffer_len;
+  float * spect_buffer; 		      
+  double spect_center_freq; 				    
+protected slots:  
+  void processCmd();
   void cmdErrorHandler(QLocalSocket::LocalSocketError err) {
     std::cerr << "Error [" << err << "]\n";
   }
 
-  void closeRadio() {
-    quit = true; 
-  }
-
-  void setModulation(const QString & modtype);
+  void processSpectrum();
   
 private:
-  QString host_name; 
   QLocalSocket * cmd_socket;
-  QDataStream * cmd_stream; 
+  QLocalSocket * spect_socket; 
   bool quit; 
 };
 

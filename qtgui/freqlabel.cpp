@@ -7,7 +7,7 @@ FreqLabel::FreqLabel(QWidget * parent,
   : QLabel(parent), incdec_position(2)
 {
     (void) f;
-  setFreq(12345.987654);
+  setFreq(144.295e6);
 
   setTextFormat(Qt::RichText);
 }
@@ -19,6 +19,7 @@ QString FreqLabel::freq2String() {
   int num_digs; 
   unsigned long ifrac = frac_freq;
   // start at the left hand side
+  bool first_nonzero = false; 
   for(num_digs = 0; num_digs < 6; num_digs++) {
     int dig = ifrac % 10;
     ifrac = ifrac / 10;
@@ -57,11 +58,14 @@ QString FreqLabel::freq2String() {
   return ret; 
 }
 
-void FreqLabel::setFreq(double freq)
+void FreqLabel::setFreq(double hzfreq)
 {
-    int_freq = lround(floor(freq));
-    double fr = freq - floor(freq);
-    frac_freq = lround(fr * 1e6);
+  double freq = hzfreq * 1e-6; 
+  frequency = hzfreq; 
+
+  int_freq = lround(floor(freq));
+  double fr = freq - floor(freq);
+  frac_freq = lround(fr * 1e6);
   QString flab = freq2String();
 
   setText(flab);
@@ -131,8 +135,7 @@ void FreqLabel::mousePressEvent(QMouseEvent * event)
     if(int_freq > 99999) int_freq = 99999;
     if(int_freq < 0) int_freq = 0;
 
-    double cur_freq = getFreq();
-    setFreq(cur_freq);
+    setFreq(updateFrequency());
 
-    emit newFreq(cur_freq);
+    emit newFreq(frequency);
 }

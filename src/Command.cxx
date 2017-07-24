@@ -33,8 +33,8 @@
 
 int SoDa::Command::command_sequence_number = 0;
 bool SoDa::Command::table_needs_init = true; 
-std::map<std::string, SoDa::Command::cmd_target> SoDa::Command::target_map_s2v;
-std::map<SoDa::Command::cmd_target, std::string *> SoDa::Command::target_map_v2s;
+std::map<std::string, SoDa::Command::CmdTarget> SoDa::Command::target_map_s2v;
+std::map<SoDa::Command::CmdTarget, std::string> SoDa::Command::target_map_v2s;
 
 void SoDa::Command::initTables()
 {
@@ -79,6 +79,7 @@ void SoDa::Command::initTables()
   target_map_s2v[std::string("SPEC_DIMS")] = SPEC_DIMS; 
   target_map_s2v[std::string("SPEC_AVG_WINDOW")] = SPEC_AVG_WINDOW;
   target_map_s2v[std::string("SPEC_UPDATE_RATE")] = SPEC_UPDATE_RATE;
+  target_map_s2v[std::string("SDR_VERSION")] = SDR_VERSION; 
   target_map_s2v[std::string("DBG_REP")] = DBG_REP; 
 
   target_map_s2v[std::string("HWMB_REP")] = HWMB_REP;
@@ -93,56 +94,72 @@ void SoDa::Command::initTables()
   target_map_s2v[std::string("TX_AUDIO_IN")] = TX_AUDIO_IN;
   target_map_s2v[std::string("TX_AUDIO_FILT_ENA")] = TX_AUDIO_FILT_ENA;
   
-  target_map_v2s[RX_TUNE_FREQ] = new std::string("RX_TUNE_FREQ");
-  target_map_v2s[TX_TUNE_FREQ] = new std::string("TX_TUNE_FREQ");
-  target_map_v2s[RX_RETUNE_FREQ] = new std::string("RX_RETUNE_FREQ");
-  target_map_v2s[TX_RETUNE_FREQ] = new std::string("TX_RETUNE_FREQ");
-  target_map_v2s[RX_FE_FREQ] = new std::string("RX_FE_FREQ");
-  target_map_v2s[TX_FE_FREQ] = new std::string("TX_FE_FREQ");
-  target_map_v2s[RX_LO3_FREQ] = new std::string("RX_LO3_FREQ");
-  target_map_v2s[RX_SAMP_RATE] = new std::string("RX_SAMP_RATE");
-  target_map_v2s[TX_SAMP_RATE] = new std::string("TX_SAMP_RATE");
-  target_map_v2s[RX_ANT] = new std::string("RX_ANT");
-  target_map_v2s[TX_ANT] = new std::string("TX_ANT");
-  target_map_v2s[RX_RF_GAIN] = new std::string("RX_RF_GAIN");
-  target_map_v2s[TX_RF_GAIN] = new std::string("TX_RF_GAIN");
-  target_map_v2s[RX_AF_GAIN] = new std::string("RX_AF_GAIN");
-  target_map_v2s[RX_AF_SIDETONE_GAIN] = new std::string("RX_AF_SIDETONE_GAIN");
-  target_map_v2s[TX_AF_GAIN] = new std::string("TX_AF_GAIN");
-  target_map_v2s[TX_STATE] = new std::string("TX_STATE");
-  target_map_v2s[RX_STATE] = new std::string("RX_STATE");
-  target_map_v2s[RX_MODE] = new std::string("RX_MODE");
-  target_map_v2s[TX_MODE] = new std::string("TX_MODE");
-  target_map_v2s[RX_BW] = new std::string("RX_BW");
-  target_map_v2s[RBW] = new std::string("RBW");
-  target_map_v2s[CLOCK_SOURCE] = new std::string("CLOCK_SOURCE");
-  target_map_v2s[LO_CHECK] = new std::string("LO_CHECK");
-  target_map_v2s[LO_OFFSET] = new std::string("LO_OFFSET");
-  target_map_v2s[RX_AF_FILTER] = new std::string("RX_AF_FILTER");
-  target_map_v2s[TX_BEACON] = new std::string("TX_BEACON");
-  target_map_v2s[TX_CW_SPEED] = new std::string("TX_CW_SPEED");
-  target_map_v2s[TX_CW_TEXT] = new std::string("TX_CW_TEXT");
-  target_map_v2s[TX_CW_FLUSHTEXT] = new std::string("TX_CW_FLUSHTEXT");
+  target_map_s2v[std::string("RX_GAIN_RANGE")] = RX_GAIN_RANGE;
+  target_map_s2v[std::string("TX_GAIN_RANGE")] = TX_GAIN_RANGE;
+  target_map_s2v[std::string("RX_ANT_NAME")] = RX_ANT_NAME;
+  target_map_s2v[std::string("TX_ANT_NAME")] = TX_ANT_NAME;
+  target_map_s2v[std::string("MOD_SEL_ENTRY")] = MOD_SEL_ENTRY;
+  target_map_s2v[std::string("AF_FILT_ENTRY")] = AF_FILT_ENTRY;
+    
+  target_map_v2s[RX_TUNE_FREQ] = std::string("RX_TUNE_FREQ");
+  target_map_v2s[TX_TUNE_FREQ] = std::string("TX_TUNE_FREQ");
+  target_map_v2s[RX_RETUNE_FREQ] = std::string("RX_RETUNE_FREQ");
+  target_map_v2s[TX_RETUNE_FREQ] = std::string("TX_RETUNE_FREQ");
+  target_map_v2s[RX_FE_FREQ] = std::string("RX_FE_FREQ");
+  target_map_v2s[TX_FE_FREQ] = std::string("TX_FE_FREQ");
+  target_map_v2s[RX_LO3_FREQ] = std::string("RX_LO3_FREQ");
+  target_map_v2s[RX_SAMP_RATE] = std::string("RX_SAMP_RATE");
+  target_map_v2s[TX_SAMP_RATE] = std::string("TX_SAMP_RATE");
+  target_map_v2s[RX_ANT] = std::string("RX_ANT");
+  target_map_v2s[TX_ANT] = std::string("TX_ANT");
+  target_map_v2s[RX_RF_GAIN] = std::string("RX_RF_GAIN");
+  target_map_v2s[TX_RF_GAIN] = std::string("TX_RF_GAIN");
+  target_map_v2s[RX_AF_GAIN] = std::string("RX_AF_GAIN");
+  target_map_v2s[RX_AF_SIDETONE_GAIN] = std::string("RX_AF_SIDETONE_GAIN");
+  target_map_v2s[TX_AF_GAIN] = std::string("TX_AF_GAIN");
+  target_map_v2s[TX_STATE] = std::string("TX_STATE");
+  target_map_v2s[RX_STATE] = std::string("RX_STATE");
+  target_map_v2s[RX_MODE] = std::string("RX_MODE");
+  target_map_v2s[TX_MODE] = std::string("TX_MODE");
+  target_map_v2s[RX_BW] = std::string("RX_BW");
+  target_map_v2s[RBW] = std::string("RBW");
+  target_map_v2s[CLOCK_SOURCE] = std::string("CLOCK_SOURCE");
+  target_map_v2s[LO_CHECK] = std::string("LO_CHECK");
+  target_map_v2s[LO_OFFSET] = std::string("LO_OFFSET");
+  target_map_v2s[RX_AF_FILTER] = std::string("RX_AF_FILTER");
+  target_map_v2s[TX_BEACON] = std::string("TX_BEACON");
+  target_map_v2s[TX_CW_SPEED] = std::string("TX_CW_SPEED");
+  target_map_v2s[TX_CW_TEXT] = std::string("TX_CW_TEXT");
+  target_map_v2s[TX_CW_FLUSHTEXT] = std::string("TX_CW_FLUSHTEXT");
 
-  target_map_v2s[SPEC_CENTER_FREQ] = new std::string("SPEC_CENTER_FREQ");
-  target_map_v2s[SPEC_RANGE_LOW] = new std::string("SPEC_RANGE_LOW");
-  target_map_v2s[SPEC_RANGE_HI] = new std::string("SPEC_RANGE_HI");
-  target_map_v2s[SPEC_STEP] = new std::string("SPEC_STEP");
-  target_map_v2s[SPEC_BUF_LEN] = new std::string("SPEC_BUF_LEN");
-  target_map_v2s[SPEC_DIMS] = new std::string("SPEC_DIMS");
-  target_map_v2s[SPEC_UPDATE_RATE] = new std::string("SPEC_UPDATE_RATE");
+  target_map_v2s[SPEC_CENTER_FREQ] = std::string("SPEC_CENTER_FREQ");
+  target_map_v2s[SPEC_RANGE_LOW] = std::string("SPEC_RANGE_LOW");
+  target_map_v2s[SPEC_RANGE_HI] = std::string("SPEC_RANGE_HI");
+  target_map_v2s[SPEC_STEP] = std::string("SPEC_STEP");
+  target_map_v2s[SPEC_BUF_LEN] = std::string("SPEC_BUF_LEN");
+  target_map_v2s[SPEC_DIMS] = std::string("SPEC_DIMS");
+  target_map_v2s[SPEC_UPDATE_RATE] = std::string("SPEC_UPDATE_RATE");
 
-  target_map_v2s[HWMB_REP] = new std::string("HWMB_REP");
+  target_map_v2s[SDR_VERSION] = std::string("SDR_VERSION");  
+  target_map_v2s[HWMB_REP] = std::string("HWMB_REP");
   
-  target_map_v2s[DBG_REP] = new std::string("DBG_REP");
-  target_map_v2s[TVRT_LO_ENABLE] = new std::string("TVRT_LO_ENABLE");
-  target_map_v2s[TVRT_LO_DISABLE] = new std::string("TVRT_LO_DISABLE");
-  target_map_v2s[TVRT_LO_CONFIG] = new std::string("TVRT_LO_CONFIG");
-  target_map_v2s[STOP] = new std::string("STOP");
-  target_map_v2s[STATUS_MESSAGE] = new std::string("STATUS_MESSAGE");
+  target_map_v2s[DBG_REP] = std::string("DBG_REP");
+  target_map_v2s[TVRT_LO_ENABLE] = std::string("TVRT_LO_ENABLE");
+  target_map_v2s[TVRT_LO_DISABLE] = std::string("TVRT_LO_DISABLE");
+  target_map_v2s[TVRT_LO_CONFIG] = std::string("TVRT_LO_CONFIG");
+  target_map_v2s[STOP] = std::string("STOP");
+  target_map_v2s[STATUS_MESSAGE] = std::string("STATUS_MESSAGE");
 
-  target_map_v2s[TX_AUDIO_IN] = new std::string("TX_AUDIO_IN");
-  target_map_v2s[TX_AUDIO_FILT_ENA] = new std::string("TX_AUDIO_FILT_ENA");
+  target_map_v2s[TX_AUDIO_IN] = std::string("TX_AUDIO_IN");
+  target_map_v2s[TX_AUDIO_FILT_ENA] = std::string("TX_AUDIO_FILT_ENA");
+
+  target_map_v2s[RX_GAIN_RANGE] = std::string("RX_GAIN_RANGE");
+  target_map_v2s[TX_GAIN_RANGE] = std::string("TX_GAIN_RANGE");
+  target_map_v2s[RX_ANT_NAME] = std::string("RX_ANT_NAME");
+  target_map_v2s[TX_ANT_NAME] = std::string("TX_ANT_NAME");
+  target_map_v2s[MOD_SEL_ENTRY] = std::string("MOD_SEL_ENTRY");
+  target_map_v2s[AF_FILT_ENTRY] = std::string("AF_FILT_ENTRY");
+
   
 }
 
@@ -161,8 +178,8 @@ SoDa::Command * SoDa::Command::parseCommandString(std::string str)
   double val_d;
   int val_i;
 
-  SoDa::Command::cmd_type ct;
-  SoDa::Command::cmd_target targ;
+  SoDa::Command::CmdType ct;
+  SoDa::Command::CmdTarget targ;
   
   cmd_str = ""; targ_str = ""; 
   iss >> cmd_str >> targ_str; 
@@ -205,12 +222,12 @@ SoDa::Command * SoDa::Command::parseCommandString(std::string str)
   return NULL; 
 }
 
-std::string & SoDa::Command::toString()
+std::string SoDa::Command::toString() const
 {
   if(table_needs_init) {
     initTables(); 
   }
-  std::string *sp = new std::string("");
+  std::string sp("");
   std::ostringstream oss;
   switch(cmd) {
   case SET: oss << "SET ";
@@ -223,9 +240,8 @@ std::string & SoDa::Command::toString()
     break; 
   }
 
-  if(target_map_v2s[target] != NULL) { 
-    std::string tg(*target_map_v2s[target]); 
-    oss << tg;
+  if(target_map_v2s.find(target) != target_map_v2s.end()) { 
+    oss << target_map_v2s[target];
   }
   else {
     oss << " [?" << target << "?] ";
@@ -244,7 +260,7 @@ std::string & SoDa::Command::toString()
     oss << " S \"" << sparm << "\"";
     break; 
   }
-  *sp += oss.str();
+  sp += oss.str();
   
-  return *sp; 
+  return sp; 
 }

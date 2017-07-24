@@ -26,7 +26,7 @@ public:
     ~SoDaSpect();
 
 public slots:
-  void updateData(double cfreq, double * y); 
+  void updateData(double cfreq, float * y); 
   void pickPoint(const QPointF & pos);
   void setDynamicRange(double drange);
   void setRefLevel(int rlvl);

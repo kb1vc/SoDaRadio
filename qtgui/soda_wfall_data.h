@@ -20,7 +20,7 @@ class SoDaWFallData : public QwtRasterData
 
   void setRefLevel(double reflvl);
   
-  virtual void updateData(double cfreq, double * spect);
+  virtual void updateData(double cfreq, float * spect);
 
   void setSpectrumDimensions(double cfreq, double span, long buckets);
 
