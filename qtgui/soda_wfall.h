@@ -39,6 +39,9 @@ class SoDaWFall : public QwtPlot
   public slots:
     void updateData(double cf, float * y);
     void pickPoint(const QPointF & pos);
+
+    void setFreqMarker(double freq); 
+
     void setDynamicRange(double drange);
     void setRefLevel(int rlvl);
     void setFreqCenter(double cf, bool check_boundary = false);

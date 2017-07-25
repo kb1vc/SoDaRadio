@@ -450,7 +450,7 @@
      <height>810</height>
     </size>
    </property>
-   <layout class="QVBoxLayout" name="verticalLayout_29" stretch="12,2,8,1">
+   <layout class="QVBoxLayout" name="verticalLayout_29" stretch="0,2,8,1">
     <item>
      <widget class="QTabWidget" name="Display_tabs">
       <property name="minimumSize">
@@ -460,7 +460,7 @@
        </size>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="Waterfall">
        <attribute name="title">
@@ -485,6 +485,53 @@
              </spacer>
             </item>
             <item>
+             <widget class="QPushButton" name="wf_RX2Center_btn">
+              <property name="text">
+               <string>Center RX Freq</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_16">
+              <property name="text">
+               <string>Update Rate</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSlider" name="wf_updateRate_sl">
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>11</number>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_15">
+              <property name="text">
+               <string>Average Window</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSlider" name="wf_avgWindow_sl">
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>50</number>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+             </widget>
+            </item>
+            <item>
              <layout class="QHBoxLayout" name="horizontalLayout_15">
               <item>
                <widget class="QPushButton" name="wf_moveLeft_btn">
@@ -505,12 +552,12 @@
             <item>
              <widget class="QLabel" name="label_19">
               <property name="text">
-               <string>RefLevel (dB)</string>
+               <string>Floor (dB)</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="SoDaNoEditSpinbox" name="wf_ceilLevel_spb">
+             <widget class="SoDaNoEditSpinbox" name="wf_floorLevel_spb">
               <property name="minimum">
                <number>-100</number>
               </property>
@@ -518,7 +565,7 @@
                <number>60</number>
               </property>
               <property name="singleStep">
-               <number>5</number>
+               <number>2</number>
               </property>
              </widget>
             </item>
@@ -530,7 +577,14 @@
              </widget>
             </item>
             <item>
-             <widget class="WFallDynRangeComboBox" name="wf_dynRange_cb"/>
+             <widget class="WFallDynRangeComboBox" name="wf_dynRange_cb">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+             </widget>
             </item>
             <item>
              <widget class="QLabel" name="label_17">
@@ -540,12 +594,25 @@
              </widget>
             </item>
             <item>
-             <widget class="WFallSpanComboBox" name="wf_freqSpan_cb"/>
+             <widget class="WFallSpanComboBox" name="wf_freqSpan_cb">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
           <item>
            <widget class="SoDaWFall" name="waterfall_plt" native="true">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <layout class="QHBoxLayout" name="horizontalLayout_16"/>
            </widget>
           </item>
@@ -574,6 +641,33 @@
                </size>
               </property>
              </spacer>
+            </item>
+            <item>
+             <widget class="QPushButton" name="sp_RX2Center_btn">
+              <property name="text">
+               <string>Center RX Freq</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_14">
+              <property name="text">
+               <string>Average Window</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSlider" name="sp_avgWindow_sl">
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>50</number>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+             </widget>
             </item>
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_13">
@@ -1761,7 +1855,7 @@
      </widget>
     </item>
     <item>
-     <layout class="QHBoxLayout" name="Controls_box" stretch="2,2,2,2,0,0,4,0,2">
+     <layout class="QHBoxLayout" name="Controls_box" stretch="1,1,3,3,4,1,4,1">
       <item>
        <widget class="QGroupBox" name="Mode_box">
         <property name="title">
@@ -1923,24 +2017,6 @@
          <widget class="QCheckBox" name="TXRXLock_chk">
           <property name="text">
            <string>TX=RX Lock</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="SpecTrack_chk">
-          <property name="text">
-           <string>Spectrum Track</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <layout class="QGridLayout" name="TuneCtrl_box">
-        <item row="0" column="0">
-         <widget class="QPushButton" name="RXtoCF_btn">
-          <property name="text">
-           <string>RX-&gt;CFreq</string>
           </property>
          </widget>
         </item>
@@ -2418,7 +2494,7 @@
        </layout>
       </item>
       <item>
-       <layout class="QVBoxLayout" name="PTTCtrl_lay" stretch="2,0,2">
+       <layout class="QVBoxLayout" name="PTTCtrl_lay" stretch="2,1,1">
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
           <property name="spacing">
@@ -2921,10 +2997,16 @@
             <layout class="QVBoxLayout" name="verticalLayout_20">
              <item>
               <widget class="QComboBox" name="RXAnt_sel">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
                <property name="minimumSize">
                 <size>
                  <width>0</width>
-                 <height>14</height>
+                 <height>27</height>
                 </size>
                </property>
               </widget>
@@ -2940,10 +3022,16 @@
             <layout class="QVBoxLayout" name="verticalLayout_19">
              <item>
               <widget class="QComboBox" name="TXAnt_sel">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
                <property name="minimumSize">
                 <size>
                  <width>0</width>
-                 <height>14</height>
+                 <height>24</height>
                 </size>
                </property>
               </widget>

@@ -156,12 +156,14 @@ void SoDaListener::setRXFreq(double freq) {
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_RETUNE_FREQ, freq))) {
     perror("What happened here?");
   }
+  current_rx_freq = freq;   
 }
 
 void SoDaListener::setTXFreq(double freq) {
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_RETUNE_FREQ, freq))) {
     perror("What happened here?");
   }
+  current_tx_freq = freq; 
 }
 
 void SoDaListener::setRXGain(int gain) {
@@ -256,6 +258,27 @@ void SoDaListener::setRXAnt(const QString & antname)
 void SoDaListener::setTXAnt(const QString & antname)
 {
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_ANT, antname.toStdString()))) {
+    perror("What happened here?");
+  }
+}
+
+void SoDaListener::setSpectrumCenter(double freq) 
+{
+  if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::SPEC_CENTER_FREQ, freq))) {
+    perror("What happened here?");
+  }
+}
+
+void SoDaListener::setSpectrumUpdateRate(int rate)
+{
+  if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::SPEC_UPDATE_RATE, rate))) {
+    perror("What happened here?");
+  }
+}  
+
+void SoDaListener::setSpectrumAvgWindow(int window)
+{
+  if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::SPEC_AVG_WINDOW, window))) {
     perror("What happened here?");
   }
 }

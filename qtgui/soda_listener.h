@@ -60,8 +60,19 @@ public slots:
   void setRXAnt(const QString & antname);
   void setTXAnt(const QString & antname);
 
+  double getRXFreq() { return current_rx_freq; }
+  double getTXFreq() { return current_tx_freq; }
+
+  void setSpectrumCenter(double freq); 
+  void setSpectrumAvgWindow(int window);
+  void setSpectrumUpdateRate(int rate);  
+  
   void closeRadio();
+
+
 protected:
+  double current_rx_freq; 
+  double current_tx_freq; 
   int get(char* buf, int maxlen); 
   bool get(SoDa::Command & cmd); 
   int put(const char * buf, int len); 

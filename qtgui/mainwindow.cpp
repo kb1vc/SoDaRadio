@@ -18,9 +18,6 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
     // setup the listener. 
     listener = new SoDaListener(this, QString::fromStdString(params.getServerSocketBasename())); 
 
-    connect(ui->RXFreq_lab, &FreqLabel::newFreq,
-            this, &MainWindow::newFreq);
-
     setupSpectrum();
     setupWaterFall();
     
@@ -50,14 +47,5 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
 MainWindow::~MainWindow()
 {
     delete ui;
-}
-
-
-
-
-
-void MainWindow::newFreq(double freq)
-{
-  std::cerr << boost::format("Got new frequency: %15.6lf MHz\n") % (freq * 1e-6) ;
 }
 

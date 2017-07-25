@@ -138,6 +138,7 @@ void SoDa::Command::initTables()
   target_map_v2s[SPEC_STEP] = std::string("SPEC_STEP");
   target_map_v2s[SPEC_BUF_LEN] = std::string("SPEC_BUF_LEN");
   target_map_v2s[SPEC_DIMS] = std::string("SPEC_DIMS");
+  target_map_v2s[SPEC_AVG_WINDOW] = std::string("SPEC_AVG_WINDOW");
   target_map_v2s[SPEC_UPDATE_RATE] = std::string("SPEC_UPDATE_RATE");
 
   target_map_v2s[SDR_VERSION] = std::string("SDR_VERSION");  

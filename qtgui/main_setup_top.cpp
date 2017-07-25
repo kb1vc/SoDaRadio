@@ -26,35 +26,58 @@ void MainWindow::setupTopControls()
 	  listener, SLOT(setAFGain(int)));
 
   connect(ui->RXFreq_lab, SIGNAL(newFreq(double)), 
-	  listener, SLOT(setRXFreq(double))); 
+	  this, SLOT(setRXFreq(double))); 
 
   connect(ui->TXFreq_lab, SIGNAL(newFreq(double)), 
-	  listener, SLOT(setTXFreq(double))); 
-
-  connect(ui->RXFreq_lab, &FreqLabel::newFreq, 
-	  this, [=] (double freq) { 
-	    if(ui->TXRXLock_chk->isChecked()) 
-	      ui->TXFreq_lab->setFreq(freq); 
-	  });
-
-  connect(ui->TXFreq_lab, &FreqLabel::newFreq, 
-	  this, [=] (double freq) { 
-	    if(ui->TXRXLock_chk->isChecked()) 
-	      ui->RXFreq_lab->setFreq(freq); 
-	  });
-
-  // connect RX freq setting to waterfall and spectrum if "spectrum track" is checked
-
-  // connect rx->cfreq from rx freq to waterfall/spectrum
-
-  // connect waterfall/spectrum freq setting to rxfreq 
+	  this, SLOT(setTXFreq(double))); 
   
   connect(ui->RXfreq2TXfreq_btn, &QPushButton::clicked, 
 	  this, [=] (bool checked) {
-	    ui->TXFreq_lab->setFreq(ui->RXFreq_lab->getFreq());
+	    setTXFreq(ui->RXFreq_lab->getFreq());
 	  });
   connect(ui->TXfreq2RXfreq_btn, &QPushButton::clicked, 
 	  this, [=] (bool checked) {
-	    ui->RXFreq_lab->setFreq(ui->TXFreq_lab->getFreq());
+	    setRXFreq(ui->TXFreq_lab->getFreq());
 	  });
 }
+
+
+void MainWindow::setRXFreq(double freq)
+{
+  // coordinate all settings for new frequencies. 
+  setRXFreq_nocross(freq); 
+  // if we are TX/RX frequency locked, tell the TX unit
+  if(ui->TXRXLock_chk->isChecked()) setTXFreq_nocross(freq); 
+}
+
+void MainWindow::setTXFreq(double freq)
+{
+  setTXFreq_nocross(freq); 
+  if(ui->TXRXLock_chk->isChecked()) setRXFreq_nocross(freq); 
+}
+
+void MainWindow::setRXFreq_nocross(double freq)
+{
+  // tell the radio. 
+  listener->setRXFreq(freq); 
+  
+  // tell the waterfall
+  ui->waterfall_plt->setFreqMarker(freq); 
+
+  // tell the spectrum plot
+  ui->spectrum_plt->setFreqMarker(freq);
+  
+  // tell the RX freq display
+  ui->RXFreq_lab->setFreq(freq); 
+}
+
+void MainWindow::setTXFreq_nocross(double freq)
+{
+  // tell the radio. 
+  listener->setTXFreq(freq); 
+  
+  // tell the RX freq display
+  ui->TXFreq_lab->setFreq(freq); 
+}
+
+

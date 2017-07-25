@@ -202,9 +202,14 @@ void SoDaWFall::updateData(double cfreq, float * spect)
   replot();
 }
 
+void SoDaWFall::setFreqMarker(double freq) 
+{
+  setMarkers(freq + marker_lo_offset, freq + marker_hi_offset);   
+}
+
 void SoDaWFall::pickPoint(const QPointF & pos)
 {
-  setMarkers(pos.x() + marker_lo_offset, pos.x() + marker_hi_offset); 
+  setFreqMarker(pos.x());
   emit xClick(pos.x());
 }
 

@@ -19,7 +19,8 @@ public:
   ~MainWindow();
 
 public slots:
-  void newFreq(double freq);
+  void setRXFreq(double freq);
+  void setTXFreq(double freq);  
 
 signals:
   void closeRadio();
@@ -42,6 +43,9 @@ private:
     listener->closeRadio();
     event->accept();
   }
+
+  void setRXFreq_nocross(double freq);
+  void setTXFreq_nocross(double freq);   
   
   Ui::MainWindow *ui;
 

@@ -10,7 +10,7 @@ SoDaWFallData::SoDaWFallData() {
   setInterval( Qt::XAxis, QwtInterval(0.0, 100e9)); // I don't think we'll see too many 100GHz scans
   setInterval( Qt::YAxis, QwtInterval(-1.0 * ((double) num_rows), 0.0)); // store the last 300 rows
 
-  ref_level = -20.0; 
+  ref_level = -80.0; 
   dynamic_range = 80.0; 
   setZRange();
 
@@ -117,7 +117,7 @@ double SoDaWFallData::value(double f, double t) const
 }
 
 void SoDaWFallData::setZRange() {
-  setInterval( Qt::ZAxis, QwtInterval(ref_level - dynamic_range, ref_level));
+  setInterval( Qt::ZAxis, QwtInterval(ref_level, ref_level + dynamic_range));
 }
 
 void SoDaWFallData::setDynamicRange(double drange) {
