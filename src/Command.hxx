@@ -304,6 +304,8 @@ namespace SoDa {
       
       RX_AF_FILTER, ///< Audio Filter
 
+      RX_AF_FILTER_SHAPE, ///< Audio Filter      
+
       /**
        * Report LAT and LON from GPS receiver
        *

@@ -202,15 +202,23 @@ void SoDaWFall::updateData(double cfreq, float * spect)
   replot();
 }
 
+void SoDaWFall::setMarkerOffset(double lo, double hi) { 
+  marker_lo_offset = lo;
+  marker_hi_offset = hi;       
+  setFreqMarker(marker_freq); 
+}
+
 void SoDaWFall::setFreqMarker(double freq) 
 {
+  marker_freq = freq; 
   setMarkers(freq + marker_lo_offset, freq + marker_hi_offset);   
-}
+} 
 
 void SoDaWFall::pickPoint(const QPointF & pos)
 {
-  setFreqMarker(pos.x());
-  emit xClick(pos.x());
+  double freq = pos.x() - marker_lo_offset;   
+  setFreqMarker(freq);
+  emit xClick(freq);
 }
 
 void SoDaWFall::setDynamicRange(double drange)

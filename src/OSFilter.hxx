@@ -52,6 +52,7 @@ namespace SoDa {
     
 
     /// constructor
+#if 0    
     /// Build the filter from the time domain FIR filter sequence CASCADED with the filter
     /// specified by the [cascade] parameter
     /// @param filter_impulse_response time domain FIR filter coefficient array -- real
@@ -66,7 +67,8 @@ namespace SoDa {
 	     unsigned int inout_buffer_length,
 	     OSFilter * cascade = NULL,
 	     unsigned int suggested_transform_length = 0);
-
+#endif
+    
     /// constructor
     /// Build the filter from a filter spec for a bandpass filter
     /// 
@@ -111,7 +113,15 @@ namespace SoDa {
     /// dump the filter FFT to the output stream
     /// @param os an output stream. 
     void dump(std::ostream & os);
-  private:
+
+    std::pair<double, double> getFilterEdges() { 
+      return std::pair<double, double>(low_edge, high_edge); 
+    }
+
+  protected:
+    /// parameters that we keep to support display masks on the spectrogram
+    double low_edge, high_edge; 
+
     /// pick a likly N - FFT length.
     int guessN();
     void setupFFT();

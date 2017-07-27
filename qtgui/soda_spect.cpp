@@ -148,9 +148,17 @@ void SoDaSpect::setFreqSpan(double fs, bool check_boundary) {
 
 void SoDaSpect::pickPoint(const QPointF & pos)
 {
-  setFreqMarker(pos.x());
-  emit xClick(pos.x());
+  double freq = pos.x() - marker_lo_offset; 
+  setFreqMarker(freq);
+  emit xClick(freq);
 }
+
+void SoDaSpect::setMarkerOffset(double lo, double hi) { 
+  marker_lo_offset = lo;
+  marker_hi_offset = hi;       
+  setFreqMarker(marker_freq); 
+}
+
 
 void SoDaSpect::setFreqMarker(double freq)
 {
@@ -158,7 +166,7 @@ void SoDaSpect::setFreqMarker(double freq)
   double width = marker_hi_offset - marker_lo_offset;
   freq_marker.setRect(QRectF(f, -200.0, width, 300.0));
 
-  marker_freq = f;   
+  marker_freq = freq;   
   replot();
 }
 
@@ -192,5 +200,5 @@ void SoDaSpect::configureSpectrum(double cfreq, double span, long buckets) {
     
   // set the center display frequency and span. 
   setFreqCenter(cfreq); 
-  setFreqSpan(200.0e3); // default span. 
+  //   setFreqSpan(200.0e3); // default span. 
 }

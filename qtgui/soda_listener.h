@@ -30,7 +30,8 @@ signals:
   void addModulation(QString modtype, int mod_id);
   void addFilterWidth(double lo, double hi);
   void addFilterName(QString filter_name, int filt_id);
-
+  void repMarkerOffset(double lo, double hi); 
+  
   void addRXAntName(const QString & ant_name);
   void addTXAntName(const QString & ant_name);  
   
@@ -44,6 +45,7 @@ signals:
   void repSDRVersion(const QString & version);
   void repHWMBVersion(const QString & version);
 
+					      
 public slots:
   void setRXFreq(double freq);
   void setTXFreq(double freq);
@@ -66,7 +68,8 @@ public slots:
   void setSpectrumCenter(double freq); 
   void setSpectrumAvgWindow(int window);
   void setSpectrumUpdateRate(int rate);  
-  
+
+
   void closeRadio();
 
 

@@ -47,7 +47,7 @@ static unsigned int ipow(unsigned int x, unsigned int y)
   return ret; 
 }
 
-
+#if 0
 SoDa::OSFilter::OSFilter(float * filter_impulse_response,
 			 unsigned int filter_length,
 			 float filter_gain, 
@@ -118,6 +118,7 @@ SoDa::OSFilter::OSFilter(float * filter_impulse_response,
   // setup the fft buffers
   setupFFT();
 }
+#endif
 
 SoDa::OSFilter::OSFilter(float low_cutoff,
 			 float low_pass_edge,
@@ -131,6 +132,10 @@ SoDa::OSFilter::OSFilter(float low_cutoff,
 			 unsigned int inout_buffer_length,
 			 unsigned int suggested_transform_length)
 {
+  // remember our edges
+  low_edge = (double) low_pass_edge;
+  high_edge = (double) high_pass_edge;
+  
   // first find our buffer sizes.
   Q = filter_length;
   M = inout_buffer_length;

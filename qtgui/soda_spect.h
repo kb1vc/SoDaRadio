@@ -48,10 +48,7 @@ public slots:
   
   void configureSpectrum(double cfreq, double span, long buckets);
     
-  void setMarkerOffset(double lo, double hi) { 
-    marker_lo_offset = lo;
-    marker_hi_offset = hi;       
-  }
+  void setMarkerOffset(double lo, double hi);
 
 protected:
 

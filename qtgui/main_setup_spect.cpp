@@ -41,6 +41,9 @@ void MainWindow::setupWaterFall()
 	    listener, SLOT(setSpectrumUpdateRate(int))); 
     connect(ui->wf_avgWindow_sl, SIGNAL(valueChanged(int)), 
 	    listener, SLOT(setSpectrumAvgWindow(int))); 
+
+    connect(listener, SIGNAL(repMarkerOffset(double, double)), 
+	    ui->waterfall_plt, SLOT(setMarkerOffset(double, double)));
 }
 
 void MainWindow::setupSpectrum()
@@ -74,4 +77,7 @@ void MainWindow::setupSpectrum()
   connect(ui->sp_avgWindow_sl, SIGNAL(valueChanged(int)), 
 	    listener, SLOT(setSpectrumAvgWindow(int))); 
 
+  connect(listener, SIGNAL(repMarkerOffset(double, double)), 
+	  ui->spectrum_plt, SLOT(setMarkerOffset(double, double)));
+  
 }

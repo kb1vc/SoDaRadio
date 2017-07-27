@@ -299,13 +299,38 @@ void SoDa::BaseBandRX::demodulate(SoDaBuf * rxbuf)
   }
 }
 
+void SoDa::BaseBandRX::repAFFilterShape() {
+  std::pair<double, double> fshape = cur_audio_filter->getFilterEdges();  
+  switch (rx_modulation) {
+  case SoDa::Command::USB:
+  case SoDa::Command::CW_U:
+      cmd_stream->put(new Command(Command::REP, Command::RX_AF_FILTER_SHAPE, 
+				  fshape.first, fshape.second));
+      break; 
+  case SoDa::Command::LSB:
+  case SoDa::Command::CW_L:
+      cmd_stream->put(new Command(Command::REP, Command::RX_AF_FILTER_SHAPE, 
+				  -fshape.first, -fshape.second));
+      break; 
+  case SoDa::Command::AM:
+      cmd_stream->put(new Command(Command::REP, Command::RX_AF_FILTER_SHAPE, 
+				  -fshape.second, fshape.second));
+      break; 
+  default:
+      cmd_stream->put(new Command(Command::REP, Command::RX_AF_FILTER_SHAPE, 
+				  -100, 100));
+    
+  }
+}
+
 void SoDa::BaseBandRX::execSetCommand(SoDa::Command * cmd)
 {
   SoDa::Command::AudioFilterBW fbw;
   SoDa::Command::ModulationType txmod; 
   switch (cmd->target) {
   case SoDa::Command::RX_MODE:
-    rx_modulation = SoDa::Command::ModulationType(cmd->iparms[0]); 
+    rx_modulation = SoDa::Command::ModulationType(cmd->iparms[0]);
+    repAFFilterShape();    
     break;
   case SoDa::Command::TX_MODE:
     txmod = SoDa::Command::ModulationType(cmd->iparms[0]);
@@ -353,8 +378,11 @@ void SoDa::BaseBandRX::execSetCommand(SoDa::Command * cmd)
       cur_audio_filter = filter_map[SoDa::Command::BW_6000]; 
       af_filter_selection = SoDa::Command::BW_6000;
     }
-    cmd_stream->put(new Command(Command::REP, Command::RX_AF_FILTER, 
-				af_filter_selection));
+    {
+      cmd_stream->put(new Command(Command::REP, Command::RX_AF_FILTER, 
+				  af_filter_selection));
+      repAFFilterShape();
+    }
     break; 
   case SoDa::Command::RX_AF_GAIN: // set audio gain. 
     af_gain = powf(10.0, 0.25 * (cmd->dparms[0] - 50.0));

@@ -241,6 +241,9 @@ bool SoDaListener::handleREP(const SoDa::Command & cmd)
   case SoDa::Command::SDR_VERSION:
     emit(repSDRVersion(QString(cmd.sparm)));
     break; 
+  case SoDa::Command::RX_AF_FILTER_SHAPE:
+    emit(repMarkerOffset(cmd.dparms[0], cmd.dparms[1])); 
+    break; 
   default:
     std::cerr << boost::format("Ignoring incoming REP command: [%s]\n") % cmd.toString();
     break; 

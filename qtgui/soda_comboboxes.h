@@ -37,12 +37,17 @@
   public:
     WFallDynRangeComboBox(QWidget * parent = 0) : ValComboBox(parent) {
       
-      addValue("100", 100.0);
       addValue("50", 50.0);
-      addValue("25", 25.0); 
-      addValue("10", 10.0);            
+      addValue("45", 45.0);
+      addValue("40", 40.0);	    
+      addValue("35", 35.0);
+      addValue("30", 30.0);	          
+      addValue("25", 25.0);
+      addValue("15", 15.0);       
+      addValue("10", 10.0);
+      addValue("5", 5.0);                  
       std::cerr << "WFallDynRangeComboBox added values\n";
-      setSelection(100.0);
+      setSelection(25.0);
     }
   }; 
 

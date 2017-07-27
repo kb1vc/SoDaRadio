@@ -66,6 +66,7 @@ void SoDa::Command::initTables()
   target_map_s2v[std::string("LO_CHECK")] = LO_CHECK;
   target_map_s2v[std::string("LO_OFFSET")] = LO_OFFSET;
   target_map_s2v[std::string("RX_AF_FILTER")] = RX_AF_FILTER;
+  target_map_s2v[std::string("RX_AF_FILTER_SHAPE")] = RX_AF_FILTER_SHAPE;
   target_map_s2v[std::string("TX_BEACON")] = TX_BEACON; 
   target_map_s2v[std::string("TX_CW_SPEED")] = TX_CW_SPEED; 
   target_map_s2v[std::string("TX_CW_TEXT")] = TX_CW_TEXT; 
@@ -127,6 +128,7 @@ void SoDa::Command::initTables()
   target_map_v2s[LO_CHECK] = std::string("LO_CHECK");
   target_map_v2s[LO_OFFSET] = std::string("LO_OFFSET");
   target_map_v2s[RX_AF_FILTER] = std::string("RX_AF_FILTER");
+  target_map_v2s[RX_AF_FILTER_SHAPE] = std::string("RX_AF_FILTER_SHAPE");  
   target_map_v2s[TX_BEACON] = std::string("TX_BEACON");
   target_map_v2s[TX_CW_SPEED] = std::string("TX_CW_SPEED");
   target_map_v2s[TX_CW_TEXT] = std::string("TX_CW_TEXT");

@@ -163,7 +163,11 @@ namespace SoDa {
      */
     void demodulate(SoDaBuf * rxbuf);
 
-
+    /**
+     * @brief send a report of the lower and upper edges of the IF passband
+     * based on the current filter and modulation type.
+     */
+    void repAFFilterShape();
 
     // parameters
     unsigned int audio_buffer_size; ///< size of output audio buffer chunk

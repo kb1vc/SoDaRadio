@@ -39,7 +39,10 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
         std::cerr << boost::format("row = %d key = [%s] val = [%s]\n") % row % key % val;
     });
 
-    connect(listener, SLOT(closeRadio()), this, SIGNAL(closeRadio()));
+    connect(this, SIGNAL(closeRadio()), listener, SLOT(closeRadio()));
+
+    connect(listener, SIGNAL(repHWMBVersion(const QString &)), 
+	    this, SLOT(setWindowTitle(const QString &)));
 
     listener->start();
 }

@@ -59,21 +59,17 @@ class SoDaWFall : public QwtPlot
     void configureSpectrum(double cfreq, double span, long buckets) {
       std::cerr << boost::format("wfall configSpectrum (%g %g %d)\n")
 	% cfreq % span % buckets; 
-      marker_freq = cfreq; 
       setFreqCenter(cfreq); 
-      setFreqSpan(span);
+      // setFreqSpan(span);
       spectrum_input_span = span; 
       wfall_data->setSpectrumDimensions(cfreq, span, buckets); 
     }
-    void setMarkerOffset(double lo, double hi) { 
-      marker_lo_offset = lo;
-      marker_hi_offset = hi;       
-    }
+    void setMarkerOffset(double lo, double hi);
+
  private:
     void setZAxis();
     void setMarkers(double lo, double hi) { 
       wfall_data->setMarkers(lo, hi); 
-      marker_freq = 0.5 * (lo + hi); 
     }
     double marker_lo_offset; 
     double marker_hi_offset; 
