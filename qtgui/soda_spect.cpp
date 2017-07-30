@@ -1,4 +1,4 @@
-#include "soda_spect.h"
+#include "soda_spect.hpp"
 #include <iostream>
 #include <boost/format.hpp>
 #include <cmath>

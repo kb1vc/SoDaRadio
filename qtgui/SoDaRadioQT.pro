@@ -20,17 +20,17 @@ SOURCES += main.cpp\
         soda_wfall.cpp soda_wfall_data.cpp soda_spect.cpp \
     soda_comboboxes.cpp
 
-HEADERS  += mainwindow.h \
-    freqlabel.h \
-    logtable.h \
-    soda_wfall.h \
-    soda_wfall_picker.h \
-    soda_wfall_data.h \
-    soda_list_spinbox.h \
-    soda_freq_scale_draw.h \
-    soda_comboboxes.h \
-    soda_plot_picker.h \
-    soda_spect.h
+HEADERS  += mainwindow.hpp \
+    freqlabel.hpp \
+    logtable.hpp \
+    soda_wfall.hpp \
+    soda_wfall_picker.hpp \
+    soda_wfall_data.hpp \
+    soda_list_spinbox.hpp \
+    soda_freq_scale_draw.hpp \
+    soda_comboboxes.hpp \
+    soda_plot_picker.hpp \
+    soda_spect.hpp
     
 
 FORMS    += mainwindow.ui

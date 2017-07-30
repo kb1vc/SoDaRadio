@@ -1,4 +1,4 @@
-#include "logtable.h"
+#include "logtable.hpp"
 #include <iostream>
 
 LogTable::LogTable(QWidget *parent) :

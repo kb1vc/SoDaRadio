@@ -1,5 +1,5 @@
 #include <cmath>
-#include "freqlabel.h"
+#include "freqlabel.hpp"
 #include <iostream>
 
 FreqLabel::FreqLabel(QWidget * parent,

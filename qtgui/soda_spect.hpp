@@ -14,8 +14,8 @@
 #include <QMouseEvent>
 #include <QPointF>
 
-#include "soda_plot_picker.h"
-#include "soda_freq_scale_draw.h"
+#include "soda_plot_picker.hpp"
+#include "soda_freq_scale_draw.hpp"
 
 class SoDaSpect : public QwtPlot
 {

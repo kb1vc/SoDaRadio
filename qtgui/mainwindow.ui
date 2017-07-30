@@ -499,6 +499,19 @@
              </widget>
             </item>
             <item>
+             <widget class="QSlider" name="wf_updateRate_sl">
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>21</number>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QLabel" name="label_15">
               <property name="text">
                <string>Average Window</string>
@@ -3315,44 +3328,44 @@ MB3 right half -- move digit selector right
   <customwidget>
    <class>FreqLabel</class>
    <extends>QLabel</extends>
-   <header>freqlabel.h</header>
+   <header>freqlabel.hpp</header>
   </customwidget>
   <customwidget>
    <class>LogTable</class>
    <extends>QTableWidget</extends>
-   <header>logtable.h</header>
+   <header>logtable.hpp</header>
   </customwidget>
   <customwidget>
    <class>SoDaWFall</class>
    <extends>QWidget</extends>
-   <header>soda_wfall.h</header>
+   <header>soda_wfall.hpp</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>SoDaNoEditSpinbox</class>
    <extends>QSpinBox</extends>
-   <header>soda_list_spinbox.h</header>
+   <header>soda_list_spinbox.hpp</header>
   </customwidget>
   <customwidget>
    <class>WFallDynRangeComboBox</class>
    <extends>QComboBox</extends>
-   <header>soda_comboboxes.h</header>
+   <header>soda_comboboxes.hpp</header>
   </customwidget>
   <customwidget>
    <class>WFallSpanComboBox</class>
    <extends>QComboBox</extends>
-   <header>soda_comboboxes.h</header>
+   <header>soda_comboboxes.hpp</header>
   </customwidget>
   <customwidget>
    <class>SoDaSpect</class>
    <extends>QWidget</extends>
-   <header>soda_spect.h</header>
+   <header>soda_spect.hpp</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>IntValComboBox</class>
    <extends>QComboBox</extends>
-   <header>soda_comboboxes.h</header>
+   <header>soda_comboboxes.hpp</header>
   </customwidget>
  </customwidgets>
  <resources/>

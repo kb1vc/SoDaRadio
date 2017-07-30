@@ -3,7 +3,7 @@
 
 #include <QMainWindow>
 #include <QCloseEvent>
-#include "soda_listener.h"
+#include "soda_listener.hpp"
 #include "../common/GuiParams.hxx"
 
 namespace Ui {

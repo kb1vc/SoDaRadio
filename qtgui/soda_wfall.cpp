@@ -7,7 +7,7 @@
 #include <qwt/qwt_scale_widget.h>
 #include <qwt/qwt_color_map.h>
 
-#include "soda_wfall.h"
+#include "soda_wfall.hpp"
 
 #define FIVECOLOR
 class WFColorMap : public QwtLinearColorMap

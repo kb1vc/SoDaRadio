@@ -28,21 +28,21 @@ SET(SoDaRadioQT_SRCS
   )
 
 SET(SoDaRadioQT_HDRS
-  mainwindow.h
-  freqlabel.h
-  logtable.h
-  soda_spect.h
-  soda_wfall.h
-  soda_comboboxes.h    
-  soda_listener.h
+  mainwindow.hpp
+  freqlabel.hpp
+  logtable.hpp
+  soda_spect.hpp
+  soda_wfall.hpp
+  soda_comboboxes.hpp
+  soda_listener.hpp
   )
 
 SET(SoDaRadioQT_NOMOC_HDRS
-  soda_freq_scale_draw.h
-  soda_list_spinbox.h
-  soda_plot_picker.h
-  soda_wfall_data.h
-  soda_wfall_picker.h
+  soda_freq_scale_draw.hpp
+  soda_list_spinbox.hpp
+  soda_plot_picker.hpp
+  soda_wfall_data.hpp
+  soda_wfall_picker.hpp
   ../common/GuiParams.hxx
   ../src/Command.hxx  
 )

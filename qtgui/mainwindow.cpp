@@ -1,12 +1,12 @@
-#include "mainwindow.h"
+#include "mainwindow.hpp"
 #include "ui_mainwindow.h"
 #include <iostream>
 #include <boost/format.hpp>
 
 #include <QString>
 
-#include "soda_comboboxes.h"
-#include "soda_listener.h"
+#include "soda_comboboxes.hpp"
+#include "soda_listener.hpp"
 #include "../common/GuiParams.hxx"
 
 MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :

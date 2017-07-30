@@ -1,4 +1,4 @@
-#include "soda_listener.h"
+#include "soda_listener.hpp"
 
 SoDaListener::SoDaListener(QObject * parent, QString socket_basename) : QObject(parent) {
   quit = false;

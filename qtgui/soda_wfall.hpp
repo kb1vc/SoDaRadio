@@ -19,9 +19,9 @@
 #include <iostream>
 #include <boost/format.hpp>
 
-#include "soda_wfall_picker.h"
-#include "soda_freq_scale_draw.h"
-#include "soda_wfall_data.h"
+#include "soda_wfall_picker.hpp"
+#include "soda_freq_scale_draw.hpp"
+#include "soda_wfall_data.hpp"
 
 #include <cmath>
 
