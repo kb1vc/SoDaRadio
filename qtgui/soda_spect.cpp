@@ -61,7 +61,7 @@ void SoDaSpect::initPlot()
   connect(picker_p, SIGNAL(selected(const QPointF&)), SLOT(pickPoint(const QPointF&)));
 
   QColor fcol = Qt::yellow;
-  fcol.setAlpha(128);
+  fcol.setAlpha(32);
   freq_marker.setBrush(fcol);
   freq_marker.setPen(fcol);
   // make a dummy marker

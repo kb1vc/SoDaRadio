@@ -225,8 +225,9 @@ void SoDa::UI::run()
     // if there are any socket listeners on the status channel,
     // clue them in.
     
-    // if there is nothing to do, sleep for a little while.
-    if(!didwork) usleep(10000);
+    // if there is nothing to do, sleep for a little while. -- 
+    // do small sleep, to speedup spectrum update.
+    if(!didwork) usleep(5000);
   }
 
 
@@ -270,9 +271,9 @@ void SoDa::UI::execSetCommand(Command * cmd)
     new_spectrum_setting = true;
     break; 
   case SoDa::Command::SPEC_UPDATE_RATE:
-    fft_update_interval = 11 - cmd->iparms[0];
+    fft_update_interval = 20 - cmd->iparms[0];
     if(fft_update_interval < 1) fft_update_interval = 1;
-    if(fft_update_interval > 12) fft_update_interval = 12;
+    if(fft_update_interval > 20) fft_update_interval = 20;
     new_spectrum_setting = true;
     debugMsg(boost::format("Updated SPEC_UPDATE_RATE = %d -> interval = %d\n")
 	     % cmd->iparms[0] % fft_update_interval);

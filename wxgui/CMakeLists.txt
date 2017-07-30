@@ -18,16 +18,10 @@ set(SoDaRadio_SRCS
     SoDaRadio_Top_Config.cxx
     ../src/UDSockets.cxx
     ../src/Command.cxx
-    Navigation.cxx
-    dem-gridlib.c
     xyplot.cxx
     RadioListenerThread.cxx
-    ../common/GuiParams.cxx
     waterfall.cxx
-    dem-gridlib.h
-    ../common/GuiParams.hxx
     WXGuiParams.hxx    
-    Navigation.hxx
     RadioListenerThread.hxx
     SoDaRadio_App.hxx
     SoDaRadio_GUI.h
@@ -38,9 +32,15 @@ set(SoDaRadio_SRCS
     ../src/FindHome.hxx
     ../src/FindHome.cxx
     Default.soda_cfg.h
-    SoDaRadio_Band.hxx
     ../src/Debug.hxx
     ../src/Debug.cxx
+    ../common/Navigation.hxx
+    ../common/Navigation.cxx
+    ../common/dem-gridlib.c
+    ../common/dem-gridlib.h    
+    ../common/GuiParams.cxx
+    ../common/GuiParams.hxx    
+    ../common/SoDaRadio_Band.hxx
     )
 
   

@@ -10,7 +10,6 @@ SET(SoDaRadioQT_SRCS
   soda_wfall_data.cpp
   soda_comboboxes.cpp
   soda_listener.cpp
-  ../common/GuiParams.cxx  
   ../src/Command.cxx
   main_setup_top.cpp
   main_setup_mid.cpp
@@ -19,6 +18,13 @@ SET(SoDaRadioQT_SRCS
   main_setup_bandconfig.cpp
   main_setup_logeditor.cpp  
   main_setup_spect.cpp
+  ../common/Navigation.hxx
+  ../common/Navigation.cxx
+  ../common/dem-gridlib.c
+  ../common/dem-gridlib.h    
+  ../common/GuiParams.cxx
+  ../common/GuiParams.hxx
+  ../common/SoDaRadio_Band.hxx  
   )
 
 SET(SoDaRadioQT_HDRS

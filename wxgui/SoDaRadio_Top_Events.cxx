@@ -31,7 +31,7 @@
 #include <boost/algorithm/string.hpp>
 #include <wx/wx.h>
 #include "../src/Command.hxx"
-#include "Navigation.hxx"
+#include "../common/Navigation.hxx"
 #include <math.h>
 #include <sys/stat.h>
 #include <sys/types.h>

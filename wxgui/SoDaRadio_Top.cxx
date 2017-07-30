@@ -26,7 +26,7 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 extern "C" {
-#include "dem-gridlib.h"
+#include "../common/dem-gridlib.h"
 #include <string.h>
 }
 #include "SoDaRadio_Top.h"
