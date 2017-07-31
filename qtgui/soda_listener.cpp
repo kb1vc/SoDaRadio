@@ -244,6 +244,12 @@ bool SoDaListener::handleREP(const SoDa::Command & cmd)
   case SoDa::Command::RX_AF_FILTER_SHAPE:
     emit(repMarkerOffset(cmd.dparms[0], cmd.dparms[1])); 
     break; 
+  case SoDa::Command::INIT_SETUP_COMPLETE:
+    emit(initSetupComplete());
+    break;
+  case SoDa::Command::TX_STATE:
+    emit(repPTT(cmd.iparms[0] == 1));
+    break; 
   default:
     std::cerr << boost::format("Ignoring incoming REP command: [%s]\n") % cmd.toString();
     break; 
@@ -283,6 +289,72 @@ void SoDaListener::setSpectrumAvgWindow(int window)
 {
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::SPEC_AVG_WINDOW, window))) {
     perror("What happened here?");
+  }
+}
+
+void SoDaListener::setCWSpeed(int speed)
+{
+  if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_CW_SPEED, speed))) {
+    perror("What happened here?");
+  }
+}
+
+void SoDaListener::setSidetoneVolume(int vol)
+{
+  if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_AF_SIDETONE_GAIN, (double) vol))) {
+    perror("What happened here?");
+  }
+}
+
+void SoDaListener::setTXPower(int power)
+{
+  if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_RF_GAIN, (double) power))) {
+    perror("What happened here?");
+  }
+}
+
+void SoDaListener::setPTT(bool on)
+{
+  int tx_state = on ? 1 : 0;
+  if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_STATE, tx_state))) {
+    perror("What happened here?");
+  }
+}
+
+void SoDaListener::clearCWBuffer()
+{
+  if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_CW_FLUSHTEXT))) {
+    perror("What happened here?");
+  }
+}
+
+void SoDaListener::sendCW(const QString & txt)
+{
+  std::cerr << boost::format("Sending text [%s]\n") % txt.toStdString();
+  char cwbuf[SoDa::Command::getMaxStringLen()]; 
+  unsigned int i, j; 
+  for(i = 0, j = 0; i <= txt.size(); i++) {
+    if(i == txt.size()) {
+      cwbuf[j] = '\000';
+    }
+    else {
+      char c = txt.at(i).toLatin1();
+      if(isprint(c)) {
+	cwbuf[j] = c; 
+      }
+      else {
+	cwbuf[j] = ' '; 
+      }
+    }
+
+    j++; 
+
+    if((j >= SoDa::Command::getMaxStringLen()) || (i == txt.size())) {
+      if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_CW_TEXT, cwbuf))) {
+	perror("What happened here?");
+      }
+      j = 0; 
+    }
   }
 }
 

@@ -684,6 +684,7 @@ void SoDa::USRPCtrl::execGetCommand(Command * cmd)
     reportAntennas(); 
     reportModes();
     reportAFFilters();
+    cmd_stream->put(new Command(Command::REP, Command::INIT_SETUP_COMPLETE, 0));
     break; 
   default:
     break; 
@@ -1085,7 +1086,7 @@ void SoDa::USRPCtrl::setAntenna(const std::string & ant, char sel)
     usrp->set_rx_antenna(choice); 
   }
   if(sel == 't') {
-    usrp->set_rx_antenna(choice); 
+    usrp->set_tx_antenna(choice); 
   }
   
   return; 

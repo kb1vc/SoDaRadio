@@ -45,6 +45,9 @@ signals:
   void repSDRVersion(const QString & version);
   void repHWMBVersion(const QString & version);
 
+  void repPTT(bool on); 
+
+  void initSetupComplete();
 					      
 public slots:
   void setRXFreq(double freq);
@@ -69,7 +72,15 @@ public slots:
   void setSpectrumAvgWindow(int window);
   void setSpectrumUpdateRate(int rate);  
 
+  void setCWSpeed(int speed); 
+  void setSidetoneVolume(int vol);
+  void setTXPower(int vol); 
 
+  void setPTT(bool on);
+
+  void sendCW(const QString & txt);
+  void clearCWBuffer();
+  
   void closeRadio();
 
 

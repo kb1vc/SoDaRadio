@@ -84,7 +84,7 @@ void SoDa::Command::initTables()
   target_map_s2v[std::string("DBG_REP")] = DBG_REP; 
 
   target_map_s2v[std::string("HWMB_REP")] = HWMB_REP;
-
+  target_map_s2v[std::string("INIT_SETUP_COMPLETE")] = INIT_SETUP_COMPLETE;
   target_map_s2v[std::string("TVRT_LO_ENABLE")] = TVRT_LO_ENABLE;
   target_map_s2v[std::string("TVRT_LO_DISABLE")] = TVRT_LO_DISABLE;
   target_map_s2v[std::string("TVRT_LO_CONFIG")] = TVRT_LO_CONFIG;
@@ -145,6 +145,7 @@ void SoDa::Command::initTables()
 
   target_map_v2s[SDR_VERSION] = std::string("SDR_VERSION");  
   target_map_v2s[HWMB_REP] = std::string("HWMB_REP");
+  target_map_v2s[INIT_SETUP_COMPLETE] = std::string("INIT_SETUP_COMPLETE");
   
   target_map_v2s[DBG_REP] = std::string("DBG_REP");
   target_map_v2s[TVRT_LO_ENABLE] = std::string("TVRT_LO_ENABLE");

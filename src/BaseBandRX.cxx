@@ -391,8 +391,8 @@ void SoDa::BaseBandRX::execSetCommand(SoDa::Command * cmd)
     break; 
   case SoDa::Command::RX_AF_SIDETONE_GAIN: // set audio gain. 
     af_sidetone_gain = powf(10.0, 0.25 * (cmd->dparms[0] - 50.0));
-    cmd_stream->put(new Command(Command::REP, Command::RX_AF_GAIN, 
-				50. + 4.0 * log10(af_gain)));
+    cmd_stream->put(new Command(Command::REP, Command::RX_AF_SIDETONE_GAIN, 
+				50. + 4.0 * log10(af_sidetone_gain)));
     break; 
   default:
     break; 

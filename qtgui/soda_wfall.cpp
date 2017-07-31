@@ -179,7 +179,7 @@ void SoDaWFall::setFreqCenter(double cfreq, bool check_boundary)
 void SoDaWFall::setFreqSpan(double span, bool check_boundary)
 {
   freq_span = span;
-  if(check_boundary) {
+  if(check_boundary && (center_freq != 0.0)) {
     center_freq = correctCenterFreq(center_freq); 
     // and make sure we don't scroll the marker away. 
     if((marker_freq < (center_freq - 0.5 * freq_span)) ||

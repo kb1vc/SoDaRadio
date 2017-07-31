@@ -20,6 +20,10 @@ public:
       return frequency; 
   }
 
+  void setFreqUpdate(double freq) {
+    setFreq(freq); 
+    emit(newFreq(frequency));
+  }
 signals:
   void newFreq(double freq);
 

@@ -16,8 +16,6 @@ int main(int argc, char *argv[])
     for(int i = 0; i < argc; i++) {
       std::cout << boost::format("Argv[%d] = [%s]\n") % i % argv[i]; 
     }
-    QObject::connect(&a, SIGNAL(lastWindowClosed()),
-                     &w, SLOT(closeRadio()));
 
     return a.exec();
 }

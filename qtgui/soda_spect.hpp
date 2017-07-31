@@ -25,6 +25,8 @@ public:
     explicit SoDaSpect(QWidget *parent = 0);
     ~SoDaSpect();
 
+  double freqCenter() { return center_freq_disp; }
+
 public slots:
   void updateData(double cfreq, float * y); 
   void pickPoint(const QPointF & pos);

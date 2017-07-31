@@ -17,10 +17,25 @@ void MainWindow::setupMidControls()
 	  [this](const QString & v){
 	    ui->TXAnt_sel->addItem(v); });
 
-  connect(ui->RXAnt_sel, SIGNAL(activated(const QString &)),
+  connect(ui->RXAnt_sel, SIGNAL(currentTextChanged(const QString &)),
 	  listener, SLOT(setRXAnt(const QString &)));
-  connect(ui->TXAnt_sel, SIGNAL(activated(const QString &)),
+  connect(ui->TXAnt_sel, SIGNAL(currentTextChanged(const QString &)),
 	  listener, SLOT(setTXAnt(const QString &)));
 
+  connect(ui->PTT_btn, SIGNAL(toggled(bool)), 
+	  listener, SLOT(setPTT(bool)));
 
+  connect(listener, &SoDaListener::repPTT,
+	  [=](bool on) { ui->TXState_lab->setText(on ? "TX ON" : "TX OFF"); });
+
+  connect(ui->CWCurLine_le, &QLineEdit::returnPressed, 
+	  [=]() 
+	  { ui->CWOutBound_te->appendPlainText(ui->CWCurLine_le->text());
+	    listener->sendCW(ui->CWCurLine_le->text());
+	    ui->CWCurLine_le->clear(); });
+	    
+
+  connect(ui->ClrBuff_btn, SIGNAL(released()), 
+	  listener, SLOT(clearCWBuffer()));
+  
 }

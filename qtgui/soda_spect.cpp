@@ -81,20 +81,23 @@ void SoDaSpect::updateData(double cfreq, float * y)
 
 void SoDaSpect::setRefLevel(int rlvl)
 {
+  std::cerr << boost::format("Setting spect ref level to %g was %g\n") % rlvl % val_ref; 
   val_ref = ((double) rlvl);
   replotYAxis();
 }
 
 void SoDaSpect::setDynamicRange(double drange)
 {
-  val_range = drange; 
+  val_range = drange;
   replotYAxis();
 }
 
 void SoDaSpect::replotYAxis()
 {
   double y_min = val_ref - val_range;
-  double y_step = val_range * 0.1; 
+  double y_step = 5.0; 
+  if(val_range < 25.1) y_step = 2.5; 
+  if(val_range < 10.1) y_step = 1.0;
   setAxisScale(QwtPlot::yLeft, y_min, val_ref, y_step);
   setAxisScale(QwtPlot::yRight, y_min, val_ref, y_step);
   replot();
@@ -106,6 +109,7 @@ void SoDaSpect::replotXAxis()
   double min = center_freq_disp - freq_span_disp * 0.5;
   double max = center_freq_disp + freq_span_disp * 0.5;
 
+  
   setAxisScale(QwtPlot::xBottom, min, max, freq_span_disp / 5.0); // step);
 
   QwtLinearScaleEngine se;

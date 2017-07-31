@@ -35,7 +35,7 @@ class SoDaWFall : public QwtPlot
   explicit SoDaWFall(QWidget *parent = 0);
   ~SoDaWFall();
 
-    
+  double freqCenter() { return center_freq; }	      
   public slots:
     void updateData(double cf, float * y);
     void pickPoint(const QPointF & pos);

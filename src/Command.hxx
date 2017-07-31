@@ -222,9 +222,11 @@ namespace SoDa {
       /**
        * Flush outstanding CW text strings from pending buffer
        *
-       * no parameter
+       * REP -- iparam[0] is the character count for the <last> character
+       * dropped from the buffer. 
        */
-      TX_CW_FLUSHTEXT,
+      TX_CW_FLUSHTEXT, 
+      
       /**
        * Put a marker in the CW text stream, report its "passing"
        *
@@ -451,6 +453,18 @@ namespace SoDa {
        * Report a string/name pair for AF filter bandwidth
        */
       AF_FILT_ENTRY,
+
+      /**
+       * indicate to GUI that we've sent all the initial configuration information
+       */
+      INIT_SETUP_COMPLETE,
+
+      /**
+       * send character count from start-of-time each time we send a 
+       * character. sparm[0] is the sent character, tag is count from start 
+       */
+      CW_CHAR_SENT,
+
       
       /**
        * No comment

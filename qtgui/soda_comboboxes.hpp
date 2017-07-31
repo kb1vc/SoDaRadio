@@ -19,9 +19,13 @@
         connect(this, &QComboBox::currentTextChanged, this, &ValComboBox::textChanged);
     }
 
-    void addValue(QString lab, double val); 
+    double value() { 
+      return valmap[currentText()]; 
+    }
 
-    void setSelection(double v);
+  public slots:
+    void addValue(QString lab, double val); 
+    void setValue(double v);
     
   signals:
     void valueChanged(double v);
@@ -47,7 +51,7 @@
       addValue("10", 10.0);
       addValue("5", 5.0);                  
       std::cerr << "WFallDynRangeComboBox added values\n";
-      setSelection(25.0);
+      setValue(25.0);
     }
   }; 
 
@@ -61,7 +65,7 @@
       addValue("25", 25.0);
       addValue("10", 10.0);            
       std::cerr << "WFallSpanComboBox added values\n";
-      setSelection(200.0);
+      setValue(200.0);
     }
   }; 
 
@@ -75,11 +79,15 @@
         connect(this, &QComboBox::currentTextChanged, this, &IntValComboBox::textChanged);
     }
 
+    int value() { 
+      return valmap[currentText()]; 
+    }
+
   public slots:
     void addValue(QString lab, int val); 
 
-    void setSelection(int v);
-    void setSelection(const QString & s);    
+    void setValue(int v);
+    void setValue(const QString & s);    
     
   signals:
     void valueChanged(int v);

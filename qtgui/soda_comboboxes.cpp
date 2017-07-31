@@ -9,7 +9,7 @@ void ValComboBox::addValue(QString lab, double val) {
   this->show();
 }
 
-void ValComboBox::setSelection(double v) {
+void ValComboBox::setValue(double v) {
   double diff = 1e23;
   std::cerr << boost::format("Looking for value %g\n") % v;
   int bestidx;
@@ -42,7 +42,7 @@ void IntValComboBox::addValue(QString lab, int val) {
   this->show();
 }
 
-void IntValComboBox::setSelection(int v) {
+void IntValComboBox::setValue(int v) {
   std::cerr << boost::format("Looking for value %d\n") % v;
   for(int i = 0; i < count(); i++) {
     QString key = itemText(i);
@@ -53,7 +53,7 @@ void IntValComboBox::setSelection(int v) {
   }
 }
 
-void IntValComboBox::setSelection(const QString & v) {
+void IntValComboBox::setValue(const QString & v) {
   for(int i = 0; i < count(); i++) {
     QString key = itemText(i);
     if(v == key) {

@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QCloseEvent>
+#include <QSettings>
 #include "soda_listener.hpp"
 #include "../common/GuiParams.hxx"
 
@@ -20,10 +21,8 @@ public:
 
 public slots:
   void setRXFreq(double freq);
-  void setTXFreq(double freq);  
-
-signals:
-  void closeRadio();
+  void setTXFreq(double freq);
+  void restoreSettings(); 
 
 protected:
   void setupTopControls();
@@ -36,13 +35,16 @@ protected:
   
   void setupWaterFall();
   void setupSpectrum();
-  
+
+  void widgetSaveRestore(QObject * op, const QString & par, bool save);
 private:
   void closeEvent(QCloseEvent * event) {
     std::cerr << "In window close event\n";
     listener->closeRadio();
     event->accept();
   }
+
+  QSettings * settings_p; 
 
   void setRXFreq_nocross(double freq);
   void setTXFreq_nocross(double freq);   

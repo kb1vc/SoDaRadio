@@ -460,7 +460,7 @@
        </size>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="Waterfall">
        <attribute name="title">
@@ -504,7 +504,7 @@
                <number>1</number>
               </property>
               <property name="maximum">
-               <number>21</number>
+               <number>11</number>
               </property>
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
@@ -703,7 +703,7 @@
                <number>60</number>
               </property>
               <property name="singleStep">
-               <number>5</number>
+               <number>1</number>
               </property>
              </widget>
             </item>
@@ -759,6 +759,9 @@
                <layout class="QVBoxLayout" name="verticalLayout_14">
                 <item>
                  <widget class="QSlider" name="Sidetone_sli">
+                  <property name="maximum">
+                   <number>50</number>
+                  </property>
                   <property name="orientation">
                    <enum>Qt::Horizontal</enum>
                   </property>
@@ -785,7 +788,7 @@
                    <number>3</number>
                   </property>
                   <property name="maximum">
-                   <number>30</number>
+                   <number>50</number>
                   </property>
                   <property name="sliderPosition">
                    <number>12</number>
@@ -871,7 +874,7 @@
                 </widget>
                </item>
                <item row="0" column="1">
-                <widget class="QLineEdit" name="lineEdit_5"/>
+                <widget class="QLineEdit" name="FromCall_le"/>
                </item>
                <item row="1" column="0">
                 <widget class="QLabel" name="label_9">
@@ -881,7 +884,7 @@
                 </widget>
                </item>
                <item row="1" column="1">
-                <widget class="QLineEdit" name="lineEdit_6"/>
+                <widget class="QLineEdit" name="FromGrid_le"/>
                </item>
               </layout>
              </item>
@@ -1006,7 +1009,7 @@
              <item>
               <widget class="QPushButton" name="openConfig_btn">
                <property name="text">
-                <string>Open Config</string>
+                <string>Open Config...</string>
                </property>
               </widget>
              </item>
@@ -2174,6 +2177,12 @@ MB3 right half -- move digit selector right
         </item>
         <item row="2" column="1">
          <widget class="QLabel" name="FromGrid_lab">
+          <property name="minimumSize">
+           <size>
+            <width>65</width>
+            <height>0</height>
+           </size>
+          </property>
           <property name="frameShape">
            <enum>QFrame::WinPanel</enum>
           </property>
@@ -2258,9 +2267,12 @@ MB3 right half -- move digit selector right
         <property name="title">
          <string>CW Text</string>
         </property>
-        <layout class="QVBoxLayout" name="verticalLayout_8" stretch="0">
+        <layout class="QVBoxLayout" name="verticalLayout_8" stretch="0,0">
          <item>
-          <widget class="QPlainTextEdit" name="plainTextEdit"/>
+          <widget class="QLineEdit" name="CWCurLine_le"/>
+         </item>
+         <item>
+          <widget class="QPlainTextEdit" name="CWOutBound_te"/>
          </item>
         </layout>
        </widget>
@@ -2626,9 +2638,9 @@ MB3 right half -- move digit selector right
                <colorrole role="Button">
                 <brush brushstyle="SolidPattern">
                  <color alpha="255">
-                  <red>204</red>
-                  <green>0</green>
-                  <blue>0</blue>
+                  <red>255</red>
+                  <green>51</green>
+                  <blue>51</blue>
                  </color>
                 </brush>
                </colorrole>
@@ -2644,9 +2656,9 @@ MB3 right half -- move digit selector right
                <colorrole role="Midlight">
                 <brush brushstyle="SolidPattern">
                  <color alpha="255">
-                  <red>229</red>
-                  <green>25</green>
-                  <blue>25</blue>
+                  <red>255</red>
+                  <green>51</green>
+                  <blue>51</blue>
                  </color>
                 </brush>
                </colorrole>
@@ -2655,7 +2667,7 @@ MB3 right half -- move digit selector right
                  <color alpha="255">
                   <red>102</red>
                   <green>0</green>
-                  <blue>0</blue>
+                  <blue>255</blue>
                  </color>
                 </brush>
                </colorrole>
@@ -2671,9 +2683,9 @@ MB3 right half -- move digit selector right
                <colorrole role="Text">
                 <brush brushstyle="SolidPattern">
                  <color alpha="255">
-                  <red>0</red>
-                  <green>0</green>
-                  <blue>0</blue>
+                  <red>238</red>
+                  <green>238</green>
+                  <blue>236</blue>
                  </color>
                 </brush>
                </colorrole>
@@ -2763,9 +2775,9 @@ MB3 right half -- move digit selector right
                <colorrole role="Button">
                 <brush brushstyle="SolidPattern">
                  <color alpha="255">
-                  <red>204</red>
-                  <green>0</green>
-                  <blue>0</blue>
+                  <red>32</red>
+                  <green>74</green>
+                  <blue>135</blue>
                  </color>
                 </brush>
                </colorrole>
@@ -2808,9 +2820,9 @@ MB3 right half -- move digit selector right
                <colorrole role="Text">
                 <brush brushstyle="SolidPattern">
                  <color alpha="255">
-                  <red>0</red>
-                  <green>0</green>
-                  <blue>0</blue>
+                  <red>255</red>
+                  <green>255</green>
+                  <blue>255</blue>
                  </color>
                 </brush>
                </colorrole>
@@ -2900,9 +2912,9 @@ MB3 right half -- move digit selector right
                <colorrole role="Button">
                 <brush brushstyle="SolidPattern">
                  <color alpha="255">
-                  <red>204</red>
-                  <green>0</green>
-                  <blue>0</blue>
+                  <red>85</red>
+                  <green>87</green>
+                  <blue>83</blue>
                  </color>
                 </brush>
                </colorrole>
@@ -3035,6 +3047,12 @@ MB3 right half -- move digit selector right
             </property>
             <property name="text">
              <string>PTT</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
             </property>
            </widget>
           </item>
