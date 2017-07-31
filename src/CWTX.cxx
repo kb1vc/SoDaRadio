@@ -54,6 +54,7 @@ SoDa::CWTX::CWTX(Params * params, CmdMBox * _cwtxt_stream, DatMBox * _cw_env_str
   // setup the CW generator unit
   cwgen = new SoDa::CWGenerator(_cw_env_stream, rf_sample_rate, rf_buffer_size);
   
+  sent_char_count = 0;
 }
 
 void SoDa::CWTX::run()
@@ -104,15 +105,23 @@ bool SoDa::CWTX::sendAvailChar()
   // if there are any characters to send
   // and the generator is not stuffed
   int itercount = 0; 
+  char tbuf[2];
+  tbuf[1] = '\000';
   while (cwgen->readyForMore()) {
     itercount++; 
-    boost::mutex::scoped_lock mt_lock(text_lock);
-    if(text_queue.empty()) return false;
+    if(1) {
+      boost::mutex::scoped_lock mt_lock(text_lock);
+      if(text_queue.empty()) return false;
 
-    outchar = text_queue.front(); text_queue.pop();
+      outchar = text_queue.front(); text_queue.pop();
+    }
     if(outchar != '\003') {
       cwgen->sendChar(outchar);
-      sent_char = true; 
+      sent_char = true;
+      tbuf[0] = outchar; 
+      cmd_stream->put(new SoDa::Command(SoDa::Command::REP,
+					SoDa::Command::CW_CHAR_SENT,
+					tbuf, sent_char_count++));
     }
     else {
       cmd_stream->put(new SoDa::Command(SoDa::Command::SET,
@@ -212,30 +221,19 @@ void SoDa::CWTX::enqueueText(const char * buf)
 
 void SoDa::CWTX::clearTextQueue()
 {
-  bool exit_flag = false;
-  int i;
-  char buf[SoDa::Command::getMaxStringLen()]; 
-  while(!exit_flag) {
-    if(1) {
-      boost::mutex::scoped_lock lock(text_lock);
-      for(i = 0; i < SoDa::Command::getMaxStringLen(); i++) {
-	if(text_queue.empty()) {
-	  exit_flag = true;
-	  break; 
-	}
-	else {
-	  buf[i] = text_queue.front(); text_queue.pop();
-	}
-      }
-    }
-    if(i != 0) {
-      if(i < SoDa::Command::getMaxStringLen()) buf[i] = '\000';
-      SoDa::Command * ncmd = new SoDa::Command(SoDa::Command::REP,
-					       SoDa::Command::TX_CW_FLUSHTEXT,
-					       buf);
-      cmd_stream->put(ncmd); 
-    }
+  // empty the text_queue
+  if(1) {
+    boost::mutex::scoped_lock lock(text_lock);
+  
+    int deleted_count = text_queue.size();
+  
+    text_queue = std::queue<char>(); 
+    sent_char_count += deleted_count; 
   }
+  SoDa::Command * ncmd = new SoDa::Command(SoDa::Command::REP,
+					   SoDa::Command::TX_CW_FLUSHTEXT,
+					   sent_char_count);
+  cmd_stream->put(ncmd); 
   
 }
 

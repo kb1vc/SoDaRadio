@@ -92,6 +92,8 @@ namespace SoDa {
      */
     bool sendAvailChar();
 
+    int sent_char_count; 
+
     CWGenerator * cwgen; ///< Pointer to a text-to-morse translator
     
     CmdMBox * cwtxt_stream; ///< stream of characters to be encoded (from UI or elsewhere)

@@ -604,7 +604,7 @@ namespace SoDa {
       parm_type = 'S';
       id = command_sequence_number++;
     }
-
+    
     /**
      * Copy Constructor
      *
