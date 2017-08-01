@@ -9,6 +9,10 @@ void MainWindow::setupSettings()
 {
   connect(ui->CWSpeed_sli, SIGNAL(valueChanged(int)), 
 	  listener, SLOT(setCWSpeed(int)));
+  connect(ui->CWSpeed_sli, &QSlider::valueChanged,
+	  [=](int s) {
+	    ui->CWSpeed_lbl->setText(QString("%1").arg(s, 2));
+	  }); 
   connect(ui->Sidetone_sli, SIGNAL(valueChanged(int)), 
 	  listener, SLOT(setSidetoneVolume(int)));
   connect(ui->TXPower_sli, SIGNAL(valueChanged(int)), 

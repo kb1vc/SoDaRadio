@@ -37,6 +37,9 @@ protected:
   void setupSpectrum();
 
   void widgetSaveRestore(QObject * op, const QString & par, bool save);
+
+  void sendCannedCW(const QString & txt);
+  
 private:
   void closeEvent(QCloseEvent * event) {
     std::cerr << "In window close event\n";

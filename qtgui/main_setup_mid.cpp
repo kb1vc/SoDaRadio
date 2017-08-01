@@ -37,5 +37,75 @@ void MainWindow::setupMidControls()
 
   connect(ui->ClrBuff_btn, SIGNAL(released()), 
 	  listener, SLOT(clearCWBuffer()));
+
+  connect(ui->MyCall_btn, &QPushButton::pressed,
+	  [=]() {
+	    int i;
+	    for(i = 0; i < ui->RptCount_spin->value(); i++) {
+	      sendCannedCW(ui->FromCall_le->text()); 
+	    }
+	  });
+
+  connect(ui->MyGrid_btn, &QPushButton::pressed,
+	  [=]() {
+	    int i;
+	    for(i = 0; i < ui->RptCount_spin->value(); i++) {
+	      sendCannedCW(ui->FromGrid_le->text()); 
+	    }
+	  });
   
+  connect(ui->MyInfo_btn, &QPushButton::pressed,
+	  [=]() {
+	    int i;
+	    for(i = 0; i < ui->RptCount_spin->value(); i++) {
+	      sendCannedCW(" " + ui->FromCall_le->text());	    	      
+	    }
+	    for(i = 0; i < ui->RptCount_spin->value(); i++) {
+	      sendCannedCW(" " + ui->FromGrid_le->text());
+	    }
+	  });	  
+
+  connect(ui->Exchange_btn, &QPushButton::pressed,
+	  [=]() {
+	    int i;
+	    for(i = 0; i < ui->RptCount_spin->value(); i++) {
+	      sendCannedCW(" " + ui->ToCall_le->text());	    	      
+	    }
+	    sendCannedCW(" de ");
+	    for(i = 0; i < ui->RptCount_spin->value(); i++) {
+	      sendCannedCW(" " + ui->FromCall_le->text());	    	      
+	    }
+	    for(i = 0; i < ui->RptCount_spin->value(); i++) {
+	      sendCannedCW(" " + ui->FromGrid_le->text());
+	    }
+	  });	  
+  
+  connect(ui->CWV_btn, &QPushButton::pressed,
+	  [=]() {
+	    int i; 
+	    for(i = 0; i < ui->RptCount_spin->value(); i++) {
+	      sendCannedCW("VVVVVVVVVVVV"); 
+	    }
+	  });	  
+
+  connect(ui->CW73_btn, &QPushButton::pressed,
+	  [=]() {
+	    sendCannedCW(" TNX es 73 de " + ui->FromCall_le->text());
+	  });
+
+  connect(ui->CWQSL_btn, &QPushButton::pressed,
+	  [=]() {
+	    sendCannedCW(" R R R  QSL QSL QSL de " + ui->FromCall_le->text()); 
+	  });	  
+
+  connect(ui->CWBK_btn, &QPushButton::pressed,
+	  [=]() {
+	    sendCannedCW(" _bk ");
+	  });	  
+}
+
+void MainWindow::sendCannedCW(const QString & txt) 
+{
+  listener->sendCW(txt); 
+  ui->CWOutBound_te->appendPlainText(txt); 
 }
