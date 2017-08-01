@@ -24,7 +24,6 @@ SET(SoDaRadioQT_SRCS
   ../common/dem-gridlib.h    
   ../common/GuiParams.cxx
   ../common/GuiParams.hxx
-  ../common/SoDaRadio_Band.hxx  
   )
 
 SET(SoDaRadioQT_HDRS
@@ -45,6 +44,7 @@ SET(SoDaRadioQT_NOMOC_HDRS
   soda_wfall_picker.hpp
   ../common/GuiParams.hxx
   ../src/Command.hxx  
+  soda_band.hpp
 )
 
 SET(SoDaRadioQT_UIS
