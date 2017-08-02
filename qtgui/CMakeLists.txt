@@ -69,11 +69,11 @@ ADD_EXECUTABLE(SoDaRadioQT ${SoDaRadioQT_SRCS} mainwindow)
 
 TARGET_COMPILE_OPTIONS(SoDaRadioQT BEFORE PUBLIC -Wno-deprecated-declarations)
 
-TARGET_LINK_LIBRARIES(SoDaRadioQT m rt ${Boost_LIBRARIES} Qt5::Widgets Qt5::PrintSupport ${QWT_LIBRARIES})
+TARGET_LINK_LIBRARIES(SoDaRadioQT m rt ${Boost_LIBRARIES} Qt5::Widgets Qt5::PrintSupport  ${QWT_LIBRARIES})
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
 
-QT5_USE_MODULES(SoDaRadioQT Core Gui Widgets PrintSupport Network)
+QT5_USE_MODULES(SoDaRadioQT Core Gui Widgets PrintSupport Network Multimedia)
 
 
 INSTALL(TARGETS SoDaRadioQT DESTINATION bin)

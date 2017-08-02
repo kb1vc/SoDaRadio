@@ -6,6 +6,7 @@
 #include <QSettings>
 #include "soda_listener.hpp"
 #include "../common/GuiParams.hxx"
+#include "soda_band.hpp"
 
 namespace Ui {
   class MainWindow;
@@ -24,6 +25,10 @@ public slots:
   void setTXFreq(double freq);
   void restoreSettings(); 
 
+  void changeBand(const QString & band);
+  void writeBandMapEntry(bool);
+  void fillBandMapEntry(const QString & band);
+
 protected:
   void setupTopControls();
   void setupMidControls();
@@ -38,6 +43,11 @@ protected:
 
   void widgetSaveRestore(QObject * op, const QString & par, bool save);
 
+  void bandMapSaveRestore(SoDaBandMap & bmap, bool save);
+
+
+
+  
   void sendCannedCW(const QString & txt);
   
 private:
@@ -48,6 +58,10 @@ private:
   }
 
   QSettings * settings_p; 
+
+  // Band map
+  QMap<QString, SoDaBand> band_map; 
+  QString current_band_selector; 
 
   void setRXFreq_nocross(double freq);
   void setTXFreq_nocross(double freq);   

@@ -4,54 +4,58 @@
 #include <boost/format.hpp>
 
 #include <QString>
+#include <QAudioDeviceInfo>
 
 #include "soda_comboboxes.hpp"
 #include "soda_listener.hpp"
 #include "../common/GuiParams.hxx"
 
 MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow)
+  QMainWindow(parent),
+  ui(new Ui::MainWindow)
 {
-    ui->setupUi(this);
+  ui->setupUi(this);
 
-    // setup the listener. 
-    listener = new SoDaListener(this, QString::fromStdString(params.getServerSocketBasename())); 
+  // setup the listener. 
+  listener = new SoDaListener(this, QString::fromStdString(params.getServerSocketBasename())); 
 
-    setupSpectrum();
-    setupWaterFall();
+  setupSpectrum();
+  setupWaterFall();
     
-    setupTopControls();
-    setupMidControls();
-    setupLogGPS();
+  setupTopControls();
+  setupMidControls();
+  setupLogGPS();
 
-    setupSettings();
-    setupBandConfig();
-    setupLogEditor();
+  setupSettings();
+  setupBandConfig();
+  setupLogEditor();
 
-    QStringList headers;
-    headers << "Date" << "Time" << "From Call" << "From Grid" << "To Call" << "To Grid"
-            << "Mode" << "Comment";
-    ui->LogView->setKeys(headers);
+  QStringList headers;
+  headers << "Date" << "Time" << "From Call" << "From Grid" << "To Call" << "To Grid"
+	  << "Mode" << "Comment";
+  ui->LogView->setKeys(headers);
 
-    connect(ui->LogView, &LogTable::entryUpdated,
-            [](int row, std::string key, std::string val) {
-        std::cerr << boost::format("row = %d key = [%s] val = [%s]\n") % row % key % val;
-    });
+  connect(ui->LogView, &LogTable::entryUpdated,
+	  [](int row, std::string key, std::string val) {
+	    std::cerr << boost::format("row = %d key = [%s] val = [%s]\n") % row % key % val;
+	  });
 
-    connect(listener, SIGNAL(repHWMBVersion(const QString &)), 
-	    this, SLOT(setWindowTitle(const QString &)));
+  connect(listener, SIGNAL(repHWMBVersion(const QString &)), 
+	  this, SLOT(setWindowTitle(const QString &)));
 
-    connect(listener, SIGNAL(initSetupComplete()), 
-	    this, SLOT(restoreSettings()));
-    listener->start();
+  connect(listener, SIGNAL(initSetupComplete()), 
+	  this, SLOT(restoreSettings()));
+  listener->start();
 
-    settings_p = new QSettings("kb1vc", "SoDaRadioQT", this);
+  settings_p = new QSettings("kb1vc.org", "SoDaRadioQT", this);
+
+  current_band_selector = ui->bandSel_cb->currentText(); 
 }
 
 MainWindow::~MainWindow()
 {
-  settings_p->beginGroup("Radio");    
+  settings_p->beginGroup("Radio");
+  bandMapSaveRestore(band_map, true);    
   widgetSaveRestore(this, "SoDaRadioQT.", true);
   settings_p->endGroup();
   delete ui;
@@ -234,8 +238,9 @@ void MainWindow::widgetSaveRestore(QObject * op, const QString & par, bool save)
 
 void MainWindow::restoreSettings()
 {
-    settings_p->beginGroup("Radio");
-    widgetSaveRestore(this, "SoDaRadioQT.", false);
-    settings_p->endGroup();
+  settings_p->beginGroup("Radio");
+  bandMapSaveRestore(band_map, false);  
+  widgetSaveRestore(this, "SoDaRadioQT.", false);
+  settings_p->endGroup();
 }
 

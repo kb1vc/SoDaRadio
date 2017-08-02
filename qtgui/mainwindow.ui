@@ -460,7 +460,7 @@
        </size>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="Waterfall">
        <attribute name="title">
@@ -1094,68 +1094,82 @@
                 </property>
                </widget>
               </item>
-              <item row="1" column="0">
-               <widget class="QPushButton" name="pushButton_3">
+              <item row="0" column="1">
+               <widget class="QComboBox" name="BCBandSel_cb"/>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="label_20">
                 <property name="text">
-                 <string>New Band</string>
+                 <string>New Band Name</string>
                 </property>
                </widget>
               </item>
-              <item row="1" column="1">
-               <widget class="QLineEdit" name="lineEdit"/>
+              <item row="2" column="1">
+               <widget class="QLineEdit" name="BCBandName_le"/>
               </item>
-              <item row="2" column="0">
+              <item row="3" column="0">
                <widget class="QLabel" name="label">
                 <property name="text">
                  <string>RX Ant.</string>
                 </property>
                </widget>
               </item>
-              <item row="2" column="1">
-               <widget class="QComboBox" name="bc_rxAnt_cb"/>
+              <item row="3" column="1">
+               <widget class="QComboBox" name="BCRXAnt_cb"/>
               </item>
-              <item row="3" column="0">
+              <item row="4" column="0">
                <widget class="QLabel" name="label_3">
                 <property name="text">
                  <string>TX Ant.</string>
                 </property>
                </widget>
               </item>
-              <item row="3" column="1">
-               <widget class="QComboBox" name="bc_txAnt_cb"/>
+              <item row="4" column="1">
+               <widget class="QComboBox" name="BCTXAnt_cb"/>
               </item>
-              <item row="4" column="0">
+              <item row="5" column="0">
                <widget class="QLabel" name="label_4">
                 <property name="text">
                  <string>Min. Freq. (MHz)</string>
                 </property>
                </widget>
               </item>
-              <item row="4" column="1">
-               <widget class="QLineEdit" name="lineEdit_2"/>
+              <item row="5" column="1">
+               <widget class="QLineEdit" name="BCMinFreq_le"/>
               </item>
-              <item row="5" column="0">
+              <item row="6" column="0">
                <widget class="QLabel" name="label_5">
                 <property name="text">
                  <string>Max. Freq. (MHz)</string>
                 </property>
                </widget>
               </item>
-              <item row="5" column="1">
-               <widget class="QLineEdit" name="lineEdit_3"/>
+              <item row="6" column="1">
+               <widget class="QLineEdit" name="BCMaxFreq_le"/>
               </item>
-              <item row="6" column="0">
+              <item row="7" column="0">
                <widget class="QLabel" name="label_6">
                 <property name="text">
                  <string>Default Mode</string>
                 </property>
                </widget>
               </item>
-              <item row="6" column="1">
-               <widget class="IntValComboBox" name="bc_defMode_cb"/>
+              <item row="7" column="1">
+               <widget class="IntValComboBox" name="BCDefMode_cb"/>
               </item>
-              <item row="0" column="1">
-               <widget class="QComboBox" name="bc_bandSel_cb"/>
+              <item row="8" column="1">
+               <widget class="QSpinBox" name="BCIndex_sb">
+                <property name="minimum">
+                 <number>-1</number>
+                </property>
+               </widget>
+              </item>
+              <item row="8" column="0">
+               <widget class="QLabel" name="label_21">
+                <property name="text">
+                 <string>Band Index</string>
+                </property>
+               </widget>
               </item>
              </layout>
             </item>
@@ -1177,7 +1191,7 @@
               <item>
                <layout class="QVBoxLayout" name="verticalLayout_17">
                 <item>
-                 <widget class="QCheckBox" name="checkBox">
+                 <widget class="QCheckBox" name="BCEnableTX_cb">
                   <property name="layoutDirection">
                    <enum>Qt::RightToLeft</enum>
                   </property>
@@ -1190,7 +1204,7 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QCheckBox" name="checkBox_2">
+                 <widget class="QCheckBox" name="BCTransMode_cb">
                   <property name="layoutDirection">
                    <enum>Qt::RightToLeft</enum>
                   </property>
@@ -1200,7 +1214,7 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QCheckBox" name="checkBox_3">
+                 <widget class="QCheckBox" name="BCLowInj_cb">
                   <property name="layoutDirection">
                    <enum>Qt::RightToLeft</enum>
                   </property>
@@ -1252,7 +1266,11 @@
                </widget>
               </item>
               <item row="0" column="1">
-               <widget class="QLineEdit" name="lineEdit_4"/>
+               <widget class="QLineEdit" name="BCLOFreq_le">
+                <property name="text">
+                 <string>0</string>
+                </property>
+               </widget>
               </item>
               <item row="1" column="0">
                <widget class="QLabel" name="label_7">
@@ -1262,7 +1280,7 @@
                </widget>
               </item>
               <item row="1" column="1">
-               <widget class="QSpinBox" name="spinBox">
+               <widget class="QSpinBox" name="BCLOMult_sb">
                 <property name="minimum">
                  <number>1</number>
                 </property>
@@ -1271,6 +1289,80 @@
              </layout>
             </item>
            </layout>
+          </item>
+          <item>
+           <widget class="QLabel" name="BCStatus_lbl">
+            <property name="palette">
+             <palette>
+              <active>
+               <colorrole role="Text">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>204</red>
+                  <green>0</green>
+                  <blue>0</blue>
+                 </color>
+                </brush>
+               </colorrole>
+               <colorrole role="BrightText">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>204</red>
+                  <green>0</green>
+                  <blue>0</blue>
+                 </color>
+                </brush>
+               </colorrole>
+              </active>
+              <inactive>
+               <colorrole role="Text">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>204</red>
+                  <green>0</green>
+                  <blue>0</blue>
+                 </color>
+                </brush>
+               </colorrole>
+               <colorrole role="BrightText">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>204</red>
+                  <green>0</green>
+                  <blue>0</blue>
+                 </color>
+                </brush>
+               </colorrole>
+              </inactive>
+              <disabled>
+               <colorrole role="Text">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>42</red>
+                  <green>43</green>
+                  <blue>41</blue>
+                 </color>
+                </brush>
+               </colorrole>
+               <colorrole role="BrightText">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>204</red>
+                  <green>0</green>
+                  <blue>0</blue>
+                 </color>
+                </brush>
+               </colorrole>
+              </disabled>
+             </palette>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="textFormat">
+             <enum>Qt::AutoText</enum>
+            </property>
+           </widget>
           </item>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout" stretch="2,0,1,0,2">
@@ -1288,7 +1380,7 @@
              </spacer>
             </item>
             <item>
-             <widget class="QPushButton" name="BandConfigOK_btn">
+             <widget class="QPushButton" name="BCOK_btn">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -1314,7 +1406,7 @@
              </spacer>
             </item>
             <item>
-             <widget class="QPushButton" name="BandConfigCancel_btn">
+             <widget class="QPushButton" name="BCCancel_btn">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                 <horstretch>0</horstretch>
