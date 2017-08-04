@@ -39,9 +39,20 @@ void MainWindow::setupBandConfig()
   
 }
 
+void MainWindow::saveCurrentFreqs()
+{
+  qDebug() << "In saveCurrentFreqs with [" << current_band_selector << "]";
+  if(band_map.count(current_band_selector) > 0) {
+    qDebug() << QString("Saving Current Freq to band [%1] rxFreq = %2").arg(current_band_selector).arg(1e-6 * ui->RXFreq_lab->getFreq());
+    band_map[current_band_selector].setLastRXFreq(1e-6 * ui->RXFreq_lab->getFreq());
+    band_map[current_band_selector].setLastTXFreq(1e-6 * ui->TXFreq_lab->getFreq());
+  }
+}
+
 void MainWindow::bandMapSaveRestore(SoDaBandMap & bmap, bool save)
 {
   if(save) {
+    saveCurrentFreqs();
     SoDaBand::saveBands(settings_p, bmap);
   }
   else {
@@ -62,7 +73,6 @@ void MainWindow::bandMapSaveRestore(SoDaBandMap & bmap, bool save)
     qDebug() << "loaded keys";
     // add a new band at the end of the band config selector
     ui->BCBandSel_cb->addItem("Create Band");
-    
   }
 }
 
@@ -162,13 +172,22 @@ void MainWindow::changeBand(const QString & band)
 {
   // first save the current frequency in the current band, if and only
   // if it is "in range" and if the band exists. 
-  if((band != current_band_selector) &&
-     (band_map.count(current_band_selector))) {
-    band_map[current_band_selector].setLastRXFreq(ui->RXFreq_lab->getFreq());
-    band_map[current_band_selector].setLastTXFreq(ui->TXFreq_lab->getFreq());    
-  }
+  if(band != current_band_selector) saveCurrentFreqs();
 
   // now find the new band.
+  if(band_map.count(band)) {
+    // and set the UI widgets.
+    double rx_freq = band_map[band].lastRXFreq() * 1e6;
+    setRXFreq(rx_freq);
+    setTXFreq(band_map[band].lastTXFreq() * 1e6);
 
-  // and set the UI widgets. 
+    listener->setSpectrumCenter(rx_freq);
+    
+    ui->RXAnt_sel->setCurrentText(band_map[band].defRXAnt());
+    ui->TXAnt_sel->setCurrentText(band_map[band].defTXAnt());    
+
+    ui->Mode_cb->setValue(band_map[band].defMode());
+
+    current_band_selector = band; 
+  }
 }

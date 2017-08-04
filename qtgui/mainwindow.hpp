@@ -44,7 +44,7 @@ protected:
   void widgetSaveRestore(QObject * op, const QString & par, bool save);
 
   void bandMapSaveRestore(SoDaBandMap & bmap, bool save);
-
+  void saveCurrentFreqs();
 
 
   

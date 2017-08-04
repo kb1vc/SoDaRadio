@@ -108,14 +108,25 @@ public:
 
   static void saveBands(QSettings * set_p, SoDaBandMap & band_map) {
     set_p->beginWriteArray("Bands");
-    SoDaBandMapIterator bmi(band_map);
-    int i = 0; 
+#if 1
+    SoDaBandMapIterator bmi(band_map);    
+    int i = 0;    
     while(bmi.hasNext()) {
       bmi.next();
+      std::cerr << QString("BMI[%1] value().name = [%2]").arg(i).arg(bmi.value().name()).toStdString();
+      if(bmi.value().name() == "") continue;       
       set_p->setArrayIndex(i);
       bmi.value().save(set_p); 
       i++; 
     }
+#else
+    int size = band_map.size();
+    for(int i = 0; i < size; i++) {
+      set_p->setArrayIndex(i);
+      band_map.at(i).value().save(set_p);
+    }
+#endif
+    
     set_p->endArray();
   }
   
