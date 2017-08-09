@@ -30,14 +30,10 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   setupBandConfig();
   setupLogEditor();
 
-  QStringList headers;
-  headers << "Date" << "Time" << "From Call" << "From Grid" << "To Call" << "To Grid"
-	  << "Mode" << "Comment";
-  ui->LogView->setKeys(headers);
 
   connect(ui->LogView, &LogTable::entryUpdated,
-	  [](int row, std::string key, std::string val) {
-	    std::cerr << boost::format("row = %d key = [%s] val = [%s]\n") % row % key % val;
+	  [](int row, const QString & key, const QString & val) {
+	    std::cerr << boost::format("row = %d key = [%s] val = [%s]\n") % row % key.toStdString() % val.toStdString();
 	  });
 
   connect(listener, SIGNAL(repHWMBVersion(const QString &)), 
@@ -225,7 +221,16 @@ void MainWindow::widgetSaveRestore(QObject * op, const QString & par, bool save)
 	    (my_class == "QTextDocumentLayout") ||
 	    (my_class == "QTextImageHandler") ||
 	    
-	    (my_class == "QWidgetLineControl")) {
+	    (my_class == "QWidgetLineControl") ||
+	    (my_class == "QAction") ||
+	    (my_class == "QGroupBox") ||	    
+	    (my_class == "QLocalSocket") ||
+	    (my_class == "QTcpSocket") ||
+	    (my_class == "QDoubleValidator") ||
+	    (my_class == "QStandardItemModel") ||
+	    (my_class == "QDoubleValidator") ||
+	    (my_class == "QSocketNotifier") ||
+	    (my_class == "QNativeSocketEngine")) {
       // do nothing. 
     }
     else {

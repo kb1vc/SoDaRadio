@@ -34,5 +34,9 @@ void MainWindow::setupSettings()
 	      this->showMaximized();
 	    }
 	  });
-	      
+
+  connect(ui->openLog_btn, SIGNAL(clicked()),
+	  ui->LogView, SLOT(readLogReportDlg()));
+  connect(ui->writeLogReport_btn, SIGNAL(clicked()),
+	  ui->LogView, SLOT(writeLogReportDlg()));
 }

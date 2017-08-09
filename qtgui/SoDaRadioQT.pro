@@ -16,13 +16,13 @@ LIBS += -lqwt-qt5
 SOURCES += main.cpp\
         mainwindow.cpp \
         freqlabel.cpp \
-        logtable.cpp \
+        soda_logtable.cpp \
         soda_wfall.cpp soda_wfall_data.cpp soda_spect.cpp \
     soda_comboboxes.cpp
 
 HEADERS  += mainwindow.hpp \
     freqlabel.hpp \
-    logtable.hpp \
+    soda_logtable.hpp \
     soda_wfall.hpp \
     soda_wfall_picker.hpp \
     soda_wfall_data.hpp \

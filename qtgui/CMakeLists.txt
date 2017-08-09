@@ -4,7 +4,7 @@ SET(SoDaRadioQT_SRCS
   main.cpp
   mainwindow.cpp
   freqlabel.cpp
-  logtable.cpp
+  soda_logtable.cpp
   soda_wfall.cpp
   soda_spect.cpp
   soda_wfall_data.cpp
@@ -29,7 +29,7 @@ SET(SoDaRadioQT_SRCS
 SET(SoDaRadioQT_HDRS
   mainwindow.hpp
   freqlabel.hpp
-  logtable.hpp
+  soda_logtable.hpp
   soda_spect.hpp
   soda_wfall.hpp
   soda_comboboxes.hpp

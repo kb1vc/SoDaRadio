@@ -2,14 +2,6 @@
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>1280</width>
-    <height>810</height>
-   </rect>
-  </property>
   <property name="sizePolicy">
    <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
     <horstretch>0</horstretch>
@@ -973,21 +965,14 @@
              <item>
               <widget class="QPushButton" name="openLog_btn">
                <property name="text">
-                <string>Open Log</string>
+                <string>Read Log Report...</string>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="saveLog_btn">
+              <widget class="QPushButton" name="writeLogReport_btn">
                <property name="text">
-                <string>Save Log</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="saveLogAs_btn">
-               <property name="text">
-                <string>Save Log As...</string>
+                <string>Write Log Report...</string>
                </property>
               </widget>
              </item>
@@ -3299,7 +3284,7 @@ MB3 right half -- move digit selector right
     <item>
      <layout class="QHBoxLayout" name="LogGPS_lay" stretch="2,0">
       <item>
-       <layout class="QHBoxLayout" name="Log_box" stretch="0,2,0">
+       <layout class="QHBoxLayout" name="Log_box" stretch="0,0,2">
         <item>
          <widget class="QPushButton" name="LogContact_btn">
           <property name="text">
@@ -3308,14 +3293,14 @@ MB3 right half -- move digit selector right
          </widget>
         </item>
         <item>
-         <widget class="QLineEdit" name="LogComment_txt"/>
-        </item>
-        <item>
-         <widget class="QPushButton" name="EditLog_btn">
+         <widget class="QLabel" name="label_22">
           <property name="text">
-           <string>Edit Log</string>
+           <string>Comment:</string>
           </property>
          </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="LogComment_txt"/>
         </item>
        </layout>
       </item>
@@ -3493,7 +3478,7 @@ MB3 right half -- move digit selector right
   <customwidget>
    <class>LogTable</class>
    <extends>QTableWidget</extends>
-   <header>logtable.hpp</header>
+   <header>soda_logtable.hpp</header>
   </customwidget>
   <customwidget>
    <class>SoDaWFall</class>
