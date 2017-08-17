@@ -44,8 +44,15 @@ void MainWindow::saveCurrentFreqs()
   qDebug() << "In saveCurrentFreqs with [" << current_band_selector << "]";
   if(band_map.count(current_band_selector) > 0) {
     qDebug() << QString("Saving Current Freq to band [%1] rxFreq = %2").arg(current_band_selector).arg(1e-6 * ui->RXFreq_lab->getFreq());
-    band_map[current_band_selector].setLastRXFreq(1e-6 * ui->RXFreq_lab->getFreq());
-    band_map[current_band_selector].setLastTXFreq(1e-6 * ui->TXFreq_lab->getFreq());
+    double rxfreq = ui->RXFreq_lab->getFreq();
+    double txfreq = ui->TXFreq_lab->getFreq();
+    SoDaBand * bp = &band_map[current_band_selector]; 
+    if((rxfreq >= bp->minFreq()) && (rxfreq <= bp->maxFreq())) {
+      band_map[current_band_selector].setLastRXFreq(1e-6 * ui->RXFreq_lab->getFreq());
+    }
+    if((txfreq >= bp->minFreq()) && (txfreq <= bp->maxFreq())) {    
+      band_map[current_band_selector].setLastTXFreq(1e-6 * ui->TXFreq_lab->getFreq());
+    }
   }
 }
 
