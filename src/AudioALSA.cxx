@@ -57,7 +57,7 @@ namespace SoDa {
   {
     (void) audio_port_name; 
     // setup the playback (output) stream
-    char pcm_name[] = "default";
+    char pcm_name[] =  "default"; 
     
     // const char *pcm_name = audio_port_name.c_str();
     std::cerr << boost::format("About to open [%s] for output\n") % pcm_name;     

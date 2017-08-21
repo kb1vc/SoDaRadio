@@ -131,12 +131,12 @@ namespace SoDa {
       int err; 
       if((err = snd_pcm_prepare(pcm_out)) < 0) {
 	throw
-	  SoDaException((boost::format("AudioALSA::wakeOut() Failed to wake after sleepOut() -- %s")
+	  SoDaException((boost::format("AudioALSA::wakeOut() Failed to wake after sleepOut() pcm_prepare -- %s")
 			 % snd_strerror(err)).str(), this);
       }
       if((err = snd_pcm_start(pcm_out)) < 0) {
 	throw
-	  SoDaException((boost::format("AudioALSA::wakeOut() Failed to wake after sleepOut() -- %s")
+	  SoDaException((boost::format("AudioALSA::wakeOut() Failed to wake after sleepOut() pcm_start -- %s")
 			 % snd_strerror(err)).str(), this);
       }
 #endif

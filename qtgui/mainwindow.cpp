@@ -46,6 +46,10 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   settings_p = new QSettings("kb1vc.org", "SoDaRadioQT", this);
 
   current_band_selector = ui->bandSel_cb->currentText(); 
+
+  hlib_server = new SoDaHamlibServer(this, 4575);
+  
+  hlib_server->start();
 }
 
 MainWindow::~MainWindow()

@@ -367,6 +367,9 @@ namespace SoDa {
       try {
 	run(); 
       }
+      catch (SoDaException exc) {
+	std::cerr << getObjName() << " caught " << exc.toString() << std::endl;
+      }
       catch (SoDaException * exc) {
 	std::cerr << getObjName() << " caught " << exc->toString() << std::endl;
       }

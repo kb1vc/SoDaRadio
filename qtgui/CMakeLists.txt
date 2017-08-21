@@ -24,6 +24,7 @@ SET(SoDaRadioQT_SRCS
   ../common/dem-gridlib.h    
   ../common/GuiParams.cxx
   ../common/GuiParams.hxx
+  soda_hamlib_server.cpp
   )
 
 SET(SoDaRadioQT_HDRS
@@ -34,6 +35,7 @@ SET(SoDaRadioQT_HDRS
   soda_wfall.hpp
   soda_comboboxes.hpp
   soda_listener.hpp
+  soda_hamlib_server.hpp
   )
 
 SET(SoDaRadioQT_NOMOC_HDRS

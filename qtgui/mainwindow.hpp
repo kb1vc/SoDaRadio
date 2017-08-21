@@ -7,6 +7,7 @@
 #include "soda_listener.hpp"
 #include "../common/GuiParams.hxx"
 #include "soda_band.hpp"
+#include "soda_hamlib_server.hpp"
 
 namespace Ui {
   class MainWindow;
@@ -45,8 +46,6 @@ protected:
 
   void bandMapSaveRestore(SoDaBandMap & bmap, bool save);
   void saveCurrentFreqs();
-
-
   
   void sendCannedCW(const QString & txt);
   
@@ -69,6 +68,8 @@ private:
   Ui::MainWindow *ui;
 
   SoDaListener * listener; 
+
+  SoDaHamlibServer * hlib_server; 
 };
 
 #endif // MAINWINDOW_H

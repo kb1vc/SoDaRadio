@@ -46,14 +46,12 @@ SoDa::BaseBandRX::BaseBandRX(Params * params,
   cmd_subs = cmd_stream->subscribe();
 
   // set up some convenient defaults
-  
   rx_modulation = SoDa::Command::USB;
   // what is the default sample rate and buffer size?
   // the audio rate is set and welded, as we have statically calculated
   // filter parameters. 
   audio_sample_rate = params->getAudioSampleRate(); 
   rf_sample_rate = params->getRXRate(); 
-
   audio_buffer_size = params->getAFBufferSize();
   rf_buffer_size = params->getRFBufferSize();
   // setup the resampler now...
@@ -61,7 +59,6 @@ SoDa::BaseBandRX::BaseBandRX(Params * params,
   rf_resampler = new SoDa::ReSample625to48(rf_buffer_size, rsgain);
   // and the WBFM resampler -- same shape, different state
   wbfm_resampler = new SoDa::ReSample625to48(rf_buffer_size, rsgain);
-  
   buildFilterMap();
 
   af_filter_selection = SoDa::Command::BW_6000;
@@ -71,7 +68,6 @@ SoDa::BaseBandRX::BaseBandRX(Params * params,
   af_gain = 1.0;
   af_sidetone_gain = 1.0;
   cur_af_gain = &af_gain; 
-
   unsigned int i, j;
   // prime the audio stream so that we don't fall behind
   // right away.
@@ -84,7 +80,6 @@ SoDa::BaseBandRX::BaseBandRX(Params * params,
       pendAudioBuffer(sidetone_silence); 
     }
   }
-
   // create hilbert transformer
   hilbert = new SoDa::HilbertTransformer(audio_buffer_size);
 
@@ -122,7 +117,7 @@ SoDa::BaseBandRX::BaseBandRX(Params * params,
   // log all audio to an output file (debug only....?)
   audio_save_enable = false;
   //audio_file.open("soda_audio.bin", std::ios::out | std::ios::binary);
-  //audio_file2.open("soda_audio_iq_fm.bin", std::ios::out | std::ios::binary);   
+  //audio_file2.open("soda_audio_iq_fm.bin", std::ios::out | std::ios::binary);
 }
 
 void SoDa::BaseBandRX::demodulateWBFM(SoDaBuf * rxbuf, SoDa::Command::ModulationType mod, float af_gain)
