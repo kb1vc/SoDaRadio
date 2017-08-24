@@ -89,43 +89,28 @@ public:
 
   static void restoreBands(QSettings * set_p, SoDaBandMap & band_map) {
     int size = set_p->beginReadArray("Bands");
-    qDebug() << QString("Band map will have %1 entries").arg(size);
     for(int i = 0; i < size; i++) {
       SoDaBand b; 
       set_p->setArrayIndex(i);
       QString dname = set_p->value("Name").toString();
-      qDebug() << QString("Got direct name [%1]").arg(dname);
       b.restore(set_p); 
-      qDebug() << "About to get b.name()";
       QString bn = b.name();
-      qDebug() << QString("Band map entry %1 gets name [%2]").arg(i).arg(bn);
       band_map[b.name()] = b; 
     }
-    qDebug() << "Left band map loop";
     set_p->endArray();
-    qDebug() << "restoreBands returned";    
   }
 
   static void saveBands(QSettings * set_p, SoDaBandMap & band_map) {
     set_p->beginWriteArray("Bands");
-#if 1
     SoDaBandMapIterator bmi(band_map);    
     int i = 0;    
     while(bmi.hasNext()) {
       bmi.next();
-      std::cerr << QString("BMI[%1] value().name = [%2]").arg(i).arg(bmi.value().name()).toStdString();
       if(bmi.value().name() == "") continue;       
       set_p->setArrayIndex(i);
       bmi.value().save(set_p); 
       i++; 
     }
-#else
-    int size = band_map.size();
-    for(int i = 0; i < size; i++) {
-      set_p->setArrayIndex(i);
-      band_map.at(i).value().save(set_p);
-    }
-#endif
     
     set_p->endArray();
   }

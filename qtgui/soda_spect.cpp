@@ -81,7 +81,6 @@ void SoDaSpect::updateData(double cfreq, float * y)
 
 void SoDaSpect::setRefLevel(int rlvl)
 {
-  std::cerr << boost::format("Setting spect ref level to %g was %g\n") % rlvl % val_ref; 
   val_ref = ((double) rlvl);
   replotYAxis();
 }

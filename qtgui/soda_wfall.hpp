@@ -49,16 +49,12 @@ class SoDaWFall : public QwtPlot
     void setFreqSpanKHz(double fs) { setFreqSpan(1e3 * fs, true); }     
     void scrollRight(bool v) { 
       (void) v;
-      std::cerr << "in SoDaWFall scrollRight\n";
       setFreqCenter(center_freq + freq_span * 0.25, true); 
     }
     void scrollLeft(bool v) { 
       (void) v;
-      std::cerr << "in SoDaWFall scrollLeft\n";      
       setFreqCenter(center_freq - freq_span * 0.25, true); }
     void configureSpectrum(double cfreq, double span, long buckets) {
-      std::cerr << boost::format("wfall configSpectrum (%g %g %d)\n")
-	% cfreq % span % buckets; 
       setFreqCenter(cfreq); 
       // setFreqSpan(span);
       spectrum_input_span = span; 

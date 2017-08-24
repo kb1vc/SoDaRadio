@@ -74,13 +74,11 @@ void MainWindow::widgetSaveRestore(QObject * op, const QString & par, bool save)
       if(QComboBox * cb = qobject_cast<QComboBox*>(*cp)) {
 	if(save) {
 	  int ci = cb->currentIndex();
-	  std::cerr << boost::format("Saving [%s] idx = %d\n") % my_pathname.toStdString() % ci; 
 	  settings_p->setValue(my_pathname, ci);
 	}
 	else {
 	  // restore!
 	  int nvalue = settings_p->value(my_pathname, 0).toInt();
-	  std::cerr << boost::format("\n\n\n\nRestoring [%s] idx = %d\n") % my_pathname.toStdString() % nvalue; 	  
 	  cb->setCurrentIndex(nvalue);
 	}
       }
@@ -236,10 +234,6 @@ void MainWindow::widgetSaveRestore(QObject * op, const QString & par, bool save)
 	    (my_class == "QSocketNotifier") ||
 	    (my_class == "QNativeSocketEngine")) {
       // do nothing. 
-    }
-    else {
-      std::cerr << boost::format("No handler for widget %s.%s[%s]\n") 
-	% par.toStdString() % my_name.toStdString() % my_class.toStdString(); 
     }
     widgetSaveRestore((*cp), my_pathname, save);
   }

@@ -50,7 +50,6 @@
       addValue("15", 15.0);       
       addValue("10", 10.0);
       addValue("5", 5.0);                  
-      std::cerr << "WFallDynRangeComboBox added values\n";
       setValue(25.0);
     }
   }; 
@@ -64,7 +63,6 @@
       addValue("50", 50.0);
       addValue("25", 25.0);
       addValue("10", 10.0);            
-      std::cerr << "WFallSpanComboBox added values\n";
       setValue(200.0);
     }
   }; 

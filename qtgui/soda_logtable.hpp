@@ -6,6 +6,7 @@
 #include <QHeaderView>
 #include <QTableWidget>
 #include <QFileDialog>
+#include <iostream>
 
 namespace Ui {
   class LogTable;
@@ -42,7 +43,12 @@ public slots:
 
   void writeLogReportDlg();
   void readLogReportDlg();
-  
+
+protected slots:
+  void recordChange(int r, int c) {
+    std::cerr << "recordChange not yet implemented in LogTable\n";
+  }
+
 protected:
   void openLogFile(); 
   void readLogFile(const QString & fname);  

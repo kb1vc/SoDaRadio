@@ -41,11 +41,9 @@ void MainWindow::setupBandConfig()
 
 void MainWindow::saveCurrentFreqs()
 {
-  qDebug() << "In saveCurrentFreqs with [" << current_band_selector << "]";
   if(band_map.count(current_band_selector) > 0) {
-    qDebug() << QString("Saving Current Freq to band [%1] rxFreq = %2").arg(current_band_selector).arg(1e-6 * ui->RXFreq_lab->getFreq());
-    double rxfreq = ui->RXFreq_lab->getFreq();
-    double txfreq = ui->TXFreq_lab->getFreq();
+    double rxfreq = ui->RXFreq_lab->getFreq() * 1.0e-6;
+    double txfreq = ui->TXFreq_lab->getFreq() * 1.0e-6;
     SoDaBand * bp = &band_map[current_band_selector]; 
     if((rxfreq >= bp->minFreq()) && (rxfreq <= bp->maxFreq())) {
       band_map[current_band_selector].setLastRXFreq(1e-6 * ui->RXFreq_lab->getFreq());
@@ -63,9 +61,7 @@ void MainWindow::bandMapSaveRestore(SoDaBandMap & bmap, bool save)
     SoDaBand::saveBands(settings_p, bmap);
   }
   else {
-    qDebug() << "about to call restoreBands"; 
     SoDaBand::restoreBands(settings_p, bmap);
-    qDebug() << "called restoreBands"; 
     // now load the comboboxes
     SoDaBandMapIterator bmi(bmap); 
     // clear the two band selectors.
@@ -73,11 +69,9 @@ void MainWindow::bandMapSaveRestore(SoDaBandMap & bmap, bool save)
     ui->bandSel_cb->clear();
     while(bmi.hasNext()) {
       bmi.next();            
-      qDebug() << QString("Got bmi key [%1]").arg(bmi.key());
       ui->BCBandSel_cb->addItem(bmi.key());
       ui->bandSel_cb->addItem(bmi.key());
     }
-    qDebug() << "loaded keys";
     // add a new band at the end of the band config selector
     ui->BCBandSel_cb->addItem("Create Band");
   }
@@ -117,14 +111,12 @@ void MainWindow::writeBandMapEntry(bool v)
 {
   SoDaBand b; 
   (void) v;
-  qDebug() << "In writeBandMapEntry"; 
 
   ui->BCStatus_lbl->setText("");
   QString bname = ui->BCBandName_le->text();
   if(bname == "") {
     bname = ui->BCBandSel_cb->currentText();
   }
-  qDebug() << "bname at this point is [" << bname << "]";
   
   if(bname == "Create Band") {
     // there's a problem here... we need a band name.
@@ -133,8 +125,6 @@ void MainWindow::writeBandMapEntry(bool v)
     return; 
   }
 
-  qDebug() << "got this far";
-  
   // if we get to here, it is time to create a new band or modify an old one
   b.setName(bname); 
   b.setIndex(ui->BCIndex_sb->value());
@@ -159,19 +149,13 @@ void MainWindow::writeBandMapEntry(bool v)
 
   band_map[bname] = b; 
 
-  qDebug() << "about to add to the list.";
-    
   // now add the name to the rolling list.
   if(ui->BCBandSel_cb->findText(bname) < 0) {
-    qDebug() << QString("Adding [%1] to BCBandSel").arg(bname);
     ui->BCBandSel_cb->addItem(bname);
   }
   if(ui->bandSel_cb->findText(bname) < 0) {
-    qDebug() << QString("Adding [%1] to bandSel").arg(bname);    
     ui->bandSel_cb->addItem(bname);
   }
-  
-  qDebug() << "Ending write entry";
 }
 
 // called when the selection changes in the band selector

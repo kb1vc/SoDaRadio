@@ -6,11 +6,8 @@ SoDaListener::SoDaListener(QObject * parent, QString socket_basename) : QObject(
   cmd_socket = new QLocalSocket(this);
   cmd_socket->connectToServer(socket_basename + "_cmd"); 
 
-  if(cmd_socket->waitForConnected(3000)) {
-    std::cerr << "Got connected.\n"; 
-  }
-  else {
-    std::cerr << "No connection.\n";
+  if(!cmd_socket->waitForConnected(3000)) {
+    std::cerr << "No connection for command socket.\n";
   }
     
   connect(cmd_socket, SIGNAL(readyRead()), 
@@ -19,15 +16,11 @@ SoDaListener::SoDaListener(QObject * parent, QString socket_basename) : QObject(
 	  this, SLOT(cmdErrorHandler(QLocalSocket::LocalSocketError)));
 
 
-  std::cerr << boost::format("Connecting to spectrum socket [%s_wfall]\n") % socket_basename.toStdString(); 
   spect_socket = new QLocalSocket(this);
   spect_socket->connectToServer(socket_basename + "_wfall"); 
 
-  if(spect_socket->waitForConnected(3000)) {
-    std::cerr << "Got connected.\n"; 
-  }
-  else {
-    std::cerr << "No connection.\n";
+  if(!spect_socket->waitForConnected(3000)) {
+    std::cerr << "No connection for spectrum socket.\n";
   }
     
   connect(spect_socket, SIGNAL(readyRead()), 
@@ -97,7 +90,7 @@ bool SoDaListener::get(SoDa::Command & cmd)
 void SoDaListener::setupSpectrumBuffer(double cfreq, double span, long buflen)
 {
   spect_center_freq = cfreq; 
-  std::cerr << boost::format("Got spectrum buffer update  buflen = %d\n") % buflen; 
+
   if(spect_buffer_len < buflen) {
     if(spect_buffer_len > 0) delete[] spect_buffer; 
 
@@ -130,24 +123,19 @@ void SoDaListener::processSpectrum() {
 
 void SoDaListener::processCmd() {
   SoDa::Command incmd; 
-  std::cerr << "In processCmd\n";
  
   while(cmd_socket->bytesAvailable() > sizeof(SoDa::Command)) {
     int len = get(incmd);    
-    std::cerr << boost::format("Got message size = %d content = [%s]\n") 
-      % len % incmd.toString();
+
     if(incmd.cmd == SoDa::Command::REP) handleREP(incmd);
     else if(incmd.cmd == SoDa::Command::GET) handleGET(incmd);
     else if(incmd.cmd == SoDa::Command::SET) handleSET(incmd);    
   }
-  std::cerr << "Leaving processCmd\n";  
 }
 
 
 bool SoDaListener::put(const SoDa::Command & cmd)
 {
-  std::cerr << boost::format("listener sending [%s]\n") % cmd.toString();
-  
   int len = put((char*) &cmd, sizeof(SoDa::Command));
   return len > 0;
 }
@@ -199,7 +187,7 @@ void SoDaListener::setAFSidetoneGain(int gain) {
 
 void SoDaListener::setModulation(int mod_id)
 {
-  std::cerr << "in listener setModulation\n";  
+
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_MODE, mod_id))) {
     perror("What happened here?");
   }
@@ -210,7 +198,6 @@ void SoDaListener::setModulation(int mod_id)
 
 void SoDaListener::setAFFilter(int id)
 {
-  std::cerr << "in listener setAFFilter\n";
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_AF_FILTER, id))) {
     perror("What happened here?");
   }
@@ -251,7 +238,6 @@ bool SoDaListener::handleREP(const SoDa::Command & cmd)
     emit(repPTT(cmd.iparms[0] == 1));
     break; 
   default:
-    std::cerr << boost::format("Ignoring incoming REP command: [%s]\n") % cmd.toString();
     break; 
   }
   return true; 
@@ -330,7 +316,6 @@ void SoDaListener::clearCWBuffer()
 
 void SoDaListener::sendCW(const QString & txt)
 {
-  std::cerr << boost::format("Sending text [%s]\n") % txt.toStdString();
   char cwbuf[SoDa::Command::getMaxStringLen()]; 
   unsigned int i, j; 
   for(i = 0, j = 0; i <= txt.size(); i++) {
@@ -362,7 +347,6 @@ bool SoDaListener::handleSET(const SoDa::Command & cmd)
 {
   switch(cmd.target) {
   default:
-    std::cerr << boost::format("Ignoring incoming SET command: [%s]\n") % cmd.toString();
     break; 
   }
   
@@ -373,7 +357,6 @@ bool SoDaListener::handleGET(const SoDa::Command & cmd)
 {
   switch(cmd.target) {
   default:
-    std::cerr << boost::format("Ignoring incoming GET command: [%s]\n") % cmd.toString();
     break; 
   }
   return true; 
@@ -381,9 +364,8 @@ bool SoDaListener::handleGET(const SoDa::Command & cmd)
 
 void SoDaListener::closeRadio()
 {
-  std::cerr << "Listener is closing the radio connection\n";
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::STOP, 0))) {
-    perror("What happened here?");
+    perror("What happened here  -- listener closeRadio?");
   }
 }
 

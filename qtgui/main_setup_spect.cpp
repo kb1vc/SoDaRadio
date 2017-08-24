@@ -10,7 +10,6 @@
 
 void MainWindow::setupWaterFall()
 {
-    std::cerr << "in setupSpectrum\n";
     connect(ui->waterfall_plt,SIGNAL(xClick(double)), this, SLOT(setRXFreq(double)));
     connect(ui->waterfall_plt, &SoDaWFall::xClick, listener, &SoDaListener::setRXFreq);
     connect(ui->wf_moveRight_btn, SIGNAL(clicked(bool)), 
@@ -48,7 +47,6 @@ void MainWindow::setupWaterFall()
 
 void MainWindow::setupSpectrum()
 {
-  std::cerr << "in setupSpectrum\n";
   ui->spectrum_plt->setRefLevel(10);
   ui->spectrum_plt->setDynamicRange(100.0);
   ui->spectrum_plt->setFreqCenter(144.2e6);

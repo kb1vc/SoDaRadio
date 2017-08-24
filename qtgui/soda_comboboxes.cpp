@@ -11,25 +11,20 @@ void ValComboBox::addValue(QString lab, double val) {
 
 void ValComboBox::setValue(double v) {
   double diff = 1e23;
-  std::cerr << boost::format("Looking for value %g\n") % v;
   int bestidx;
   for(int i = 0; i < count(); i++) {
     QString key = itemText(i);
     double nd = fabs(v - valmap[key]);
-    std::cerr << boost::format("\t comparing to valmap[%s] = %g at idx %d\n")
-      % key.toStdString() % valmap[key] % i;
     if(nd < diff) {
       diff = nd;
       bestidx = i;
     }
   }
-  std::cerr << boost::format("\tBest idx = %d\n") % bestidx;
   setCurrentIndex(bestidx);
 }
 
 
 void ValComboBox::textChanged(const QString & txt) {
-  std::cerr << boost::format("Text changed to %s\n") % txt.toStdString();
   emit valueChanged(valmap[txt]);
 }
 
@@ -43,7 +38,6 @@ void IntValComboBox::addValue(QString lab, int val) {
 }
 
 void IntValComboBox::setValue(int v) {
-  std::cerr << boost::format("Looking for value %d\n") % v;
   for(int i = 0; i < count(); i++) {
     QString key = itemText(i);
     if(v == valmap[key]) {
