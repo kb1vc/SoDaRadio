@@ -6,8 +6,14 @@
 #include <iostream>
 #include <boost/format.hpp>
 #include <errno.h>
-
+#include "soda_hamlib_listener.hpp"
+#include "soda_hamlib_handler.hpp"
 #include "../src/Command.hxx"
+
+// This, and soda_hamlib_listener are taken 
+// from a pattern at https://gist.github.com/lamprosg/4587087
+// nicely done and documented. 
+// 
 
 
 class SoDaHamlibServer : public QTcpServer {
@@ -18,25 +24,19 @@ public:
 
   ~SoDaHamlibServer();
 
-  QTcpSocket server_socket;
+  SoDaHamlibHandler * getHandler() { return handler_p; }
 
 public slots:
-  void tcpReady();
-  void tcpError( QAbstractSocket::SocketError error);
-  
   // start listening for the first incoming connection.
   bool start(); 
 
-signals:
-  void setFreq(double f);
-  void setModulation(SoDa::Command::ModulationType mod);
-  void transmitOn(bool tx_on);
 
 protected:
   void incomingConnection(qintptr desc);
   int port_num;
 
-  
+  SoDaHamlibHandler * handler_p; 
+
   // command handlers
   typedef bool(SoDaHamlibServer::*cmdHandler_t)(const QStringList &, bool);
   std::map<QString,  cmdHandler_t> set_command_map;
