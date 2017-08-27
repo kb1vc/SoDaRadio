@@ -148,7 +148,18 @@ namespace SoDa {
      */
     void sleepIn() {
 #if HAVE_LIBASOUND
-      snd_pcm_drop(pcm_in); 
+      snd_pcm_drop(pcm_in);
+
+      // now read the input buffers until they're empty
+      int buf[1000];      
+      int len = 1000; 
+      int stat = 1;
+      while(stat > 0) {
+	stat = snd_pcm_readi(pcm_in, buf, len);
+	if(stat == 0) break; 
+	else if(stat == -EAGAIN) continue; 
+	else break; 
+      }
 #endif
     }
 

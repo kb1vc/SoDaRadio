@@ -108,11 +108,11 @@ namespace SoDa {
     }
 
     T * get(unsigned int subscriber_id) {
-      return get_common(subscriber_id, false); 
+      return getCommon(subscriber_id, false); 
     }
 
     T * getWait(unsigned int subscriber_id) {
-      return get_common(subscriber_id, true); 
+      return getCommon(subscriber_id, true); 
     }
 
     void free(T * m) {
@@ -173,8 +173,23 @@ namespace SoDa {
 
       return max_len; 
     }
+
+    /**
+     * @brief flush all items from this mailbox for this subscriber
+     *
+     * @param subscriber_id oddly named, this is the identity of the requesting subscriber.
+     */
+    bool flush(unsigned int subscriber_id) {
+      T * dummy; 
+      while((dummy = getCommon(subscriber_id, false)) != NULL) { 
+	free(dummy);
+      }
+      return true; 
+    }
+      
+    
   private:
-    T * get_common(unsigned int subscriber_id, bool wait)
+    T * getCommon(unsigned int subscriber_id, bool wait)
     {
       if(subscriber_id >= subscriber_count) {
 	// someone is asking for a message from

@@ -18,6 +18,7 @@ SET(SoDaRadioQT_SRCS
   main_setup_bandconfig.cpp
   main_setup_logeditor.cpp  
   main_setup_spect.cpp
+  main_setup_hamlib.cpp  
   ../common/Navigation.hxx
   ../common/Navigation.cxx
   ../common/dem-gridlib.c

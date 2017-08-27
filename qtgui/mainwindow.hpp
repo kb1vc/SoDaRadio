@@ -42,6 +42,8 @@ protected:
   void setupWaterFall();
   void setupSpectrum();
 
+  void setupHamlib(); 
+
   void widgetSaveRestore(QObject * op, const QString & par, bool save);
 
   void bandMapSaveRestore(SoDaBandMap & bmap, bool save);

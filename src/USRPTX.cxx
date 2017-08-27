@@ -244,6 +244,8 @@ void SoDa::USRPTX::transmitSwitch(bool tx_on)
       tx_bits->send(zero_buf, 10, md);
     }
     tx_enabled = false;
+    // flush the input stream for us. 
+    tx_stream->flush(tx_subs);
   }
 }
 

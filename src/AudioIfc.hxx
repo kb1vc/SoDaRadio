@@ -152,7 +152,8 @@ namespace SoDa {
         
     /**
      * stop the input stream so that we don't encounter a buffer overflow
-     * while the transmitter is inactive.
+     * while the transmitter is inactive.  This should also flush all incoming
+     * buffers. (Virtual audio devices can get ahead of the processing by a good bit.)
      */
     virtual void sleepIn() = 0;
     /**

@@ -306,6 +306,7 @@ void SoDa::BaseBandTX::execSetCommand(SoDa::Command * cmd)
       tx_on = false;
       if(tx_stream_on) {
 	// Put the audio interface to sleep
+	// and flush the input buffer	
 	audio_ifc->sleepIn(); 
 	tx_stream_on = false; 
       }

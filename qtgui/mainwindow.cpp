@@ -50,6 +50,8 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   hlib_server = new SoDaHamlibServer(this, 4575);
   
   hlib_server->start();
+
+  setupHamlib();  
 }
 
 MainWindow::~MainWindow()

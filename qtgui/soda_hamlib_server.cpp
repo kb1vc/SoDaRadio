@@ -4,6 +4,7 @@
 
 #include <QMessageBox>
 #include <boost/format.hpp>
+#include <boost/foreach.hpp>
 #include <hamlib/rig.h>
 
 SoDaHamlibServer::SoDaHamlibServer(QObject * parent, int _port_num) :
@@ -13,6 +14,12 @@ SoDaHamlibServer::SoDaHamlibServer(QObject * parent, int _port_num) :
 }
   
 SoDaHamlibServer::~SoDaHamlibServer() {
+
+  emit stopListeners();
+
+  BOOST_FOREACH(SoDaHamlibListener * l, listener_list) {
+    l->wait();
+  }
 }
 
 bool SoDaHamlibServer::start() {
@@ -29,6 +36,9 @@ void SoDaHamlibServer::incomingConnection(qintptr descriptor) {
 
   // make sure the thread terminates itself
   connect(listener, SIGNAL(finished()), listener, SLOT(deleteLater()));
+  connect(this, SIGNAL(stopListeners()), listener, SLOT(setFinished()));
+
+  listener_list.push_back(listener); 
 
   listener->start(); // start the thread -- it will wait for data from the client.
 }
