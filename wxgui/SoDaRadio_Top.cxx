@@ -114,7 +114,7 @@ namespace SoDaRadio_GUI {
     // Now start the server
     std::string server = params.getServerName();
     std::string server_commandline_string; 
-    if(server == "SoDaServer") {
+    if(server == "") {
       // find it in our home directory
       server_commandline_string = myhome + "/SoDaServer";
     }

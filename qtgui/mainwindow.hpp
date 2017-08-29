@@ -30,6 +30,8 @@ public slots:
   void writeBandMapEntry(bool);
   void fillBandMapEntry(const QString & band);
 
+  void handleFatalError(const QString & err_string);
+
 protected:
   void setupTopControls();
   void setupMidControls();

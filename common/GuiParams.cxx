@@ -36,7 +36,7 @@ SoDa::GuiParams::GuiParams(int argc, char ** argv)
   po::options_description desc("Allowed options");
   desc.add_options()
     ("help", "help message")
-    ("server", po::value<std::string>(&server_name)->default_value("SoDaServer"),
+    ("server", po::value<std::string>(&server_name)->default_value(""),
      "Name/path to SoDaServer program. Normally found in the directory containing SoDaRadio")
     ("serverargs", po::value<std::string>(&server_args)->default_value(""), 
      "Argument string to be passed to SoDaServer program")

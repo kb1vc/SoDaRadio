@@ -1,13 +1,33 @@
 #include "soda_listener.hpp"
 
-SoDaListener::SoDaListener(QObject * parent, QString socket_basename) : QObject(parent) {
+SoDaListener::SoDaListener(QObject * parent, const QString & _socket_basename) : QObject(parent) {
   quit = false;
-  std::cerr << boost::format("Connecting to server socket [%s_cmd]\n") % socket_basename.toStdString(); 
-  cmd_socket = new QLocalSocket(this);
-  cmd_socket->connectToServer(socket_basename + "_cmd"); 
+  socket_basename = _socket_basename; 
+}
 
-  if(!cmd_socket->waitForConnected(3000)) {
-    std::cerr << "No connection for command socket.\n";
+bool SoDaListener::init()
+{
+  qDebug() << QString("Connecting to server socket [%1_cmd]").arg(socket_basename);
+  cmd_socket = new QLocalSocket(this);
+  // first wait for the file to be created
+  QString cmd_socket_name = socket_basename + "_cmd"; 
+  int wcount = 0;
+  while(!QFile::exists(cmd_socket_name)) {
+    QThread::sleep(5);
+    wcount++; 
+    if(wcount > 30) {
+      qDebug() << QString("Waited %1 seconds for socket file [%2] to be created.  Is the radio process dead?").arg(wcount * 5).arg(cmd_socket_name);
+      emit(fatalError(QString("No socket file [%1] found after timeout of %2 seconds").arg(cmd_socket_name).arg(wcount * 5)));
+      return false;       
+    }
+  }
+  qDebug() << "cmd socket file apparently exists"; 
+
+  cmd_socket->connectToServer(cmd_socket_name); 
+  while(!cmd_socket->waitForConnected(1000)) {
+    qDebug() << QString("Waited connection on local socket [%1_cmd]. Is something wrong?").arg(socket_basename);
+    qDebug() << cmd_socket->errorString();
+    QThread::sleep(5); // sleep for 5 seconds...    
   }
     
   connect(cmd_socket, SIGNAL(readyRead()), 
@@ -18,9 +38,10 @@ SoDaListener::SoDaListener(QObject * parent, QString socket_basename) : QObject(
 
   spect_socket = new QLocalSocket(this);
   spect_socket->connectToServer(socket_basename + "_wfall"); 
-
-  if(!spect_socket->waitForConnected(3000)) {
-    std::cerr << "No connection for spectrum socket.\n";
+  while(!spect_socket->waitForConnected(30000)) {
+    qDebug() << QString("Waited 30 seconds for connection on local socket [%1_wfall]. Is something wrong?").arg(socket_basename);
+    qDebug() << cmd_socket->errorString();
+    QThread::sleep(5); // sleep for 5 seconds...    
   }
     
   connect(spect_socket, SIGNAL(readyRead()), 
@@ -29,6 +50,8 @@ SoDaListener::SoDaListener(QObject * parent, QString socket_basename) : QObject(
 	  this, SLOT(cmdErrorHandler(QLocalSocket::LocalSocketError)));
 
   spect_buffer_len = 0; 
+
+  return true; 
 }
 
 void SoDaListener::start()

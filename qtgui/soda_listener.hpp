@@ -4,9 +4,7 @@
 #include <QString>
 #include <QtNetwork/QtNetwork>
 #include <iostream>
-#include <boost/format.hpp>
 #include <errno.h>
-
 #include "../src/Command.hxx"
 
 
@@ -14,13 +12,24 @@ class SoDaListener : public QObject {
   Q_OBJECT
 
 public:
-  SoDaListener(QObject * parent = 0, QString socket_basename = "tmp");
+  SoDaListener(QObject * parent = 0, const QString & socket_basename = "tmp");
   ~SoDaListener() {
   }
 
-  // initiate transfers on the socket.
+  /**
+   * @brief connect to radio server sockets and initialize listener state
+   * 
+   * @return true on success, false on some fatal problem. 
+   */
+  bool init();   
+
   
-  void start(); 
+  /**
+   * @brief initiate transfers on the socket.
+   */
+  void start();
+
+  
 signals:
   // when new spectrum data arrives
   void updateData(double cfreq, float * y);
@@ -30,7 +39,7 @@ signals:
   void addModulation(QString modtype, int mod_id);
   void addFilterWidth(double lo, double hi);
   void addFilterName(QString filter_name, int filt_id);
-  void repMarkerOffset(double lo, double hi); 
+  void repMarkerOffset(double lo, double hi);
   
   void addRXAntName(const QString & ant_name);
   void addTXAntName(const QString & ant_name);  
@@ -48,6 +57,8 @@ signals:
   void repPTT(bool on); 
 
   void initSetupComplete();
+
+  void fatalError(const QString & error_string);
 					      
 public slots:
   void setRXFreq(double freq);
@@ -101,6 +112,7 @@ private:
   long spect_buffer_len;
   float * spect_buffer; 		      
   double spect_center_freq; 				    
+			  
 protected slots:  
   void processCmd();
   void cmdErrorHandler(QLocalSocket::LocalSocketError err) {
@@ -110,6 +122,7 @@ protected slots:
   void processSpectrum();
   
 private:
+  QString socket_basename; 
   QLocalSocket * cmd_socket;
   QLocalSocket * spect_socket; 
   bool quit; 

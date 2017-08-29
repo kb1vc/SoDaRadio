@@ -4,7 +4,7 @@
 #include <boost/format.hpp>
 
 #include <QString>
-#include <QAudioDeviceInfo>
+#include <QMessageBox>
 
 #include "soda_comboboxes.hpp"
 #include "soda_listener.hpp"
@@ -41,6 +41,11 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
 
   connect(listener, SIGNAL(initSetupComplete()), 
 	  this, SLOT(restoreSettings()));
+
+  connect(listener, SIGNAL(fatalError(const QString &)), 
+	  this, SLOT(handleFatalError(const QString &)));
+
+  listener->init();
   listener->start();
 
   settings_p = new QSettings("kb1vc.org", "SoDaRadioQT", this);
@@ -249,3 +254,15 @@ void MainWindow::restoreSettings()
   settings_p->endGroup();
 }
 
+void MainWindow::handleFatalError(const QString & err_string) 
+{
+  QMessageBox mbox(QMessageBox::Critical, 
+		   tr("Fatal Error"), 
+		   tr("%1 has encountered an error that is beyond safe recovery.\n"
+		      "Please press OK button to quit. (Though this is -not- OK.\n"
+		      "Send a note when you get a chance to kb1vc@kb1vc.org").arg(qApp->applicationDisplayName()), 
+		   QMessageBox::Ok, this);
+  mbox.setDetailedText(err_string); 
+  mbox.exec();
+  qApp->quit();
+}
