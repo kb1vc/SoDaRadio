@@ -32,6 +32,8 @@ public slots:
 
   void handleFatalError(const QString & err_string);
 
+  void logContact(bool); 
+
 protected:
   void setupTopControls();
   void setupMidControls();

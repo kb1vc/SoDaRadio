@@ -1074,14 +1074,12 @@ void SoDa::USRPCtrl::setAntenna(const std::string & ant, char sel)
   std::string choice = ants[0];
 
   BOOST_FOREACH(std::string a, ants) {
-    std::cerr << boost::format("comparing antenna for %c goal [%s] found [%s]\n") % sel % ant % a; 
     if (ant == a) {
       choice = ant; 
       break; 
     }
   }
 
-  std::cerr << boost::format("chose antenna for %c goal [%s] selected [%s]\n") % sel % ant % choice;   
   if(sel == 'r') {
     usrp->set_rx_antenna(choice); 
   }

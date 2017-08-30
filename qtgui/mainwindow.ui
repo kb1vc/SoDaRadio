@@ -1486,7 +1486,7 @@
            <number>500</number>
           </property>
           <property name="columnCount">
-           <number>2</number>
+           <number>10</number>
           </property>
           <row/>
           <row/>

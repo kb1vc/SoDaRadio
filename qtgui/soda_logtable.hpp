@@ -6,6 +6,7 @@
 #include <QHeaderView>
 #include <QTableWidget>
 #include <QFileDialog>
+#include <QDebug>
 #include <iostream>
 
 namespace Ui {
@@ -45,16 +46,38 @@ public slots:
   void readLogReportDlg();
 
 protected slots:
-  void recordChange(int r, int c) {
-    std::cerr << "recordChange not yet implemented in LogTable\n";
-  }
-
+  void recordChange(int r, int c);
+  
 protected:
   void openLogFile(); 
   void readLogFile(const QString & fname);  
   void recordEdit(int row, int col);
+
+  bool emptyRow(int r); 
+
+  void setField(int row, const QString & key_st, const QString & st) {
+    int ncol = current_headers.indexOf(key_st);
+    if(ncol < 0) {
+      qDebug() << QString("Could not find column key [%1] in log table column headers").arg(key_st);
+      return; 
+    }
+    setItem(row, ncol, new QTableWidgetItem(st));
+  }
+
+  void setField(int row, const QString & key_st, double val) {
+    int ncol = current_headers.indexOf(key_st);
+    if(ncol < 0) {
+      qDebug() << QString("Could not find column key [%1] in log table column headers").arg(key_st);
+      return; 
+    }
+    setItem(row, ncol, new QTableWidgetItem(QString("%1").arg(val, 15, 'f')));
+  }
+
   
+  int last_used_row; 
   QStringList current_headers;
+
+  QFile * log_file_out;
 };
 
 #endif // SODA_LOGTABLE_HDR

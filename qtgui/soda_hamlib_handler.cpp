@@ -287,7 +287,6 @@ bool SoDaHamlibHandler::cmdPTT(QTextStream & out, QTextStream & in, bool getval)
     in >> tx_sel; 
     tx_on = (tx_sel != 0); 
     out << "RPRT 0" << endl;  
-    qDebug() << "PTT is " << tx_sel; 
     emit setTXOn(tx_on); 
   }
   return true;  
