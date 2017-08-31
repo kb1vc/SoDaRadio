@@ -74,7 +74,7 @@ protected:
   }
 
   
-  int last_used_row; 
+  int next_used_row; 
   QStringList current_headers;
 
   QFile * log_file_out;

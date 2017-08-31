@@ -34,6 +34,10 @@ public slots:
 
   void logContact(bool); 
 
+  void saveConfig();
+  void saveConfigAs_dlg();
+  void restoreConfig_dlg();
+
 protected:
   void setupTopControls();
   void setupMidControls();

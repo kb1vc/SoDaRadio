@@ -39,4 +39,46 @@ void MainWindow::setupSettings()
 	  ui->LogView, SLOT(readLogReportDlg()));
   connect(ui->writeLogReport_btn, SIGNAL(clicked()),
 	  ui->LogView, SLOT(writeLogReportDlg()));
+
+  connect(ui->saveConfig_btn, SIGNAL(clicked()), 
+	  this, SLOT(saveConfig())); 
+
+  connect(ui->saveConfigAs_btn, SIGNAL(clicked()), 
+	  this, SLOT(saveConfigAs_dlg()));
+  connect(ui->openConfig_btn, SIGNAL(clicked()), 
+	  this, SLOT(restoreConfig_dlg()));  
+}
+
+
+void MainWindow::saveConfig()
+{
+  settings_p->beginGroup("Radio");
+  bandMapSaveRestore(band_map, true);    
+  widgetSaveRestore(this, "SoDaRadioQT.", true);
+  settings_p->endGroup();
+}
+
+void MainWindow::saveConfigAs_dlg()
+{
+  QString fname = QFileDialog::getSaveFileName(this, 
+					       tr("Save Configuration to File"), 
+					       "", 
+					       tr("*.conf (*.conf);;All Files(*)"));
+  if(!fname.isEmpty()) {
+    settings_p = new QSettings(fname, QSettings::NativeFormat, this);
+    saveConfig();
+  }
+}
+
+void MainWindow::restoreConfig_dlg()
+{
+  QString fname = QFileDialog::getOpenFileName(this, 
+					       tr("Read Configuration from File"), 
+					       "", 
+					       tr("*.conf (*.conf);;All Files(*)"));
+  if(!fname.isEmpty()) {
+    settings_p = new QSettings(fname, QSettings::NativeFormat, this);
+    restoreSettings();
+  }
+  
 }

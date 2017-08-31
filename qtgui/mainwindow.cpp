@@ -61,10 +61,7 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
 
 MainWindow::~MainWindow()
 {
-  settings_p->beginGroup("Radio");
-  bandMapSaveRestore(band_map, true);    
-  widgetSaveRestore(this, "SoDaRadioQT.", true);
-  settings_p->endGroup();
+  saveConfig();
   delete ui;
 }
 

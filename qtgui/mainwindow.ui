@@ -1483,7 +1483,7 @@
            </sizepolicy>
           </property>
           <property name="rowCount">
-           <number>500</number>
+           <number>20</number>
           </property>
           <property name="columnCount">
            <number>10</number>
