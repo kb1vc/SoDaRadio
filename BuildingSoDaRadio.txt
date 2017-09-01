@@ -1,0 +1,12 @@
+Building on Fedora 24  -- from a bare installation
+
+sudo dnf group install "C Development Tools and Libraries"
+sudo dnf install libusb-devel doxygen boost-devel
+sudo dnf install fftw-devel alsa-lib-devel
+sudo dnf install qt5-qtbase-devel
+sudo dnf install qwt-qt5-devel
+sudo dnf install python-mako
+
+build libuhd
+and install
+
