@@ -7,6 +7,10 @@ sudo dnf install qt5-qtbase-devel
 sudo dnf install qwt-qt5-devel
 sudo dnf install python-mako
 
+to make packages, you need the rpmbuild
+sudo dnf install rpm-build
+
+
 build libuhd
 and install
 

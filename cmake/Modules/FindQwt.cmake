@@ -46,7 +46,7 @@
 find_path ( QWT_INCLUDE_DIR
   NAMES qwt_plot.h
   HINTS ${QT_INCLUDE_DIR}
-  PATH_SUFFIXES qwt qwt-qt3 qwt-qt4 qwt-qt5
+  PATH_SUFFIXES qwt qwt-qt3 qwt-qt4 qwt-qt5 qt5/qwt qt5
 )
 
 set ( QWT_INCLUDE_DIRS ${QWT_INCLUDE_DIR} )
