@@ -1,6 +1,6 @@
 SET(CMAKE_BUILD_TYPE "Debug")
 
-SET(SoDaRadioQT_SRCS
+SET(SoDaRadio_SRCS
   main.cpp
   mainwindow.cpp
   freqlabel.cpp
@@ -30,7 +30,7 @@ SET(SoDaRadioQT_SRCS
   soda_hamlib_listener.cpp  
   )
 
-SET(SoDaRadioQT_HDRS
+SET(SoDaRadio_HDRS
   mainwindow.hpp
   freqlabel.hpp
   soda_logtable.hpp
@@ -43,7 +43,7 @@ SET(SoDaRadioQT_HDRS
   soda_hamlib_listener.hpp  
   )
 
-SET(SoDaRadioQT_NOMOC_HDRS
+SET(SoDaRadio_NOMOC_HDRS
   soda_freq_scale_draw.hpp
   soda_list_spinbox.hpp
   soda_plot_picker.hpp
@@ -54,7 +54,7 @@ SET(SoDaRadioQT_NOMOC_HDRS
   soda_band.hpp
 )
 
-SET(SoDaRadioQT_UIS
+SET(SoDaRadio_UIS
   mainwindow.ui
   )
 
@@ -62,27 +62,25 @@ SET(CMAKE_AUTOMOC ON)
 SET(CMAKE_AUTOUIC ON)
 SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-message("QWT_INCLUDE_DIRS = [${QWT_INCLUDE_DIRS}]")
-message("QWT_LIBRARIES = [${QWT_LIBRARIES}]")
 INCLUDE_DIRECTORIES(SYSTEM ${Boost_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR} ${QWT_INCLUDE_DIRS})
 ADD_DEFINITIONS(${Qt5Widgets_DEFINITIONS})
 
-QT5_WRAP_CPP(SoDaRadioQT_hdr_moc ${SoDaRadioQT_HDRS})
-QT5_WRAP_UI(SoDaRadioQT_form_moc ${SoDaRadioQT_UIS})
+QT5_WRAP_CPP(SoDaRadio_hdr_moc ${SoDaRadio_HDRS})
+QT5_WRAP_UI(SoDaRadio_form_moc ${SoDaRadio_UIS})
 
-ADD_LIBRARY(mainwindow ${SoDaRadioQT_hdr_moc} ${SoDaRadioQT_form_moc})
+ADD_LIBRARY(mainwindow ${SoDaRadio_hdr_moc} ${SoDaRadio_form_moc})
 QT5_USE_MODULES(mainwindow Widgets)
   
-ADD_EXECUTABLE(SoDaRadioQT ${SoDaRadioQT_SRCS} mainwindow)
+ADD_EXECUTABLE(SoDaRadio ${SoDaRadio_SRCS} mainwindow)
 
-TARGET_COMPILE_OPTIONS(SoDaRadioQT BEFORE PUBLIC -Wno-deprecated-declarations)
+TARGET_COMPILE_OPTIONS(SoDaRadio BEFORE PUBLIC -Wno-deprecated-declarations)
 
-TARGET_LINK_LIBRARIES(SoDaRadioQT m rt ${Boost_LIBRARIES} Qt5::Widgets Qt5::PrintSupport  ${QWT_LIBRARIES})
+TARGET_LINK_LIBRARIES(SoDaRadio m rt ${Boost_LIBRARIES} Qt5::Widgets Qt5::PrintSupport  ${QWT_LIBRARIES})
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
 
-QT5_USE_MODULES(SoDaRadioQT Core Gui Widgets PrintSupport Network Multimedia)
+QT5_USE_MODULES(SoDaRadio Core Gui Widgets PrintSupport Network Multimedia)
 
 
-INSTALL(TARGETS SoDaRadioQT DESTINATION bin)
+INSTALL(TARGETS SoDaRadio DESTINATION bin)
 

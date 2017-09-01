@@ -23,17 +23,20 @@ SET(CPACK_PACKAGE_RELEASE 1)
 SET(CPACK_PACKAGE_CONTACT "Matt Reilly kb1vc")
 SET(CPACK_PACKAGE_VENDOR "Matt Reilly -- radiogeek381@gmail.com")
 SET(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_PACKAGE_RELEASE}.${CMAKE_SYSTEM_PROCESSOR}.${CMAKE_SYSTEM_VERSION}")
-SET(CPACK_SOURCE_GENERATOR TGZ)
-SET(CPACK_PACKAGING_INSTALL_PREFIX "")
-SET(CPACK_SOURCE_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}_src")
-SET(CPACK_SOURCE_IGNORE_FILES "/build/" "~$" "SoDa.soda_cfg$" "SoDa.soda_log$" "ckp$" "/.git/")
+SET(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+set(CPACK_GENERATOR "RPM")
+set(CPACK_RPM_PACKAGE_RELEASE "1")
+set(CPACK_RPM_PACKAGE_LICENSE "BSD-2-Clause")
+set(CPACK_RPM_PACKAGE_GROUP "Applications/Communications")
+set(CPACK_RPM_PACKAGE_DESCRIPTION 
+  "SoDaRadio is a software defined radio implementation of "
+  "a general purpose transmitter/receiver using the "
+  "Ettus Research USRP hardware.")
+set(CPACK_RPM_PACKAGE_REQUIRES "boost >= 1.48, fftw-devel >= 3.3, qt5 >= 5.7.1, qwt-qt5 >= 6.1.2")
+set(CPACK_RPM_PACKAGE_RELOCATABLE TRUE)
 
-CONFIGURE_FILE(
-  "${CMAKE_CURRENT_SOURCE_DIR}/project_rpm.spec.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/project_rpm.spec" @ONLY)
-SET(CPACK_RPM_USER_BINARY_SPECFILE "${CMAKE_CURRENT_BINARY_DIR}/project_rpm.spec")
+
 INCLUDE(CPack)
-
 
 MESSAGE("SoDaRadio_VERSION=[${SoDaRadio_VERSION}]")
 
@@ -114,16 +117,18 @@ ENDIF()
 
 
 ### wxWidgets 3.0 is a trainwreck
-set(wxWidgets_CONFIG_OPTIONS --version=2.8)
-find_package(wxWidgets COMPONENTS core base richtext aui xrc qa html adv  QUIET)
-include(${wxWidgets_USE_FILE})
-IF(wxWidgets_FOUND)
-  MESSAGE("Building wx gui")  
-  ADD_SUBDIRECTORY(wxgui)
-ENDIF()
+IF(ENABLE_WX_WIDGETS) 
+  set(wxWidgets_CONFIG_OPTIONS --version=2.8)
+  find_package(wxWidgets COMPONENTS core base richtext aui xrc qa html adv  QUIET)
+  include(${wxWidgets_USE_FILE})
+  IF(wxWidgets_FOUND)
+    MESSAGE("Building wx gui")  
+    ADD_SUBDIRECTORY(wxgui)
+  ENDIF()
 
-IF(BUILD_UNIT_TESTS)
-  ADD_SUBDIRECTORY(exp)
+  IF(BUILD_UNIT_TESTS)
+    ADD_SUBDIRECTORY(exp)
+  ENDIF()
 ENDIF()
 
 FIND_PACKAGE(Doxygen QUIET)

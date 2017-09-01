@@ -44,16 +44,16 @@ set(SoDaRadio_SRCS
     )
 
   
-add_executable(SoDaRadio ${SoDaRadio_SRCS})
+add_executable(SoDaRadioWX ${SoDaRadio_SRCS})
 
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS} ${wxWidgets_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_compile_options(SoDaRadio BEFORE PUBLIC -Wno-deprecated-declarations)
+target_compile_options(SoDaRadioWX BEFORE PUBLIC -Wno-deprecated-declarations)
 
-target_link_libraries(SoDaRadio m rt ${Boost_LIBRARIES} ${wxWidgets_LIBRARIES} )
+target_link_libraries(SoDaRadioWX m rt ${Boost_LIBRARIES} ${wxWidgets_LIBRARIES} )
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
 
-install(TARGETS SoDaRadio DESTINATION bin)
+install(TARGETS SoDaRadioWX DESTINATION bin)
 
