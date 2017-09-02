@@ -59,11 +59,6 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   setupLogEditor();
 
 
-  connect(ui->LogView, &LogTable::entryUpdated,
-	  [](int row, const QString & key, const QString & val) {
-	    std::cerr << boost::format("row = %d key = [%s] val = [%s]\n") % row % key.toStdString() % val.toStdString();
-	  });
-
   connect(listener, SIGNAL(repHWMBVersion(const QString &)), 
 	  this, SLOT(setWindowTitle(const QString &)));
 

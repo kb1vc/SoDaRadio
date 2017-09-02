@@ -1014,7 +1014,6 @@ void SoDa::USRPCtrl::testIntNMode(bool force_int_N, bool force_frac_N)
 
 void SoDa::USRPCtrl::reportModes()
 {
-  std::cerr << "Sending supported modes to GUI\n";
     cmd_stream->put(new Command(Command::REP, Command::MOD_SEL_ENTRY, 
 				"CW_U", ((int) SoDa::Command::CW_U)));
     cmd_stream->put(new Command(Command::REP, Command::MOD_SEL_ENTRY, 

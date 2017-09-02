@@ -35,4 +35,15 @@ RPM install
 
 Fedora 24
 
-dnf install uhd uhd-firmware
+---------------
+
+building on Ubuntu 16.04
+
+sudo apt-get install libhamlib-dev
+sudo apt-get install libuhd-dev uhd-host 
+sudo apt-get install libqwt-qt5-dev
+sudo apt-get install libqt5widgets5
+sudo apt-get install libqt5core5a
+sudo apt-get install qtbase5-dev qt5-qmake qtbase5-dev-tools
+sudo apt-get install libqt5multimedia5
+sudo apt-get install qtmultimedia5-dev
