@@ -30,6 +30,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QApplication>
 #include <iostream>
 #include <QMessageBox>
+#include <QStyleFactory>
 #include "../common/GuiParams.hxx"
 
 /**
@@ -94,6 +95,33 @@ static void startupServer(SoDa::GuiParams & p)
 
 }
 
+// code borrowed under a very very liberal (do whatever you want) license
+// from https://gist.github.com/skyrpex
+void setupLookNFeel()
+{
+  qApp->setStyle(QStyleFactory::create("fusion"));
+
+  QPalette palette;
+  palette.setColor(QPalette::Window, QColor(53,53,53));
+  palette.setColor(QPalette::WindowText, Qt::white);
+  palette.setColor(QPalette::Base, QColor(15,15,15));
+  palette.setColor(QPalette::AlternateBase, QColor(53,53,53));
+  palette.setColor(QPalette::ToolTipBase, Qt::white);
+  palette.setColor(QPalette::ToolTipText, Qt::white);
+  palette.setColor(QPalette::Text, Qt::white);
+  palette.setColor(QPalette::Button, QColor(53,53,53));
+  palette.setColor(QPalette::ButtonText, Qt::white);
+  palette.setColor(QPalette::BrightText, Qt::red);
+
+  palette.setColor(QPalette::Highlight, QColor(61,79,201).lighter());
+  palette.setColor(QPalette::HighlightedText, Qt::black);
+
+  palette.setColor(QPalette::Disabled, QPalette::Text, Qt::darkGray);
+  palette.setColor(QPalette::Disabled, QPalette::ButtonText, Qt::darkGray);
+
+  qApp->setPalette(palette);
+}
+
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
@@ -101,6 +129,8 @@ int main(int argc, char *argv[])
 
     startupServer(p); 
 
+    setupLookNFeel();
+    
     MainWindow w(0, p);
     w.show();
     return a.exec();

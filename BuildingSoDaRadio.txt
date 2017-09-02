@@ -12,7 +12,19 @@ sudo dnf install hamlib-devel
 to make packages, you need the rpmbuild
 sudo dnf install rpm-build
 
-sudo dnf install uhd uhd-firmware
+sudo dnf install uhd-devel uhd-firmware
+
+the GUI looks awful.
+
+sudo dnf remove qgnomeplatform
+
+might help.
+
+export QT_QPA_PLATFORMTHEME=gtk
+might help
+
+SoDaRadio -platformtheme gtk
+
 
 
 
