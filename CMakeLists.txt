@@ -23,7 +23,7 @@ SET(CPACK_PACKAGE_RELEASE 1)
 SET(CPACK_PACKAGE_CONTACT "Matt Reilly kb1vc")
 SET(CPACK_PACKAGE_VENDOR "Matt Reilly -- radiogeek381@gmail.com")
 SET(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_PACKAGE_RELEASE}.${CMAKE_SYSTEM_PROCESSOR}.${CMAKE_SYSTEM_VERSION}")
-SET(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+SET(CPACK_PACKAGING_INSTALL_PREFIX "/usr")
 set(CPACK_GENERATOR "RPM")
 set(CPACK_RPM_PACKAGE_RELEASE "1")
 set(CPACK_RPM_PACKAGE_LICENSE "BSD-2-Clause")
@@ -32,7 +32,7 @@ set(CPACK_RPM_PACKAGE_DESCRIPTION
   "SoDaRadio is a software defined radio implementation of "
   "a general purpose transmitter/receiver using the "
   "Ettus Research USRP hardware.")
-set(CPACK_RPM_PACKAGE_REQUIRES "boost >= 1.48, uhd >= 3.10.1.0, fftw-devel >= 3.3, qt5 >= 5.6, qwt-qt5 >= 6.1.2")
+set(CPACK_RPM_PACKAGE_REQUIRES "boost >= 1.48, uhd >= 3.10.1.0, uhd-firmware >= 3.10.1.0, fftw-devel >= 3.3, qt5-qtbase >= 5.6, qwt-qt5 >= 6.1.2")
 set(CPACK_RPM_PACKAGE_RELOCATABLE TRUE)
 
 
