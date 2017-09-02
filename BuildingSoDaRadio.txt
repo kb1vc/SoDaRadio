@@ -12,7 +12,15 @@ sudo dnf install hamlib-devel
 to make packages, you need the rpmbuild
 sudo dnf install rpm-build
 
+sudo dnf install uhd uhd-firmware
 
-build libuhd
-and install
 
+
+
+------------------
+
+RPM install
+
+Fedora 24
+
+dnf install uhd uhd-firmware

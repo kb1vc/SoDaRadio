@@ -32,7 +32,7 @@ set(CPACK_RPM_PACKAGE_DESCRIPTION
   "SoDaRadio is a software defined radio implementation of "
   "a general purpose transmitter/receiver using the "
   "Ettus Research USRP hardware.")
-set(CPACK_RPM_PACKAGE_REQUIRES "boost >= 1.48, fftw-devel >= 3.3, qt5 >= 5.7.1, qwt-qt5 >= 6.1.2")
+set(CPACK_RPM_PACKAGE_REQUIRES "boost >= 1.48, fftw-devel >= 3.3, qt5 >= 5.6, qwt-qt5 >= 6.1.2")
 set(CPACK_RPM_PACKAGE_RELOCATABLE TRUE)
 
 
