@@ -49,7 +49,6 @@ bool SoDaListener::init()
       return false;       
     }
   }
-  qDebug() << "cmd socket file apparently exists"; 
 
   cmd_socket->connectToServer(cmd_socket_name); 
   while(!cmd_socket->waitForConnected(1000)) {

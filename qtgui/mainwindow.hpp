@@ -89,7 +89,6 @@ protected:
   
 private:
   void closeEvent(QCloseEvent * event) {
-    std::cerr << "In window close event\n";
     listener->closeRadio();
     event->accept();
   }

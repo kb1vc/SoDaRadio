@@ -107,7 +107,7 @@ void setupLookNFeel()
   palette.setColor(QPalette::Base, QColor(15,15,15));
   palette.setColor(QPalette::AlternateBase, QColor(53,53,53));
   palette.setColor(QPalette::ToolTipBase, Qt::white);
-  palette.setColor(QPalette::ToolTipText, Qt::white);
+  palette.setColor(QPalette::ToolTipText, Qt::red);
   palette.setColor(QPalette::Text, Qt::white);
   palette.setColor(QPalette::Button, QColor(53,53,53));
   palette.setColor(QPalette::ButtonText, Qt::white);

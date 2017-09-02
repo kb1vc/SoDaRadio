@@ -81,7 +81,6 @@ QString FreqLabel::freq2String() {
 
   while(ret.size() < 14) {
       ret = " " + ret;
-      std::cerr << "[" << ret.toStdString() << "]" << std::endl;
   }
   return ret; 
 }

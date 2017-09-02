@@ -2113,6 +2113,16 @@ MB3 right half -- move digit selector right
              <bold>true</bold>
             </font>
            </property>
+           <property name="toolTip">
+            <string>Select TX Frequency
+MB1 increment/decrement selected digit
+MB3 left half -- move digit selector left
+MB3 right half -- move digit selector right
+</string>
+           </property>
+           <property name="toolTipDuration">
+            <number>0</number>
+           </property>
            <property name="text">
             <string>10,368.&lt;B&gt;&lt;FONT COLOR='#C0C0C0'&gt;1&lt;/B&gt;00 251</string>
            </property>

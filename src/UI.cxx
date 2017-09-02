@@ -147,9 +147,7 @@ void SoDa::UI::run()
 	SoDa::Command * vers_cmd = new SoDa::Command(Command::REP,
 						     Command::SDR_VERSION,
 						     vers.c_str());
-	std::cerr << "About to send sdr version info\n";
 	server_socket->put(vers_cmd, sizeof(SoDa::Command));
-	std::cerr << "Sent sdr version info\n";
 	new_connection = false; 
       }
       

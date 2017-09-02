@@ -60,7 +60,6 @@ namespace SoDa {
     char pcm_name[] =  "default"; 
     
     // const char *pcm_name = audio_port_name.c_str();
-    std::cerr << boost::format("About to open [%s] for output\n") % pcm_name;     
 
     if(snd_pcm_open(&pcm_out, pcm_name, SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK) < 0) {
       std::cerr << boost::format("can't open Alsa PCM device [%s] for output ... Crap.\n") % pcm_name;
@@ -85,7 +84,6 @@ namespace SoDa {
   {
     // char pcm_cap_name[] = "default"; // "hw:0,2";
     const char *pcm_cap_name = audio_port_name.c_str();    
-    std::cerr << boost::format("About to open [%s] for capture\n") % pcm_cap_name; 
     snd_pcm_stream_t instream  = SND_PCM_STREAM_CAPTURE; 
     if(snd_pcm_open(&pcm_in, pcm_cap_name, instream, 0) < 0) {
       std::cerr << boost::format("can't open Alsa PCM device [%s] for  input... Crap.\n") % pcm_cap_name;
