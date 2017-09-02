@@ -115,6 +115,10 @@ IF(CMAKE_VERSION VERSION_GREATER 3.0.0)
   ENDIF()
 ENDIF()
 
+## Need hamlib for just the include files to get hamlib codes for
+## modulation scheme and other settings.
+find_package(PkgConfig)
+pkg_search_module(HAMLIB REQUIRED hamlib)
 
 ### wxWidgets 3.0 is a trainwreck
 IF(ENABLE_WX_WIDGETS) 
