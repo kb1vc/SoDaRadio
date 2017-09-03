@@ -62,9 +62,13 @@ public slots:
 
   void logContact(bool); 
 
+  void evalNav(const QString & dummy);
+
   void saveConfig();
   void saveConfigAs_dlg();
   void restoreConfig_dlg();
+
+  void displayAppInfo(bool dummy);
 
 protected:
   void setupTopControls();

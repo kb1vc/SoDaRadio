@@ -50,19 +50,6 @@ void MainWindow::setupSettings()
 	  ui->FromGrid_lab, SLOT(setText(const QString &)));
 
 
-  connect(ui->FullScreen_tgl, &QRadioButton::toggled, 
-	  [=]() 
-	  { if(ui->FullScreen_tgl->isChecked()) {
-	      // go to full screen
-	      //this->setWindowState(Qt::WindowFullScreen);
-	      this->showFullScreen();
-	    }
-	    else {
-	      // ungo to full screen
-	      this->showMaximized();
-	    }
-	  });
-
   connect(ui->openLog_btn, SIGNAL(clicked()),
 	  ui->LogView, SLOT(readLogReportDlg()));
   connect(ui->writeLogReport_btn, SIGNAL(clicked()),

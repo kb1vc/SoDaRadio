@@ -464,7 +464,7 @@
        </size>
       </property>
       <property name="currentIndex">
-       <number>4</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="Waterfall">
        <attribute name="title">
@@ -997,6 +997,13 @@
                </property>
               </spacer>
              </item>
+             <item>
+              <widget class="QPushButton" name="aboutSoDa_btn">
+               <property name="text">
+                <string>About SoDaRadio</string>
+               </property>
+              </widget>
+             </item>
             </layout>
            </widget>
           </item>
@@ -1070,36 +1077,6 @@
            </size>
           </property>
          </spacer>
-        </item>
-        <item>
-         <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0">
-          <property name="spacing">
-           <number>6</number>
-          </property>
-          <property name="rightMargin">
-           <number>2</number>
-          </property>
-          <item>
-           <widget class="QRadioButton" name="FullScreen_tgl">
-            <property name="text">
-             <string>Full Screen</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="verticalSpacer_9">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
         </item>
        </layout>
       </widget>

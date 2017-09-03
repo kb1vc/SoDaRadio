@@ -32,14 +32,35 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <boost/format.hpp>
 #include "soda_comboboxes.hpp"
 #include "soda_listener.hpp"
+#include "../common/Navigation.hxx"
 
 void MainWindow::setupLogGPS()
 {
   // connect the log contact button to something that will do us some good.  
   connect(ui->LogContact_btn, SIGNAL(clicked(bool)), 
 	  this, SLOT(logContact(bool))); 
+
+  connect(ui->FromGrid_le, SIGNAL(textChanged(const QString &)), 
+	  this, SLOT(evalNav(const QString &)));
+  connect(ui->ToGrid_le, SIGNAL(textChanged(const QString &)), 
+	  this, SLOT(evalNav(const QString &)));
 }
 
+void MainWindow::evalNav(const QString & dummy)
+{
+  (void) dummy; 
+  QString from_grid = ui->FromGrid_le->text();
+  QString to_grid = ui->ToGrid_le->text();
+  
+  float bearing, rbearing, distance; 
+  int stat = GetBearingDistance(from_grid.toStdString(), to_grid.toStdString(), bearing, rbearing, distance);
+
+  if(stat == 0) {
+    ui->Bearing_lab->setText(QString("%1").arg(bearing, 3, 'f', 0));
+    ui->RevBearing_lab->setText(QString("%1").arg(rbearing, 3, 'f', 0));
+    ui->Range_lab->setText(QString("%1").arg(distance, 4, 'f', 0));
+  }
+}
 /**
  * @brief log the current contact by storing the grid, call, date, time, 
  * frequency, mode, and other stuff into the log object. 

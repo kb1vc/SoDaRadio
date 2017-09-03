@@ -28,11 +28,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "mainwindow.hpp"
 #include "ui_mainwindow.h"
+#include "version.h"
+#include <boost/version.hpp>
+#include <uhd/version.hpp>
 #include <iostream>
 #include <boost/format.hpp>
 
 #include <QString>
 #include <QMessageBox>
+#include <QtCoreVersion>
 
 #include "soda_comboboxes.hpp"
 #include "soda_listener.hpp"
@@ -59,8 +63,12 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   setupLogEditor();
 
 
-  connect(listener, SIGNAL(repHWMBVersion(const QString &)), 
-	  this, SLOT(setWindowTitle(const QString &)));
+  // connect(listener, SIGNAL(repHWMBVersion(const QString &)), 
+  // 	  this, SLOT(setWindowTitle(const QString &)));
+  connect(listener, &SoDaListener::repHWMBVersion,
+	  [=](const QString & hw) {
+	    this->setWindowTitle(QString("SoDa Radio V %1 -- SDR %2").arg(SoDaRadio_VERSION).arg(hw));
+	  });
 
   connect(listener, SIGNAL(initSetupComplete()), 
 	  this, SLOT(restoreSettings()));
@@ -70,6 +78,9 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
 
   listener->init();
   listener->start();
+
+  connect(ui->aboutSoDa_btn, SIGNAL(clicked(bool)), 
+	  this, SLOT(displayAppInfo(bool)));
 
   settings_p = new QSettings("kb1vc.org", "SoDaRadioQT", this);
 
@@ -88,6 +99,47 @@ MainWindow::~MainWindow()
   delete ui;
 }
 
+void MainWindow::displayAppInfo(bool dummy)
+{
+  (void) dummy; 
+
+  QMessageBox::about(this, QString("SoDaRadio"), 
+		     QString("<h1>SoDaRadio</h1> \
+<p>An all-mode SDR application for the Ettus USRP platform.</p> \
+<ul> \
+<li>SoDaRadio Version: %1</li><li>Git ID: %2</li>\
+<li>USRP Hardware Driver Version: %3</li>\
+<li>Qt Version: %4</li> \
+<li>Boost Version: %5</li> \
+<li>Repository: https://sourceforge.net/projects/sodaradio/</li> \
+<li>Maintainer: radiogeek381 at gmail.com</li> \
+</ul>\
+<h2>License:</h2> \
+<p> \
+Copyright (c) 2017 Matthew H. Reilly (kb1vc) \
+All rights reserved.</p> \
+<p>Redistribution and use in source and binary forms, with or without \
+modification, are permitted provided that the following conditions are \
+met:</p> \
+<p><b>Redistributions of source code must retain the above copyright	\
+    notice, this list of conditions and the following disclaimer. \
+    Redistributions in binary form must reproduce the above copyright \
+    notice, this list of conditions and the following disclaimer in \
+    the documentation and/or other materials provided with the \
+    distribution.</b></p> \
+<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \
+\"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT \
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR \
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT \
+HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, \
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT \
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, \
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY \
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT \
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE \
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. \
+</p>").arg(SoDaRadio_VERSION).arg(SoDaRadio_GIT_ID).arg(UHD_VERSION_ABI_STRING).arg(QTCORE_VERSION_STR).arg(BOOST_LIB_VERSION));
+}
 
 void MainWindow::widgetSaveRestore(QObject * op, const QString & par, bool save)
 {
