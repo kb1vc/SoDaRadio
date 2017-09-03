@@ -36,7 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**
  * @brief simple conversion from std::string to QString... 
  *
- * @param s std::string 
+ * @param st std::string 
  * @return a QString corresponding to the input parameter
  */
 static QString ss2QS(const std::string & st)
@@ -44,6 +44,11 @@ static QString ss2QS(const std::string & st)
   return QString::fromStdString(st);
 }
 
+/**
+ * @brief pop up a notification box and then bail out.
+ *
+ * @param err_msg a descriptive message explaining how we got here. 
+ */
 static void alertAndExit(const QString & err_msg) 
 {
   QMessageBox mbox(QMessageBox::Critical, 
@@ -56,6 +61,9 @@ static void alertAndExit(const QString & err_msg)
 
 /**
  * @brief start the radio server process
+ * 
+ * @param p set of command line parameters, some of which are 
+ * passed to the server process.
  */
 static void startupServer(SoDa::GuiParams & p)
 {
@@ -95,8 +103,14 @@ static void startupServer(SoDa::GuiParams & p)
 
 }
 
-// code borrowed under a very very liberal (do whatever you want) license
-// from https://gist.github.com/skyrpex
+/**
+ * @brief initialize colors and shades for GUI elements to present
+ * a look and feel based on the fusion style, but with dark background. 
+ * 
+ * code borrowed from https://gist.github.com/skyrpex
+ * under his "do whatever you want" license
+ * 
+ */
 void setupLookNFeel()
 {
   qApp->setStyle(QStyleFactory::create("fusion"));
@@ -122,6 +136,12 @@ void setupLookNFeel()
   qApp->setPalette(palette);
 }
 
+/**
+ * @brief Start the SoDaRadio GUI app and launch the server process
+ * 
+ * @param argc count of command line args
+ * @param argv vector of command line tokens
+ */
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);

@@ -222,7 +222,7 @@ namespace SoDa {
       /**
        * Flush outstanding CW text strings from pending buffer
        *
-       * REP -- iparam[0] is the character count for the <last> character
+       * REP -- iparam[0] is the character count for the __last__ character
        * dropped from the buffer. 
        */
       TX_CW_FLUSHTEXT, 

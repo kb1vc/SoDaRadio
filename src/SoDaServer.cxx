@@ -49,13 +49,13 @@
  * The SoDa program is partitioned into two parts:
  *
  * - the SDR controller program, called SoDaServer
- * - the GUI program, called SoDaRadio implemented in SoDaRadio_Top
+ * - the GUI program, called SoDaRadio implemented in qtgui/main.cpp
  *
  * SoDaServer and SoDaRadio are connected to the USRP and host OS sound
  * system as shown here: 
  * @image html SoDa_Radio_System.svg
  *
- * The GUI is built on the wxWidgets GUI toolset, and communicates
+ * The GUI is built on the Qt GUI toolset, and communicates
  * with the SDR control program via a Unix Domain socket connection.
  * The GUI and the SDR controller run on a single Linux host.
  *

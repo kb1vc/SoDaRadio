@@ -24,12 +24,10 @@ set(SoDaRadio_PACKAGE_DESCRIPTION
   "Ettus Research USRP hardware.")
 
 IF(BUILD_RPM)
-  message("IN IF_GEN_RPM [${BUILD_RPM}]")  
   set(CPACK_GENERATOR "RPM")
 ENDIF()
 
 IF(${BUILD_DEB})
-  message("IN IF_GEN_DEB [${BUILD_DEB}]")
   set(CPACK_GENERATOR "DEB")
 ENDIF()
 

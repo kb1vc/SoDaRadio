@@ -143,8 +143,8 @@ namespace SoDa {
     /**
      * Set the antenna choice.  Use "ant" if it is in the list
      * of alternatives. Otherwise, choose the first alternative.
-     * @param req the requested frequency (and tuning discipline)
-     * @param sel 'r' for RX LO, 't' for TX LO
+     * @param ant the requested antenna
+     * @param sel 'r' for RX, 't' for TX
      */
     void setAntenna(const std::string & ant, char sel); 
 

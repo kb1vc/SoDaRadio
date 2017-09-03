@@ -50,24 +50,56 @@ public:
   ~MainWindow();
 
 public slots:
+  /**
+   * @brief set the RX frequency label to freq, and
+   * send the requested frequency to the SDR radio server. 
+   * Update markers in spectrum plots. 
+   *
+   * This function is called on updates to the RX frequency
+   * widget in the GUI or from the hamlib listener process. 
+   * 
+   * This function will update the TX frequency iff the
+   * TX-RX lock switch is set. 
+   *
+   * @param freq the new RX frequency. 
+   */
   void setRXFreq(double freq);
+
+    /**
+   * @brief set the TX frequency label to freq, and
+   * send the requested frequency to the SDR radio server. 
+   * Update markers in spectrum plots. 
+   *
+   * This function is called on updates to the TX frequency
+   * widget in the GUI or from the hamlib listener process. 
+   *
+   * This function will update the RX frequency iff the
+   * TX-RX lock switch is set. 
+   *
+   * @param freq the new TX frequency. 
+   */
   void setTXFreq(double freq);
-  void restoreSettings(); 
 
   void changeBand(const QString & band);
   void writeBandMapEntry(bool);
   void fillBandMapEntry(const QString & band);
 
+  /**
+   * @brief pop up a notification box and then bail out.
+   *
+   * @param err_string a descriptive message explaining how we got here. 
+   */
   void handleFatalError(const QString & err_string);
 
   void logContact(bool); 
 
   void evalNav(const QString & dummy);
 
+  void restoreSettings(); 
   void saveConfig();
   void saveConfigAs_dlg();
   void restoreConfig_dlg();
-
+  
   void displayAppInfo(bool dummy);
 
 protected:
