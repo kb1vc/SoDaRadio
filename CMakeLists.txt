@@ -1,7 +1,12 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.9) # this lets out really old distros like CentOS 6
 
+OPTION(BUILD_WX_GUI "Build the WxWidgets based GUI -- warning, this is being left to die since Wx 3.0 is a train wreck." OFF)
+OPTION(BUILD_RPM "Build an RPM package for this platform, or something like it." OFF)
+OPTION(BUILD_DEB "Build a Debian package for this platform, or something like it." OFF)
+
 IF(CMAKE_VERSION VERSION_GREATER 3.0.0)
   CMAKE_POLICY(SET CMP0048 NEW)
+  SET(CMAKE_CXX_STANDARD 11)
 ENDIF()
 
 PROJECT(SoDaRadio)
@@ -12,6 +17,22 @@ SET(SoDaRadio_VERSION_MAJOR 5)
 SET(SoDaRadio_VERSION_MINOR 0)
 SET(SoDaRadio_VERSION_PATCH 0)
 SET(SoDaRadio_VERSION "${SoDaRadio_VERSION_MAJOR}.${SoDaRadio_VERSION_MINOR}.${SoDaRadio_VERSION_PATCH}")
+
+set(SoDaRadio_PACKAGE_DESCRIPTION 
+  "SoDaRadio is a software defined radio implementation of "
+  "a general purpose transmitter/receiver using the "
+  "Ettus Research USRP hardware.")
+
+IF(BUILD_RPM)
+  message("IN IF_GEN_RPM [${BUILD_RPM}]")  
+  set(CPACK_GENERATOR "RPM")
+ENDIF()
+
+IF(${BUILD_DEB})
+  message("IN IF_GEN_DEB [${BUILD_DEB}]")
+  set(CPACK_GENERATOR "DEB")
+ENDIF()
+
 
 # Package generation for the source tarball
 SET(CPACK_PACKAGE_VERSION_MAJOR ${SoDaRadio_VERSION_MAJOR})
@@ -24,16 +45,20 @@ SET(CPACK_PACKAGE_CONTACT "Matt Reilly kb1vc")
 SET(CPACK_PACKAGE_VENDOR "Matt Reilly -- radiogeek381@gmail.com")
 SET(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_PACKAGE_RELEASE}.${CMAKE_SYSTEM_PROCESSOR}.${CMAKE_SYSTEM_VERSION}")
 SET(CPACK_PACKAGING_INSTALL_PREFIX "/usr")
-set(CPACK_GENERATOR "RPM")
 set(CPACK_RPM_PACKAGE_RELEASE "1")
 set(CPACK_RPM_PACKAGE_LICENSE "BSD-2-Clause")
 set(CPACK_RPM_PACKAGE_GROUP "Applications/Communications")
-set(CPACK_RPM_PACKAGE_DESCRIPTION 
-  "SoDaRadio is a software defined radio implementation of "
-  "a general purpose transmitter/receiver using the "
-  "Ettus Research USRP hardware.")
+set(CPACK_RPM_PACKAGE_DESCRIPTION  ${SoDaRadio_PACKAGE_DESCRIPTION})
 set(CPACK_RPM_PACKAGE_REQUIRES "boost >= 1.48, uhd >= 3.10.1.0, uhd-firmware >= 3.10.1.0, fftw-devel >= 3.3, qt5-qtbase >= 5.6, qwt-qt5 >= 6.1.2")
 set(CPACK_RPM_PACKAGE_RELOCATABLE TRUE)
+ 
+set(CPACK_DEBIAN_PACKAGE_DESCRIPTION ${SODA_PACKAGE_DESCRIPTION})
+set(CPACK_DEBIAN_PACKAGE_SECTION "hamradio")
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "lubuhd003 (>= 3.10), uhd-host (>= 3.10)")
+
+
+
 
 
 INCLUDE(CPack)
@@ -121,7 +146,7 @@ find_package(PkgConfig)
 pkg_search_module(HAMLIB REQUIRED hamlib)
 
 ### wxWidgets 3.0 is a trainwreck
-IF(ENABLE_WX_WIDGETS) 
+IF(BUILD_WX_GUI)
   set(wxWidgets_CONFIG_OPTIONS --version=2.8)
   find_package(wxWidgets COMPONENTS core base richtext aui xrc qa html adv  QUIET)
   include(${wxWidgets_USE_FILE})

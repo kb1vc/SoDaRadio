@@ -48,7 +48,7 @@ public:
     if(sel == C5) {
       addColorStop(1.0, Qt::red);
       addColorStop(0.75, Qt::yellow);
-      addColorStop(0.50, Qt::green);
+      // addColorStop(0.50, Qt::green);
       addColorStop(0.25, Qt::cyan);
       addColorStop(0.0, Qt::blue); 
     }

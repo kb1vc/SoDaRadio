@@ -47,3 +47,18 @@ sudo apt-get install libqt5core5a
 sudo apt-get install qtbase5-dev qt5-qmake qtbase5-dev-tools
 sudo apt-get install libqt5multimedia5
 sudo apt-get install qtmultimedia5-dev
+sudo apt install debmake
+sudo apt install dpkg-dev
+
+
+-------------------
+
+installing from deb
+
+sudo add-apt-repository ppa:ettusresearch/uhd
+sudo apt-get update
+ # -- this gets done as a dependency of SoDaRadio sudo apt-get install libuhd-dev libuhd003 uhd-host
+
+sudo /usr/lib/uhd/utils/uhd_images_downloader.py
+
+sudo apt install ./SoDaRadio......deb
