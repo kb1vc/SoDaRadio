@@ -40,6 +40,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using namespace GUISoDa;
 
 #define FIVECOLOR
+
+
 class GUISoDa::WFColorMap : public QwtLinearColorMap
 {
 public:
@@ -65,6 +67,7 @@ public:
     }
   }
 }; 
+
 
 class GUISoDa::PlotSpectrogram : public QwtPlotSpectrogram
 {

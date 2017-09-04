@@ -35,7 +35,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QDebug>
 #include <QDateTime>
 
-LogTable::LogTable(QWidget *parent) :
+GUISoDa::LogTable::LogTable(QWidget *parent) :
   QTableWidget(parent)
 {
   horizontalHeader()->setStretchLastSection(true);
@@ -50,7 +50,7 @@ LogTable::LogTable(QWidget *parent) :
   setShowGrid(true);
 
 
-  connect(this, &LogTable::cellChanged,
+  connect(this, &GUISoDa::LogTable::cellChanged,
 	  [this](int row, int col) {
 	    emit entryUpdated(row, 
 			      this->current_headers.at(col), 
@@ -61,16 +61,21 @@ LogTable::LogTable(QWidget *parent) :
 
   next_used_row = 0; 
   
+  // open a default log file in the current working dir as 
+  // SoDa_DDMMYY_HHMMSS.soda_log
+  QDateTime utc_time(QDateTime::currentDateTime().toUTC());
+  QString logfname = QString("SoDa_%1_%2.soda_log").arg(utc_time.toString("ddMMyy")).arg(utc_time.toString("hhmmss"));
   log_file_out = NULL; 
+  setLogFile(logfname); 
 }
 
-void LogTable::setKeys(QStringList headers)
+void GUISoDa::LogTable::setKeys(QStringList headers)
 {
   current_headers = headers; // save the header list -- they'll be used for keys.
   setHorizontalHeaderLabels(headers);
 }
 
-LogTable::~LogTable()
+GUISoDa::LogTable::~LogTable()
 {
   // write the log report
   // close the log file.
@@ -79,25 +84,16 @@ LogTable::~LogTable()
   }
 }
 
-bool LogTable::emptyRow(int r) {
+bool GUISoDa::LogTable::emptyRow(int r) {
   for(int i = 0; i < columnCount(); i++) {
     if(item(r, i)) return false; 
   }
   return true; 
 }
 
-void LogTable::writeLogReport(const QString & fname)
+void GUISoDa::LogTable::writeLogReport(const QString & fname)
 {
-  if(log_file_out != NULL) {
-    log_file_out->close();
-  }
-
-  log_file_out = new QFile(fname); 
-  if(!log_file_out->open(QIODevice::WriteOnly)) {
-    QMessageBox::information(this, tr("Unable to open file for writing"),
-			     log_file_out->errorString());
-    return; 
-  }
+  setLogFile(fname); 
 
   int rows = rowCount();
   int cols = columnCount();
@@ -118,7 +114,7 @@ void LogTable::writeLogReport(const QString & fname)
   log_file_out->flush();
 }
 
-void LogTable::recordChange(int r, int c)
+void GUISoDa::LogTable::recordChange(int r, int c)
 {
   if((log_file_out != NULL) && log_file_out->isOpen()) {
     QTextStream out(log_file_out);
@@ -134,7 +130,7 @@ void LogTable::recordChange(int r, int c)
 }
 
 
-void LogTable::readLogReport(const QString & fname)
+void GUISoDa::LogTable::readLogReport(const QString & fname)
 {
   // load the table from the input stream. 
   qDebug() << QString("Reading log file [%1]").arg(fname);
@@ -166,7 +162,7 @@ void LogTable::readLogReport(const QString & fname)
   infile.close();
 }
 
-void LogTable::readLogReportDlg()
+void GUISoDa::LogTable::readLogReportDlg()
 {
   QString fname = QFileDialog::getOpenFileName(this, 
 					       tr("Read Log Report from File"), 
@@ -175,7 +171,7 @@ void LogTable::readLogReportDlg()
   if(!fname.isEmpty()) readLogReport(fname);
 }
 
-void LogTable::writeLogReportDlg()
+void GUISoDa::LogTable::writeLogReportDlg()
 {
   QString fname = QFileDialog::getSaveFileName(this, 
 					       tr("Write Log Report to File"), 
@@ -185,7 +181,7 @@ void LogTable::writeLogReportDlg()
 }
 
 
-void LogTable::logContact(const QString & from_call,
+void GUISoDa::LogTable::logContact(const QString & from_call,
 			  const QString & from_grid,
 			  const QString & to_call,
 			  const QString & to_grid,
@@ -217,6 +213,16 @@ void LogTable::logContact(const QString & from_call,
   }
 }
 
-void LogTable::setLogFile(const QString & fname)
+void GUISoDa::LogTable::setLogFile(const QString & fname)
 {
+  if(log_file_out != NULL) {
+    log_file_out->close();
+  }
+
+  log_file_out = new QFile(fname); 
+  if(!log_file_out->open(QIODevice::WriteOnly)) {
+    QMessageBox::information(this, tr("Unable to open file for writing"),
+			     log_file_out->errorString());
+    return; 
+  }
 }

@@ -26,7 +26,6 @@ HEADERS  += mainwindow.hpp \
     soda_wfall.hpp \
     soda_wfall_picker.hpp \
     soda_wfall_data.hpp \
-    soda_list_spinbox.hpp \
     soda_freq_scale_draw.hpp \
     soda_comboboxes.hpp \
     soda_plot_picker.hpp \

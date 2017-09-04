@@ -47,7 +47,6 @@ SET(SoDaRadio_HDRS
 
 SET(SoDaRadio_NOMOC_HDRS
   soda_freq_scale_draw.hpp
-  soda_list_spinbox.hpp
   soda_plot_picker.hpp
   soda_wfall_data.hpp
   soda_wfall_picker.hpp

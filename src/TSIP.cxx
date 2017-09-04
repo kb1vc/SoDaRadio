@@ -116,7 +116,10 @@ void Command::sendCommand(boost::asio::serial_port * portp)
 
 Report * Reader::readStream()
 {
-  if(!reader_open) return NULL; 
+  if(!reader_open) {
+    std::cerr << "TSIP reader is not open...\n";
+    return NULL; 
+  }
 
   int bufidx = 0;
   bool got_packet = false; 
@@ -215,7 +218,8 @@ bool PrimaryTimingReport::parseBuf(unsigned char * buf, int buflen)
   Month = ubuf[15];
   Year = convertFromBuf<uint16_t>(buf, 16); 
 
-
+  // std::cerr << boost::format("TSIP parsed a buffer -- time is %02d:%02d:%02d  %2d-%d-%4d\n") 
+  // % ((unsigned int) TimeHours) % ((unsigned int) TimeMinutes) % ((unsigned int) TimeSeconds) % ((unsigned int) DayOfMonth) % ((unsigned int) Month) % ((unsigned int) Year);
   return true; 
 }
 
@@ -247,7 +251,6 @@ bool SuplementalTimingReport::parseBuf(unsigned char * buf, int buflen)
      (mylon >  180.0)) {
     return false; 
   }
-
   
   Latitude = mylat;
   Longitude = mylon;
@@ -271,6 +274,8 @@ bool SuplementalTimingReport::parseBuf(unsigned char * buf, int buflen)
 
   Temperature = convertFromBuf<float>(buf, 33);
   Altitude = convertFromBuf<double>(buf, 53);
+
+  //   std::cerr << boost::format("TSIP parsed a str buffer -- LAT: %f  LON: %f\n") % Latitude % Longitude; 
   
   return true; 
 }

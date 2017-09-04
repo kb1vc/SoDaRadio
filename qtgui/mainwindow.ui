@@ -464,7 +464,7 @@
        </size>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="Waterfall">
        <attribute name="title">
@@ -561,7 +561,7 @@
              </widget>
             </item>
             <item>
-             <widget class="SoDaNoEditSpinbox" name="wf_floorLevel_spb">
+             <widget class="QSpinBox" name="wf_floorLevel_spb">
               <property name="minimum">
                <number>-100</number>
               </property>
@@ -699,7 +699,7 @@
              </widget>
             </item>
             <item>
-             <widget class="SoDaNoEditSpinbox" name="sp_ceilLevel_spb">
+             <widget class="QSpinBox" name="sp_ceilLevel_spb">
               <property name="minimum">
                <number>-100</number>
               </property>
@@ -980,7 +980,7 @@
              <item>
               <widget class="QPushButton" name="writeLogReport_btn">
                <property name="text">
-                <string>Write Log Report...</string>
+                <string>Create Log Report...</string>
                </property>
               </widget>
              </item>
@@ -1396,7 +1396,7 @@
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_11" stretch="9">
         <item>
-         <widget class="LogTable" name="LogView">
+         <widget class="GUISoDa::LogTable" name="LogView">
           <property name="sizePolicy">
            <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
             <horstretch>1</horstretch>
@@ -2869,7 +2869,7 @@ MB3 right half -- move digit selector right
    <header>freqlabel.hpp</header>
   </customwidget>
   <customwidget>
-   <class>LogTable</class>
+   <class>GUISoDa::LogTable</class>
    <extends>QTableWidget</extends>
    <header>soda_logtable.hpp</header>
   </customwidget>
@@ -2878,11 +2878,6 @@ MB3 right half -- move digit selector right
    <extends>QWidget</extends>
    <header>soda_wfall.hpp</header>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>SoDaNoEditSpinbox</class>
-   <extends>QSpinBox</extends>
-   <header>soda_list_spinbox.hpp</header>
   </customwidget>
   <customwidget>
    <class>GUISoDa::WFallDynRangeComboBox</class>
