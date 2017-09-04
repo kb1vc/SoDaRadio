@@ -51,6 +51,10 @@ SoDa::Params::Params(int argc, char * argv[])
      "Enable debug messages for value > 0.  Higher values may produce more detail.")
     ("radio", po::value<std::string>(&radio_type)->default_value("USRP"), 
      "the radio type (USRP, Lime)")
+    ("gps_host", po::value<std::string>(&gps_hostname)->default_value("localhost"), 
+     "hostname for gpsd server")
+    ("gps_port", po::value<std::string>(&gps_portname)->default_value("2947"),
+     "port number for gpsd server")
     ;
 
   po::store(po::parse_command_line(argc, argv, desc), pmap);

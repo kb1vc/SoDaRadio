@@ -40,4 +40,7 @@ int GetBearingDistance(const std::string & from, const std::string & to,
 
 // returns 0 if the string is a maidenhead specifier...
 int CheckGridSquare(const std::string & grid); 
+
+std::string GetGridSquare(double lat, double lon);
+
 #endif

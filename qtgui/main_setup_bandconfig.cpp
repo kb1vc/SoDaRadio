@@ -86,12 +86,12 @@ void MainWindow::bandMapSaveRestore(GUISoDa::BandMap & bmap, bool save)
 {
   if(save) {
     saveCurrentFreqs();
-    GUISoDa::Band::saveBands(settings_p, bmap);
+    bmap.saveBands(settings_p);
   }
   else {
-    GUISoDa::Band::restoreBands(settings_p, bmap);
+    bmap.restoreBands(settings_p);
     // now load the comboboxes
-    GUISoDa::BandMapIterator bmi(bmap); 
+    GUISoDa::BandMap::BandMapIterator bmi(bmap); 
     // clear the two band selectors.
     ui->BCBandSel_cb->clear();
     ui->bandSel_cb->clear();
@@ -196,17 +196,21 @@ void MainWindow::changeBand(const QString & band)
   // now find the new band.
   if(band_map.count(band)) {
     // and set the UI widgets.
-    double rx_freq = band_map[band].lastRXFreq() * 1e6;
-    setRXFreq(rx_freq);
-    setTXFreq(band_map[band].lastTXFreq() * 1e6);
-
-    listener->setSpectrumCenter(rx_freq);
+    if(band != auto_bandswitch_target) {
+      // but only change these if this was the result of user band input.
+      ui->Mode_cb->setValue(band_map[band].defMode());
+      double rx_freq = band_map[band].lastRXFreq() * 1e6;
+      setRXFreq(rx_freq);
+      setTXFreq(band_map[band].lastTXFreq() * 1e6);
+      listener->setSpectrumCenter(rx_freq);      
+    }
+    else {
+      auto_bandswitch_target = ""; 
+    }
     
     ui->RXAnt_sel->setCurrentText(band_map[band].defRXAnt());
     ui->TXAnt_sel->setCurrentText(band_map[band].defTXAnt());    
-
-    ui->Mode_cb->setValue(band_map[band].defMode());
-
+    
     current_band_selector = band; 
   }
 }

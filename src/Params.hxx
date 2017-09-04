@@ -109,14 +109,16 @@ namespace SoDa {
 
     std::string getAudioPortName() const { return audio_portname; }
     
-    std::string getGPSDev() const { return "/dev/ttyGPS"; }
-
     bool forceFracN() { return force_frac_N_mode && !force_integer_N_mode; }
     bool forceIntN() { return !force_frac_N_mode && force_integer_N_mode; }
 
     unsigned int getDebugLevel() const { return debug_level; }
 
     std::string getRadioType() const { return radio_type; }
+
+    std::string getGPSHostName() const { return gps_hostname; }
+
+    std::string getGPSPortName() const { return gps_portname; }    
 
     bool isRadioType(const std::string & rtype) {
       std::string rt = rtype;
@@ -131,6 +133,8 @@ namespace SoDa {
     
     boost::program_options::variables_map pmap;
 
+    std::string gps_hostname; 
+    std::string gps_portname; 
     std::string radio_type; 
     std::string radio_args;
     std::string config_filename;

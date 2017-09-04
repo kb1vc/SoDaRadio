@@ -84,6 +84,23 @@ void MainWindow::setTXFreq(double freq)
   if(ui->TXRXLock_chk->isChecked()) setRXFreq_nocross(freq); 
 }
 
+void MainWindow::updateBandDisplay(double freq)
+{
+  // change the band setting, if we need to.
+  // but don't modify any other settings. 
+  QString band_name = band_map.findBand(freq);
+  if(band_name != "") {
+    int idx; 
+    // make sure that we don't modify the MODE and such.
+    auto_bandswitch_target = band_name; 
+    if((idx = ui->bandSel_cb->findText(band_name)) >= 0) {
+      ui->bandSel_cb->setCurrentIndex(idx);
+
+      listener->setSpectrumCenter(freq);      
+    }
+  }
+}
+
 void MainWindow::setRXFreq_nocross(double freq)
 {
   // tell the radio. 
@@ -97,6 +114,7 @@ void MainWindow::setRXFreq_nocross(double freq)
   
   // tell the RX freq display
   ui->RXFreq_lab->setFreq(freq); 
+
 }
 
 void MainWindow::setTXFreq_nocross(double freq)

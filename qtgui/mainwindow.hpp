@@ -80,6 +80,8 @@ public slots:
    */
   void setTXFreq(double freq);
 
+  void updateBandDisplay(double freq); 
+
   void changeBand(const QString & band);
   void writeBandMapEntry(bool);
   void fillBandMapEntry(const QString & band);
@@ -94,6 +96,9 @@ public slots:
   void logContact(bool); 
 
   void evalNav(const QString & dummy);
+
+  void updateTime(int h, int m, int s);
+  void updatePosition(double lat, double lon);
 
   void restoreSettings(); 
   void saveConfig();
@@ -132,8 +137,11 @@ private:
   QSettings * settings_p; 
 
   // Band map
-  QMap<QString, GUISoDa::Band> band_map; 
+  //   QMap<QString, GUISoDa::Band> band_map;
+  GUISoDa::BandMap band_map; 
+  
   QString current_band_selector; 
+  QString auto_bandswitch_target;
 
   void setRXFreq_nocross(double freq);
   void setTXFreq_nocross(double freq);   

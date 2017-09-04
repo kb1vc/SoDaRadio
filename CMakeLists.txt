@@ -142,6 +142,10 @@ ENDIF()
 ## modulation scheme and other settings.
 find_package(PkgConfig)
 pkg_search_module(HAMLIB REQUIRED hamlib)
+pkg_search_module(GPSLIB OPTIONAL libgps)
+
+message("GPSLIB_FOUND = [${GPSLIB_FOUND}]")
+message("GPSLIB_LIBRARIES = [${GPSLIB_LIBRARIES}]")
 
 ### wxWidgets 3.0 is a trainwreck
 IF(BUILD_WX_GUI)

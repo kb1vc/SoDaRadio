@@ -87,6 +87,7 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   settings_p = new QSettings("kb1vc.org", "SoDaRadioQT", this);
 
   current_band_selector = ui->bandSel_cb->currentText(); 
+  auto_bandswitch_target = QString("");
 
   hlib_server = new HamlibServer(this, 4575);
   
@@ -340,9 +341,6 @@ void MainWindow::widgetSaveRestore(QObject * op, const QString & par, bool save)
 	    (my_class == "QwtScaleWidget") ||
 	    (my_class == "QwtTextLabel")) {
       // do nothing. 
-    }
-    else {
-      qDebug() << QString("!!!! What is this class [%1]?").arg(my_class);
     }
     widgetSaveRestore((*cp), my_pathname, save);
   }

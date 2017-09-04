@@ -20,15 +20,14 @@ set(SoDaServer_SRCS
     ReSamplers625x48.cxx
     Spectrogram.cxx
     CWGenerator.cxx
-    TSIP.cxx
-    GPS_TSIPmon.cxx
+    GPSmon.cxx
     UDSockets.cxx
     BaseBandRX.hxx
     BaseBandTX.hxx
     Command.hxx
     CWGenerator.hxx
     CWTX.hxx
-    GPS_TSIPmon.hxx
+    GPSmon.hxx
     HilbertTransformer.hxx
     IPSockets.hxx
     MultiMBox.hxx
@@ -41,7 +40,6 @@ set(SoDaServer_SRCS
     SoDa_filter_tables.hxx
     SoDa_tx_filter_tables.hxx
     Spectrogram.hxx
-    TSIP.hxx
     UDSockets.hxx
     UI.hxx
     AudioALSA.hxx
@@ -65,7 +63,6 @@ set(SoDaServer_SRCS
     Demod.hxx
     Demod.cxx
     PropTree.hxx
-
     )
 
 #find_package(Portaudio)
@@ -74,6 +71,12 @@ find_package(FFTW3f REQUIRED QUIET)
 
 add_definitions(-DHAVE_LIBASOUND=1)
 add_definitions(-DHAVE_UHD=${HAVE_UHD})
+
+IF(${GPSLIB_FOUND})
+  ADD_DEFINITIONS(-DHAVE_GPSLIB=1)
+  LIST(APPEND Radio_INCLUDE_DIRS ${GPSLIB_INCLUDE_DIRS})
+  LIST(APPEND Radio_LIBRARIES ${GPSLIB_LIBRARIES})
+ENDIF()
 
 
 IF(${HAVE_UHD})

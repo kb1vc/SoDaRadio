@@ -79,7 +79,7 @@
  * for the USRPTX process. 
  * @li SoDa::UI waits for requests and CW text on the UDP socket from the GUI, and forwards status and
  *     spectrum plots back to the GUI. 
- * @li SoDa::GPS_TSIPmon monitors a serial connection to a Trimble Thunderbolt GPS receiver.
+ * @li SoDa::GPSmon monitors a connection to the gpsd server (if any)
  *
  * The SoDa receiver architecture is a 3 stage heterodyne design.  
  * The first two IF conversions are performed within the USRP SDR platform.
@@ -125,7 +125,7 @@
 #include "BaseBandTX.hxx"
 #include "CWTX.hxx"
 #include "UI.hxx"
-#include "GPS_TSIPmon.hxx"
+#include "GPSmon.hxx"
 #include "AudioPA.hxx"
 #include "AudioALSA.hxx"
 #include "Command.hxx"
@@ -200,8 +200,10 @@ int doWork(int argc, char * argv[])
   /// doWork creates the user interface (UI) thread @see SoDa::UI
   SoDa::UI ui(&params, &cwtxt_stream, &rx_stream, &if_stream, &cmd_stream, &gps_stream);
 
-  SoDa::GPS_TSIPmon gps(&params, &gps_stream); 
-
+#if HAVE_GPSLIB    
+  SoDa::GPSmon gps(&params, &gps_stream); 
+#endif
+  
   d.debugMsg("Created units.");
   
   // Now start each of the activities -- they may or may not
@@ -222,7 +224,7 @@ int doWork(int argc, char * argv[])
   // now the gps...
   d.debugMsg("Starting gps");
   gps.start();
-
+  
   // wait for the user interface to tell us that it is time to quit.
   ui.join();
   ctrl->join();

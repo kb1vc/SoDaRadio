@@ -49,6 +49,9 @@ void MainWindow::setupHamlib()
   connect(hlib_server->getHandler(), SIGNAL(setRXFreq(double)),
 	  this, SLOT(setRXFreq(double)));
 
+  connect(hlib_server->getHandler(), SIGNAL(setRXFreq(double)),
+	  this, SLOT(updateBandDisplay(double)));
+
   connect(hlib_server->getHandler(), SIGNAL(setTXFreq(double)),
 	  this, SLOT(setTXFreq(double)));
 

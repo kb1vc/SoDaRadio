@@ -464,7 +464,7 @@
        </size>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="Waterfall">
        <attribute name="title">
@@ -911,7 +911,7 @@
              <item>
               <layout class="QHBoxLayout" name="horizontalLayout_5">
                <item>
-                <widget class="QCheckBox" name="checkBox_4">
+                <widget class="QCheckBox" name="useGPS_ck">
                  <property name="layoutDirection">
                   <enum>Qt::RightToLeft</enum>
                  </property>

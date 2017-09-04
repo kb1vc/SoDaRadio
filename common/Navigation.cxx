@@ -80,3 +80,15 @@ int GetBearingDistance(const std::string & from, const std::string & to,
 
   return 0; 
 }
+
+
+std::string GetGridSquare(double lat, double lon)
+{
+  char buf[1024];
+  struct DMSpoint pt; 
+
+  DEM_FloattoDMS(lat, lon, &pt); 
+  DEM_DMStoGrid(buf, &pt); 
+  
+  return std::string(buf); 
+}

@@ -117,7 +117,6 @@ void Command::sendCommand(boost::asio::serial_port * portp)
 Report * Reader::readStream()
 {
   if(!reader_open) {
-    std::cerr << "TSIP reader is not open...\n";
     return NULL; 
   }
 

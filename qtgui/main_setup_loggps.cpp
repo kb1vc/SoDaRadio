@@ -44,6 +44,11 @@ void MainWindow::setupLogGPS()
 	  this, SLOT(evalNav(const QString &)));
   connect(ui->ToGrid_le, SIGNAL(textChanged(const QString &)), 
 	  this, SLOT(evalNav(const QString &)));
+
+  connect(listener, SIGNAL(repGPSTime(int, int, int)), 
+	  this, SLOT(updateTime(int, int, int)));
+  connect(listener, SIGNAL(repGPSLatLon(double, double)),
+	  this, SLOT(updatePosition(double, double)));
 }
 
 void MainWindow::evalNav(const QString & dummy)
@@ -76,4 +81,25 @@ void MainWindow::logContact(bool dummy)
 			  ui->LogComment_txt->text(), 
 			  ui->RXFreq_lab->getFreq(),
 			  ui->TXFreq_lab->getFreq());
+}
+
+void MainWindow::updateTime(int h, int m, int s)
+{
+  QChar fc('0');
+  ui->UTC_lab->setText(QString("%1:%2:%3").arg(h,2,10,fc).arg(m,2,10,fc).arg(s,2,10,fc));
+}
+
+void MainWindow::updatePosition(double lat, double lon)
+{
+  QString grid = QString::fromStdString(GetGridSquare(lat, lon));
+
+  ui->GRID_lab->setText(grid);
+
+  ui->LAT_lab->setText(QString("%1").arg(lat, 5, 'f', 2));
+  ui->LON_lab->setText(QString("%1").arg(lon, 6, 'f', 2));  
+
+  if(ui->useGPS_ck->isChecked()) {
+    ui->FromGrid_lab->setText(grid);
+    ui->FromGrid_le->setText(grid);
+  }
 }

@@ -35,11 +35,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace GUISoDa {
 
-  class Band;
-
-  typedef QMap<QString, Band> BandMap;
-  typedef QMapIterator<QString, Band> BandMapIterator; 
-
   class Band {
   public:
     Band() {
@@ -117,34 +112,15 @@ namespace GUISoDa {
     void setTverterEna(bool v) { tverter_mode = v; }
     void setTverterLowInjection(bool v) { lowside_injection = v; }
 
-    static void restoreBands(QSettings * set_p, BandMap & band_map) {
-      int size = set_p->beginReadArray("Bands");
-      for(int i = 0; i < size; i++) {
-	Band b; 
-	set_p->setArrayIndex(i);
-	QString dname = set_p->value("Name").toString();
-	b.restore(set_p); 
-	QString bn = b.name();
-	band_map[b.name()] = b; 
-      }
-      set_p->endArray();
+
+    bool isInBand(double freq) const {
+      double tf = freq * 1e-6; 
+      bool res = (tf >= min_freq) && (tf <= max_freq); 
+      return res; 
     }
 
-    static void saveBands(QSettings * set_p, BandMap & band_map) {
-      set_p->beginWriteArray("Bands");
-      BandMapIterator bmi(band_map);    
-      int i = 0;    
-      while(bmi.hasNext()) {
-	bmi.next();
-	if(bmi.value().name() == "") continue;       
-	set_p->setArrayIndex(i);
-	bmi.value().save(set_p); 
-	i++; 
-      }
-    
-      set_p->endArray();
-    }
   
+    
   protected:
     QString band_name; 
     int band_index; 
@@ -162,5 +138,47 @@ namespace GUISoDa {
     double last_tx_freq; 
   }; 
 
+  class BandMap : public QMap<QString, Band> {
+  public:
+    BandMap() { }
+
+    typedef QMapIterator<QString, Band> BandMapIterator; 
+    
+    void restoreBands(QSettings * set_p) {
+      int size = set_p->beginReadArray("Bands");
+      for(int i = 0; i < size; i++) {
+	Band b; 
+	set_p->setArrayIndex(i);
+	QString dname = set_p->value("Name").toString();
+	b.restore(set_p); 
+	QString bn = b.name();
+	(*this)[b.name()] = b; 
+      }
+      set_p->endArray();
+    }
+
+    void saveBands(QSettings * set_p) {
+      set_p->beginWriteArray("Bands");
+      BandMapIterator bmi(*this);    
+      int i = 0;    
+      while(bmi.hasNext()) {
+	bmi.next();
+	if(bmi.value().name() == "") continue;       
+	set_p->setArrayIndex(i);
+	bmi.value().save(set_p); 
+	i++; 
+      }
+      set_p->endArray();
+    }
+    
+    QString findBand(double freq) const {
+      BandMapIterator bmi(*this);
+      while(bmi.hasNext()) {
+	bmi.next();
+	if(bmi.value().isInBand(freq)) return bmi.value().name();
+      }
+      return ""; 
+    }
+  };
 }
 #endif
