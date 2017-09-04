@@ -47,13 +47,13 @@ set(CPACK_RPM_PACKAGE_RELEASE "1")
 set(CPACK_RPM_PACKAGE_LICENSE "BSD-2-Clause")
 set(CPACK_RPM_PACKAGE_GROUP "Applications/Communications")
 set(CPACK_RPM_PACKAGE_DESCRIPTION  ${SoDaRadio_PACKAGE_DESCRIPTION})
-set(CPACK_RPM_PACKAGE_REQUIRES "boost >= 1.48, uhd >= 3.10.1.0, uhd-firmware >= 3.10.1.0, fftw-devel >= 3.3, qt5-qtbase >= 5.6, qwt-qt5 >= 6.1.2")
+set(CPACK_RPM_PACKAGE_REQUIRES "boost >= 1.48, uhd >= 3.10.1.0, uhd-firmware >= 3.10.1.0, fftw-devel >= 3.3, qt5-qtbase >= 5.6, qwt-qt5 >= 6.1.2, gpsd >= 3.1, gpsd-libs >= 3.1")
 set(CPACK_RPM_PACKAGE_RELOCATABLE TRUE)
  
 set(CPACK_DEBIAN_PACKAGE_DESCRIPTION ${SODA_PACKAGE_DESCRIPTION})
 set(CPACK_DEBIAN_PACKAGE_SECTION "hamradio")
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "lubuhd003 (>= 3.10), uhd-host (>= 3.10)")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "lubuhd003 (>= 3.10), uhd-host (>= 3.10), libgps22 (>= 3.1), gpsd (>= 3.1)")
 
 
 
