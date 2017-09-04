@@ -8,6 +8,8 @@ sudo dnf install qwt-qt5-devel
 sudo dnf install python-mako
 sudo dnf install qt5-qtmultimedia-devel
 sudo dnf install hamlib-devel
+sudo dnf install gpsd-devel gpsd-clients gpsd-libs gpsd
+
 
 to make packages, you need the rpmbuild
 sudo dnf install rpm-build
