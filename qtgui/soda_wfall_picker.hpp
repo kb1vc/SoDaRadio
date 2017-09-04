@@ -34,24 +34,26 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <qwt/qwt_picker_machine.h>
 #include <boost/format.hpp>
 
-class SoDaWFallPicker : public QwtPlotPicker {
-public:
-    SoDaWFallPicker(int xAxis, int yAxis, QWidget * canvas) : QwtPlotPicker(xAxis, yAxis, canvas)
+namespace GUISoDa {
+  class WFallPicker : public QwtPlotPicker {
+  public:
+    WFallPicker(int xAxis, int yAxis, QWidget * canvas) : QwtPlotPicker(xAxis, yAxis, canvas)
     {
-        setStateMachine(new QwtPickerClickPointMachine);
-        setTrackerMode(QwtPicker::AlwaysOn);
-        setTrackerPen(QPen(Qt::white));
+      setStateMachine(new QwtPickerClickPointMachine);
+      setTrackerMode(QwtPicker::AlwaysOn);
+      setTrackerPen(QPen(Qt::white));
     }
 
     QwtText trackerTextF(const QPointF & pos) const {
-        QColor trbgcolor(Qt::black);
-        trbgcolor.setAlpha(200); // translucent highlight
+      QColor trbgcolor(Qt::black);
+      trbgcolor.setAlpha(200); // translucent highlight
 
-        QwtText text((boost::format("%'.4f MHz") % (pos.x() * 1e-6)).str().c_str());
-        text.setBackgroundBrush(QBrush(trbgcolor));
+      QwtText text((boost::format("%'.4f MHz") % (pos.x() * 1e-6)).str().c_str());
+      text.setBackgroundBrush(QBrush(trbgcolor));
 
-        return text;
+      return text;
     }
-};
+  };
+}
 
 #endif // SODAWFALL_PICKER_H

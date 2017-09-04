@@ -28,14 +28,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "soda_listener.hpp"
 
-SoDaListener::SoDaListener(QObject * parent, const QString & _socket_basename) : QObject(parent) {
+GUISoDa::Listener::Listener(QObject * parent, const QString & _socket_basename) : QObject(parent) {
   quit = false;
   socket_basename = _socket_basename; 
 }
 
-bool SoDaListener::init()
+bool GUISoDa::Listener::init()
 {
-  qDebug() << QString("Connecting to server socket [%1_cmd]").arg(socket_basename);
   cmd_socket = new QLocalSocket(this);
   // first wait for the file to be created
   QString cmd_socket_name = socket_basename + "_cmd"; 
@@ -81,13 +80,13 @@ bool SoDaListener::init()
   return true; 
 }
 
-void SoDaListener::start()
+void GUISoDa::Listener::start()
 {
   put(SoDa::Command(SoDa::Command::GET, SoDa::Command::HWMB_REP));
   return; 
 }
 
-int SoDaListener::put(const char * buf, int len)
+int GUISoDa::Listener::put(const char * buf, int len)
 {
   cmd_socket->write((char*) &len, sizeof(int)); 
 
@@ -107,7 +106,7 @@ int SoDaListener::put(const char * buf, int len)
   return len; 
 }
 
-int SoDaListener::get(char * buf, int maxlen)
+int GUISoDa::Listener::get(char * buf, int maxlen)
 {
   int len; 
   int stat = cmd_socket->read((char*) & len, sizeof(int));
@@ -131,13 +130,13 @@ int SoDaListener::get(char * buf, int maxlen)
   return len; 
 }
 
-bool SoDaListener::get(SoDa::Command & cmd)
+bool GUISoDa::Listener::get(SoDa::Command & cmd)
 {
   int len = get((char*) &cmd, sizeof(SoDa::Command));
   return len > 0; 
 }
 
-void SoDaListener::setupSpectrumBuffer(double cfreq, double span, long buflen)
+void GUISoDa::Listener::setupSpectrumBuffer(double cfreq, double span, long buflen)
 {
   spect_center_freq = cfreq; 
 
@@ -152,7 +151,7 @@ void SoDaListener::setupSpectrumBuffer(double cfreq, double span, long buflen)
   }
 }
 
-void SoDaListener::processSpectrum() {
+void GUISoDa::Listener::processSpectrum() {
   int rlen = spect_buffer_len * sizeof(float);
   while(spect_socket->bytesAvailable() > (sizeof(int) + rlen)) {
     int len; 
@@ -171,7 +170,7 @@ void SoDaListener::processSpectrum() {
   }
 }
 
-void SoDaListener::processCmd() {
+void GUISoDa::Listener::processCmd() {
   SoDa::Command incmd; 
  
   while(cmd_socket->bytesAvailable() > sizeof(SoDa::Command)) {
@@ -184,41 +183,41 @@ void SoDaListener::processCmd() {
 }
 
 
-bool SoDaListener::put(const SoDa::Command & cmd)
+bool GUISoDa::Listener::put(const SoDa::Command & cmd)
 {
   int len = put((char*) &cmd, sizeof(SoDa::Command));
   return len > 0;
 }
 
-void SoDaListener::setRXFreq(double freq) {
+void GUISoDa::Listener::setRXFreq(double freq) {
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_RETUNE_FREQ, freq))) {
     perror("What happened here?");
   }
   current_rx_freq = freq;   
 }
 
-void SoDaListener::setTXFreq(double freq) {
+void GUISoDa::Listener::setTXFreq(double freq) {
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_RETUNE_FREQ, freq))) {
     perror("What happened here?");
   }
   current_tx_freq = freq; 
 }
 
-void SoDaListener::setRXGain(int gain) {
+void GUISoDa::Listener::setRXGain(int gain) {
   double dgain = gain;   
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_RF_GAIN, dgain))) {
     perror("What happened here?");
   }
 }
 
-void SoDaListener::setTXGain(int gain) {
+void GUISoDa::Listener::setTXGain(int gain) {
   double dgain = gain;   
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_RF_GAIN, dgain))) {
     perror("What happened here?");
   }
 }
 
-void SoDaListener::setAFGain(int gain) {
+void GUISoDa::Listener::setAFGain(int gain) {
   double dgain = gain; 
   // this is a little complex...
   dgain = 50.0 * (log10(dgain) / log10(100.0));
@@ -227,7 +226,7 @@ void SoDaListener::setAFGain(int gain) {
   }
 }
 
-void SoDaListener::setAFSidetoneGain(int gain) {
+void GUISoDa::Listener::setAFSidetoneGain(int gain) {
   double dgain = gain;   
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_AF_SIDETONE_GAIN, dgain))) {
     perror("What happened here?");
@@ -235,7 +234,7 @@ void SoDaListener::setAFSidetoneGain(int gain) {
 }
 
 
-void SoDaListener::setModulation(int mod_id)
+void GUISoDa::Listener::setModulation(int mod_id)
 {
 
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_MODE, mod_id))) {
@@ -246,14 +245,14 @@ void SoDaListener::setModulation(int mod_id)
   }
 }
 
-void SoDaListener::setAFFilter(int id)
+void GUISoDa::Listener::setAFFilter(int id)
 {
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_AF_FILTER, id))) {
     perror("What happened here?");
   }
 }
 
-bool SoDaListener::handleREP(const SoDa::Command & cmd) 
+bool GUISoDa::Listener::handleREP(const SoDa::Command & cmd) 
 {
   switch(cmd.target) {
   case SoDa::Command::MOD_SEL_ENTRY:
@@ -293,63 +292,63 @@ bool SoDaListener::handleREP(const SoDa::Command & cmd)
   return true; 
 }
 
-void SoDaListener::setRXAnt(const QString & antname)
+void GUISoDa::Listener::setRXAnt(const QString & antname)
 {
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_ANT, antname.toStdString()))) {
     perror("What happened here?");
   }
 }
 
-void SoDaListener::setTXAnt(const QString & antname)
+void GUISoDa::Listener::setTXAnt(const QString & antname)
 {
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_ANT, antname.toStdString()))) {
     perror("What happened here?");
   }
 }
 
-void SoDaListener::setSpectrumCenter(double freq) 
+void GUISoDa::Listener::setSpectrumCenter(double freq) 
 {
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::SPEC_CENTER_FREQ, freq))) {
     perror("What happened here?");
   }
 }
 
-void SoDaListener::setSpectrumUpdateRate(int rate)
+void GUISoDa::Listener::setSpectrumUpdateRate(int rate)
 {
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::SPEC_UPDATE_RATE, rate))) {
     perror("What happened here?");
   }
 }  
 
-void SoDaListener::setSpectrumAvgWindow(int window)
+void GUISoDa::Listener::setSpectrumAvgWindow(int window)
 {
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::SPEC_AVG_WINDOW, window))) {
     perror("What happened here?");
   }
 }
 
-void SoDaListener::setCWSpeed(int speed)
+void GUISoDa::Listener::setCWSpeed(int speed)
 {
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_CW_SPEED, speed))) {
     perror("What happened here?");
   }
 }
 
-void SoDaListener::setSidetoneVolume(int vol)
+void GUISoDa::Listener::setSidetoneVolume(int vol)
 {
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_AF_SIDETONE_GAIN, (double) vol))) {
     perror("What happened here?");
   }
 }
 
-void SoDaListener::setTXPower(int power)
+void GUISoDa::Listener::setTXPower(int power)
 {
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_RF_GAIN, (double) power))) {
     perror("What happened here?");
   }
 }
 
-void SoDaListener::setPTT(bool on)
+void GUISoDa::Listener::setPTT(bool on)
 {
   int tx_state = on ? 1 : 0;
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_STATE, tx_state))) {
@@ -357,14 +356,14 @@ void SoDaListener::setPTT(bool on)
   }
 }
 
-void SoDaListener::clearCWBuffer()
+void GUISoDa::Listener::clearCWBuffer()
 {
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_CW_FLUSHTEXT))) {
     perror("What happened here?");
   }
 }
 
-void SoDaListener::sendCW(const QString & txt)
+void GUISoDa::Listener::sendCW(const QString & txt)
 {
   char cwbuf[SoDa::Command::getMaxStringLen()]; 
   unsigned int i, j; 
@@ -393,7 +392,7 @@ void SoDaListener::sendCW(const QString & txt)
   }
 }
 
-bool SoDaListener::handleSET(const SoDa::Command & cmd)
+bool GUISoDa::Listener::handleSET(const SoDa::Command & cmd)
 {
   switch(cmd.target) {
   default:
@@ -403,7 +402,7 @@ bool SoDaListener::handleSET(const SoDa::Command & cmd)
   return true; 
 }
 
-bool SoDaListener::handleGET(const SoDa::Command & cmd)
+bool GUISoDa::Listener::handleGET(const SoDa::Command & cmd)
 {
   switch(cmd.target) {
   default:
@@ -412,7 +411,7 @@ bool SoDaListener::handleGET(const SoDa::Command & cmd)
   return true; 
 }
 
-void SoDaListener::closeRadio()
+void GUISoDa::Listener::closeRadio()
 {
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::STOP, 0))) {
     perror("What happened here  -- listener closeRadio?");

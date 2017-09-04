@@ -35,32 +35,32 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <boost/foreach.hpp>
 #include <hamlib/rig.h>
 
-SoDaHamlibServer::SoDaHamlibServer(QObject * parent, int _port_num) :
+using namespace GUISoDa;
+
+GUISoDa::HamlibServer::HamlibServer(QObject * parent, int _port_num) :
   QTcpServer(parent), port_num(_port_num)  {
 
-  handler_p = new SoDaHamlibHandler(this);
+  handler_p = new HamlibHandler(this);
 }
   
-SoDaHamlibServer::~SoDaHamlibServer() {
+GUISoDa::HamlibServer::~HamlibServer() {
 
   emit stopListeners();
 
-  BOOST_FOREACH(SoDaHamlibListener * l, listener_list) {
+  BOOST_FOREACH(HamlibListener * l, listener_list) {
     l->wait();
   }
 }
 
-bool SoDaHamlibServer::start() {
+bool GUISoDa::HamlibServer::start() {
   if( !this->listen( QHostAddress::LocalHost, port_num ) ) {
     QMessageBox::critical( (QWidget *)this->parent(), tr("Error!"), tr("Cannot listen to port %1").arg(port_num) );
   }
 }
 
-void SoDaHamlibServer::incomingConnection(qintptr descriptor) {
-  std::cerr << boost::format("HAMLIB SERVER got incoming connection descriptor = %d\n") % descriptor; 
-  
+void GUISoDa::HamlibServer::incomingConnection(qintptr descriptor) {
   // create a new listener
-  SoDaHamlibListener * listener = new SoDaHamlibListener(descriptor, handler_p, this);
+  HamlibListener * listener = new HamlibListener(descriptor, handler_p, this);
 
   // make sure the thread terminates itself
   connect(listener, SIGNAL(finished()), listener, SLOT(deleteLater()));

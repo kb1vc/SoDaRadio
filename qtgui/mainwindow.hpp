@@ -118,7 +118,7 @@ protected:
 
   void widgetSaveRestore(QObject * op, const QString & par, bool save);
 
-  void bandMapSaveRestore(SoDaBandMap & bmap, bool save);
+  void bandMapSaveRestore(GUISoDa::BandMap & bmap, bool save);
   void saveCurrentFreqs();
   
   void sendCannedCW(const QString & txt);
@@ -132,7 +132,7 @@ private:
   QSettings * settings_p; 
 
   // Band map
-  QMap<QString, SoDaBand> band_map; 
+  QMap<QString, GUISoDa::Band> band_map; 
   QString current_band_selector; 
 
   void setRXFreq_nocross(double freq);
@@ -140,9 +140,9 @@ private:
   
   Ui::MainWindow *ui;
 
-  SoDaListener * listener; 
+  GUISoDa::Listener * listener; 
 
-  SoDaHamlibServer * hlib_server; 
+  GUISoDa::HamlibServer * hlib_server; 
 };
 
 #endif // MAINWINDOW_H

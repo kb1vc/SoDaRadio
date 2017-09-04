@@ -38,6 +38,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <cmath>
 #include <iostream>
 
+namespace GUISoDa {
   class ValComboBox : public QComboBox { 
       Q_OBJECT
   public:
@@ -123,5 +124,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     
     std::map<QString, int> valmap;
   };
+}
 
 #endif

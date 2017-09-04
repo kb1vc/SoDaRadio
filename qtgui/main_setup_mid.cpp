@@ -38,10 +38,10 @@ void MainWindow::setupMidControls()
   // These controls include band selection, PTT, TX display,
   // antenna selection, CW QSO buttons, and the navigation panel
 
-  connect(listener, &SoDaListener::addRXAntName, 
+  connect(listener, &GUISoDa::Listener::addRXAntName, 
 	  [this](const QString & v){
 	    ui->RXAnt_sel->addItem(v); });
-  connect(listener, &SoDaListener::addTXAntName, 
+  connect(listener, &GUISoDa::Listener::addTXAntName, 
 	  [this](const QString & v){
 	    ui->TXAnt_sel->addItem(v); });
 
@@ -53,7 +53,7 @@ void MainWindow::setupMidControls()
   connect(ui->PTT_btn, SIGNAL(toggled(bool)), 
 	  listener, SLOT(setPTT(bool)));
 
-  connect(listener, &SoDaListener::repPTT,
+  connect(listener, &GUISoDa::Listener::repPTT,
 	  [=](bool on) { ui->TXState_lab->setText(on ? "TX ON" : "TX OFF"); });
 
   connect(ui->CWCurLine_le, &QLineEdit::returnPressed, 

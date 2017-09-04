@@ -30,7 +30,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iostream>
 #include <boost/format.hpp>
 
-SoDaWFallData::SoDaWFallData() {
+GUISoDa::WFallData::WFallData() {
   clearReady(); 
   num_rows = 300;
   min_time = -1.0 * ((double) num_rows);
@@ -54,11 +54,11 @@ SoDaWFallData::SoDaWFallData() {
 
 }
 
-SoDaWFallData::~SoDaWFallData() {
+GUISoDa::WFallData::~WFallData() {
   delete[] heatmap;
 }
 
-void SoDaWFallData::setSpectrumDimensions(double cfreq, double span, long buckets)
+void GUISoDa::WFallData::setSpectrumDimensions(double cfreq, double span, long buckets)
 {
   (void) cfreq; 
   clearReady();
@@ -81,7 +81,7 @@ void SoDaWFallData::setSpectrumDimensions(double cfreq, double span, long bucket
   setReady();
 }
 
-double SoDaWFallData::value(double f, double t) const
+double GUISoDa::WFallData::value(double f, double t) const
 {
   // if we don't have the scales setup, then report a very negative number
   if(!is_ready) return -1e6;
@@ -144,21 +144,21 @@ double SoDaWFallData::value(double f, double t) const
   return ret; 
 }
 
-void SoDaWFallData::setZRange() {
+void GUISoDa::WFallData::setZRange() {
   setInterval( Qt::ZAxis, QwtInterval(ref_level, ref_level + dynamic_range));
 }
 
-void SoDaWFallData::setDynamicRange(double drange) {
+void GUISoDa::WFallData::setDynamicRange(double drange) {
   dynamic_range = drange; 
   setZRange(); 
 }
 
-void SoDaWFallData::setRefLevel(double reflvl) {
+void GUISoDa::WFallData::setRefLevel(double reflvl) {
   ref_level = reflvl;
   setZRange(); 	
 }
 
-void SoDaWFallData::updateData(double cfreq, float * spect) {
+void GUISoDa::WFallData::updateData(double cfreq, float * spect) {
   if(!is_ready) return; 
   cur_row_idx += num_buckets;
   cur_freq_idx++; 

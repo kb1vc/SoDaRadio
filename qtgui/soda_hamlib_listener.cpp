@@ -30,8 +30,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "soda_hamlib_handler.hpp"
 
 
-SoDaHamlibListener::SoDaHamlibListener(qintptr desc, 
-				       SoDaHamlibHandler * _handler,
+GUISoDa::HamlibListener::HamlibListener(qintptr desc, 
+				       GUISoDa::HamlibHandler * _handler,
 				       QObject *parent) : QThread(parent), 
 							  handler_p(_handler), 
 							  socket_desc(desc) 
@@ -39,7 +39,7 @@ SoDaHamlibListener::SoDaHamlibListener(qintptr desc,
   // not much else to do. 
 }
 
-void SoDaHamlibListener::run()
+void GUISoDa::HamlibListener::run()
 {
   socket_p = new QTcpSocket(); 
 
@@ -54,7 +54,7 @@ void SoDaHamlibListener::run()
   exec();
 }
 
-void SoDaHamlibListener::readyRead() {
+void GUISoDa::HamlibListener::readyRead() {
   QByteArray array = socket_p->read(socket_p->bytesAvailable());
 
   char * as = array.data();
@@ -71,7 +71,7 @@ void SoDaHamlibListener::readyRead() {
   }
 }
 
-void SoDaHamlibListener::disconnected() {
+void GUISoDa::HamlibListener::disconnected() {
   qDebug() << "\n\nHamlib listener got disconnect!!!\n\n";
   socket_p->deleteLater();
 }

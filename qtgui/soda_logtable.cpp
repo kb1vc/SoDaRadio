@@ -44,8 +44,6 @@ LogTable::LogTable(QWidget *parent) :
   headers << "Date" << "Time" << "From Call" << "From Grid" << "To Call" << "To Grid"
 	  << "Mode" << "RX Freq" << "TX Freq" << "Comment";
   setColumnCount(headers.size());  
-  qDebug() << "header list size = " << headers.size();
-  qDebug() << "Column count is now = " << columnCount(); 
   
   setKeys(headers);
 

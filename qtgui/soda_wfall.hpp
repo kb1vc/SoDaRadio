@@ -53,17 +53,18 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <cmath>
 
-class SoDaPlotSpectrogram ;
+namespace GUISoDa {
+  class PlotSpectrogram ;
 
-class SoDaWFall : public QwtPlot
-{
-  Q_OBJECT
+  class WFall : public QwtPlot
+  {
+    Q_OBJECT
   
- public:
-  explicit SoDaWFall(QWidget *parent = 0);
-  ~SoDaWFall();
+  public:
+    explicit WFall(QWidget *parent = 0);
+    ~WFall();
 
-  double freqCenter() { return center_freq; }	      
+    double freqCenter() { return center_freq; }	      
   public slots:
     void updateData(double cf, float * y);
     void pickPoint(const QPointF & pos);
@@ -90,7 +91,7 @@ class SoDaWFall : public QwtPlot
     }
     void setMarkerOffset(double lo, double hi);
 
- private:
+  private:
     void setZAxis();
     void setMarkers(double lo, double hi) { 
       wfall_data->setMarkers(lo, hi); 
@@ -98,12 +99,12 @@ class SoDaWFall : public QwtPlot
     double marker_lo_offset; 
     double marker_hi_offset; 
     
- public:
+  public:
     
- signals:
+  signals:
     void xClick(double x);
 
- protected:
+  protected:
 
     double correctCenterFreq(double cfreq);
     
@@ -114,17 +115,17 @@ class SoDaWFall : public QwtPlot
     double marker_freq; 
 
 
-    SoDaWFallData * wfall_data ;
-    SoDaPlotSpectrogram * sgram; 
+    WFallData * wfall_data ;
+    PlotSpectrogram * sgram; 
 
-    SoDaWFallPicker * picker_p;     
+    WFallPicker * picker_p;     
 
-    SoDaFreqScaleDraw * freq_scale_p; 
+    FreqScaleDraw * freq_scale_p; 
 
     QwtScaleWidget * right_axis; 
- private:
+  private:
     void initPlot();
 
-};
-
+  };
+}
 #endif

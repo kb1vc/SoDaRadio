@@ -42,6 +42,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "soda_listener.hpp"
 #include "../common/GuiParams.hxx"
 
+using namespace GUISoDa;
+
 MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   QMainWindow(parent),
   ui(new Ui::MainWindow)
@@ -49,7 +51,7 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   ui->setupUi(this);
 
   // setup the listener. 
-  listener = new SoDaListener(this, QString::fromStdString(params.getServerSocketBasename())); 
+  listener = new GUISoDa::Listener(this, QString::fromStdString(params.getServerSocketBasename())); 
 
   setupSpectrum();
   setupWaterFall();
@@ -65,7 +67,7 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
 
   // connect(listener, SIGNAL(repHWMBVersion(const QString &)), 
   // 	  this, SLOT(setWindowTitle(const QString &)));
-  connect(listener, &SoDaListener::repHWMBVersion,
+  connect(listener, &GUISoDa::Listener::repHWMBVersion,
 	  [=](const QString & hw) {
 	    this->setWindowTitle(QString("SoDa Radio V %1 -- SDR %2").arg(SoDaRadio_VERSION).arg(hw));
 	  });
@@ -86,7 +88,7 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
 
   current_band_selector = ui->bandSel_cb->currentText(); 
 
-  hlib_server = new SoDaHamlibServer(this, 4575);
+  hlib_server = new HamlibServer(this, 4575);
   
   hlib_server->start();
 
@@ -175,7 +177,7 @@ void MainWindow::widgetSaveRestore(QObject * op, const QString & par, bool save)
 	}
       }
     }
-    else if(my_class == "FreqLabel") {
+    else if(my_class == "GUISoDa::FreqLabel") {
       if(FreqLabel * cb = qobject_cast<FreqLabel *>(*cp)) {      
 	if(save) {
 	  double cv = cb->getFreq();
@@ -227,8 +229,8 @@ void MainWindow::widgetSaveRestore(QObject * op, const QString & par, bool save)
 	}
       }
     }
-    else if(my_class == "SoDaWFall") {
-      if(SoDaWFall * cb = qobject_cast<SoDaWFall*>(*cp)) {      
+    else if(my_class == "GUISoDa::WFall") {
+      if(GUISoDa::WFall * cb = qobject_cast<GUISoDa::WFall*>(*cp)) {      
 	if(save) {
 	  double cv = cb->freqCenter();
 	  settings_p->setValue(my_pathname, cv);
@@ -240,8 +242,8 @@ void MainWindow::widgetSaveRestore(QObject * op, const QString & par, bool save)
 	}
       }
     }
-    else if(my_class == "SoDaSpect") {
-      if(SoDaSpect * cb = qobject_cast<SoDaSpect*>(*cp)) {      
+    else if(my_class == "GUISoDa::Spect") {
+      if(GUISoDa::Spect * cb = qobject_cast<GUISoDa::Spect*>(*cp)) {      
 	if(save) {
 	  double cv = cb->freqCenter();
 	  settings_p->setValue(my_pathname, cv);
@@ -253,8 +255,8 @@ void MainWindow::widgetSaveRestore(QObject * op, const QString & par, bool save)
 	}
       }
     }
-    else if(my_class == "IntValComboBox") {
-      if(IntValComboBox * cb = qobject_cast<IntValComboBox*>(*cp)) {      
+    else if(my_class == "GUISoDa::IntValComboBox") {
+      if(GUISoDa::IntValComboBox * cb = qobject_cast<GUISoDa::IntValComboBox*>(*cp)) {      
 	if(save) {
 	  int cv = cb->value();
 	  settings_p->setValue(my_pathname, cv);
@@ -266,9 +268,9 @@ void MainWindow::widgetSaveRestore(QObject * op, const QString & par, bool save)
 	}
       }
     }
-    else if((my_class == "WFallSpanComboBox") || 
-	    (my_class == "WFallDynRangeComboBox")) {
-      if(ValComboBox * cb = qobject_cast<ValComboBox*>(*cp)) {      
+    else if((my_class == "GUISoDa::WFallSpanComboBox") || 
+	    (my_class == "GUISoDa::WFallDynRangeComboBox")) {
+      if(GUISoDa::ValComboBox * cb = qobject_cast<GUISoDa::ValComboBox*>(*cp)) {      
 	if(save) {
 	  double cv = cb->value();
 	  settings_p->setValue(my_pathname, cv);
@@ -293,26 +295,54 @@ void MainWindow::widgetSaveRestore(QObject * op, const QString & par, bool save)
 	}
       }
     }
-    else if((my_class == "QLabel") ||
-	    (my_class == "QVBoxLayout") ||
+    else if((my_class == "QAction") ||
+	    (my_class == "QBoxLayout") ||
+	    (my_class == "QDoubleValidator") ||
+	    (my_class == "QFormLayout") ||	    
+	    (my_class == "QGroupBox") ||	    
 	    (my_class == "QHBoxLayout") ||
+	    (my_class == "QHeaderView") ||	    
+	    (my_class == "QItemSelectionModel") ||	    
+	    (my_class == "QLabel") ||
+	    (my_class == "QLocalSocket") ||
+	    (my_class == "QMainWindowLayout") ||
+	    (my_class == "QNativeSocketEngine") ||
+	    (my_class == "QPlainTextDocumentLayout") ||	    
+	    (my_class == "QPlainTextEdit") ||
+	    (my_class == "QPlainTextEditControl") ||	    
+	    (my_class == "QPropertyAnimation") ||	    
 	    (my_class == "QPushButton") ||
-	    (my_class == "QWidgetTextControl") ||
+	    (my_class == "QScrollBar") ||
+	    (my_class == "QSettings") ||
+	    (my_class == "QSocketNotifier") ||
+	    (my_class == "QSplitter") ||
+	    (my_class == "QSplitterHandle") ||
+	    (my_class == "QStackedLayout") ||	    
+	    (my_class == "QStackedWidget") ||
+	    (my_class == "QStandardItemModel") ||
+	    (my_class == "QStyledItemDelegate") ||	    
+	    (my_class == "QTableCornerButton") ||	    
+	    (my_class == "QTableModel") ||	    
+	    (my_class == "QTabWidget") ||
+	    (my_class == "QTcpSocket") ||
 	    (my_class == "QTextDocument") ||
 	    (my_class == "QTextDocumentLayout") ||
+	    (my_class == "QTextFrame") ||
 	    (my_class == "QTextImageHandler") ||
-	    
+	    (my_class == "QToolButton") ||
+	    (my_class == "QValidator") ||
+	    (my_class == "QVBoxLayout") ||
+	    (my_class == "QWidget") ||	    
 	    (my_class == "QWidgetLineControl") ||
-	    (my_class == "QAction") ||
-	    (my_class == "QGroupBox") ||	    
-	    (my_class == "QLocalSocket") ||
-	    (my_class == "QTcpSocket") ||
-	    (my_class == "QDoubleValidator") ||
-	    (my_class == "QStandardItemModel") ||
-	    (my_class == "QDoubleValidator") ||
-	    (my_class == "QSocketNotifier") ||
-	    (my_class == "QNativeSocketEngine")) {
+	    (my_class == "QWidgetTextControl") ||
+	    (my_class == "QwtPlotCanvas") ||
+	    (my_class == "QwtPlotPicker") ||	    	    
+	    (my_class == "QwtScaleWidget") ||
+	    (my_class == "QwtTextLabel")) {
       // do nothing. 
+    }
+    else {
+      qDebug() << QString("!!!! What is this class [%1]?").arg(my_class);
     }
     widgetSaveRestore((*cp), my_pathname, save);
   }

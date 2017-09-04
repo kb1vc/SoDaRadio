@@ -35,125 +35,126 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <errno.h>
 #include "../src/Command.hxx"
 
+namespace GUISoDa {
+  
+  class Listener : public QObject {
+    Q_OBJECT
 
-class SoDaListener : public QObject {
-  Q_OBJECT
+  public:
+    Listener(QObject * parent = 0, const QString & socket_basename = "tmp");
+    ~Listener() {
+    }
 
-public:
-  SoDaListener(QObject * parent = 0, const QString & socket_basename = "tmp");
-  ~SoDaListener() {
-  }
-
-  /**
-   * @brief connect to radio server sockets and initialize listener state
-   * 
-   * @return true on success, false on some fatal problem. 
-   */
-  bool init();   
+    /**
+     * @brief connect to radio server sockets and initialize listener state
+     * 
+     * @return true on success, false on some fatal problem. 
+     */
+    bool init();   
 
   
-  /**
-   * @brief initiate transfers on the socket.
-   */
-  void start();
+    /**
+     * @brief initiate transfers on the socket.
+     */
+    void start();
 
   
-signals:
-  // when new spectrum data arrives
-  void updateData(double cfreq, float * y);
+  signals:
+    // when new spectrum data arrives
+    void updateData(double cfreq, float * y);
 
-  void configureSpectrum(double cfreq, double span, long buckets);
+    void configureSpectrum(double cfreq, double span, long buckets);
   
-  void addModulation(QString modtype, int mod_id);
-  void addFilterWidth(double lo, double hi);
-  void addFilterName(QString filter_name, int filt_id);
-  void repMarkerOffset(double lo, double hi);
+    void addModulation(QString modtype, int mod_id);
+    void addFilterWidth(double lo, double hi);
+    void addFilterName(QString filter_name, int filt_id);
+    void repMarkerOffset(double lo, double hi);
   
-  void addRXAntName(const QString & ant_name);
-  void addTXAntName(const QString & ant_name);  
+    void addRXAntName(const QString & ant_name);
+    void addTXAntName(const QString & ant_name);  
   
-  void repFilterEdges(double lo, double hi);
+    void repFilterEdges(double lo, double hi);
 
-  void repGPSLatLon(double lat, double lon);
-  void repGPSTime(int hh, int mm, int ss);
+    void repGPSLatLon(double lat, double lon);
+    void repGPSTime(int hh, int mm, int ss);
 
-  void repGPSLock(bool is_locked);
+    void repGPSLock(bool is_locked);
 
-  void repSDRVersion(const QString & version);
-  void repHWMBVersion(const QString & version);
+    void repSDRVersion(const QString & version);
+    void repHWMBVersion(const QString & version);
 
-  void repPTT(bool on); 
+    void repPTT(bool on); 
 
-  void initSetupComplete();
+    void initSetupComplete();
 
-  void fatalError(const QString & error_string);
+    void fatalError(const QString & error_string);
 					      
-public slots:
-  void setRXFreq(double freq);
-  void setTXFreq(double freq);
+  public slots:
+    void setRXFreq(double freq);
+    void setTXFreq(double freq);
 
-  void setModulation(int mod_id); 
+    void setModulation(int mod_id); 
 
-  void setAFFilter(int id); 
+    void setAFFilter(int id); 
 
-  void setRXGain(int gain);
-  void setTXGain(int gain);
-  void setAFGain(int gain);
-  void setAFSidetoneGain(int gain);  
+    void setRXGain(int gain);
+    void setTXGain(int gain);
+    void setAFGain(int gain);
+    void setAFSidetoneGain(int gain);  
 
-  void setRXAnt(const QString & antname);
-  void setTXAnt(const QString & antname);
+    void setRXAnt(const QString & antname);
+    void setTXAnt(const QString & antname);
 
-  double getRXFreq() { return current_rx_freq; }
-  double getTXFreq() { return current_tx_freq; }
+    double getRXFreq() { return current_rx_freq; }
+    double getTXFreq() { return current_tx_freq; }
 
-  void setSpectrumCenter(double freq); 
-  void setSpectrumAvgWindow(int window);
-  void setSpectrumUpdateRate(int rate);  
+    void setSpectrumCenter(double freq); 
+    void setSpectrumAvgWindow(int window);
+    void setSpectrumUpdateRate(int rate);  
 
-  void setCWSpeed(int speed); 
-  void setSidetoneVolume(int vol);
-  void setTXPower(int vol); 
+    void setCWSpeed(int speed); 
+    void setSidetoneVolume(int vol);
+    void setTXPower(int vol); 
 
-  void setPTT(bool on);
+    void setPTT(bool on);
 
-  void sendCW(const QString & txt);
-  void clearCWBuffer();
+    void sendCW(const QString & txt);
+    void clearCWBuffer();
   
-  void closeRadio();
+    void closeRadio();
 
 
-protected:
-  double current_rx_freq; 
-  double current_tx_freq; 
-  int get(char* buf, int maxlen); 
-  bool get(SoDa::Command & cmd); 
-  int put(const char * buf, int len); 
-  bool put(const SoDa::Command & cmd);
+  protected:
+    double current_rx_freq; 
+    double current_tx_freq; 
+    int get(char* buf, int maxlen); 
+    bool get(SoDa::Command & cmd); 
+    int put(const char * buf, int len); 
+    bool put(const SoDa::Command & cmd);
 
-  bool handleREP(const SoDa::Command & cmd);
-  bool handleSET(const SoDa::Command & cmd);
-  bool handleGET(const SoDa::Command & cmd); 
+    bool handleREP(const SoDa::Command & cmd);
+    bool handleSET(const SoDa::Command & cmd);
+    bool handleGET(const SoDa::Command & cmd); 
 
-private:
-  void setupSpectrumBuffer(double cfreq, double span, long buflen);
-  long spect_buffer_len;
-  float * spect_buffer; 		      
-  double spect_center_freq; 				    
+  private:
+    void setupSpectrumBuffer(double cfreq, double span, long buflen);
+    long spect_buffer_len;
+    float * spect_buffer; 		      
+    double spect_center_freq; 				    
 			  
-protected slots:  
-  void processCmd();
-  void cmdErrorHandler(QLocalSocket::LocalSocketError err) {
-    std::cerr << "Error [" << err << "]\n";
-  }
+  protected slots:  
+    void processCmd();
+    void cmdErrorHandler(QLocalSocket::LocalSocketError err) {
+      std::cerr << "Error [" << err << "]\n";
+    }
 
-  void processSpectrum();
+    void processSpectrum();
   
-private:
-  QString socket_basename; 
-  QLocalSocket * cmd_socket;
-  QLocalSocket * spect_socket; 
-  bool quit; 
-};
-
+  private:
+    QString socket_basename; 
+    QLocalSocket * cmd_socket;
+    QLocalSocket * spect_socket; 
+    bool quit; 
+  };
+}
 #endif

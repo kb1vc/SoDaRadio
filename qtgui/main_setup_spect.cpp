@@ -39,7 +39,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 void MainWindow::setupWaterFall()
 {
     connect(ui->waterfall_plt,SIGNAL(xClick(double)), this, SLOT(setRXFreq(double)));
-    connect(ui->waterfall_plt, &SoDaWFall::xClick, listener, &SoDaListener::setRXFreq);
+    connect(ui->waterfall_plt, &GUISoDa::WFall::xClick, listener, &GUISoDa::Listener::setRXFreq);
     connect(ui->wf_moveRight_btn, SIGNAL(clicked(bool)), 
 	    ui->waterfall_plt, SLOT(scrollRight(bool)));
     connect(ui->wf_moveLeft_btn, SIGNAL(clicked(bool)), 

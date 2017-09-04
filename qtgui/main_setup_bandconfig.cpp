@@ -54,10 +54,10 @@ void MainWindow::setupBandConfig()
   ui->BCMaxFreq_le->setValidator(new QDoubleValidator(this));
   ui->BCLOFreq_le->setValidator(new QDoubleValidator(this));
 
-  connect(listener, &SoDaListener::addRXAntName, 
+  connect(listener, &GUISoDa::Listener::addRXAntName, 
 	  [this](const QString & v){
 	    ui->BCRXAnt_cb->addItem(v); });
-  connect(listener, &SoDaListener::addTXAntName, 
+  connect(listener, &GUISoDa::Listener::addTXAntName, 
 	  [this](const QString & v){
 	    ui->BCTXAnt_cb->addItem(v); });
 
@@ -72,7 +72,7 @@ void MainWindow::saveCurrentFreqs()
   if(band_map.count(current_band_selector) > 0) {
     double rxfreq = ui->RXFreq_lab->getFreq() * 1.0e-6;
     double txfreq = ui->TXFreq_lab->getFreq() * 1.0e-6;
-    SoDaBand * bp = &band_map[current_band_selector]; 
+    GUISoDa::Band * bp = &band_map[current_band_selector]; 
     if((rxfreq >= bp->minFreq()) && (rxfreq <= bp->maxFreq())) {
       band_map[current_band_selector].setLastRXFreq(1e-6 * ui->RXFreq_lab->getFreq());
     }
@@ -82,16 +82,16 @@ void MainWindow::saveCurrentFreqs()
   }
 }
 
-void MainWindow::bandMapSaveRestore(SoDaBandMap & bmap, bool save)
+void MainWindow::bandMapSaveRestore(GUISoDa::BandMap & bmap, bool save)
 {
   if(save) {
     saveCurrentFreqs();
-    SoDaBand::saveBands(settings_p, bmap);
+    GUISoDa::Band::saveBands(settings_p, bmap);
   }
   else {
-    SoDaBand::restoreBands(settings_p, bmap);
+    GUISoDa::Band::restoreBands(settings_p, bmap);
     // now load the comboboxes
-    SoDaBandMapIterator bmi(bmap); 
+    GUISoDa::BandMapIterator bmi(bmap); 
     // clear the two band selectors.
     ui->BCBandSel_cb->clear();
     ui->bandSel_cb->clear();
@@ -111,7 +111,7 @@ void MainWindow::fillBandMapEntry(const QString & band)
 {
   ui->BCStatus_lbl->setText("");
   if(band_map.count(band)) {
-    SoDaBand b = band_map[band]; 
+    GUISoDa::Band b = band_map[band]; 
     ui->BCBandName_le->setText("");
 
     ui->BCBandSel_cb->setCurrentText(band); 
@@ -137,7 +137,7 @@ void MainWindow::fillBandMapEntry(const QString & band)
 // called when we hit the OK button in the band setup box.
 void MainWindow::writeBandMapEntry(bool v)
 {
-  SoDaBand b; 
+  GUISoDa::Band b; 
   (void) v;
 
   ui->BCStatus_lbl->setText("");

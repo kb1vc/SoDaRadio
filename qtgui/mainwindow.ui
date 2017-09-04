@@ -581,7 +581,7 @@
              </widget>
             </item>
             <item>
-             <widget class="WFallDynRangeComboBox" name="wf_dynRange_cb">
+             <widget class="GUISoDa::WFallDynRangeComboBox" name="wf_dynRange_cb">
               <property name="sizePolicy">
                <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -598,7 +598,7 @@
              </widget>
             </item>
             <item>
-             <widget class="WFallSpanComboBox" name="wf_freqSpan_cb">
+             <widget class="GUISoDa::WFallSpanComboBox" name="wf_freqSpan_cb">
               <property name="sizePolicy">
                <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -610,7 +610,7 @@
            </layout>
           </item>
           <item>
-           <widget class="SoDaWFall" name="waterfall_plt" native="true">
+           <widget class="GUISoDa::WFall" name="waterfall_plt" native="true">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
               <horstretch>0</horstretch>
@@ -719,7 +719,7 @@
              </widget>
             </item>
             <item>
-             <widget class="WFallDynRangeComboBox" name="sp_dynRange_cb"/>
+             <widget class="GUISoDa::WFallDynRangeComboBox" name="sp_dynRange_cb"/>
             </item>
             <item>
              <widget class="QLabel" name="label_13">
@@ -729,12 +729,12 @@
              </widget>
             </item>
             <item>
-             <widget class="WFallSpanComboBox" name="sp_freqSpan_cb"/>
+             <widget class="GUISoDa::WFallSpanComboBox" name="sp_freqSpan_cb"/>
             </item>
            </layout>
           </item>
           <item>
-           <widget class="SoDaSpect" name="spectrum_plt" native="true">
+           <widget class="GUISoDa::Spect" name="spectrum_plt" native="true">
             <layout class="QHBoxLayout" name="horizontalLayout_11"/>
            </widget>
           </item>
@@ -1159,7 +1159,7 @@
                </widget>
               </item>
               <item row="7" column="1">
-               <widget class="IntValComboBox" name="BCDefMode_cb"/>
+               <widget class="GUISoDa::IntValComboBox" name="BCDefMode_cb"/>
               </item>
               <item row="8" column="1">
                <widget class="QSpinBox" name="BCIndex_sb">
@@ -1934,7 +1934,7 @@
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_4">
          <item>
-          <widget class="IntValComboBox" name="Mode_cb"/>
+          <widget class="GUISoDa::IntValComboBox" name="Mode_cb"/>
          </item>
         </layout>
        </widget>
@@ -1946,7 +1946,7 @@
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_3">
          <item>
-          <widget class="IntValComboBox" name="AFBw_cb"/>
+          <widget class="GUISoDa::IntValComboBox" name="AFBw_cb"/>
          </item>
         </layout>
        </widget>
@@ -2029,7 +2029,7 @@
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_7">
          <item>
-          <widget class="FreqLabel" name="RXFreq_lab">
+          <widget class="GUISoDa::FreqLabel" name="RXFreq_lab">
            <property name="font">
             <font>
              <family>MgOpen Moderna</family>
@@ -2081,7 +2081,7 @@ MB3 right half -- move digit selector right
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_6">
          <item>
-          <widget class="FreqLabel" name="TXFreq_lab">
+          <widget class="GUISoDa::FreqLabel" name="TXFreq_lab">
            <property name="font">
             <font>
              <family>MgOpen Moderna</family>
@@ -2864,7 +2864,7 @@ MB3 right half -- move digit selector right
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
-   <class>FreqLabel</class>
+   <class>GUISoDa::FreqLabel</class>
    <extends>QLabel</extends>
    <header>freqlabel.hpp</header>
   </customwidget>
@@ -2874,7 +2874,7 @@ MB3 right half -- move digit selector right
    <header>soda_logtable.hpp</header>
   </customwidget>
   <customwidget>
-   <class>SoDaWFall</class>
+   <class>GUISoDa::WFall</class>
    <extends>QWidget</extends>
    <header>soda_wfall.hpp</header>
    <container>1</container>
@@ -2885,23 +2885,23 @@ MB3 right half -- move digit selector right
    <header>soda_list_spinbox.hpp</header>
   </customwidget>
   <customwidget>
-   <class>WFallDynRangeComboBox</class>
+   <class>GUISoDa::WFallDynRangeComboBox</class>
    <extends>QComboBox</extends>
    <header>soda_comboboxes.hpp</header>
   </customwidget>
   <customwidget>
-   <class>WFallSpanComboBox</class>
+   <class>GUISoDa::WFallSpanComboBox</class>
    <extends>QComboBox</extends>
    <header>soda_comboboxes.hpp</header>
   </customwidget>
   <customwidget>
-   <class>SoDaSpect</class>
+   <class>GUISoDa::Spect</class>
    <extends>QWidget</extends>
    <header>soda_spect.hpp</header>
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>IntValComboBox</class>
+   <class>GUISoDa::IntValComboBox</class>
    <extends>QComboBox</extends>
    <header>soda_comboboxes.hpp</header>
   </customwidget>

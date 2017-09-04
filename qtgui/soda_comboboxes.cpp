@@ -30,14 +30,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 
-void ValComboBox::addValue(QString lab, double val) {
+void GUISoDa::ValComboBox::addValue(QString lab, double val) {
   valmap[lab] = val;
   addItem(lab, QVariant(val));
   setCurrentIndex(0);
   this->show();
 }
 
-void ValComboBox::setValue(double v) {
+void GUISoDa::ValComboBox::setValue(double v) {
   double diff = 1e23;
   int bestidx;
   for(int i = 0; i < count(); i++) {
@@ -52,20 +52,20 @@ void ValComboBox::setValue(double v) {
 }
 
 
-void ValComboBox::textChanged(const QString & txt) {
+void GUISoDa::ValComboBox::textChanged(const QString & txt) {
   emit valueChanged(valmap[txt]);
 }
 
 
 
-void IntValComboBox::addValue(QString lab, int val) {
+void GUISoDa::IntValComboBox::addValue(QString lab, int val) {
   valmap[lab] = val;
   addItem(lab, QVariant(val));
   setCurrentIndex(0);
   this->show();
 }
 
-void IntValComboBox::setValue(int v) {
+void GUISoDa::IntValComboBox::setValue(int v) {
   for(int i = 0; i < count(); i++) {
     QString key = itemText(i);
     if(v == valmap[key]) {
@@ -75,7 +75,7 @@ void IntValComboBox::setValue(int v) {
   }
 }
 
-void IntValComboBox::setValue(const QString & v) {
+void GUISoDa::IntValComboBox::setValue(const QString & v) {
   for(int i = 0; i < count(); i++) {
     QString key = itemText(i);
     if(v == key) {
@@ -86,6 +86,6 @@ void IntValComboBox::setValue(const QString & v) {
 }
 
 
-void IntValComboBox::textChanged(const QString & txt) {
+void GUISoDa::IntValComboBox::textChanged(const QString & txt) {
   emit valueChanged(valmap[txt]);
 }

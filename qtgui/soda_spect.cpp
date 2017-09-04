@@ -36,13 +36,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 
-SoDaSpect::SoDaSpect(QWidget *parent) :
+GUISoDa::Spect::Spect(QWidget *parent) :
     QwtPlot(parent)
 {
     initPlot();
 }
 
-SoDaSpect::~SoDaSpect()
+GUISoDa::Spect::~Spect()
 {
   if(freqs != NULL) delete[] freqs; 
   if(vals != NULL) delete[] vals; 
@@ -50,7 +50,7 @@ SoDaSpect::~SoDaSpect()
 }
 
 
-void SoDaSpect::initPlot()
+void GUISoDa::Spect::initPlot()
 {
 
   freq_span_disp = 10e3;
@@ -67,7 +67,7 @@ void SoDaSpect::initPlot()
   enableAxis(QwtPlot::yLeft, true);
   enableAxis(QwtPlot::yRight, true);
 
-  freq_draw_p = new SoDaFreqScaleDraw(); 
+  freq_draw_p = new FreqScaleDraw(); 
   setAxisScaleDraw(QwtPlot::xBottom, freq_draw_p);
 
   setFreqCenter(144.15e6);
@@ -84,7 +84,7 @@ void SoDaSpect::initPlot()
   // curve_p->setSamples(xdat, ydat, 1000);
 
   // setup the plotpicker -- this creates click events for us.
-  picker_p = new SoDaPlotPicker(QwtPlot::xBottom, QwtPlot::yLeft, canvas());
+  picker_p = new GUISoDa::PlotPicker(QwtPlot::xBottom, QwtPlot::yLeft, canvas());
 
   connect(picker_p, SIGNAL(selected(const QPointF&)), SLOT(pickPoint(const QPointF&)));
 
@@ -99,7 +99,7 @@ void SoDaSpect::initPlot()
   show();
 }
 
-void SoDaSpect::updateData(double cfreq, float * y)
+void GUISoDa::Spect::updateData(double cfreq, float * y)
 {
   if(cfreq != center_freq_in) resetFreqAxis(cfreq); 
   for(int i = 0; i < num_buckets; i++) vals[i] = y[i]; 
@@ -107,19 +107,19 @@ void SoDaSpect::updateData(double cfreq, float * y)
   replot();
 }
 
-void SoDaSpect::setRefLevel(int rlvl)
+void GUISoDa::Spect::setRefLevel(int rlvl)
 {
   val_ref = ((double) rlvl);
   replotYAxis();
 }
 
-void SoDaSpect::setDynamicRange(double drange)
+void GUISoDa::Spect::setDynamicRange(double drange)
 {
   val_range = drange;
   replotYAxis();
 }
 
-void SoDaSpect::replotYAxis()
+void GUISoDa::Spect::replotYAxis()
 {
   double y_min = val_ref - val_range;
   double y_step = 5.0; 
@@ -131,7 +131,7 @@ void SoDaSpect::replotYAxis()
 }
 
 
-void SoDaSpect::replotXAxis()
+void GUISoDa::Spect::replotXAxis()
 {
   double min = center_freq_disp - freq_span_disp * 0.5;
   double max = center_freq_disp + freq_span_disp * 0.5;
@@ -145,7 +145,7 @@ void SoDaSpect::replotXAxis()
   replot();
 }
 
-void SoDaSpect::setFreqCenter(double cf, bool check_boundary) 
+void GUISoDa::Spect::setFreqCenter(double cf, bool check_boundary) 
 {
   (void) check_boundary;
   center_freq_disp = cf; 
@@ -153,7 +153,7 @@ void SoDaSpect::setFreqCenter(double cf, bool check_boundary)
 }
 
 
-double SoDaSpect::correctCenterFreq(double cfreq)
+double GUISoDa::Spect::correctCenterFreq(double cfreq)
 {
   if((cfreq + 0.5 * freq_span_disp) > (center_freq_in + 0.5 * freq_span_in)) {
     cfreq = (center_freq_in + 0.5 * (freq_span_in - freq_span_disp));
@@ -164,7 +164,7 @@ double SoDaSpect::correctCenterFreq(double cfreq)
   return cfreq; 
 }
 
-void SoDaSpect::setFreqSpan(double fs, bool check_boundary) {
+void GUISoDa::Spect::setFreqSpan(double fs, bool check_boundary) {
   freq_span_disp = fs;   
   if(check_boundary) {
     center_freq_disp = correctCenterFreq(center_freq_disp);
@@ -177,21 +177,21 @@ void SoDaSpect::setFreqSpan(double fs, bool check_boundary) {
 }
 
 
-void SoDaSpect::pickPoint(const QPointF & pos)
+void GUISoDa::Spect::pickPoint(const QPointF & pos)
 {
   double freq = pos.x() - marker_lo_offset; 
   setFreqMarker(freq);
   emit xClick(freq);
 }
 
-void SoDaSpect::setMarkerOffset(double lo, double hi) { 
+void GUISoDa::Spect::setMarkerOffset(double lo, double hi) { 
   marker_lo_offset = lo;
   marker_hi_offset = hi;       
   setFreqMarker(marker_freq); 
 }
 
 
-void SoDaSpect::setFreqMarker(double freq)
+void GUISoDa::Spect::setFreqMarker(double freq)
 {
   double f = freq + marker_lo_offset; 
   double width = marker_hi_offset - marker_lo_offset;
@@ -201,7 +201,7 @@ void SoDaSpect::setFreqMarker(double freq)
   replot();
 }
 
-void SoDaSpect::resetFreqAxis(double cfreq) {
+void GUISoDa::Spect::resetFreqAxis(double cfreq) {
   // load up the X axis values. (frequency)
   double fincr = freq_span_in / ((double) (num_buckets-1));
   double fr = cfreq - 0.5 * freq_span_in; 
@@ -211,7 +211,7 @@ void SoDaSpect::resetFreqAxis(double cfreq) {
   }
 }
 
-void SoDaSpect::configureSpectrum(double cfreq, double span, long buckets) {
+void GUISoDa::Spect::configureSpectrum(double cfreq, double span, long buckets) {
   marker_freq = cfreq; 
   center_freq_in = cfreq; 
   freq_span_in = span; 

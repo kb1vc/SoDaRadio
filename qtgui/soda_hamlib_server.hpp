@@ -38,37 +38,37 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "soda_hamlib_handler.hpp"
 #include "../src/Command.hxx"
 
-// This, and soda_hamlib_listener are taken 
-// from a pattern at https://gist.github.com/lamprosg/4587087
-// nicely done and documented. 
-// 
+ // This, and soda_hamlib_listener are taken 
+ // from a pattern at https://gist.github.com/lamprosg/4587087
+ // nicely done and documented. 
+ // 
 
+namespace GUISoDa {
+  class HamlibServer : public QTcpServer {
+    Q_OBJECT
 
-class SoDaHamlibServer : public QTcpServer {
-  Q_OBJECT
+  public:
+    HamlibServer(QObject * parent = 0, int _port_num = 4575);
 
-public:
-  SoDaHamlibServer(QObject * parent = 0, int _port_num = 4575);
+    ~HamlibServer();
 
-  ~SoDaHamlibServer();
+    HamlibHandler * getHandler() { return handler_p; }
 
-  SoDaHamlibHandler * getHandler() { return handler_p; }
-
-signals:
-  void stopListeners();
+  signals:
+    void stopListeners();
 		      
-public slots:
-  // start listening for the first incoming connection.
-  bool start(); 
+  public slots:
+    // start listening for the first incoming connection.
+    bool start(); 
 
 
-protected:
-  void incomingConnection(qintptr desc);
-  int port_num;
+  protected:
+    void incomingConnection(qintptr desc);
+    int port_num;
 
-  SoDaHamlibHandler * handler_p; 
+    HamlibHandler * handler_p; 
 
-  std::list<SoDaHamlibListener *> listener_list;
-};
-
+    std::list<HamlibListener *> listener_list;
+  };
+}
 #endif

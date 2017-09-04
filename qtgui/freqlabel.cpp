@@ -30,7 +30,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "freqlabel.hpp"
 #include <iostream>
 
-FreqLabel::FreqLabel(QWidget * parent,
+using namespace GUISoDa; 
+
+GUISoDa::FreqLabel::FreqLabel(QWidget * parent,
 		     Qt::WindowFlags f)
   : QLabel(parent), incdec_position(2)
 {
@@ -40,9 +42,9 @@ FreqLabel::FreqLabel(QWidget * parent,
   setTextFormat(Qt::RichText);
 }
 
-FreqLabel::~FreqLabel() {}
+GUISoDa::FreqLabel::~FreqLabel() {}
 
-QString FreqLabel::freq2String() {
+QString GUISoDa::FreqLabel::freq2String() {
   QString ret; 
   int num_digs; 
   unsigned long ifrac = frac_freq;
@@ -85,7 +87,7 @@ QString FreqLabel::freq2String() {
   return ret; 
 }
 
-void FreqLabel::setFreq(double hzfreq)
+void GUISoDa::FreqLabel::setFreq(double hzfreq)
 {
   double freq = hzfreq * 1e-6; 
   frequency = hzfreq; 
@@ -103,7 +105,7 @@ void FreqLabel::setFreq(double hzfreq)
   disp_h = r.height();
 }
 
-void FreqLabel::mousePressEvent(QMouseEvent * event) 
+void GUISoDa::FreqLabel::mousePressEvent(QMouseEvent * event) 
 {
     int px = event->x();
     int py = event->y();

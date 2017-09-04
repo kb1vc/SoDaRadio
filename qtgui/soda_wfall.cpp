@@ -37,8 +37,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "soda_wfall.hpp"
 
+using namespace GUISoDa;
+
 #define FIVECOLOR
-class WFColorMap : public QwtLinearColorMap
+class GUISoDa::WFColorMap : public QwtLinearColorMap
 {
 public:
   enum MapSelector {C5, C7}; 
@@ -64,14 +66,14 @@ public:
   }
 }; 
 
-class SoDaPlotSpectrogram : public QwtPlotSpectrogram
+class GUISoDa::PlotSpectrogram : public QwtPlotSpectrogram
 {
 public:
-  explicit SoDaPlotSpectrogram() : QwtPlotSpectrogram() {
+  explicit PlotSpectrogram() : QwtPlotSpectrogram() {
     rescan_required = false; 
   }
 
-  ~SoDaPlotSpectrogram() {
+  ~PlotSpectrogram() {
   }
 
   void setData(QwtRasterData * dp) { 
@@ -131,38 +133,38 @@ protected:
   QwtRasterData * data_p;
 };
 
-SoDaWFall::SoDaWFall(QWidget *parent) :
+GUISoDa::WFall::WFall(QWidget *parent) :
     QwtPlot(parent)
 {
     initPlot();
 }
 
-SoDaWFall::~SoDaWFall()
+GUISoDa::WFall::~WFall()
 {
 }
 
 
-void SoDaWFall::initPlot()
+void GUISoDa::WFall::initPlot()
 {
-  sgram = new SoDaPlotSpectrogram();   
+  sgram = new GUISoDa::PlotSpectrogram();   
   sgram->setRenderThreadCount(1);
 
-  sgram->setColorMap(new WFColorMap()); 
-  wfall_data = new SoDaWFallData();
+  sgram->setColorMap(new GUISoDa::WFColorMap()); 
+  wfall_data = new WFallData();
   sgram->setData(wfall_data);
   sgram->attach(this);
   right_axis = axisWidget( QwtPlot::yRight);
   right_axis->setTitle("Signal Strength");
   right_axis->setColorBarEnabled(true);
   right_axis->setColorBarWidth(10);
-  right_axis->setColorMap(wfall_data->interval(Qt::ZAxis), new WFColorMap()); 
+  right_axis->setColorMap(wfall_data->interval(Qt::ZAxis), new GUISoDa::WFColorMap()); 
 
   setAxisScale(QwtPlot::yRight, wfall_data->interval(Qt::ZAxis).minValue(),
 	       wfall_data->interval(Qt::ZAxis).maxValue());
   enableAxis(QwtPlot::yRight, true);
   enableAxis(QwtPlot::yLeft, false);
 
-  freq_scale_p = new SoDaFreqScaleDraw();
+  freq_scale_p = new FreqScaleDraw();
   setAxisScaleDraw(QwtPlot::xBottom, freq_scale_p);  
   setFreqCenter(1.0e6);
   freq_span = 200e3;
@@ -170,7 +172,7 @@ void SoDaWFall::initPlot()
   sgram->setDisplayMode(QwtPlotSpectrogram::ImageMode, true);
   sgram->setDefaultContourPen(QPen(Qt::black, 0));
 
-  picker_p = new SoDaWFallPicker(QwtPlot::xBottom, QwtPlot::yLeft, canvas());
+  picker_p = new WFallPicker(QwtPlot::xBottom, QwtPlot::yLeft, canvas());
   connect(picker_p, SIGNAL(selected(const QPointF&)), SLOT(pickPoint(const QPointF&)));
 
   last_input_cfreq = 0.0; 
@@ -181,7 +183,7 @@ void SoDaWFall::initPlot()
   show();
 }
 
-double SoDaWFall::correctCenterFreq(double cfreq)
+double GUISoDa::WFall::correctCenterFreq(double cfreq)
 {
   if((cfreq + 0.5 * freq_span) > (last_input_cfreq + 0.5 * spectrum_input_span)) {
     cfreq = (last_input_cfreq + 0.5 * (spectrum_input_span - freq_span));
@@ -192,7 +194,7 @@ double SoDaWFall::correctCenterFreq(double cfreq)
   return cfreq; 
 }
 
-void SoDaWFall::setFreqCenter(double cfreq, bool check_boundary)
+void GUISoDa::WFall::setFreqCenter(double cfreq, bool check_boundary)
 {
   if(check_boundary) {
     cfreq = correctCenterFreq(cfreq); 
@@ -204,7 +206,7 @@ void SoDaWFall::setFreqCenter(double cfreq, bool check_boundary)
   replot();
 }
 
-void SoDaWFall::setFreqSpan(double span, bool check_boundary)
+void GUISoDa::WFall::setFreqSpan(double span, bool check_boundary)
 {
   freq_span = span;
   if(check_boundary && (center_freq != 0.0)) {
@@ -223,48 +225,48 @@ void SoDaWFall::setFreqSpan(double span, bool check_boundary)
 }
 
 
-void SoDaWFall::updateData(double cfreq, float * spect)
+void GUISoDa::WFall::updateData(double cfreq, float * spect)
 {
   last_input_cfreq = cfreq; 
   wfall_data->updateData(cfreq, spect);
   replot();
 }
 
-void SoDaWFall::setMarkerOffset(double lo, double hi) { 
+void GUISoDa::WFall::setMarkerOffset(double lo, double hi) { 
   marker_lo_offset = lo;
   marker_hi_offset = hi;       
   setFreqMarker(marker_freq); 
 }
 
-void SoDaWFall::setFreqMarker(double freq) 
+void GUISoDa::WFall::setFreqMarker(double freq) 
 {
   marker_freq = freq; 
   setMarkers(freq + marker_lo_offset, freq + marker_hi_offset);   
 } 
 
-void SoDaWFall::pickPoint(const QPointF & pos)
+void GUISoDa::WFall::pickPoint(const QPointF & pos)
 {
   double freq = pos.x() - marker_lo_offset;   
   setFreqMarker(freq);
   emit xClick(freq);
 }
 
-void SoDaWFall::setDynamicRange(double drange)
+void GUISoDa::WFall::setDynamicRange(double drange)
 {
   wfall_data->setDynamicRange(drange);
   setZAxis();
 }
 
-void SoDaWFall::setRefLevel(int reflvl)
+void GUISoDa::WFall::setRefLevel(int reflvl)
 {
   wfall_data->setRefLevel((double) reflvl);
   setZAxis();  
 }
 
-void SoDaWFall::setZAxis()
+void GUISoDa::WFall::setZAxis()
 {
   const QwtInterval z_interval = wfall_data->interval(Qt::ZAxis); 
-  right_axis->setColorMap(z_interval, new WFColorMap()); 
+  right_axis->setColorMap(z_interval, new GUISoDa::WFColorMap()); 
 
   setAxisScale(QwtPlot::yRight, z_interval.minValue(),
 	       z_interval.maxValue());
