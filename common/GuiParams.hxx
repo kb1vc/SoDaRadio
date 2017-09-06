@@ -37,14 +37,18 @@ namespace SoDa {
   public:
     GuiParams(int argc, char ** argv);
 
-    std::string getServerSocketBasename() { return server_sock_basename; }
-    std::string getServerName() { return server_name; }
-    std::string getServerArgs() { return server_args; }
-    std::string getLogFileName() { return log_filename; }
-    std::string getConfigFileName() { return config_filename; }
-    std::string getUHDArgs() { return uhd_args; }
-    unsigned int getDebugLevel() { return debug_level; }
-    std::string getAudioPortName() { return audio_portname; }
+    std::string getServerSocketBasename() const { return server_sock_basename; }
+    std::string getServerName() const { return server_name; }
+    std::string getServerArgs() const { return server_args; }
+    std::string getLogFileName() const { return log_filename; }
+    std::string getConfigFileName() const { return config_filename; }
+    std::string getUHDArgs() const { return uhd_args; }
+    unsigned int getDebugLevel() const { return debug_level; }
+    std::string getAudioPortName() const { return audio_portname; }
+
+    unsigned int getHamlibPortNumber() const { return hamlib_portnumber; }
+    
+    void setServerSocketBasename(const std::string s) { server_sock_basename = s; }
   private:
     boost::program_options::variables_map pmap;
 
@@ -57,6 +61,8 @@ namespace SoDa {
     std::string uhd_args;
     unsigned int debug_level; ///< 0 => no debug messages .. more detail with higher values
     std::string audio_portname; 
+
+    unsigned int hamlib_portnumber;
   };
 
 }

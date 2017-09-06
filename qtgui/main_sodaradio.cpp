@@ -31,8 +31,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iostream>
 #include <QMessageBox>
 #include <QStyleFactory>
-#include "../common/GuiParams.hxx"
+#include <QTextStream>
+#include <QDir>
 
+#include "../common/GuiParams.hxx"
+#include <stdlib.h>
 /**
  * @brief simple conversion from std::string to QString... 
  *
@@ -65,7 +68,7 @@ static void alertAndExit(const QString & err_msg)
  * @param p set of command line parameters, some of which are 
  * passed to the server process.
  */
-static void startupServer(SoDa::GuiParams & p)
+static void startupServer(const QString & lock_file_name, SoDa::GuiParams & p)
 {
   // start the radio server  
   QString server_name;
@@ -96,9 +99,11 @@ static void startupServer(SoDa::GuiParams & p)
 
   // now add the uhd args
   QString uhd_args = ss2QS(p.getUHDArgs());
-  if(uhd_args != "") server_command += QString("--uhdargs %1 --debug %2").arg(uhd_args).arg(p.getDebugLevel());
+  if(uhd_args != "") server_command += QString("--uhdargs %1 ").arg(uhd_args);
+  if(p.getDebugLevel() > 0) server_command += QString("--debug %1 ").arg(p.getDebugLevel());
   
-  qDebug() << QString("Starting process with command [%1]").arg(server_command);
+  server_command += QString(" --lockfile %1 ").arg(lock_file_name); 
+
   QProcess::startDetached(server_command); 
 
 }
@@ -136,6 +141,43 @@ void setupLookNFeel()
   qApp->setPalette(palette);
 }
 
+bool checkForZombies(const QString & server_lock_filename, const QString & server_socket_base) 
+{
+  // does the server lock filename exist? 
+  if(QFileInfo::exists(server_lock_filename)) {
+    QString error_message = QString("%1 exists. \
+This is an indication that a zombiefied \
+SoDaServer instance is still running.\
+<ol>\
+<li>Kill the zombie SoDaServer process.</li>\
+<li>Delete files that look like this: <p>%2_cmd</p> and <p>%2_wfall</p></li>	\
+<li>Delete this file: <p>%1</p></li>					\
+<li>Try again.</li>\
+</ol>").arg(server_lock_filename).arg(server_socket_base);
+    QMessageBox mbox(QMessageBox::Critical, 
+		     "Fatal Error", 
+		     error_message,
+		     QMessageBox::Ok, NULL);
+    //  mbox.setDetailedText(err_string); 
+    mbox.exec();
+
+    QTextStream qw(stdout);
+    
+    qw << QString("%1 exists.\nThis is an indication that a zombiefied\n\
+SoDaServer instance is still running.\n\n\
+1. Kill the zombie SoDaServer process.\n\
+2. Delete files that look like this: %2_cmd  and  %2_wfall\n\
+3. Delete this file: %1\n\
+4. Try again.").arg(server_lock_filename).arg(server_socket_base);
+
+    // we should not continue.
+    return true; 
+  }
+
+  return false; 
+}
+
+
 /**
  * @brief Start the SoDaRadio GUI app and launch the server process
  * 
@@ -147,11 +189,34 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     SoDa::GuiParams p(argc, argv);    
 
-    startupServer(p); 
+    QString apdir =  QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);  
 
-    setupLookNFeel();
+    if(!QDir(apdir).exists()) {
+      QDir().mkdir(apdir);
+    }
+
+    QString uhdargs = QString::fromStdString(p.getUHDArgs());
+    QString server_lock_filename = QString("%1/sodaserver_args%2.lock")
+      .arg(apdir)
+      .arg(uhdargs);
     
-    MainWindow w(0, p);
-    w.show();
-    return a.exec();
+    QString ssbn; 
+    if(p.getServerSocketBasename() == std::string("")) {
+      ssbn = QString("%1/SoDa_%2_").arg(apdir).arg(uhdargs);
+      std::string nbn = ssbn.toStdString();
+      p.setServerSocketBasename(nbn);
+    }
+    else {
+      ssbn = QString::fromStdString(p.getServerSocketBasename());
+    }
+
+    if(!checkForZombies(server_lock_filename, ssbn)) {
+      startupServer(server_lock_filename, p); 
+      
+      setupLookNFeel();
+    
+      MainWindow w(0, p);
+      w.show();
+      return a.exec();
+    }
 }

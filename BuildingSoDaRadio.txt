@@ -11,6 +11,7 @@ sudo dnf install hamlib-devel
 sudo dnf install gpsd-devel gpsd-clients gpsd-libs gpsd
 
 
+
 to make packages, you need the rpmbuild
 sudo dnf install rpm-build
 

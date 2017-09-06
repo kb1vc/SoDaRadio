@@ -55,11 +55,6 @@ void MainWindow::setupHamlib()
   connect(hlib_server->getHandler(), SIGNAL(setTXFreq(double)),
 	  this, SLOT(setTXFreq(double)));
 
-  // connect(hlib_server->getHandler(), &SoDaHamlibHandler::setRXFreq,
-  // 	  this, [=] (double f) {
-  // 	    qDebug() << "Recentering spectrum displays to frequency: " << f; 
-  // 	    this->listener->setSpectrumCenter(f);
-  // 	  });
   connect(hlib_server->getHandler(), SIGNAL(setRXFreq(double)),
 	  this->listener, SLOT(setSpectrumCenter(double)));
 

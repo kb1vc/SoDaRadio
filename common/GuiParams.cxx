@@ -42,13 +42,15 @@ SoDa::GuiParams::GuiParams(int argc, char ** argv)
      "Argument string to be passed to SoDaServer program")
     ("uhdargs", po::value<std::string>(&uhd_args)->default_value(""),
      "multi uhd device address arguments -- 'type=b200' selects a B2xx unit in preference over an N2xx device")
-    ("uds_name", po::value<std::string>(&server_sock_basename)->default_value("/tmp/SoDa_"),
+    ("uds_name", po::value<std::string>(&server_sock_basename)->default_value(""),
      "unix domain socket name for server to UI client message channels")
     ("config", po::value<std::string>(&config_filename)->default_value(""),
      "Configuration file with initial settings. Otherwise SoDaRadio will look in ${HOME}/.SoDaRadio/SoDa.soda_cfg"
      )
     ("log", po::value<std::string>(&log_filename)->default_value("SoDa.soda_log"),
      "Log filename")
+    ("hamlib_port", po::value<unsigned int>(&hamlib_portnumber)->default_value(4575),
+     "TCP port number for this hamlib server.")
     ("audio", po::value<std::string>(&audio_portname)->default_value("default"), 
      "Audio device name for ALSA audio.")
     ("debug", po::value<unsigned int>(&debug_level)->default_value(0)->implicit_value(1),

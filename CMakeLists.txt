@@ -53,7 +53,7 @@ set(CPACK_RPM_PACKAGE_RELOCATABLE TRUE)
 set(CPACK_DEBIAN_PACKAGE_DESCRIPTION ${SODA_PACKAGE_DESCRIPTION})
 set(CPACK_DEBIAN_PACKAGE_SECTION "hamradio")
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "lubuhd003 (>= 3.10), uhd-host (>= 3.10), libgps22 (>= 3.1), gpsd (>= 3.1)")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libuhd003 (>= 3.10), uhd-host (>= 3.10), libgps22 (>= 3.1), gpsd (>= 3.1)")
 
 
 
@@ -143,9 +143,6 @@ ENDIF()
 find_package(PkgConfig)
 pkg_search_module(HAMLIB REQUIRED hamlib)
 pkg_search_module(GPSLIB OPTIONAL libgps)
-
-message("GPSLIB_FOUND = [${GPSLIB_FOUND}]")
-message("GPSLIB_LIBRARIES = [${GPSLIB_LIBRARIES}]")
 
 ### wxWidgets 3.0 is a trainwreck
 IF(BUILD_WX_GUI)

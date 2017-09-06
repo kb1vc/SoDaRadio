@@ -120,6 +120,8 @@ namespace SoDa {
 
     std::string getGPSPortName() const { return gps_portname; }    
 
+    std::string getLockFileName() const { return lock_file_name; }
+
     bool isRadioType(const std::string & rtype) {
       std::string rt = rtype;
 
@@ -138,6 +140,8 @@ namespace SoDa {
     std::string radio_type; 
     std::string radio_args;
     std::string config_filename;
+
+    std::string lock_file_name; 
 
     std::string clock_source;
     double rx_rate, tx_rate;

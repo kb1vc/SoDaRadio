@@ -107,6 +107,9 @@
  */
 // #include <uhd/usrp/multi_usrp.hpp>
 #include <unistd.h>
+#include <stdio.h>
+
+#include <fstream>
 
 #include "SoDaBase.hxx"
 #include "MultiMBox.hxx"
@@ -131,20 +134,25 @@
 #include "Command.hxx"
 #include "Debug.hxx"
 
+void createLockFile(const std::string & lock_file_name)
+{
+  std::ofstream lfile; 
+  lfile.open(lock_file_name.c_str());
+  lfile << "If this file exists, there is likely an active SoDaServer process somewhere on this machine.\n";
+  lfile.close();
+}
+
+void deleteLockFile(const std::string & lock_file_name)
+{
+  remove(lock_file_name.c_str());
+}
+
 /// do the work of creating the SoDa threads
 /// @param argc number of command line arguments
 /// @param argv command line arguments
-int doWork(int argc, char * argv[])
+int doWork(SoDa::Params & params)
 {
   /// create the components of the radio
-
-  /// the command line parameter list is used to
-  /// create a param object that holds configuration
-  /// information from the command line and from
-  /// the stored configuration files.
-  /// @see SoDa::Params
-  SoDa::Params params(argc, argv);
-
   SoDa::Debug d(params.getDebugLevel(), "SoDaServer");
   d.setDefaultLevel(params.getDebugLevel());
   
@@ -248,11 +256,23 @@ int doWork(int argc, char * argv[])
 /// @param argv command line arguments @see doWork
 int main(int argc, char * argv[])
 {
+  /// the command line parameter list is used to
+  /// create a param object that holds configuration
+  /// information from the command line and from
+  /// the stored configuration files.
+  /// @see SoDa::Params
+  SoDa::Params params(argc, argv);
+
+  /// create a lock file to signal that we're alive. 
+  createLockFile(params.getLockFileName()); 
+
   try {
-    return doWork(argc, argv); 
+    doWork(params); 
   }
   catch (SoDa::SoDaException * exc) {
     std::cerr << "Exception caught at SoDa main: " << std::endl;
     std::cerr << "\t" << exc->toString() << std::endl; 
   }
+
+  deleteLockFile(params.getLockFileName());   
 }

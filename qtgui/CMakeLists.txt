@@ -3,7 +3,7 @@
 SET(CMAKE_BUILD_TYPE "Debug")
 
 SET(SoDaRadio_SRCS
-  main.cpp
+  main_sodaradio.cpp
   mainwindow.cpp
   freqlabel.cpp
   soda_logtable.cpp

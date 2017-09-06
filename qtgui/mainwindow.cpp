@@ -89,7 +89,7 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   current_band_selector = ui->bandSel_cb->currentText(); 
   auto_bandswitch_target = QString("");
 
-  hlib_server = new HamlibServer(this, 4575);
+  hlib_server = new HamlibServer(this, params.getHamlibPortNumber());
   
   hlib_server->start();
 

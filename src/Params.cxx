@@ -55,6 +55,8 @@ SoDa::Params::Params(int argc, char * argv[])
      "hostname for gpsd server")
     ("gps_port", po::value<std::string>(&gps_portname)->default_value("2947"),
      "port number for gpsd server")
+    ("lockfile", po::value<std::string>(&lock_file_name)->default_value("SoDa.lock"), 
+     "lock file to signal that a sodaradio server is active")
     ;
 
   po::store(po::parse_command_line(argc, argv, desc), pmap);
