@@ -103,7 +103,7 @@ SoDa::BaseBandTX::BaseBandTX(Params * params, DatMBox * _tx_stream,
   // enable the audio filter by default.
   tx_audio_filter_ena = true; 
 
-  mic_gain = 0.4;
+  mic_gain = 0.8;  //  was ... 0.4;
 
   fm_mic_gain = 0.8;
 }

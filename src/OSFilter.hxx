@@ -122,7 +122,7 @@ namespace SoDa {
     /// parameters that we keep to support display masks on the spectrogram
     double low_edge, high_edge; 
 
-    /// pick a likly N - FFT length.
+    /// pick a likely N - FFT length.
     int guessN();
     void setupFFT();
 
