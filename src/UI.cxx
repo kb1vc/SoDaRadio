@@ -29,6 +29,8 @@
 #include "UI.hxx"
 #include "version.h"
 
+const double SoDa::UI::spectrum_span = 200e3;
+
 SoDa::UI::UI(Params * params, CmdMBox * _cwtxt_stream,
 	     DatMBox * _rx_stream, DatMBox * _if_stream, 
 	     CmdMBox * _cmd_stream, CmdMBox * _gps_stream) : SoDa::SoDaThread("UI")

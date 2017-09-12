@@ -71,7 +71,7 @@ namespace SoDa {
     float * lo_spectrum; 
 
     // the spectrum runs from -100kHz below to 100kHz above the center freq. 
-    const double spectrum_span = 200e3; 
+    static const double spectrum_span; // = 200e3; 
     
     double baseband_rx_freq;
     double spectrum_center_freq;
