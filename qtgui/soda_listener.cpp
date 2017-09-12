@@ -138,6 +138,7 @@ bool GUISoDa::Listener::get(SoDa::Command & cmd)
 
 void GUISoDa::Listener::setupSpectrumBuffer(double cfreq, double span, long buflen)
 {
+  (void) span; 
   spect_center_freq = cfreq; 
 
   if(spect_buffer_len < buflen) {
@@ -153,19 +154,23 @@ void GUISoDa::Listener::setupSpectrumBuffer(double cfreq, double span, long bufl
 
 void GUISoDa::Listener::processSpectrum() {
   int rlen = spect_buffer_len * sizeof(float);
-  while(spect_socket->bytesAvailable() > (sizeof(int) + rlen)) {
+  while(spect_socket->bytesAvailable() > ((long) (sizeof(int) + rlen))) {
     int len; 
     int stat = spect_socket->read((char*) & len, sizeof(int));
 
-    if(rlen != len) {
+    if((stat >= 0) && (rlen != len)) {
       char * nbuf = new char[len];
       // throw it away. 
-      spect_socket->read(nbuf, len); 
+      stat = spect_socket->read(nbuf, len); 
       delete[] nbuf; 
     }
     else {
       stat = spect_socket->read((char*) spect_buffer, rlen); 
       emit(updateData(spect_center_freq, spect_buffer)); 
+    }
+
+    if(stat < 0) {
+      emit(fatalError("Read from spectrum socket indicated a closed stream."));
     }
   }
 }
@@ -173,9 +178,8 @@ void GUISoDa::Listener::processSpectrum() {
 void GUISoDa::Listener::processCmd() {
   SoDa::Command incmd; 
  
-  while(cmd_socket->bytesAvailable() > sizeof(SoDa::Command)) {
-    int len = get(incmd);    
-
+  while(cmd_socket->bytesAvailable() > ((long) sizeof(SoDa::Command))) {
+    get(incmd);    
     if(incmd.cmd == SoDa::Command::REP) handleREP(incmd);
     else if(incmd.cmd == SoDa::Command::GET) handleGET(incmd);
     else if(incmd.cmd == SoDa::Command::SET) handleSET(incmd);    
@@ -372,7 +376,7 @@ void GUISoDa::Listener::clearCWBuffer()
 void GUISoDa::Listener::sendCW(const QString & txt)
 {
   char cwbuf[SoDa::Command::getMaxStringLen()]; 
-  unsigned int i, j; 
+  int i, j; 
   for(i = 0, j = 0; i <= txt.size(); i++) {
     if(i == txt.size()) {
       cwbuf[j] = '\000';

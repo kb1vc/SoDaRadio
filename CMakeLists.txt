@@ -105,6 +105,22 @@ SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
 
 
 FIND_PACKAGE(Boost 1.45 REQUIRED COMPONENTS program_options thread date_time system filesystem serialization regex QUIET)
+ 
+IF(${NO_SOAPY_SDR})
+  MESSAGE("SoapySDR Support disabled.")
+  SET(HAVE_SOAPY_SDR 0)
+ELSE()
+  # Enable Soapy Support
+  FIND_PACKAGE(SoapySDR QUIET)
+  IF(NOT SoapySDR_LIBRARIES)
+    MESSAGE("SoapySDR NOT FOUND!")
+    SET(HAVE_SOAPY_SDR 0)
+  ELSE()
+    MESSAGE("SoapySDR support found")
+    SET(HAVE_SOAPY_SDR 1)  
+  ENDIF()
+ENDIF()  
+
 
 IF(${NO_UHD})
   MESSAGE("libUHD Support disabled.")

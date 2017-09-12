@@ -45,7 +45,9 @@ void MainWindow::setupBandConfig()
   connect(ui->BCOK_btn, SIGNAL(clicked(bool)), 
 	  this, SLOT(writeBandMapEntry(bool)));
   connect(ui->BCCancel_btn, &QPushButton::clicked, 
-	  [=](bool v){ fillBandMapEntry(ui->BCBandSel_cb->currentText()); });
+	  [=](bool v){ 
+	    (void) v; 
+	    fillBandMapEntry(ui->BCBandSel_cb->currentText()); });
   connect(ui->BCBandSel_cb, SIGNAL(currentTextChanged(const QString &)),
 	  this, SLOT(fillBandMapEntry(const QString &)));
 

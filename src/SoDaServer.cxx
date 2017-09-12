@@ -122,7 +122,11 @@
 #  include "USRPRX.hxx"
 #  include "USRPTX.hxx"
 #endif
-
+#if HAVE_SOAPY_SDR
+#  include "SoapyCtrl.hxx"
+#  include "SoapyRX.hxx"
+#  include "SoapyTX.hxx"
+#endif
 
 #include "BaseBandRX.hxx"
 #include "BaseBandTX.hxx"
@@ -181,6 +185,16 @@ int doWork(SoDa::Params & params)
 #else    
     std::cerr << "lib UHD support not included in this build.\n^C to exit.\n";
     exit(-1);
+#endif    
+  }
+  else if(params.isRadioType("Lime")) {
+#if HAVE_SOAPY_SDR    
+    ctrl = new SoDa::SoapyCtrl("lime", &params, &cmd_stream); 
+    rx = new SoDa::SoapyRX(&params, (SoDa::SoapyCtrl *)ctrl, &rx_stream, &if_stream, &cmd_stream); 
+    tx = new SoDa::SoapyTX(&params, (SoDa::SoapyCtrl *)ctrl, &tx_stream, &cw_env_stream, &cmd_stream);
+#else
+    std::cerr << "SoapySDR support not included in this build.\n^C to exit.\n";
+    exit(-1); 
 #endif    
   }
   else {
@@ -245,7 +259,11 @@ int doWork(SoDa::Params & params)
   d.debugMsg("Exit");
   
   // when we get here, we are done... (UI should not return until it gets an "exit/quit" command.)
-
+#if HAVE_SOAPY_SDR
+  if(params.isRadioType("Lime")) {
+    ((SoDa::SoapyCtrl *)ctrl)->close();
+  }
+#endif
   return 0; 
 }
 

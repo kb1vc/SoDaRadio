@@ -341,6 +341,8 @@ bool GUISoDa::HamlibHandler::cmdSplitVFO(QTextStream & out, QTextStream & in, bo
 
 bool GUISoDa::HamlibHandler::cmdQuit(QTextStream & out, QTextStream & in, bool getval)
 {
+  (void) in; 
+  (void) getval;
   out << "q" << endl;
   qDebug() << "called cmdQuit\n";
   return false; 

@@ -49,7 +49,7 @@ QString GUISoDa::FreqLabel::freq2String() {
   int num_digs; 
   unsigned long ifrac = frac_freq;
   // start at the left hand side
-  bool first_nonzero = false; 
+  // bool first_nonzero = false; 
   for(num_digs = 0; num_digs < 6; num_digs++) {
     int dig = ifrac % 10;
     ifrac = ifrac / 10;
