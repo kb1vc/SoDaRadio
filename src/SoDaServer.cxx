@@ -230,8 +230,10 @@ int doWork(SoDa::Params & params)
   cwtx.start();
 
   // now the gps...
+#if HAVE_GPSLIB  
   d.debugMsg("Starting gps");
   gps.start();
+#endif
   
   // wait for the user interface to tell us that it is time to quit.
   ui.join();
@@ -241,7 +243,9 @@ int doWork(SoDa::Params & params)
   bbrx.join();
   bbtx.join();
   cwtx.join();
+#if HAVE_GPSLIB    
   gps.join();
+#endif  
   d.debugMsg("Exit");
   
   // when we get here, we are done... (UI should not return until it gets an "exit/quit" command.)

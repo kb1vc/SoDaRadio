@@ -65,3 +65,22 @@ sudo apt-get update
 sudo /usr/lib/uhd/utils/uhd_images_downloader.py
 
 sudo apt install ./SoDaRadio......deb
+
+
+-------------------------------------------
+
+
+Building on AWS Fedora 25 cloud instance  -- from a bare installation
+
+use scripts/build_kit_aws_Fedora25Cloud.sh
+
+sudo dnf group install "C Development Tools and Libraries"
+sudo dnf install libusb-devel doxygen boost-devel
+sudo dnf install fftw-devel alsa-lib-devel
+sudo dnf install qt5-qtbase-devel
+sudo dnf install qwt-qt5-devel
+sudo dnf install python-mako
+sudo dnf install qt5-qtmultimedia-devel
+sudo dnf install hamlib-devel
+sudo dnf install gpsd-devel gpsd-clients gpsd-libs gpsd
+
