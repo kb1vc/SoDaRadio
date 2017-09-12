@@ -130,6 +130,10 @@ void SoDa::BaseBandTX::run()
    *       sleep 1mS
    * \endcode
    */
+
+  // first wake up the audio channel
+  audio_ifc->wakeIn();  
+
   while(!exitflag) {
     if((cmd = cmd_stream->get(cmd_subs)) != NULL) {
       // process the command.
@@ -137,7 +141,11 @@ void SoDa::BaseBandTX::run()
       exitflag |= (cmd->target == Command::STOP); 
       cmd_stream->free(cmd); 
     }
-    else if (cw_tx_mode) {
+    else if (!tx_stream_on || cw_tx_mode) {
+      // read audio information and throw it away. 
+      if(audio_ifc->recvBufferReady(audio_buffer_size)) {
+	audio_ifc->recv(audio_buf, audio_buffer_size); 
+      }
       usleep(1000); 
     }
     else {
@@ -165,8 +173,6 @@ void SoDa::BaseBandTX::run()
 	  audio_tx_buffer = audio_buf; 
 	}
 	
-
-
 	if(tx_mode == SoDa::Command::USB) {
 	  txbuf = modulateAM(audio_tx_buffer, audio_buffer_size, true, false); 
 	}
@@ -296,7 +302,8 @@ void SoDa::BaseBandTX::execSetCommand(SoDa::Command * cmd)
       tx_on = true;
       if(!cw_tx_mode) {
 	// Wake up the audio interface. 
-	audio_ifc->wakeIn();
+	// actually, never need to do this, as we never let it sleep
+	// audio_ifc->wakeIn();
 	tx_stream_on = true; 
       }
     }
@@ -307,7 +314,9 @@ void SoDa::BaseBandTX::execSetCommand(SoDa::Command * cmd)
       if(tx_stream_on) {
 	// Put the audio interface to sleep
 	// and flush the input buffer	
-	audio_ifc->sleepIn(); 
+	// Actually, never put the audio interface to sleep. 
+	// always read from the input buffer. 
+	// audio_ifc->sleepIn(); 
 	tx_stream_on = false; 
       }
     }

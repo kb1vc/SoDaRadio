@@ -196,3 +196,12 @@ window length of 12.
 
 
 
+-------------------
+
+low HF power is small
+
+bets available from tx_waveforms demo
+40m 17dBm
+30m 19dBm
+20m 20dBm
+
