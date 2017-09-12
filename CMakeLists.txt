@@ -143,6 +143,12 @@ ENDIF()
 find_package(PkgConfig)
 pkg_search_module(HAMLIB REQUIRED hamlib)
 pkg_search_module(GPSLIB OPTIONAL libgps)
+IF(GPSLIB_FOUND)
+  SET(HAVE_GPSLIB 1)
+ELSE()
+  SET(HAVE_GPSLIB 0)  
+ENDIF()
+
 
 ### wxWidgets 3.0 is a trainwreck
 IF(BUILD_WX_GUI)
