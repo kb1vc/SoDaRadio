@@ -168,7 +168,7 @@ SoDaServer instance is still running.\n\n\
 1. Kill the zombie SoDaServer process.\n\
 2. Delete files that look like this: %2_cmd  and  %2_wfall\n\
 3. Delete this file: %1\n\
-4. Try again.").arg(server_lock_filename).arg(server_socket_base);
+4. Try again.\n").arg(server_lock_filename).arg(server_socket_base);
 
     // we should not continue.
     return true; 
