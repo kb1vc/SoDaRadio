@@ -5,6 +5,9 @@ that runs on Linux.   It has been tested on several Ettus
 USRP models including the N200/WBX, N210/WBX, N210/SBX, N200/UBX,
 and the B210. 
 
+It looks like this: 
+![Image of SoDaRadio tuned to 20m band](/images/SoDaRadio_20m.png)
+
 It is non-commercial and released under the BSD 2-Clause license. 
 
 SoDaRadio does not yet run on any other hardware platform. 
@@ -13,6 +16,7 @@ SoDaRadio has been built on both Fedora and Ubuntu releases.  There is no
 particular reason that it couldn't run on any Linux release that is clean 
 enough to compile and run the UHD utilities that come with the Ettus software.
 
+Interested in more detail?  Take a look at the [documentation here](docs/index.html).
 
 ## Getting SoDaRadio
 
