@@ -1,5 +1,4 @@
-# SoDa -- A Software Defined Radio 
-# for the Ettus Research USRP
+# SoDa -- A Software Defined Radio for the Ettus Research USRP
 
 SoDaRadio is a multi-mode VHF/UHF/Microwave radio transciever
 that runs on Linux.   It has been tested on several Ettus
@@ -43,7 +42,7 @@ binary kit installation instructions below, at "Installing from a kit."
 ### Building from scratch
 
 Sources can be cloned or downloaded from the github site.  If you haven't used
-git, don't get wrapped around the axel.  You won't need mad wizard ski112 to 
+git, don't get wrapped around the axle.  You won't need mad wizard ski112 to 
 get through this. 
 
 The next steps depend on which distribution you are using. 
@@ -135,7 +134,28 @@ available on github-pages.
 
 The following works for installing on Fedora 25.  Fedora 24 is identical 
 
+1. Download the appropriate rpm. The following links will take you to the repository 
+location for the kit. Go to that page and hit the download button.
+   * [Get SoDaRadio for Fedora 25 here](/packages/rpm/SoDaRadio-5.0.0-1.x86_64.Fedora-25.rpm)
+   * [Get SoDaRadio for Fedora 24 here](/packages/rpm/SoDaRadio-5.0.0-1.x86_64.Fedora-24.rpm)
+1. Install the kit using dnf (substitute the correct package name in the command below).
+~~~~
+sudo dnf install ./SoDaRadio-5.0.0-1.x86_64.Fedora-25.rpm
+~~~~
+
+
 #### Ubuntu
+
+SoDaRadio builds and runs on Ubuntu 14.04, but the deb package for it does not work for some mysterious reason. 
+
+The kit for Ubuntu 16.04, however, appears to work just fine.  
+
+1. Download the deb file.  The following link will take you to the repository location
+for the kit.  Go to that page and hit the download button.  [Get SoDaRadio for Ubuntu 16.04 here](/packages/deb/SoDaRadio-5.0.0-1.x86_64.Ubuntu-16.04.deb)
+2. Install the kit using apt
+~~~~
+sudo apt install ./SoDaRadio-5.0.0-1.x86_64.Ubuntu-16.04.deb
+~~~~
 
 ## Using SoDaRadio
 
