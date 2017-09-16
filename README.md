@@ -16,9 +16,9 @@ SoDaRadio has been built on both Fedora and Ubuntu releases.  There is no
 particular reason that it couldn't run on any Linux release that is clean 
 enough to compile and run the UHD utilities that come with the Ettus software.
 
-Interested in more detail?  Take a look at the [documentation here](docs/index.html).
+Interested in more detail?  Take a look at the [documentation here](docs/index.html).  ["SoDa -- A Multimode VHF/UHF Software Defined Radio"](papers/SoDa_EasternVHF_2014.pdf) was presented at the 40th Eastern VHF/UHF Conference in 2014.
 
-Interested in how SoDaRadio got [here?](History.md)
+Interested in how SoDaRadio got [here?](History.md) 
 
 ## Getting SoDaRadio
 
@@ -133,8 +133,9 @@ the git clone command.
 
 ### Installing from a kit
 
-WATCH THIS SPACE -- I need to figure out how to make the rpm and deb files
-available on github-pages. 
+Kit installs are pretty simple.  Download the appropriate package, and
+install with the normal installer for your OS. If you've managed to install 
+the Ettus software, then SoDaRadio should not present any particular problems.
 
 #### Fedora
 
