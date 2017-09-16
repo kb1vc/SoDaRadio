@@ -56,8 +56,8 @@ set(SoDaServer_SRCS
     IPSockets.cxx
     B200Control.hxx
     B200Control.cxx
-    Demod.hxx
-    Demod.cxx
+#    Demod.hxx
+#    Demod.cxx
     PropTree.hxx
     )
 
