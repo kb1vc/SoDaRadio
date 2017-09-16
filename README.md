@@ -18,6 +18,8 @@ enough to compile and run the UHD utilities that come with the Ettus software.
 
 Interested in more detail?  Take a look at the [documentation here](docs/index.html).
 
+Interested in how SoDaRadio got [here?](History.md)
+
 ## Getting SoDaRadio
 
 You have two choices here.  
