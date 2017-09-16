@@ -131,9 +131,6 @@ ELSE()
 ENDIF()
 
 
-# This is the radio interface... 
-ADD_SUBDIRECTORY(src)
-
 
 IF(CMAKE_VERSION VERSION_GREATER 3.0.0)
   ### new GUI is qt5 based -- but we don't want to fiddle with it
@@ -160,6 +157,9 @@ ELSE()
   SET(HAVE_GPSLIB 0)
   message("DID NOT FIND GPSLIB")  
 ENDIF()
+
+# This is the radio interface... 
+ADD_SUBDIRECTORY(src)
 
 
 ### wxWidgets 3.0 is a trainwreck
