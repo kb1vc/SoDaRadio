@@ -122,6 +122,9 @@ namespace SoDa {
 
     std::string getLockFileName() const { return lock_file_name; }
 
+    bool reportMemInfo() const { return report_mem_info; }
+    std::string getReportFileName() const { return report_file_name; }
+
     bool isRadioType(const std::string & rtype) {
       std::string rt = rtype;
 
@@ -134,6 +137,9 @@ namespace SoDa {
   private:
     
     boost::program_options::variables_map pmap;
+
+    bool report_mem_info; 
+    std::string report_file_name; 
 
     std::string gps_hostname; 
     std::string gps_portname; 

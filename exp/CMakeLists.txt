@@ -226,3 +226,10 @@ add_executable(OneFilterTest ${OneFilterTest_SRCS})
 
 target_link_libraries(OneFilterTest ${OSFILTER_LIBS})
 
+
+
+set(ProcInfo_test_SRCS ProcInfo_test.cxx ../src/ProcInfo.hxx ../src/ProcInfo.cxx)
+
+add_executable(ProcInfo_test ${ProcInfo_test_SRCS})
+
+target_link_libraries(ProcInfo_test ${Boost_LIBRARIES})

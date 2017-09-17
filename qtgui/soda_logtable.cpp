@@ -64,6 +64,7 @@ GUISoDa::LogTable::LogTable(QWidget *parent) :
   // open a default log file in the current working dir as 
   // SoDa_DDMMYY_HHMMSS.soda_log
   QDateTime utc_time(QDateTime::currentDateTime().toUTC());
+
   QString logfname = QString("SoDa_%1_%2.soda_log").arg(utc_time.toString("ddMMyy")).arg(utc_time.toString("hhmmss"));
   log_file_out = NULL; 
   setLogFile(logfname); 
@@ -80,7 +81,13 @@ GUISoDa::LogTable::~LogTable()
   // write the log report
   // close the log file.
   if(log_file_out != NULL) {
-    log_file_out->close();
+    int logsize = log_file_out->size();    
+    if(logsize == 0) {
+      log_file_out->remove();
+    }
+    else {
+      log_file_out->close();    
+    }
   }
 }
 
@@ -93,11 +100,11 @@ bool GUISoDa::LogTable::emptyRow(int r) {
 
 void GUISoDa::LogTable::writeLogReport(const QString & fname)
 {
-  setLogFile(fname); 
-
   int rows = rowCount();
   int cols = columnCount();
 
+  setLogFile(fname); 
+  
   // we're going to write row,col,value streams to the output
   QTextStream out(log_file_out);
   for(int i = 0; i < rows; i++) {

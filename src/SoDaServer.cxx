@@ -108,11 +108,15 @@
 // #include <uhd/usrp/multi_usrp.hpp>
 #include <unistd.h>
 #include <stdio.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 
 #include <fstream>
 
 #include "SoDaBase.hxx"
 #include "MultiMBox.hxx"
+
+#include "ProcInfo.hxx"
 
 // the radio parts. 
 #include "Params.hxx" 
@@ -122,7 +126,6 @@
 #  include "USRPRX.hxx"
 #  include "USRPTX.hxx"
 #endif
-
 
 #include "BaseBandRX.hxx"
 #include "BaseBandTX.hxx"
@@ -234,9 +237,27 @@ int doWork(SoDa::Params & params)
   d.debugMsg("Starting gps");
   gps.start();
 #endif
+
+  if(params.reportMemInfo()) {
+    kb1vc::ProcInfo pi(params.getReportFileName(), "SoDaServer");
+
+    // wait for the user interface to tell us that it is time to quit.
+    // do this in a loop so that we can check on VM status. 
+    int watchdog_count = 0; 
+    pi.reportInfo();
+    while(!ui.waitForJoin(1000)) {
+      watchdog_count++; 
+      // do this check every 10 seconds
+      if(watchdog_count > 10) {
+	pi.reportInfo(true);
+	watchdog_count = 0; 
+      }
+    }
+  }
+  else {
+    ui.join();
+  }
   
-  // wait for the user interface to tell us that it is time to quit.
-  ui.join();
   ctrl->join();
   rx->join();
   tx->join();

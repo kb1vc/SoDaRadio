@@ -4,6 +4,7 @@
 set(SoDaServer_SRCS
     Params.cxx
     SoDaServer.cxx
+    ProcInfo.cxx
     SoDaBase.cxx
     CWTX.cxx
     BaseBandRX.cxx

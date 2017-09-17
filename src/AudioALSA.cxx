@@ -216,7 +216,6 @@ namespace SoDa {
     int err;
     int olen = len;
 
-
     char * cbuf = (char *) buf; 
     while(1) {
       err = snd_pcm_readi(pcm_in, cbuf, len);
