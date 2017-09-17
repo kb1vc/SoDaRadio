@@ -114,8 +114,8 @@ void MainWindow::displayAppInfo(bool dummy)
 <li>USRP Hardware Driver Version: %3</li>\
 <li>Qt Version: %4</li> \
 <li>Boost Version: %5</li> \
-<li>Sources and Such: https://sourceforge.net/projects/sodaradio/</li> \
-<li>Maintainer: radiogeek381 at gmail.com</li> \
+<li>Sources and Such: https://kb1vc.github.io/SoDaRadio/</li> \
+<li>Maintainer: kb1vc@kb1vc.org</li> \
 </ul>\
 <h2>License:</h2> \
 <p> \

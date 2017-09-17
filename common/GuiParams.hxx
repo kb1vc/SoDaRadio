@@ -49,8 +49,14 @@ namespace SoDa {
     unsigned int getHamlibPortNumber() const { return hamlib_portnumber; }
     
     void setServerSocketBasename(const std::string s) { server_sock_basename = s; }
+
+    bool hadNoCommand() { return no_command_only_help; }
+
+
   private:
     boost::program_options::variables_map pmap;
+
+    bool no_command_only_help;
 
     std::string server_name;     ///< Where do we find the server?
     std::string server_args; ///< server control arguments.

@@ -117,17 +117,6 @@ target_link_libraries(ReSampler_Test ${TEST_LIBS})
 
 ########### next target ###############
 
-set(TSIP_Test_SRCS TSIP_Test.cxx ../src/TSIP.cxx)
-
-add_executable(TSIP_Test ${TSIP_Test_SRCS})
-
-target_link_libraries(TSIP_Test ${TEST_LIBS})
-
-#install(TARGETS TSIP_Test DESTINATION tests)
-
-
-########### next target ###############
-
 set(Audio_test_SRCS
     Audio_test.cxx
     ../src/AudioPA.cxx
@@ -215,24 +204,6 @@ add_executable(IntN_FreqTable ${IntN_FreqTable_SRCS})
 target_link_libraries(IntN_FreqTable ${TEST_LIBS})
 
 #install(TARGETS IntN_FreqTable DESTINATION tests)
-
-
-########### next target ###############
-
-set(Demod_test_SRCS
-    Demod_test.cxx
-    ../src/Demod.hxx
-    ../src/Demod.cxx
-    ../src/SoDaBase.hxx
-    ../src/Debug.hxx
-    ../src/Debug.cxx
-    ../src/SoDaBase.cxx)
-
-add_executable(Demod_test ${Demod_test_SRCS})
-
-target_link_libraries(Demod_test ${TEST_LIBS})
-
-#install(TARGETS Demod_test DESTINATION tests)
 
 
 ########### next target ###############

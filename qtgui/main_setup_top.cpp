@@ -94,8 +94,14 @@ void MainWindow::updateBandDisplay(double freq)
     // make sure that we don't modify the MODE and such.
     auto_bandswitch_target = band_name; 
     if((idx = ui->bandSel_cb->findText(band_name)) >= 0) {
+      // remember the mode 
+      int cur_mode = ui->Mode_cb->value();
+
       ui->bandSel_cb->setCurrentIndex(idx);
 
+      // undo the mode switching...
+      ui->Mode_cb->setValue(cur_mode);
+      
       listener->setSpectrumCenter(freq);      
     }
   }

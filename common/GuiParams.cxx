@@ -63,7 +63,10 @@ SoDa::GuiParams::GuiParams(int argc, char ** argv)
   // do we need a help message?
   if(pmap.count("help")) {
     std::cout << "SoDa -- The 'SoD' stands for Software Defined. The 'a' doesn't stand for anything.   " << desc << std::endl;
-    exit(-1); 
+    no_command_only_help = true; 
+  }
+  else {
+    no_command_only_help = false; 
   }
 }
 

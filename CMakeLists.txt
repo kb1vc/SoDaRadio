@@ -1,8 +1,8 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.9) # this lets out really old distros like CentOS 6
 
-OPTION(BUILD_WX_GUI "Build the WxWidgets based GUI -- warning, this is being left to die since Wx 3.0 is a train wreck." OFF)
 OPTION(BUILD_RPM "Build an RPM package for this platform, or something like it." OFF)
 OPTION(BUILD_DEB "Build a Debian package for this platform, or something like it." OFF)
+OPTION(BUILD_UNIT_TESTS "Build the unit tests -- not normally useful" OFF)
 
 IF(CMAKE_VERSION VERSION_GREATER 3.0.0)
   CMAKE_POLICY(SET CMP0048 NEW)
@@ -11,11 +11,9 @@ ENDIF()
 
 PROJECT(SoDaRadio)
 
-OPTION(BUILD_UNIT_TESTS "Build the unit tests -- not normally useful" ON)
-
 SET(SoDaRadio_VERSION_MAJOR 5)
 SET(SoDaRadio_VERSION_MINOR 0)
-SET(SoDaRadio_VERSION_PATCH 1)
+SET(SoDaRadio_VERSION_PATCH 2)
 SET(SoDaRadio_VERSION "${SoDaRadio_VERSION_MAJOR}.${SoDaRadio_VERSION_MINOR}.${SoDaRadio_VERSION_PATCH}")
 
 set(SoDaRadio_PACKAGE_DESCRIPTION 
@@ -34,12 +32,12 @@ ENDIF()
 # Find the platform release name
 FIND_PROGRAM(LSB_RELEASE lsb_release)
 EXECUTE_PROCESS(COMMAND ${LSB_RELEASE} -is
-OUTPUT_VARIABLE OS_RELEASE_NAME
-OUTPUT_STRIP_TRAILING_WHITESPACE
+  OUTPUT_VARIABLE OS_RELEASE_NAME
+  OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 EXECUTE_PROCESS(COMMAND ${LSB_RELEASE} -rs
-OUTPUT_VARIABLE OS_RELEASE_VERSION
-OUTPUT_STRIP_TRAILING_WHITESPACE
+  OUTPUT_VARIABLE OS_RELEASE_VERSION
+  OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
 # Package generation for the source tarball
@@ -53,6 +51,7 @@ SET(CPACK_PACKAGE_CONTACT "Matt Reilly kb1vc")
 SET(CPACK_PACKAGE_VENDOR "Matt Reilly -- radiogeek381@gmail.com")
 SET(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_PACKAGE_RELEASE}.${CMAKE_SYSTEM_PROCESSOR}.${OS_RELEASE_NAME}-${OS_RELEASE_VERSION}")
 SET(CPACK_PACKAGING_INSTALL_PREFIX "/usr")
+
 set(CPACK_RPM_PACKAGE_RELEASE "1")
 set(CPACK_RPM_PACKAGE_LICENSE "BSD-2-Clause")
 set(CPACK_RPM_PACKAGE_GROUP "Applications/Communications")
@@ -65,14 +64,9 @@ set(CPACK_DEBIAN_PACKAGE_SECTION "hamradio")
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "libuhd003 (>= 3.10), uhd-host (>= 3.10), libgps22 (>= 3.1), gpsd (>= 3.1)")
 
-
-
-
-
 INCLUDE(CPack)
 
 MESSAGE("SoDaRadio_VERSION=[${SoDaRadio_VERSION}]")
-
 
 FIND_PACKAGE(Git QUIET)
 
@@ -161,20 +155,8 @@ ENDIF()
 # This is the radio interface... 
 ADD_SUBDIRECTORY(src)
 
-
-### wxWidgets 3.0 is a trainwreck
-IF(BUILD_WX_GUI)
-  set(wxWidgets_CONFIG_OPTIONS --version=2.8)
-  find_package(wxWidgets COMPONENTS core base richtext aui xrc qa html adv  QUIET)
-  include(${wxWidgets_USE_FILE})
-  IF(wxWidgets_FOUND)
-    MESSAGE("Building wx gui")  
-    ADD_SUBDIRECTORY(wxgui)
-  ENDIF()
-
-  IF(BUILD_UNIT_TESTS)
-    ADD_SUBDIRECTORY(exp)
-  ENDIF()
+IF(BUILD_UNIT_TESTS)
+  ADD_SUBDIRECTORY(exp)
 ENDIF()
 
 FIND_PACKAGE(Doxygen QUIET)

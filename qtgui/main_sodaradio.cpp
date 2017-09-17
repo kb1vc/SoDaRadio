@@ -189,6 +189,11 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     SoDa::GuiParams p(argc, argv);    
 
+    if(p.hadNoCommand()) {
+      a.quit();
+      return 0;
+    }
+    
     QString apdir =  QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);  
 
     if(!QDir(apdir).exists()) {

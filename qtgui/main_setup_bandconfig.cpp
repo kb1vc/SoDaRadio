@@ -196,9 +196,11 @@ void MainWindow::changeBand(const QString & band)
   // now find the new band.
   if(band_map.count(band)) {
     // and set the UI widgets.
-    if(band != auto_bandswitch_target) {
+    if((band != auto_bandswitch_target)) {
       // but only change these if this was the result of user band input.
-      ui->Mode_cb->setValue(band_map[band].defMode());
+      if (auto_bandswitch_target != "") {
+        ui->Mode_cb->setValue(band_map[band].defMode());
+      }
       double rx_freq = band_map[band].lastRXFreq() * 1e6;
       setRXFreq(rx_freq);
       setTXFreq(band_map[band].lastTXFreq() * 1e6);
