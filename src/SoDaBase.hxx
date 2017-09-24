@@ -303,6 +303,20 @@ namespace SoDa {
     }
 
     /**
+     * wait for the thread to stop running, or the specified time to pass. 
+     *
+     * @param m timeout in milliseconds
+     * @return true if the thread has stopped, false otherwise. 
+     * 
+     * 
+     */
+    bool waitForJoin(unsigned int m) {
+      return th->try_join_for(boost::chrono::milliseconds(m)); 
+    }
+
+
+
+    /**
      * Each thread object must define its "run" loop.  This loop
      * exits only when the thread has received a STOP command on
      * one of its command mailboxes.

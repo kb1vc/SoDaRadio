@@ -101,6 +101,9 @@ static void startupServer(const QString & lock_file_name, SoDa::GuiParams & p)
   QString uhd_args = ss2QS(p.getUHDArgs());
   if(uhd_args != "") server_command += QString("--uhdargs %1 ").arg(uhd_args);
   if(p.getDebugLevel() > 0) server_command += QString("--debug %1 ").arg(p.getDebugLevel());
+  QString server_args = ss2QS(p.getServerArgs());
+  if(server_args != "") server_command += QString("%1 ").arg(server_args);
+  
   
   server_command += QString(" --lockfile %1 ").arg(lock_file_name); 
 

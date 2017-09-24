@@ -70,12 +70,15 @@ void SoDa::GPSmon::run()
       cmd_stream->free(cmd);
     }
     if(gps_server_ready) {
-#if HAVE_GPSLIB          
-      if(gps_waiting(&gps_data, 100000)) {
-	errno = 0; 
+      // there is a leak.  It is either from gps_waiting or gps_read
+#if HAVE_GPSLIB
+      while (gps_waiting(&gps_data, 100000)) {
+	errno = 0;
+
 	stat = gps_read(&gps_data); 
 	if(stat == -1) gps_server_ready = false; 
-	else {
+	else if(stat != 0) {
+
 	  time_t utc_time = (time_t) gps_data.fix.time; 
 	  struct tm btime; 
 
@@ -88,10 +91,14 @@ void SoDa::GPSmon::run()
 
 	  cmd_stream->put(new SoDa::Command(Command::REP, Command::GPS_LATLON, 
 					    gps_data.fix.latitude, 
-					    gps_data.fix.longitude)); 
+					    gps_data.fix.longitude));
 	}
-      }
-#endif    
+	else {
+	  std::cerr << boost::format("gps_read returned %d size is %d\n")
+	    % stat % (sizeof(struct gps_data_t));
+	}
+      }	
+#endif	 
     }
     else {
       usleep(100000);
