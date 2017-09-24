@@ -20,7 +20,7 @@ apt install -y git
 
 
 
-git clone https://git.code.sf.net/p/sodaradio/SoDaRadio/
+git clone https://github.com/kb1vc/SoDaRadio.git
 cd SoDaRadio
 git checkout QTgui
 mkdir build
