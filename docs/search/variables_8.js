@@ -19,7 +19,7 @@ var searchData=
   ['in_5ffft',['in_fft',['../classSoDa_1_1ReSampler.html#a323698aa9aa54be5e61f8ba09b243304',1,'SoDa::ReSampler']]],
   ['in_5ffft_5fplan',['in_fft_plan',['../classSoDa_1_1ReSampler.html#a059667fede03e76e87db14d9bd41479b',1,'SoDa::ReSampler']]],
   ['in_5fgain',['in_gain',['../classSoDa_1_1AudioIfc.html#a2c8bcdc90bbf9c6dac2efcb62cf4807e',1,'SoDa::AudioIfc']]],
-  ['inbuf',['inbuf',['../classSoDa_1_1IP_1_1LineServerSocket.html#abbf3aeaa77c5dd37db85935c7c94e6a5',1,'SoDa::IP::LineServerSocket::inbuf()'],['../classSoDa_1_1ReSampler.html#a905a41ceed627764fa2c24f7cd4e4616',1,'SoDa::ReSampler::inbuf()'],['../classTSIP_1_1Reader.html#ad4849341deb3e97f61fc716c2cadb505',1,'TSIP::Reader::inbuf()']]],
+  ['inbuf',['inbuf',['../classSoDa_1_1IP_1_1LineServerSocket.html#abbf3aeaa77c5dd37db85935c7c94e6a5',1,'SoDa::IP::LineServerSocket::inbuf()'],['../classSoDa_1_1ReSampler.html#a905a41ceed627764fa2c24f7cd4e4616',1,'SoDa::ReSampler::inbuf()']]],
   ['incdec_5fposition',['incdec_position',['../classGUISoDa_1_1FreqLabel.html#ac47cd17b9130d422a5884cae5871a755',1,'GUISoDa::FreqLabel']]],
   ['inlen',['inlen',['../classSoDa_1_1ReSampler.html#a11060162b68da06eb5149ebc236f6e31',1,'SoDa::ReSampler']]],
   ['int_5ffreq',['int_freq',['../classGUISoDa_1_1FreqLabel.html#a483859a6513bcede893cdcd647514ae4',1,'GUISoDa::FreqLabel']]],
@@ -30,12 +30,9 @@ var searchData=
   ['interp_5fres',['interp_res',['../classSoDa_1_1ReSampler.html#a5443ca5d0e9c210dfd170db670544c7d',1,'SoDa::ReSampler']]],
   ['interpolator',['interpolator',['../classSoDa_1_1BaseBandTX.html#ab90b98eaf4b45f1c8f8e382dfbd951ce',1,'SoDa::BaseBandTX']]],
   ['iomutex',['iomutex',['../MultiMBox__Test_8cxx.html#a5f22c0b26c4c3eba6600b95aa3b39b92',1,'MultiMBox_Test.cxx']]],
-  ['ioser',['ioser',['../classTSIP_1_1Reader.html#af3243eca63a12a352cdffd3a34d564a0',1,'TSIP::Reader']]],
   ['iparms',['iparms',['../classSoDa_1_1Command.html#a00dad249bc1d74572c1b9b1e473177d7',1,'SoDa::Command']]],
-  ['is_5faudio',['is_audio',['../classSoDa_1_1Demod.html#a380ae6aa406ed1927238e279cd58225f',1,'SoDa::Demod']]],
   ['is_5fb210',['is_B210',['../classSoDa_1_1USRPCtrl.html#ab8de558e119734dc921890be0101a123',1,'SoDa::USRPCtrl']]],
   ['is_5fb2xx',['is_B2xx',['../classSoDa_1_1USRPCtrl.html#ad6fd3ac56e88bcf9dde23f487628ac9c',1,'SoDa::USRPCtrl']]],
   ['is_5fready',['is_ready',['../classGUISoDa_1_1WFallData.html#a63d95b232350978ae523444f52afbe67',1,'GUISoDa::WFallData']]],
-  ['is_5fusb',['is_usb',['../classSoDa_1_1DemodSSB.html#a5d280467f2692f6edaa3d1d1038fe054',1,'SoDa::DemodSSB']]],
   ['iws_5flen',['iws_len',['../classSoDa_1_1CWGenerator.html#a504dd6d33130f740b079a4e18f96eea2',1,'SoDa::CWGenerator']]]
 ];

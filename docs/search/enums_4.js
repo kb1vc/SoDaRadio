@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['ps',['PS',['../classTSIP_1_1Reader.html#a3e21875896ecbb0a329eb3a8fde56afe',1,'TSIP::Reader']]]
+  ['transporttype',['TransportType',['../namespaceSoDa_1_1IP.html#a116dc1543283ede09384763bbea7ebc8',1,'SoDa::IP']]],
+  ['txaudioselector',['TXAudioSelector',['../classSoDa_1_1Command.html#ab0bead0b4f4e554eb6f09451d2800ac0',1,'SoDa::Command']]]
 ];

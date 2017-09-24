@@ -1,6 +1,7 @@
 var searchData=
 [
   ['last_5fcidx',['last_cidx',['../classGUISoDa_1_1WFallData.html#ab5a08ffeeda6623f46d4a065e19d6b90',1,'GUISoDa::WFallData']]],
+  ['last_5felapsed',['last_elapsed',['../classkb1vc_1_1ProcInfo.html#a6ee779417c5526658cfdd229c6621e93',1,'kb1vc::ProcInfo']]],
   ['last_5ffreq',['last_freq',['../classGUISoDa_1_1WFallData.html#ac30d4c7e4a4772215f848c3ed0b4fffc',1,'GUISoDa::WFallData']]],
   ['last_5finput_5fcfreq',['last_input_cfreq',['../classGUISoDa_1_1WFall.html#ae49b0992098d808049c136da2f857a83',1,'GUISoDa::WFall']]],
   ['last_5fphase_5fsamp',['last_phase_samp',['../classSoDa_1_1BaseBandRX.html#a30d1bb1906ab57c626bd31d74f6a5e72',1,'SoDa::BaseBandRX']]],
@@ -11,8 +12,8 @@ var searchData=
   ['last_5ftx_5ftune_5fresult',['last_tx_tune_result',['../classSoDa_1_1USRPCtrl.html#a643fd709de36b12a2e719083e8e1a531',1,'SoDa::USRPCtrl']]],
   ['last_5fwas_5fspace',['last_was_space',['../classSoDa_1_1CWGenerator.html#af4750110c5dad1dfaf4a7afcd5dc6593',1,'SoDa::CWGenerator']]],
   ['lastsize',['lastSize',['../classGUISoDa_1_1PlotSpectrogram.html#a1692a30bdd75c41c538a71811303d4e0',1,'GUISoDa::PlotSpectrogram']]],
-  ['latitude',['Latitude',['../classTSIP_1_1SuplementalTimingReport.html#aa1b68949615eda5581fccbead298321e',1,'TSIP::SuplementalTimingReport']]],
   ['len',['len',['../classSoDa_1_1SoDaBuf.html#ab6f54d2124d2c1ef771870bc787540a0',1,'SoDa::SoDaBuf']]],
+  ['lib_5fpages',['lib_pages',['../classkb1vc_1_1ProcInfo.html#a935e7b63493debdb9439a6eb2db9a7ed',1,'kb1vc::ProcInfo']]],
   ['listener',['listener',['../classMainWindow.html#ac6d9bd4fb749926e342098fb5f7464b4',1,'MainWindow']]],
   ['listener_5flist',['listener_list',['../classGUISoDa_1_1HamlibServer.html#a83e0612b3c2fa3f72d795e7a38ab4c2d',1,'GUISoDa::HamlibServer']]],
   ['lo_5fcapable',['LO_capable',['../classSoDa_1_1USRPTX.html#ac0bafa0b35fb0e8a22aa3a1d2c4d5a9f',1,'SoDa::USRPTX']]],
@@ -26,7 +27,6 @@ var searchData=
   ['lock_5ffile_5fname',['lock_file_name',['../classSoDa_1_1Params.html#adec52037fff3e47ce1bb60f05d289d4e',1,'SoDa::Params']]],
   ['log_5ffile_5fout',['log_file_out',['../classGUISoDa_1_1LogTable.html#af34a140f650153a0cff1eb109680dc2c',1,'GUISoDa::LogTable']]],
   ['log_5fspectrum',['log_spectrum',['../classSoDa_1_1UI.html#a3a62ad99ef01ab9824bf51a229db83be',1,'SoDa::UI']]],
-  ['longitude',['Longitude',['../classTSIP_1_1SuplementalTimingReport.html#aba659e195689d48faf6c0120a1a9848c',1,'TSIP::SuplementalTimingReport']]],
   ['low_5fedge',['low_edge',['../classSoDa_1_1OSFilter.html#a5678b02fe5839eb55565211b92847348',1,'SoDa::OSFilter']]],
   ['lowside_5finjection',['lowside_injection',['../classGUISoDa_1_1Band.html#a221e3c8f1eb6369c68ee417af90f5b41',1,'GUISoDa::Band']]]
 ];

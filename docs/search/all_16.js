@@ -1,13 +1,12 @@
 var searchData=
 [
-  ['wait_5fdle',['WAIT_DLE',['../classTSIP_1_1Reader.html#a3e21875896ecbb0a329eb3a8fde56afea2f2801c110a2267bf670a1077b605da5',1,'TSIP::Reader']]],
+  ['waitforjoin',['waitForJoin',['../classSoDa_1_1SoDaThread.html#a493e4d3f9b86252d589b4228086e8cca',1,'SoDa::SoDaThread']]],
   ['waiting_5fto_5frun_5fdry',['waiting_to_run_dry',['../classSoDa_1_1USRPTX.html#a23775ab32a353ff7348c4b76dd3b3131',1,'SoDa::USRPTX']]],
   ['wakein',['wakeIn',['../classSoDa_1_1AudioALSA.html#ac671fe370394958ab1bf34a7605308ea',1,'SoDa::AudioALSA::wakeIn()'],['../classSoDa_1_1AudioIfc.html#a42f02d7a13552b9dee72dfd1eaebeb56',1,'SoDa::AudioIfc::wakeIn()'],['../classSoDa_1_1AudioPA.html#af149628d374160f4c0ae67efafcd273b',1,'SoDa::AudioPA::wakeIn()']]],
   ['wakeout',['wakeOut',['../classSoDa_1_1AudioALSA.html#a75b6d0f8089788c307bcd012a0d76acc',1,'SoDa::AudioALSA::wakeOut()'],['../classSoDa_1_1AudioIfc.html#a50cc5f9232e3b7680efb8ce81582437d',1,'SoDa::AudioIfc::wakeOut()'],['../classSoDa_1_1AudioPA.html#acd30ef6c1431b45c00c4a46b35bf99c8',1,'SoDa::AudioPA::wakeOut()']]],
   ['wbfm',['WBFM',['../classSoDa_1_1Command.html#a756e6a9b840f23e009a9d600ea630c1eaff0d4e5ff965f947c36a7e7cc14bdc84',1,'SoDa::Command']]],
   ['wbfm_5fdeviation',['wbfm_deviation',['../classSoDa_1_1BaseBandTX.html#a4a4a8b303256da32783229dd1ad42e2c',1,'SoDa::BaseBandTX']]],
   ['wbfm_5fresampler',['wbfm_resampler',['../classSoDa_1_1BaseBandRX.html#a5f6e78f0585aa12885f6462f803073e6',1,'SoDa::BaseBandRX']]],
-  ['weeknumber',['WeekNumber',['../classTSIP_1_1PrimaryTimingReport.html#a908f8afed867ea1d9c3f0161dff458c9',1,'TSIP::PrimaryTimingReport']]],
   ['wfall',['WFall',['../classGUISoDa_1_1WFall.html',1,'GUISoDa::WFall'],['../classGUISoDa_1_1WFall.html#a5e3c47703323ca5af99ece759a9245c1',1,'GUISoDa::WFall::WFall()']]],
   ['wfall_5fdata',['wfall_data',['../classGUISoDa_1_1WFall.html#aa6d4f7272c9fd065079dca446ff19857',1,'GUISoDa::WFall']]],
   ['wfall_5fsocket',['wfall_socket',['../classSoDa_1_1UI.html#a8028b662ec15965477af26b1a7fc0315',1,'SoDa::UI']]],

@@ -4,7 +4,6 @@ var searchData=
   ['af_5ffilter_5fselection',['af_filter_selection',['../classSoDa_1_1BaseBandRX.html#a3f2d3d5984fc2651686f84b5fbf9d830',1,'SoDa::BaseBandRX']]],
   ['af_5fgain',['af_gain',['../classSoDa_1_1BaseBandRX.html#a9527229cd33f99f0e8730b63bce8ed40',1,'SoDa::BaseBandRX::af_gain()'],['../classSoDa_1_1BaseBandTX.html#ad192b3379b24770698d2b75a3b610bc1',1,'SoDa::BaseBandTX::af_gain()']]],
   ['af_5fsidetone_5fgain',['af_sidetone_gain',['../classSoDa_1_1BaseBandRX.html#a68475f8ef383b654f2fcb947585331e7',1,'SoDa::BaseBandRX']]],
-  ['altitude',['Altitude',['../classTSIP_1_1SuplementalTimingReport.html#af1a7f78833d775681d01cf4baa4a5208',1,'TSIP::SuplementalTimingReport']]],
   ['am_5faudio_5ffilter',['am_audio_filter',['../classSoDa_1_1BaseBandRX.html#a23ac3762a8349e44d3db3c6667063a7c',1,'SoDa::BaseBandRX']]],
   ['am_5fpre_5ffilter',['am_pre_filter',['../classSoDa_1_1BaseBandRX.html#a8f794bdb09082a0181e05c4a920548e8',1,'SoDa::BaseBandRX']]],
   ['ang',['ang',['../classSoDa_1_1QuadratureOscillator.html#a158d528a87e319b774ca62baf034fc30',1,'SoDa::QuadratureOscillator']]],

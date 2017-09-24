@@ -18,7 +18,6 @@ var searchData=
   ['alloc',['alloc',['../classSoDa_1_1MultiMBox.html#a086c272c5f957a70ca7016acec58a617',1,'SoDa::MultiMBox']]],
   ['alsa_5fdef',['ALSA_DEF',['../AudioALSA_8hxx.html#a2d8c42ae93a86fefff5a5b4fcb9f0b8c',1,'AudioALSA.hxx']]],
   ['alsa_5fuse_5fsimple_5fsetup',['ALSA_USE_SIMPLE_SETUP',['../AudioALSA_8cxx.html#a70537ddcc4dee50b85caf0284d94605c',1,'AudioALSA.cxx']]],
-  ['altitude',['Altitude',['../classTSIP_1_1SuplementalTimingReport.html#af1a7f78833d775681d01cf4baa4a5208',1,'TSIP::SuplementalTimingReport']]],
   ['am',['AM',['../classSoDa_1_1Command.html#a756e6a9b840f23e009a9d600ea630c1ea35d9c4363ab71606919661d827e9f1a4',1,'SoDa::Command']]],
   ['am_5faudio_5ffilter',['am_audio_filter',['../classSoDa_1_1BaseBandRX.html#a23ac3762a8349e44d3db3c6667063a7c',1,'SoDa::BaseBandRX']]],
   ['am_5fpre_5ffilter',['am_pre_filter',['../classSoDa_1_1BaseBandRX.html#a8f794bdb09082a0181e05c4a920548e8',1,'SoDa::BaseBandRX']]],

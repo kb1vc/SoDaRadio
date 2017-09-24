@@ -9,7 +9,6 @@ var searchData=
   ['band_5fname',['band_name',['../classGUISoDa_1_1Band.html#a8908e4b50ec0e8d9dad88aacf56b6be7',1,'GUISoDa::Band']]],
   ['base_5ffirst_5ftime',['base_first_time',['../classSoDa_1_1SoDaBase.html#ab9fffdcdb5f3fd2481357a00d5e88026',1,'SoDa::SoDaBase']]],
   ['baseband_5frx_5ffreq',['baseband_rx_freq',['../classSoDa_1_1UI.html#aa0d78d35cd82bce91e09291f49a2ed2d',1,'SoDa::UI']]],
-  ['basetime',['basetime',['../classSoDa_1_1GPS__TSIPmon.html#acb6f4fcca1fdfc01e7d1e23afa3bdb22',1,'SoDa::GPS_TSIPmon']]],
   ['beacon_5fenv',['beacon_env',['../classSoDa_1_1USRPTX.html#aef228169617ce80939d8ffc7824ae513',1,'SoDa::USRPTX']]],
   ['beacon_5fenvelope',['beacon_envelope',['../classSoDa_1_1CWTX.html#a3469d2530a7d5742c3702f4e1e435e8f',1,'SoDa::CWTX']]],
   ['beacon_5fmode',['beacon_mode',['../classSoDa_1_1USRPTX.html#ad91928587f9ff48bf273aa547df0917c',1,'SoDa::USRPTX']]],
@@ -17,7 +16,5 @@ var searchData=
   ['break_5fnotification_5fid_5fqueue',['break_notification_id_queue',['../classSoDa_1_1CWTX.html#ad6adf84b539521c097f0432bb15ea831',1,'SoDa::CWTX']]],
   ['bucket_5fsize',['bucket_size',['../classSoDaTest_1_1Histogram.html#a3d8fe1a652f24217f51a6bcd1628960e',1,'SoDaTest::Histogram']]],
   ['buckets',['buckets',['../classSoDaTest_1_1Histogram.html#a72094952c0ec25c71cee58ee965fa76c',1,'SoDaTest::Histogram']]],
-  ['buflen',['buflen',['../classTSIP_1_1Reader.html#a9f8be90507d9c0203366d616326da2c5',1,'TSIP::Reader']]],
-  ['bufs_5fper_5fsec',['bufs_per_sec',['../classSoDa_1_1CWGenerator.html#aa726544e9beeb551c09dab927e8fb704',1,'SoDa::CWGenerator']]],
-  ['bufsize',['BUFSIZE',['../classTSIP_1_1Reader.html#ace9fbb2280a0525c62c0c770a7aa6374',1,'TSIP::Reader']]]
+  ['bufs_5fper_5fsec',['bufs_per_sec',['../classSoDa_1_1CWGenerator.html#aa726544e9beeb551c09dab927e8fb704',1,'SoDa::CWGenerator']]]
 ];

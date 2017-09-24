@@ -13,7 +13,7 @@ var searchData=
   ['sendbufferready',['sendBufferReady',['../classSoDa_1_1AudioALSA.html#a207a010af4bf51cced34303d169e33c3',1,'SoDa::AudioALSA::sendBufferReady()'],['../classSoDa_1_1AudioIfc.html#a04440ebcda84d18ecef79114ff38c336',1,'SoDa::AudioIfc::sendBufferReady()'],['../classSoDa_1_1AudioPA.html#a81ea45401aa942dda79c724ca25e1869',1,'SoDa::AudioPA::sendBufferReady()']]],
   ['sendcannedcw',['sendCannedCW',['../classMainWindow.html#ae27c24d5c7e1b3af66e4e0acca9abe4b',1,'MainWindow']]],
   ['sendchar',['sendChar',['../classSoDa_1_1CWGenerator.html#a12d1d5bc1b0b68634e0e45539def409d',1,'SoDa::CWGenerator']]],
-  ['sendcommand',['sendCommand',['../classSoDa_1_1B200Control.html#a66d9033242c542a140c028d762ea21c0',1,'SoDa::B200Control::sendCommand()'],['../classSoDa_1_1N200Control.html#a3b081d524299b944ff4df65288ee3209',1,'SoDa::N200Control::sendCommand()'],['../classTSIP_1_1Command.html#aa59d86d09fb305c0be3b04bbb4492030',1,'TSIP::Command::sendCommand()']]],
+  ['sendcommand',['sendCommand',['../classSoDa_1_1B200Control.html#a66d9033242c542a140c028d762ea21c0',1,'SoDa::B200Control::sendCommand()'],['../classSoDa_1_1N200Control.html#a3b081d524299b944ff4df65288ee3209',1,'SoDa::N200Control::sendCommand()']]],
   ['sendcw',['sendCW',['../classGUISoDa_1_1Listener.html#a161c384d94221ac7f9ab59cec786ccf1',1,'GUISoDa::Listener']]],
   ['sendfft',['sendFFT',['../classSoDa_1_1UI.html#a004fbb8a493339e4483d1d9c59336306',1,'SoDa::UI']]],
   ['serialdev',['SerialDev',['../classSoDa_1_1SerialDev.html#a6f38b2264bb9a6238f662911ab64f06d',1,'SoDa::SerialDev']]],
@@ -119,8 +119,6 @@ var searchData=
   ['sodabase',['SoDaBase',['../classSoDa_1_1SoDaBase.html#a3680f075b300d704e2361de5c3d3b980',1,'SoDa::SoDaBase']]],
   ['sodabuf',['SoDaBuf',['../classSoDa_1_1SoDaBuf.html#aaa491dfe73f4c42e32f3cddf10f1aeda',1,'SoDa::SoDaBuf']]],
   ['sodaexception',['SoDaException',['../classSoDa_1_1SoDaException.html#aa161f7a2b0bd73494313d3c343568963',1,'SoDa::SoDaException::SoDaException(const std::string &amp;_reason, SoDaBase *obj=NULL)'],['../classSoDa_1_1SoDaException.html#ab7ea94e9c5c728f5a84d6091e1632cdc',1,'SoDa::SoDaException::SoDaException(const char *_reason, SoDaBase *obj)']]],
-  ['sodaprimarytimingreport',['SoDaPrimaryTimingReport',['../classSoDa_1_1GPS__TSIPmon_1_1SoDaPrimaryTimingReport.html#a83cd2dab5c17b28d7518c5e22afd0d60',1,'SoDa::GPS_TSIPmon::SoDaPrimaryTimingReport']]],
-  ['sodasuplementaltimingreport',['SoDaSuplementalTimingReport',['../classSoDa_1_1GPS__TSIPmon_1_1SoDaSuplementalTimingReport.html#aa0620f10bdcb5b8b069f8c07108143c3',1,'SoDa::GPS_TSIPmon::SoDaSuplementalTimingReport']]],
   ['sodathread',['SoDaThread',['../classSoDa_1_1SoDaThread.html#ac9b868238a01ebd76211317f1688485b',1,'SoDa::SoDaThread']]],
   ['spect',['Spect',['../classGUISoDa_1_1Spect.html#aee656bdac7ede9f42009dba12f38c244',1,'GUISoDa::Spect']]],
   ['spectrogram',['Spectrogram',['../classSoDa_1_1Spectrogram.html#a9bf817e97b435bf11a8f3affc1d71b48',1,'SoDa::Spectrogram']]],
@@ -136,6 +134,5 @@ var searchData=
   ['stoplisteners',['stopListeners',['../classGUISoDa_1_1HamlibServer.html#a63b9c48a6ea7686e2e3ddf50424d7ee7',1,'GUISoDa::HamlibServer']]],
   ['stopstream',['stopStream',['../classSoDa_1_1USRPRX.html#ad639dc579e5540ba634d4395f9e3a79a',1,'SoDa::USRPRX']]],
   ['subscribe',['subscribe',['../classSoDa_1_1MultiMBox.html#acc96ca0739db96e0e4f1fa4191828b9b',1,'SoDa::MultiMBox::subscribe()'],['../classSoDaTest_1_1MultiMBox__Test__Thread.html#ac381da2261e9171dd7979d4a730fa72d',1,'SoDaTest::MultiMBox_Test_Thread::subscribe()']]],
-  ['subscriber',['Subscriber',['../classSoDa_1_1MultiMBox_1_1Subscriber.html#a271e97beefade2b6ac6b6df4a5765978',1,'SoDa::MultiMBox::Subscriber']]],
-  ['suplementaltimingreport',['SuplementalTimingReport',['../classTSIP_1_1SuplementalTimingReport.html#ace61ac450248d13265cd1af47afeac29',1,'TSIP::SuplementalTimingReport']]]
+  ['subscriber',['Subscriber',['../classSoDa_1_1MultiMBox_1_1Subscriber.html#a271e97beefade2b6ac6b6df4a5765978',1,'SoDa::MultiMBox::Subscriber']]]
 ];
