@@ -8,7 +8,7 @@ var searchData=
   ['n200serbabble_2epy',['n200serbabble.py',['../n200serbabble_8py.html',1,'']]],
   ['n200serport',['n200serport',['../namespacen200serport.html',1,'']]],
   ['n200serport_2epy',['n200serport.py',['../n200serport_8py.html',1,'']]],
-  ['name',['name',['../classSoDa_1_1Demod.html#aa9959724604ae1ff4f3e635a44496818',1,'SoDa::Demod::name()'],['../classSoDaTest_1_1MultiMBox__Test__Thread.html#a99f4f1d189ebd826e3ee87c540ea86e6',1,'SoDaTest::MultiMBox_Test_Thread::name()'],['../classSoDaTest_1_1ThN.html#a8c6bc969940441a7e14d6403a189ed18',1,'SoDaTest::ThN::name()'],['../classGUISoDa_1_1Band.html#a81c11844b93cadace1c3fb284d3de8b5',1,'GUISoDa::Band::name()']]],
+  ['name',['name',['../classSoDaTest_1_1MultiMBox__Test__Thread.html#a99f4f1d189ebd826e3ee87c540ea86e6',1,'SoDaTest::MultiMBox_Test_Thread::name()'],['../classSoDaTest_1_1ThN.html#a8c6bc969940441a7e14d6403a189ed18',1,'SoDaTest::ThN::name()'],['../classGUISoDa_1_1Band.html#a81c11844b93cadace1c3fb284d3de8b5',1,'GUISoDa::Band::name()']]],
   ['nbfm',['NBFM',['../classSoDa_1_1Command.html#a756e6a9b840f23e009a9d600ea630c1eabd4d8774b0f171a504c0fbdfbc231174',1,'SoDa::Command']]],
   ['nbfm_5fdeviation',['nbfm_deviation',['../classSoDa_1_1BaseBandTX.html#ad21f2dfd8434bd7ee54aa618038b9a42',1,'SoDa::BaseBandTX']]],
   ['nbfm_5fpre_5ffilter',['nbfm_pre_filter',['../classSoDa_1_1BaseBandRX.html#a6234320ac4080f127cfd7e8dd849ac64',1,'SoDa::BaseBandRX']]],

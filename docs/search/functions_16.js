@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['waitforjoin',['waitForJoin',['../classSoDa_1_1SoDaThread.html#a493e4d3f9b86252d589b4228086e8cca',1,'SoDa::SoDaThread']]],
   ['wakein',['wakeIn',['../classSoDa_1_1AudioALSA.html#ac671fe370394958ab1bf34a7605308ea',1,'SoDa::AudioALSA::wakeIn()'],['../classSoDa_1_1AudioIfc.html#a42f02d7a13552b9dee72dfd1eaebeb56',1,'SoDa::AudioIfc::wakeIn()'],['../classSoDa_1_1AudioPA.html#af149628d374160f4c0ae67efafcd273b',1,'SoDa::AudioPA::wakeIn()']]],
   ['wakeout',['wakeOut',['../classSoDa_1_1AudioALSA.html#a75b6d0f8089788c307bcd012a0d76acc',1,'SoDa::AudioALSA::wakeOut()'],['../classSoDa_1_1AudioIfc.html#a50cc5f9232e3b7680efb8ce81582437d',1,'SoDa::AudioIfc::wakeOut()'],['../classSoDa_1_1AudioPA.html#acd30ef6c1431b45c00c4a46b35bf99c8',1,'SoDa::AudioPA::wakeOut()']]],
   ['wfall',['WFall',['../classGUISoDa_1_1WFall.html#a5e3c47703323ca5af99ece759a9245c1',1,'GUISoDa::WFall']]],

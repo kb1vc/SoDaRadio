@@ -3,11 +3,9 @@ var searchData=
   ['range',['Range',['../classSoDa_1_1Range.html#ab835d38c862a65a1caba0166ac917984',1,'SoDa::Range::Range(Tk _min, Tk _max)'],['../classSoDa_1_1Range.html#a64b0923b0c37cf9a5398b9e5fdf0a052',1,'SoDa::Range::Range(Tk _c)']]],
   ['rangemap',['RangeMap',['../classSoDa_1_1RangeMap.html#a85883c865c38dc0fa5861429c03db154',1,'SoDa::RangeMap']]],
   ['readconfigfile',['readConfigFile',['../classSoDa_1_1Params.html#abf4c3972b751f30ade1e421c4eb11b05',1,'SoDa::Params']]],
-  ['reader',['Reader',['../classTSIP_1_1Reader.html#a83c22bf3b5e04370161e69293903ae23',1,'TSIP::Reader']]],
   ['readlogfile',['readLogFile',['../classGUISoDa_1_1LogTable.html#afbb1f61acf2d45c4b62d4f855495e7a5',1,'GUISoDa::LogTable']]],
   ['readlogreport',['readLogReport',['../classGUISoDa_1_1LogTable.html#a968acd2247e12ba317d47e80b19245c2',1,'GUISoDa::LogTable']]],
   ['readlogreportdlg',['readLogReportDlg',['../classGUISoDa_1_1LogTable.html#a992d27b00579dffce59ac7fa6e327fba',1,'GUISoDa::LogTable']]],
-  ['readstream',['readStream',['../classTSIP_1_1Reader.html#a83f3846e0f2f7600b014dee3750c0bb6',1,'TSIP::Reader']]],
   ['readtimeoutexc',['ReadTimeoutExc',['../classSoDa_1_1IP_1_1ReadTimeoutExc.html#aacb21d751e7f8f8a0c1afce8865af66f',1,'SoDa::IP::ReadTimeoutExc']]],
   ['readyaudiobuffers',['readyAudioBuffers',['../classSoDa_1_1BaseBandRX.html#ae21a35ee9760e3ee7c7f0fc5e5af3aba',1,'SoDa::BaseBandRX']]],
   ['readyformore',['readyForMore',['../classSoDa_1_1CWGenerator.html#aa92494da6a77a4c893b50eb06915a634',1,'SoDa::CWGenerator']]],
@@ -29,9 +27,10 @@ var searchData=
   ['replotxaxis',['replotXAxis',['../classGUISoDa_1_1Spect.html#a4c3cb099e4a3dbaa3b8c192578f8d819',1,'GUISoDa::Spect']]],
   ['replotyaxis',['replotYAxis',['../classGUISoDa_1_1Spect.html#ae4179b76e00998508d245a4d9821a032',1,'GUISoDa::Spect']]],
   ['repmarkeroffset',['repMarkerOffset',['../classGUISoDa_1_1Listener.html#adbb93bc184cbf5a21f6725eaa99fd2b8',1,'GUISoDa::Listener']]],
-  ['report',['Report',['../classTSIP_1_1Report.html#afb8255090ea49623f49870b7365db96f',1,'TSIP::Report']]],
   ['reportaffilters',['reportAFFilters',['../classSoDa_1_1USRPCtrl.html#af12b6b9a8706c2965017fc3feea39a2b',1,'SoDa::USRPCtrl']]],
   ['reportantennas',['reportAntennas',['../classSoDa_1_1USRPCtrl.html#ad613360cde8bd8e1af0eee538108c1a2',1,'SoDa::USRPCtrl']]],
+  ['reportinfo',['reportInfo',['../classkb1vc_1_1ProcInfo.html#a981f5fa6c158f002c7605e04a0e66f61',1,'kb1vc::ProcInfo']]],
+  ['reportmeminfo',['reportMemInfo',['../classSoDa_1_1Params.html#a40fce2a5d2c196af06ea339fd78547ac',1,'SoDa::Params']]],
   ['reportmodes',['reportModes',['../classSoDa_1_1USRPCtrl.html#a8c87134fa01af724d3876cbca8840b3c',1,'SoDa::USRPCtrl']]],
   ['reportmodulation',['reportModulation',['../classGUISoDa_1_1HamlibHandler.html#a407f1f1a82792e1a9b3a053fbd6e707f',1,'GUISoDa::HamlibHandler']]],
   ['reportrxfreq',['reportRXFreq',['../classGUISoDa_1_1HamlibHandler.html#a591ec0ef91b8d401c2bca244fb1114a9',1,'GUISoDa::HamlibHandler']]],
@@ -49,6 +48,5 @@ var searchData=
   ['restorebands',['restoreBands',['../classGUISoDa_1_1BandMap.html#aac272d95dd4231df8c98b07fa8b02d7f',1,'GUISoDa::BandMap']]],
   ['restoreconfig_5fdlg',['restoreConfig_dlg',['../classMainWindow.html#aa1d59c054ef613b8244e5833076109ff',1,'MainWindow']]],
   ['restoresettings',['restoreSettings',['../classMainWindow.html#a3955ca5db289680247c46f97bd51f634',1,'MainWindow']]],
-  ['revertpositioncommand',['RevertPositionCommand',['../classTSIP_1_1RevertPositionCommand.html#af0e6da4a0fb89cfc5598e48d3f712693',1,'TSIP::RevertPositionCommand']]],
-  ['run',['run',['../classSoDa_1_1BaseBandRX.html#a91694a3bf4d2c10c128142b88e8eb08d',1,'SoDa::BaseBandRX::run()'],['../classSoDa_1_1BaseBandTX.html#a8af3d450cbba5ff9617090bfa92c748f',1,'SoDa::BaseBandTX::run()'],['../classSoDa_1_1CWTX.html#abe720376fe39d8076b81ba469c16b1cf',1,'SoDa::CWTX::run()'],['../classSoDa_1_1GPS__TSIPmon.html#ab976aff6e8381a02727709fd4ed39cd6',1,'SoDa::GPS_TSIPmon::run()'],['../classSoDa_1_1GPSmon.html#a82c196300e486d9f7f77c576f6ea1d69',1,'SoDa::GPSmon::run()'],['../classSoDa_1_1SoDaThread.html#a0a5e4e91ab57f79eac0f3e9ddbd05624',1,'SoDa::SoDaThread::run()'],['../classSoDa_1_1UI.html#a3284d0af89aadb134afd6069e5a65f09',1,'SoDa::UI::run()'],['../classSoDa_1_1USRPCtrl.html#ada73d28b62828f4f7ebe537a51bde2da',1,'SoDa::USRPCtrl::run()'],['../classSoDa_1_1USRPRX.html#ac12a7920c96c27a2a596b308da124a53',1,'SoDa::USRPRX::run()'],['../classSoDa_1_1USRPTX.html#a9a279ceff312ad94f13d84cfefb40969',1,'SoDa::USRPTX::run()'],['../classGUISoDa_1_1HamlibListener.html#a1196f2e35617d3e819cb9ab9a07e91d1',1,'GUISoDa::HamlibListener::run()'],['../classSoDaTest_1_1MultiMBox__Test__Thread.html#a23d162a45dbecdb254d9fbed47449eee',1,'SoDaTest::MultiMBox_Test_Thread::run()'],['../classSoDaTest_1_1ThN.html#ac6c96ca99503d7733091d3f98839e1ea',1,'SoDaTest::ThN::run()'],['../classSoDa_1_1TestServer.html#ad4655e2a6f2eb18a98787d01782f7414',1,'SoDa::TestServer::run()']]]
+  ['run',['run',['../classSoDa_1_1BaseBandRX.html#a91694a3bf4d2c10c128142b88e8eb08d',1,'SoDa::BaseBandRX::run()'],['../classSoDa_1_1BaseBandTX.html#a8af3d450cbba5ff9617090bfa92c748f',1,'SoDa::BaseBandTX::run()'],['../classSoDa_1_1CWTX.html#abe720376fe39d8076b81ba469c16b1cf',1,'SoDa::CWTX::run()'],['../classSoDa_1_1GPSmon.html#a82c196300e486d9f7f77c576f6ea1d69',1,'SoDa::GPSmon::run()'],['../classSoDa_1_1SoDaThread.html#a0a5e4e91ab57f79eac0f3e9ddbd05624',1,'SoDa::SoDaThread::run()'],['../classSoDa_1_1UI.html#a3284d0af89aadb134afd6069e5a65f09',1,'SoDa::UI::run()'],['../classSoDa_1_1USRPCtrl.html#ada73d28b62828f4f7ebe537a51bde2da',1,'SoDa::USRPCtrl::run()'],['../classSoDa_1_1USRPRX.html#ac12a7920c96c27a2a596b308da124a53',1,'SoDa::USRPRX::run()'],['../classSoDa_1_1USRPTX.html#a9a279ceff312ad94f13d84cfefb40969',1,'SoDa::USRPTX::run()'],['../classGUISoDa_1_1HamlibListener.html#a1196f2e35617d3e819cb9ab9a07e91d1',1,'GUISoDa::HamlibListener::run()'],['../classSoDaTest_1_1MultiMBox__Test__Thread.html#a23d162a45dbecdb254d9fbed47449eee',1,'SoDaTest::MultiMBox_Test_Thread::run()'],['../classSoDaTest_1_1ThN.html#ac6c96ca99503d7733091d3f98839e1ea',1,'SoDaTest::ThN::run()'],['../classSoDa_1_1TestServer.html#ad4655e2a6f2eb18a98787d01782f7414',1,'SoDa::TestServer::run()']]]
 ];

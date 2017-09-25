@@ -23,7 +23,6 @@ var searchData=
   ['histogram_2ehxx',['Histogram.hxx',['../Histogram_8hxx.html',1,'']]],
   ['hl2soda_5fmodmap',['hl2soda_modmap',['../classGUISoDa_1_1HamlibHandler.html#ab2ea06fba22c01b2b0da6ae6608a5b3f',1,'GUISoDa::HamlibHandler']]],
   ['hlib_5fserver',['hlib_server',['../classMainWindow.html#a58fecad9af0b6928d3046597aa46b595',1,'MainWindow']]],
-  ['holdoverduration',['HoldoverDuration',['../classTSIP_1_1SuplementalTimingReport.html#a97d51df17f03763ee1151953df3b0381',1,'TSIP::SuplementalTimingReport']]],
   ['hooksigseg',['hookSigSeg',['../classSoDa_1_1SoDaThread.html#aca1fed7af24ab71c621c7bfbe67db457',1,'SoDa::SoDaThread']]],
   ['host',['host',['../namespacen200serbabble.html#ae8cfcd363d024062433dd665eb265c9b',1,'n200serbabble.host()'],['../namespacen200serport.html#ac63eb6a2c2e4a0bd7bceaf6a0e646e3a',1,'n200serport.host()']]],
   ['htl_5ffilter',['HTl_filter',['../classSoDa_1_1HilbertTransformer.html#af60611f49968d572a74fc32cda87f429',1,'SoDa::HilbertTransformer']]],

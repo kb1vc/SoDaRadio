@@ -2,6 +2,8 @@ var searchData=
 [
   ['f_5fhi_5fmarker',['f_hi_marker',['../classGUISoDa_1_1WFallData.html#aa4e69abb0f9cb7e06fb08859f10e9026',1,'GUISoDa::WFallData']]],
   ['f_5flo_5fmarker',['f_lo_marker',['../classGUISoDa_1_1WFallData.html#aae74dc59030e67167a3fa4a806eeb0f2',1,'GUISoDa::WFallData']]],
+  ['f_5freport',['f_report',['../classkb1vc_1_1ProcInfo.html#a57afecd8979222c87331861fd57689e8',1,'kb1vc::ProcInfo']]],
+  ['f_5fstatm',['f_statm',['../classkb1vc_1_1ProcInfo.html#a6483aebe26d64083b7eeb3c4748a875d',1,'kb1vc::ProcInfo']]],
   ['falling_5fedge',['falling_edge',['../classSoDa_1_1CWGenerator.html#ac68176b442ef11b0fcca9d9118d1d0de',1,'SoDa::CWGenerator']]],
   ['fatalerror',['fatalError',['../classGUISoDa_1_1Listener.html#a353e9a6a46cc2bfbf2d6406d6e976a14',1,'GUISoDa::Listener']]],
   ['fdat',['fdat',['../classSoDa_1_1SoDaBuf.html#af25365bc09ade80ca3ec42235fc74987',1,'SoDa::SoDaBuf']]],

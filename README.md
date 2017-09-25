@@ -112,7 +112,7 @@ apt-get install -y libuhd-dev uhd-host
 #### Compiling and installing on *any* platform
 
 ~~~~~
-git clone https://git.code.sf.net/p/sodaradio/SoDaRadio/
+git clone https://github.com/kb1vc/SoDaRadio.git
 cd SoDaRadio
 mkdir build
 cd build
@@ -143,11 +143,11 @@ The following works for installing on Fedora 25.  Fedora 24 is identical
 
 1. Download the appropriate rpm. The following links will take you to the repository 
 location for the kit. Go to that page and hit the download button.
-   * [Get SoDaRadio for Fedora 25 here](/packages/rpm/SoDaRadio-5.0.0-1.x86_64.Fedora-25.rpm)
-   * [Get SoDaRadio for Fedora 24 here](/packages/rpm/SoDaRadio-5.0.0-1.x86_64.Fedora-24.rpm)
+   * [Get SoDaRadio for Fedora 25 here](/packages/rpm/SoDaRadio-5.0.3-1.x86_64.Fedora-25.rpm)
+   * [Get SoDaRadio for Fedora 24 here](/packages/rpm/SoDaRadio-5.0.3-1.x86_64.Fedora-24.rpm)
 1. Install the kit using dnf (substitute the correct package name in the command below).
 ~~~~
-sudo dnf install ./SoDaRadio-5.0.0-1.x86_64.Fedora-25.rpm
+sudo dnf install ./SoDaRadio-5.0.3-1.x86_64.Fedora-25.rpm
 ~~~~
 
 
@@ -158,10 +158,10 @@ SoDaRadio builds and runs on Ubuntu 14.04, but the deb package for it does not w
 The kit for Ubuntu 16.04, however, appears to work just fine.  
 
 1. Download the deb file.  The following link will take you to the repository location
-for the kit.  Go to that page and hit the download button.  [Get SoDaRadio for Ubuntu 16.04 here](/packages/deb/SoDaRadio-5.0.0-1.x86_64.Ubuntu-16.04.deb)
+for the kit.  Go to that page and hit the download button.  [Get SoDaRadio for Ubuntu 16.04 here](/packages/deb/SoDaRadio-5.0.3-1.x86_64.Ubuntu-16.04.deb)
 2. Install the kit using apt
 ~~~~
-sudo apt install ./SoDaRadio-5.0.0-1.x86_64.Ubuntu-16.04.deb
+sudo apt install ./SoDaRadio-5.0.3-1.x86_64.Ubuntu-16.04.deb
 ~~~~
 
 ## Using SoDaRadio

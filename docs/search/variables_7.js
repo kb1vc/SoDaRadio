@@ -9,7 +9,6 @@ var searchData=
   ['hilbert',['hilbert',['../classSoDa_1_1BaseBandRX.html#aea385e04a91a6236d8a1effc9b29b7bb',1,'SoDa::BaseBandRX::hilbert()'],['../classSoDa_1_1BaseBandTX.html#a68551fb85cb1e9cf41028082932ff37c',1,'SoDa::BaseBandTX::hilbert()']]],
   ['hl2soda_5fmodmap',['hl2soda_modmap',['../classGUISoDa_1_1HamlibHandler.html#ab2ea06fba22c01b2b0da6ae6608a5b3f',1,'GUISoDa::HamlibHandler']]],
   ['hlib_5fserver',['hlib_server',['../classMainWindow.html#a58fecad9af0b6928d3046597aa46b595',1,'MainWindow']]],
-  ['holdoverduration',['HoldoverDuration',['../classTSIP_1_1SuplementalTimingReport.html#a97d51df17f03763ee1151953df3b0381',1,'TSIP::SuplementalTimingReport']]],
   ['host',['host',['../namespacen200serbabble.html#ae8cfcd363d024062433dd665eb265c9b',1,'n200serbabble.host()'],['../namespacen200serport.html#ac63eb6a2c2e4a0bd7bceaf6a0e646e3a',1,'n200serport.host()']]],
   ['htl_5ffilter',['HTl_filter',['../classSoDa_1_1HilbertTransformer.html#af60611f49968d572a74fc32cda87f429',1,'SoDa::HilbertTransformer']]],
   ['htu_5ffilter',['HTu_filter',['../classSoDa_1_1HilbertTransformer.html#a48030b88b2d68f880200696a0f9b302a',1,'SoDa::HilbertTransformer']]],

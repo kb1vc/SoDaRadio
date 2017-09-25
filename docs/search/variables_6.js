@@ -9,6 +9,5 @@ var searchData=
   ['gps_5fserver_5fready',['gps_server_ready',['../classSoDa_1_1GPSmon.html#a5837190d0b93126b299bc1b6e3ebede7',1,'SoDa::GPSmon']]],
   ['gps_5fstream',['gps_stream',['../classSoDa_1_1UI.html#a2fe4b9f9a2b9be72e9d7382b87b20a66',1,'SoDa::UI']]],
   ['gps_5fsubs',['gps_subs',['../classSoDa_1_1UI.html#a5084ee652c3f100ff5b8c9c110a7cbbb',1,'SoDa::UI']]],
-  ['gpsdecodestatus',['GPSDecodeStatus',['../classTSIP_1_1SuplementalTimingReport.html#aada5e93b7f114730d90ec0dd58c09ea3',1,'TSIP::SuplementalTimingReport']]],
   ['grid_5fp',['grid_p',['../classGUISoDa_1_1Spect.html#a3c6264adcefa04ce1846d5a0cea78b37',1,'GUISoDa::Spect']]]
 ];

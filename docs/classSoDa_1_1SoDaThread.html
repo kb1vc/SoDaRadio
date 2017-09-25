@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.13"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>SoDaRadio-5.0.1-master:9075e65: SoDa::SoDaThread Class Reference</title>
+<title>SoDaRadio-5.0.3-master:8901fb5: SoDa::SoDaThread Class Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -21,7 +21,7 @@
  <tbody>
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
-   <div id="projectname">SoDaRadio-5.0.1-master:9075e65
+   <div id="projectname">SoDaRadio-5.0.3-master:8901fb5
    </div>
   </td>
  </tr>
@@ -88,15 +88,14 @@ Inheritance diagram for SoDa::SoDaThread:</div>
 <area href="classSoDa_1_1BaseBandRX.html" title="BaseBandRX – this is the audio processing chain for the recieve path. " alt="SoDa::BaseBandRX" shape="rect" coords="327,112,535,136"/>
 <area href="classSoDa_1_1BaseBandTX.html" alt="SoDa::BaseBandTX" shape="rect" coords="327,168,535,192"/>
 <area href="classSoDa_1_1CWTX.html" title="The CW text-to-envelope converter run loop. " alt="SoDa::CWTX" shape="rect" coords="327,224,535,248"/>
-<area href="classSoDa_1_1GPS__TSIPmon.html" alt="SoDa::GPS_TSIPmon" shape="rect" coords="327,280,535,304"/>
-<area href="classSoDa_1_1GPSmon.html" alt="SoDa::GPSmon" shape="rect" coords="327,336,535,360"/>
-<area href="classSoDa_1_1TestServer.html" alt="SoDa::TestServer" shape="rect" coords="327,392,535,416"/>
-<area href="classSoDa_1_1UI.html" alt="SoDa::UI" shape="rect" coords="327,448,535,472"/>
-<area href="classSoDa_1_1USRPCtrl.html" title="Though libuhd is designed to be re-entrant, there are some indications that all control functions (se..." alt="SoDa::USRPCtrl" shape="rect" coords="327,504,535,528"/>
-<area href="classSoDa_1_1USRPRX.html" title="The Receive RF Path. " alt="SoDa::USRPRX" shape="rect" coords="327,560,535,584"/>
-<area href="classSoDa_1_1USRPTX.html" title="The Transmit RF Path. " alt="SoDa::USRPTX" shape="rect" coords="327,616,535,640"/>
-<area href="classSoDaTest_1_1MultiMBox__Test__Thread.html" alt="SoDaTest::MultiMBox_Test_Thread" shape="rect" coords="327,672,535,696"/>
-<area href="classSoDaTest_1_1ThN.html" alt="SoDaTest::ThN" shape="rect" coords="327,728,535,752"/>
+<area href="classSoDa_1_1GPSmon.html" alt="SoDa::GPSmon" shape="rect" coords="327,280,535,304"/>
+<area href="classSoDa_1_1TestServer.html" alt="SoDa::TestServer" shape="rect" coords="327,336,535,360"/>
+<area href="classSoDa_1_1UI.html" alt="SoDa::UI" shape="rect" coords="327,392,535,416"/>
+<area href="classSoDa_1_1USRPCtrl.html" title="Though libuhd is designed to be re-entrant, there are some indications that all control functions (se..." alt="SoDa::USRPCtrl" shape="rect" coords="327,448,535,472"/>
+<area href="classSoDa_1_1USRPRX.html" title="The Receive RF Path. " alt="SoDa::USRPRX" shape="rect" coords="327,504,535,528"/>
+<area href="classSoDa_1_1USRPTX.html" title="The Transmit RF Path. " alt="SoDa::USRPTX" shape="rect" coords="327,560,535,584"/>
+<area href="classSoDaTest_1_1MultiMBox__Test__Thread.html" alt="SoDaTest::MultiMBox_Test_Thread" shape="rect" coords="327,616,535,640"/>
+<area href="classSoDaTest_1_1ThN.html" alt="SoDaTest::ThN" shape="rect" coords="327,672,535,696"/>
 </map>
  </div></div>
 <table class="memberdecls">
@@ -110,6 +109,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a6805ceadaff10c4c662a6f89dab1a5e3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSoDa_1_1SoDaThread.html#a6805ceadaff10c4c662a6f89dab1a5e3">join</a> ()</td></tr>
 <tr class="memdesc:a6805ceadaff10c4c662a6f89dab1a5e3"><td class="mdescLeft">&#160;</td><td class="mdescRight">more properly "Wait for this thread to exit its run loop".  <a href="#a6805ceadaff10c4c662a6f89dab1a5e3">More...</a><br /></td></tr>
 <tr class="separator:a6805ceadaff10c4c662a6f89dab1a5e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a493e4d3f9b86252d589b4228086e8cca"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSoDa_1_1SoDaThread.html#a493e4d3f9b86252d589b4228086e8cca">waitForJoin</a> (unsigned int m)</td></tr>
+<tr class="memdesc:a493e4d3f9b86252d589b4228086e8cca"><td class="mdescLeft">&#160;</td><td class="mdescRight">wait for the thread to stop running, or the specified time to pass.  <a href="#a493e4d3f9b86252d589b4228086e8cca">More...</a><br /></td></tr>
+<tr class="separator:a493e4d3f9b86252d589b4228086e8cca"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0a5e4e91ab57f79eac0f3e9ddbd05624"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSoDa_1_1SoDaThread.html#a0a5e4e91ab57f79eac0f3e9ddbd05624">run</a> ()=0</td></tr>
 <tr class="memdesc:a0a5e4e91ab57f79eac0f3e9ddbd05624"><td class="mdescLeft">&#160;</td><td class="mdescRight">Each thread object must define its "run" loop.  <a href="#a0a5e4e91ab57f79eac0f3e9ddbd05624">More...</a><br /></td></tr>
 <tr class="separator:a0a5e4e91ab57f79eac0f3e9ddbd05624"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -275,11 +277,11 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="SoDaBase_8hxx_source.html#l00321">321</a> of file <a class="el" href="SoDaBase_8hxx_source.html">SoDaBase.hxx</a>.</p>
+<p class="definition">Definition at line <a class="el" href="SoDaBase_8hxx_source.html#l00335">335</a> of file <a class="el" href="SoDaBase_8hxx_source.html">SoDaBase.hxx</a>.</p>
 
 <p class="reference">References <a class="el" href="Command_8hxx_source.html#l00672">SoDa::Command::cmd</a>, <a class="el" href="Command_8hxx_source.html#l00053">SoDa::Command::GET</a>, <a class="el" href="Command_8hxx_source.html#l00053">SoDa::Command::REP</a>, and <a class="el" href="Command_8hxx_source.html#l00053">SoDa::Command::SET</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="GPS__TSIPmon_8cxx_source.html#l00048">SoDa::GPS_TSIPmon::run()</a>, <a class="el" href="UI_8cxx_source.html#l00118">SoDa::UI::run()</a>, <a class="el" href="GPSmon_8cxx_source.html#l00057">SoDa::GPSmon::run()</a>, <a class="el" href="CWTX_8cxx_source.html#l00060">SoDa::CWTX::run()</a>, <a class="el" href="USRPTX_8cxx_source.html#l00113">SoDa::USRPTX::run()</a>, <a class="el" href="BaseBandTX_8cxx_source.html#l00111">SoDa::BaseBandTX::run()</a>, and <a class="el" href="BaseBandRX_8cxx_source.html#l00426">SoDa::BaseBandRX::run()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="UI_8cxx_source.html#l00118">SoDa::UI::run()</a>, <a class="el" href="GPSmon_8cxx_source.html#l00057">SoDa::GPSmon::run()</a>, <a class="el" href="CWTX_8cxx_source.html#l00060">SoDa::CWTX::run()</a>, <a class="el" href="USRPTX_8cxx_source.html#l00113">SoDa::USRPTX::run()</a>, <a class="el" href="BaseBandTX_8cxx_source.html#l00111">SoDa::BaseBandTX::run()</a>, and <a class="el" href="BaseBandRX_8cxx_source.html#l00426">SoDa::BaseBandRX::run()</a>.</p>
 
 </div>
 </div>
@@ -309,9 +311,9 @@ Additional Inherited Members</h2></td></tr>
 
 <p>optional method to handle "GET" commands &ndash; commands that request a response </p>
 
-<p>Reimplemented in <a class="el" href="classSoDa_1_1USRPCtrl.html#a43fc8e0a0c4ccd39a153d290e8a1bb3a">SoDa::USRPCtrl</a>, <a class="el" href="classSoDa_1_1BaseBandRX.html#a1dab7c5b7d40a2b0c409beb0e81d2b02">SoDa::BaseBandRX</a>, <a class="el" href="classSoDa_1_1UI.html#a5ec932aa854e9b121539c837d051dfca">SoDa::UI</a>, <a class="el" href="classSoDa_1_1USRPTX.html#a23c64bb0157b54074ee2b75de25747a5">SoDa::USRPTX</a>, <a class="el" href="classSoDa_1_1BaseBandTX.html#aec17891898f45ab57b5390c7a8703034">SoDa::BaseBandTX</a>, <a class="el" href="classSoDa_1_1USRPRX.html#afbc2b7d43890c9eda2eebc44a41250b1">SoDa::USRPRX</a>, <a class="el" href="classSoDa_1_1CWTX.html#a28db5b528b9f673aa034ef4c6034d629">SoDa::CWTX</a>, <a class="el" href="classSoDa_1_1GPSmon.html#ab1d186598badc88039dfd9fdf00a2bd7">SoDa::GPSmon</a>, and <a class="el" href="classSoDa_1_1GPS__TSIPmon.html#a15ad3abdc143a976dcf67864f535db63">SoDa::GPS_TSIPmon</a>.</p>
+<p>Reimplemented in <a class="el" href="classSoDa_1_1USRPCtrl.html#a43fc8e0a0c4ccd39a153d290e8a1bb3a">SoDa::USRPCtrl</a>, <a class="el" href="classSoDa_1_1BaseBandRX.html#a1dab7c5b7d40a2b0c409beb0e81d2b02">SoDa::BaseBandRX</a>, <a class="el" href="classSoDa_1_1UI.html#a5ec932aa854e9b121539c837d051dfca">SoDa::UI</a>, <a class="el" href="classSoDa_1_1USRPTX.html#a23c64bb0157b54074ee2b75de25747a5">SoDa::USRPTX</a>, <a class="el" href="classSoDa_1_1BaseBandTX.html#aec17891898f45ab57b5390c7a8703034">SoDa::BaseBandTX</a>, <a class="el" href="classSoDa_1_1USRPRX.html#afbc2b7d43890c9eda2eebc44a41250b1">SoDa::USRPRX</a>, <a class="el" href="classSoDa_1_1CWTX.html#a28db5b528b9f673aa034ef4c6034d629">SoDa::CWTX</a>, and <a class="el" href="classSoDa_1_1GPSmon.html#ab1d186598badc88039dfd9fdf00a2bd7">SoDa::GPSmon</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="SoDaBase_8hxx_source.html#l00341">341</a> of file <a class="el" href="SoDaBase_8hxx_source.html">SoDaBase.hxx</a>.</p>
+<p class="definition">Definition at line <a class="el" href="SoDaBase_8hxx_source.html#l00355">355</a> of file <a class="el" href="SoDaBase_8hxx_source.html">SoDaBase.hxx</a>.</p>
 
 </div>
 </div>
@@ -341,9 +343,9 @@ Additional Inherited Members</h2></td></tr>
 
 <p>optional method that reports status or the result of some action. </p>
 
-<p>Reimplemented in <a class="el" href="classSoDa_1_1USRPCtrl.html#ac5ab01b8aa0fef992015d550454e4ab5">SoDa::USRPCtrl</a>, <a class="el" href="classSoDa_1_1BaseBandRX.html#ad9a34c335215412c069724abe5006974">SoDa::BaseBandRX</a>, <a class="el" href="classSoDa_1_1USRPTX.html#ae844b619b4b2d0a875132211b3c8ab11">SoDa::USRPTX</a>, <a class="el" href="classSoDa_1_1UI.html#ad880481dce58f5ebe22872a5dbba4569">SoDa::UI</a>, <a class="el" href="classSoDa_1_1BaseBandTX.html#a8440237a2394685e8ff2fe4cdb92fa13">SoDa::BaseBandTX</a>, <a class="el" href="classSoDa_1_1CWTX.html#a6e4ac8b41e7e09e368d593bc0dc84cca">SoDa::CWTX</a>, <a class="el" href="classSoDa_1_1USRPRX.html#aa3b9773efe06e160f4c6f6bd1ab303d1">SoDa::USRPRX</a>, <a class="el" href="classSoDa_1_1GPSmon.html#a66e4550b3059c8a59932e7e144375236">SoDa::GPSmon</a>, and <a class="el" href="classSoDa_1_1GPS__TSIPmon.html#ae0372425d8a3f515428762a02a46c4c3">SoDa::GPS_TSIPmon</a>.</p>
+<p>Reimplemented in <a class="el" href="classSoDa_1_1USRPCtrl.html#ac5ab01b8aa0fef992015d550454e4ab5">SoDa::USRPCtrl</a>, <a class="el" href="classSoDa_1_1BaseBandRX.html#ad9a34c335215412c069724abe5006974">SoDa::BaseBandRX</a>, <a class="el" href="classSoDa_1_1USRPTX.html#ae844b619b4b2d0a875132211b3c8ab11">SoDa::USRPTX</a>, <a class="el" href="classSoDa_1_1UI.html#ad880481dce58f5ebe22872a5dbba4569">SoDa::UI</a>, <a class="el" href="classSoDa_1_1BaseBandTX.html#a8440237a2394685e8ff2fe4cdb92fa13">SoDa::BaseBandTX</a>, <a class="el" href="classSoDa_1_1CWTX.html#a6e4ac8b41e7e09e368d593bc0dc84cca">SoDa::CWTX</a>, <a class="el" href="classSoDa_1_1USRPRX.html#aa3b9773efe06e160f4c6f6bd1ab303d1">SoDa::USRPRX</a>, and <a class="el" href="classSoDa_1_1GPSmon.html#a66e4550b3059c8a59932e7e144375236">SoDa::GPSmon</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="SoDaBase_8hxx_source.html#l00351">351</a> of file <a class="el" href="SoDaBase_8hxx_source.html">SoDaBase.hxx</a>.</p>
+<p class="definition">Definition at line <a class="el" href="SoDaBase_8hxx_source.html#l00365">365</a> of file <a class="el" href="SoDaBase_8hxx_source.html">SoDaBase.hxx</a>.</p>
 
 </div>
 </div>
@@ -373,9 +375,9 @@ Additional Inherited Members</h2></td></tr>
 
 <p>optional method to handle "SET" commands &ndash; commands that set internal state in the object. </p>
 
-<p>Reimplemented in <a class="el" href="classSoDa_1_1USRPCtrl.html#a40cbdf958b992f3e445faf3f2db10880">SoDa::USRPCtrl</a>, <a class="el" href="classSoDa_1_1BaseBandRX.html#abb7017eb890061b7e5d29269cf411a93">SoDa::BaseBandRX</a>, <a class="el" href="classSoDa_1_1USRPTX.html#a45ae5dcec3c70372a704b4af943a509b">SoDa::USRPTX</a>, <a class="el" href="classSoDa_1_1UI.html#adf259dd0c3a1e5d56d77510aea4e6caa">SoDa::UI</a>, <a class="el" href="classSoDa_1_1BaseBandTX.html#a89de83c19dbf8e989da3dc53b1b4806b">SoDa::BaseBandTX</a>, <a class="el" href="classSoDa_1_1CWTX.html#a8679781d79b257677f7108009b88a14b">SoDa::CWTX</a>, <a class="el" href="classSoDa_1_1USRPRX.html#a3b037924a81120d65efd2c73de0b0bd9">SoDa::USRPRX</a>, <a class="el" href="classSoDa_1_1GPSmon.html#a4fb4f0dd29f1ee6a66f167ff255eaef5">SoDa::GPSmon</a>, and <a class="el" href="classSoDa_1_1GPS__TSIPmon.html#a4847812eeee342394be38a17cfef58cc">SoDa::GPS_TSIPmon</a>.</p>
+<p>Reimplemented in <a class="el" href="classSoDa_1_1USRPCtrl.html#a40cbdf958b992f3e445faf3f2db10880">SoDa::USRPCtrl</a>, <a class="el" href="classSoDa_1_1BaseBandRX.html#abb7017eb890061b7e5d29269cf411a93">SoDa::BaseBandRX</a>, <a class="el" href="classSoDa_1_1USRPTX.html#a45ae5dcec3c70372a704b4af943a509b">SoDa::USRPTX</a>, <a class="el" href="classSoDa_1_1UI.html#adf259dd0c3a1e5d56d77510aea4e6caa">SoDa::UI</a>, <a class="el" href="classSoDa_1_1BaseBandTX.html#a89de83c19dbf8e989da3dc53b1b4806b">SoDa::BaseBandTX</a>, <a class="el" href="classSoDa_1_1CWTX.html#a8679781d79b257677f7108009b88a14b">SoDa::CWTX</a>, <a class="el" href="classSoDa_1_1USRPRX.html#a3b037924a81120d65efd2c73de0b0bd9">SoDa::USRPRX</a>, and <a class="el" href="classSoDa_1_1GPSmon.html#a4fb4f0dd29f1ee6a66f167ff255eaef5">SoDa::GPSmon</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="SoDaBase_8hxx_source.html#l00346">346</a> of file <a class="el" href="SoDaBase_8hxx_source.html">SoDaBase.hxx</a>.</p>
+<p class="definition">Definition at line <a class="el" href="SoDaBase_8hxx_source.html#l00360">360</a> of file <a class="el" href="SoDaBase_8hxx_source.html">SoDaBase.hxx</a>.</p>
 
 </div>
 </div>
@@ -402,9 +404,9 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="SoDaBase_8hxx_source.html#l00402">402</a> of file <a class="el" href="SoDaBase_8hxx_source.html">SoDaBase.hxx</a>.</p>
+<p class="definition">Definition at line <a class="el" href="SoDaBase_8hxx_source.html#l00416">416</a> of file <a class="el" href="SoDaBase_8hxx_source.html">SoDaBase.hxx</a>.</p>
 
-<p class="reference">References <a class="el" href="SoDaBase_8hxx_source.html#l00385">sigsegHandler()</a>.</p>
+<p class="reference">References <a class="el" href="SoDaBase_8hxx_source.html#l00399">sigsegHandler()</a>.</p>
 
 </div>
 </div>
@@ -466,7 +468,7 @@ Additional Inherited Members</h2></td></tr>
 <p>the run method that is called by the boost thread handler. </p>
 <p>This method wraps the thread objects run loop in an exception handler so that we can do something useful with it. </p>
 
-<p class="definition">Definition at line <a class="el" href="SoDaBase_8hxx_source.html#l00362">362</a> of file <a class="el" href="SoDaBase_8hxx_source.html">SoDaBase.hxx</a>.</p>
+<p class="definition">Definition at line <a class="el" href="SoDaBase_8hxx_source.html#l00376">376</a> of file <a class="el" href="SoDaBase_8hxx_source.html">SoDaBase.hxx</a>.</p>
 
 <p class="reference">References <a class="el" href="SoDaBase_8hxx_source.html#l00246">SoDa::SoDaException::toString()</a>.</p>
 
@@ -500,7 +502,7 @@ Additional Inherited Members</h2></td></tr>
 <p>Each thread object must define its "run" loop. </p>
 <p>This loop exits only when the thread has received a STOP command on one of its command mailboxes. </p>
 
-<p>Implemented in <a class="el" href="classSoDaTest_1_1MultiMBox__Test__Thread.html#a23d162a45dbecdb254d9fbed47449eee">SoDaTest::MultiMBox_Test_Thread</a>, <a class="el" href="classSoDa_1_1BaseBandRX.html#a91694a3bf4d2c10c128142b88e8eb08d">SoDa::BaseBandRX</a>, <a class="el" href="classSoDa_1_1USRPCtrl.html#ada73d28b62828f4f7ebe537a51bde2da">SoDa::USRPCtrl</a>, <a class="el" href="classSoDa_1_1BaseBandTX.html#a8af3d450cbba5ff9617090bfa92c748f">SoDa::BaseBandTX</a>, <a class="el" href="classSoDa_1_1USRPTX.html#a9a279ceff312ad94f13d84cfefb40969">SoDa::USRPTX</a>, <a class="el" href="classSoDa_1_1USRPRX.html#ac12a7920c96c27a2a596b308da124a53">SoDa::USRPRX</a>, <a class="el" href="classSoDa_1_1CWTX.html#abe720376fe39d8076b81ba469c16b1cf">SoDa::CWTX</a>, <a class="el" href="classSoDa_1_1TestServer.html#ad4655e2a6f2eb18a98787d01782f7414">SoDa::TestServer</a>, <a class="el" href="classSoDa_1_1GPSmon.html#a82c196300e486d9f7f77c576f6ea1d69">SoDa::GPSmon</a>, <a class="el" href="classSoDa_1_1UI.html#a3284d0af89aadb134afd6069e5a65f09">SoDa::UI</a>, <a class="el" href="classSoDa_1_1GPS__TSIPmon.html#ab976aff6e8381a02727709fd4ed39cd6">SoDa::GPS_TSIPmon</a>, and <a class="el" href="classSoDaTest_1_1ThN.html#ac6c96ca99503d7733091d3f98839e1ea">SoDaTest::ThN</a>.</p>
+<p>Implemented in <a class="el" href="classSoDaTest_1_1MultiMBox__Test__Thread.html#a23d162a45dbecdb254d9fbed47449eee">SoDaTest::MultiMBox_Test_Thread</a>, <a class="el" href="classSoDa_1_1BaseBandRX.html#a91694a3bf4d2c10c128142b88e8eb08d">SoDa::BaseBandRX</a>, <a class="el" href="classSoDa_1_1USRPCtrl.html#ada73d28b62828f4f7ebe537a51bde2da">SoDa::USRPCtrl</a>, <a class="el" href="classSoDa_1_1BaseBandTX.html#a8af3d450cbba5ff9617090bfa92c748f">SoDa::BaseBandTX</a>, <a class="el" href="classSoDa_1_1USRPTX.html#a9a279ceff312ad94f13d84cfefb40969">SoDa::USRPTX</a>, <a class="el" href="classSoDa_1_1USRPRX.html#ac12a7920c96c27a2a596b308da124a53">SoDa::USRPRX</a>, <a class="el" href="classSoDa_1_1CWTX.html#abe720376fe39d8076b81ba469c16b1cf">SoDa::CWTX</a>, <a class="el" href="classSoDa_1_1TestServer.html#ad4655e2a6f2eb18a98787d01782f7414">SoDa::TestServer</a>, <a class="el" href="classSoDa_1_1GPSmon.html#a82c196300e486d9f7f77c576f6ea1d69">SoDa::GPSmon</a>, <a class="el" href="classSoDa_1_1UI.html#a3284d0af89aadb134afd6069e5a65f09">SoDa::UI</a>, and <a class="el" href="classSoDaTest_1_1ThN.html#ac6c96ca99503d7733091d3f98839e1ea">SoDaTest::ThN</a>.</p>
 
 </div>
 </div>
@@ -528,9 +530,9 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="SoDaBase_8hxx_source.html#l00385">385</a> of file <a class="el" href="SoDaBase_8hxx_source.html">SoDaBase.hxx</a>.</p>
+<p class="definition">Definition at line <a class="el" href="SoDaBase_8hxx_source.html#l00399">399</a> of file <a class="el" href="SoDaBase_8hxx_source.html">SoDaBase.hxx</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="SoDaBase_8hxx_source.html#l00402">hookSigSeg()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="SoDaBase_8hxx_source.html#l00416">hookSigSeg()</a>.</p>
 
 </div>
 </div>
@@ -561,9 +563,48 @@ Additional Inherited Members</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="SoDaBase_8hxx_source.html#l00292">292</a> of file <a class="el" href="SoDaBase_8hxx_source.html">SoDaBase.hxx</a>.</p>
 
-<p class="reference">References <a class="el" href="SoDaBase_8hxx_source.html#l00362">outerRun()</a>.</p>
+<p class="reference">References <a class="el" href="SoDaBase_8hxx_source.html#l00376">outerRun()</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="TestServer_8cxx_source.html#l00076">doWork()</a>, and <a class="el" href="SoDa__ThreadTest_8cxx_source.html#l00056">main()</a>.</p>
+
+</div>
+</div>
+<a id="a493e4d3f9b86252d589b4228086e8cca"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a493e4d3f9b86252d589b4228086e8cca">&#9670;&nbsp;</a></span>waitForJoin()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool SoDa::SoDaThread::waitForJoin </td>
+          <td>(</td>
+          <td class="paramtype">unsigned int&#160;</td>
+          <td class="paramname"><em>m</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>wait for the thread to stop running, or the specified time to pass. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">m</td><td>timeout in milliseconds </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true if the thread has stopped, false otherwise. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="SoDaBase_8hxx_source.html#l00313">313</a> of file <a class="el" href="SoDaBase_8hxx_source.html">SoDaBase.hxx</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="SoDaServer_8cxx_source.html#l00156">doWork()</a>.</p>
 
 </div>
 </div>
@@ -588,7 +629,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="SoDaBase_8hxx_source.html#l00354">354</a> of file <a class="el" href="SoDaBase_8hxx_source.html">SoDaBase.hxx</a>.</p>
+<p class="definition">Definition at line <a class="el" href="SoDaBase_8hxx_source.html#l00368">368</a> of file <a class="el" href="SoDaBase_8hxx_source.html">SoDaBase.hxx</a>.</p>
 
 </div>
 </div>
@@ -598,7 +639,7 @@ Additional Inherited Members</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Sep 15 2017 21:28:41 for SoDaRadio-5.0.1-master:9075e65 by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Sep 24 2017 12:16:39 for SoDaRadio-5.0.3-master:8901fb5 by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.13
 </small></address>

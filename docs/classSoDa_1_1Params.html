@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.13"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>SoDaRadio-5.0.1-master:9075e65: SoDa::Params Class Reference</title>
+<title>SoDaRadio-5.0.3-master:8901fb5: SoDa::Params Class Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -21,7 +21,7 @@
  <tbody>
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
-   <div id="projectname">SoDaRadio-5.0.1-master:9075e65
+   <div id="projectname">SoDaRadio-5.0.3-master:8901fb5
    </div>
   </td>
  </tr>
@@ -129,6 +129,10 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a58ae71f96975d1922eef202c15f8e8e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aeef958efb2b72866fc30b12a92d50ae3"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSoDa_1_1Params.html#aeef958efb2b72866fc30b12a92d50ae3">getLockFileName</a> () const</td></tr>
 <tr class="separator:aeef958efb2b72866fc30b12a92d50ae3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a40fce2a5d2c196af06ea339fd78547ac"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSoDa_1_1Params.html#a40fce2a5d2c196af06ea339fd78547ac">reportMemInfo</a> () const</td></tr>
+<tr class="separator:a40fce2a5d2c196af06ea339fd78547ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5ae66376a157120148761ebeacd76738"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSoDa_1_1Params.html#a5ae66376a157120148761ebeacd76738">getReportFileName</a> () const</td></tr>
+<tr class="separator:a5ae66376a157120148761ebeacd76738"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae0bff6d367dfda5f60e169523923fe38"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSoDa_1_1Params.html#ae0bff6d367dfda5f60e169523923fe38">isRadioType</a> (const std::string &amp;rtype)</td></tr>
 <tr class="separator:ae0bff6d367dfda5f60e169523923fe38"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -136,6 +140,10 @@ Public Member Functions</h2></td></tr>
 Private Attributes</h2></td></tr>
 <tr class="memitem:a1bc47ba073b386fdd709bb93685ab894"><td class="memItemLeft" align="right" valign="top">boost::program_options::variables_map&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSoDa_1_1Params.html#a1bc47ba073b386fdd709bb93685ab894">pmap</a></td></tr>
 <tr class="separator:a1bc47ba073b386fdd709bb93685ab894"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1696a4643e2e04c7e07f76f82c0d3b73"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSoDa_1_1Params.html#a1696a4643e2e04c7e07f76f82c0d3b73">report_mem_info</a></td></tr>
+<tr class="separator:a1696a4643e2e04c7e07f76f82c0d3b73"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aabe73e0ba7febf5a483fe8ab282f0319"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSoDa_1_1Params.html#aabe73e0ba7febf5a483fe8ab282f0319">report_file_name</a></td></tr>
+<tr class="separator:aabe73e0ba7febf5a483fe8ab282f0319"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab6d29acf422dfb93366af44c4affb7b6"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSoDa_1_1Params.html#ab6d29acf422dfb93366af44c4affb7b6">gps_hostname</a></td></tr>
 <tr class="separator:ab6d29acf422dfb93366af44c4affb7b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aca0fc8225541686015eaa6e4c84d7542"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSoDa_1_1Params.html#aca0fc8225541686015eaa6e4c84d7542">gps_portname</a></td></tr>
@@ -211,7 +219,7 @@ Private Attributes</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="Params_8cxx_source.html#l00032">32</a> of file <a class="el" href="Params_8cxx_source.html">Params.cxx</a>.</p>
 
-<p class="reference">References <a class="el" href="Params_8hxx_source.html#l00154">audio_portname</a>, <a class="el" href="Params_8hxx_source.html#l00142">config_filename</a>, <a class="el" href="Params_8hxx_source.html#l00160">debug_level</a>, <a class="el" href="Params_8hxx_source.html#l00157">force_frac_N_mode</a>, <a class="el" href="Params_8hxx_source.html#l00158">force_integer_N_mode</a>, <a class="el" href="Params_8hxx_source.html#l00138">gps_hostname</a>, <a class="el" href="Params_8hxx_source.html#l00139">gps_portname</a>, <a class="el" href="Params_8hxx_source.html#l00144">lock_file_name</a>, <a class="el" href="Params_8hxx_source.html#l00136">pmap</a>, <a class="el" href="Params_8hxx_source.html#l00141">radio_args</a>, <a class="el" href="Params_8hxx_source.html#l00140">radio_type</a>, <a class="el" href="Params_8cxx_source.html#l00075">readConfigFile()</a>, and <a class="el" href="Params_8hxx_source.html#l00151">server_sock_basename</a>.</p>
+<p class="reference">References <a class="el" href="Params_8hxx_source.html#l00160">audio_portname</a>, <a class="el" href="Params_8hxx_source.html#l00148">config_filename</a>, <a class="el" href="Params_8hxx_source.html#l00166">debug_level</a>, <a class="el" href="Params_8hxx_source.html#l00163">force_frac_N_mode</a>, <a class="el" href="Params_8hxx_source.html#l00164">force_integer_N_mode</a>, <a class="el" href="Params_8hxx_source.html#l00144">gps_hostname</a>, <a class="el" href="Params_8hxx_source.html#l00145">gps_portname</a>, <a class="el" href="Params_8hxx_source.html#l00150">lock_file_name</a>, <a class="el" href="Params_8hxx_source.html#l00139">pmap</a>, <a class="el" href="Params_8hxx_source.html#l00147">radio_args</a>, <a class="el" href="Params_8hxx_source.html#l00146">radio_type</a>, <a class="el" href="Params_8cxx_source.html#l00079">readConfigFile()</a>, <a class="el" href="Params_8hxx_source.html#l00142">report_file_name</a>, <a class="el" href="Params_8hxx_source.html#l00141">report_mem_info</a>, and <a class="el" href="Params_8hxx_source.html#l00157">server_sock_basename</a>.</p>
 
 </div>
 </div>
@@ -241,7 +249,7 @@ Private Attributes</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00112">112</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
 
-<p class="reference">References <a class="el" href="Params_8hxx_source.html#l00157">force_frac_N_mode</a>, and <a class="el" href="Params_8hxx_source.html#l00158">force_integer_N_mode</a>.</p>
+<p class="reference">References <a class="el" href="Params_8hxx_source.html#l00163">force_frac_N_mode</a>, and <a class="el" href="Params_8hxx_source.html#l00164">force_integer_N_mode</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="USRPCtrl_8cxx_source.html#l00055">SoDa::USRPCtrl::USRPCtrl()</a>.</p>
 
@@ -272,7 +280,7 @@ Private Attributes</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00113">113</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
 
-<p class="reference">References <a class="el" href="Params_8hxx_source.html#l00157">force_frac_N_mode</a>, and <a class="el" href="Params_8hxx_source.html#l00158">force_integer_N_mode</a>.</p>
+<p class="reference">References <a class="el" href="Params_8hxx_source.html#l00163">force_frac_N_mode</a>, and <a class="el" href="Params_8hxx_source.html#l00164">force_integer_N_mode</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="USRPCtrl_8cxx_source.html#l00055">SoDa::USRPCtrl::USRPCtrl()</a>.</p>
 
@@ -303,7 +311,7 @@ Private Attributes</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00106">106</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="BaseBandRX_8cxx_source.html#l00037">SoDa::BaseBandRX::BaseBandRX()</a>, <a class="el" href="BaseBandTX_8cxx_source.html#l00045">SoDa::BaseBandTX::BaseBandTX()</a>, and <a class="el" href="SoDaServer_8cxx_source.html#l00153">doWork()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="BaseBandRX_8cxx_source.html#l00037">SoDa::BaseBandRX::BaseBandRX()</a>, <a class="el" href="BaseBandTX_8cxx_source.html#l00045">SoDa::BaseBandTX::BaseBandTX()</a>, and <a class="el" href="SoDaServer_8cxx_source.html#l00156">doWork()</a>.</p>
 
 </div>
 </div>
@@ -332,9 +340,9 @@ Private Attributes</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00110">110</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
 
-<p class="reference">References <a class="el" href="Params_8hxx_source.html#l00154">audio_portname</a>.</p>
+<p class="reference">References <a class="el" href="Params_8hxx_source.html#l00160">audio_portname</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="SoDaServer_8cxx_source.html#l00153">doWork()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="SoDaServer_8cxx_source.html#l00156">doWork()</a>.</p>
 
 </div>
 </div>
@@ -363,7 +371,7 @@ Private Attributes</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00104">104</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="BaseBandRX_8cxx_source.html#l00037">SoDa::BaseBandRX::BaseBandRX()</a>, <a class="el" href="BaseBandTX_8cxx_source.html#l00045">SoDa::BaseBandTX::BaseBandTX()</a>, and <a class="el" href="SoDaServer_8cxx_source.html#l00153">doWork()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="BaseBandRX_8cxx_source.html#l00037">SoDa::BaseBandRX::BaseBandRX()</a>, <a class="el" href="BaseBandTX_8cxx_source.html#l00045">SoDa::BaseBandTX::BaseBandTX()</a>, and <a class="el" href="SoDaServer_8cxx_source.html#l00156">doWork()</a>.</p>
 
 </div>
 </div>
@@ -395,7 +403,7 @@ Private Attributes</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00064">64</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
 
-<p class="reference">References <a class="el" href="Params_8hxx_source.html#l00146">clock_source</a>.</p>
+<p class="reference">References <a class="el" href="Params_8hxx_source.html#l00152">clock_source</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="USRPCtrl_8cxx_source.html#l00209">SoDa::USRPCtrl::run()</a>.</p>
 
@@ -426,9 +434,9 @@ Private Attributes</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00115">115</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
 
-<p class="reference">References <a class="el" href="Params_8hxx_source.html#l00160">debug_level</a>.</p>
+<p class="reference">References <a class="el" href="Params_8hxx_source.html#l00166">debug_level</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="SoDaServer_8cxx_source.html#l00153">doWork()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="SoDaServer_8cxx_source.html#l00156">doWork()</a>.</p>
 
 </div>
 </div>
@@ -457,7 +465,7 @@ Private Attributes</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00119">119</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
 
-<p class="reference">References <a class="el" href="Params_8hxx_source.html#l00138">gps_hostname</a>.</p>
+<p class="reference">References <a class="el" href="Params_8hxx_source.html#l00144">gps_hostname</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="GPSmon_8cxx_source.html#l00033">SoDa::GPSmon::GPSmon()</a>.</p>
 
@@ -488,7 +496,7 @@ Private Attributes</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00121">121</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
 
-<p class="reference">References <a class="el" href="Params_8hxx_source.html#l00139">gps_portname</a>.</p>
+<p class="reference">References <a class="el" href="Params_8hxx_source.html#l00145">gps_portname</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="GPSmon_8cxx_source.html#l00033">SoDa::GPSmon::GPSmon()</a>.</p>
 
@@ -519,9 +527,9 @@ Private Attributes</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00123">123</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
 
-<p class="reference">References <a class="el" href="Params_8hxx_source.html#l00144">lock_file_name</a>.</p>
+<p class="reference">References <a class="el" href="Params_8hxx_source.html#l00150">lock_file_name</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="SoDaServer_8cxx_source.html#l00261">main()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="SoDaServer_8cxx_source.html#l00282">main()</a>.</p>
 
 </div>
 </div>
@@ -553,7 +561,7 @@ Private Attributes</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00056">56</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
 
-<p class="reference">References <a class="el" href="Params_8hxx_source.html#l00141">radio_args</a>.</p>
+<p class="reference">References <a class="el" href="Params_8hxx_source.html#l00147">radio_args</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="USRPCtrl_8cxx_source.html#l00055">SoDa::USRPCtrl::USRPCtrl()</a>.</p>
 
@@ -584,9 +592,40 @@ Private Attributes</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00117">117</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
 
-<p class="reference">References <a class="el" href="Params_8hxx_source.html#l00140">radio_type</a>.</p>
+<p class="reference">References <a class="el" href="Params_8hxx_source.html#l00146">radio_type</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="SoDaServer_8cxx_source.html#l00153">doWork()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="SoDaServer_8cxx_source.html#l00156">doWork()</a>.</p>
+
+</div>
+</div>
+<a id="a5ae66376a157120148761ebeacd76738"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5ae66376a157120148761ebeacd76738">&#9670;&nbsp;</a></span>getReportFileName()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string SoDa::Params::getReportFileName </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00126">126</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
+
+<p class="reference">References <a class="el" href="Params_8hxx_source.html#l00142">report_file_name</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="SoDaServer_8cxx_source.html#l00156">doWork()</a>.</p>
 
 </div>
 </div>
@@ -647,7 +686,7 @@ Private Attributes</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00071">71</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
 
-<p class="reference">References <a class="el" href="Params_8hxx_source.html#l00148">rx_ant</a>.</p>
+<p class="reference">References <a class="el" href="Params_8hxx_source.html#l00154">rx_ant</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="USRPCtrl_8cxx_source.html#l00209">SoDa::USRPCtrl::run()</a>.</p>
 
@@ -710,7 +749,7 @@ Private Attributes</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00108">108</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
 
-<p class="reference">References <a class="el" href="Params_8hxx_source.html#l00151">server_sock_basename</a>.</p>
+<p class="reference">References <a class="el" href="Params_8hxx_source.html#l00157">server_sock_basename</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="UI_8cxx_source.html#l00034">SoDa::UI::UI()</a>.</p>
 
@@ -744,7 +783,7 @@ Private Attributes</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00076">76</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
 
-<p class="reference">References <a class="el" href="Params_8cxx_source.html#l00075">readConfigFile()</a>, <a class="el" href="Params_8cxx_source.html#l00086">saveConfigFile()</a>, and <a class="el" href="Params_8hxx_source.html#l00148">tx_ant</a>.</p>
+<p class="reference">References <a class="el" href="Params_8cxx_source.html#l00079">readConfigFile()</a>, <a class="el" href="Params_8cxx_source.html#l00090">saveConfigFile()</a>, and <a class="el" href="Params_8hxx_source.html#l00154">tx_ant</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="USRPCtrl_8cxx_source.html#l00209">SoDa::USRPCtrl::run()</a>.</p>
 
@@ -805,11 +844,11 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00125">125</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00128">128</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
 
-<p class="reference">References <a class="el" href="Params_8hxx_source.html#l00140">radio_type</a>.</p>
+<p class="reference">References <a class="el" href="Params_8hxx_source.html#l00146">radio_type</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="SoDaServer_8cxx_source.html#l00153">doWork()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="SoDaServer_8cxx_source.html#l00156">doWork()</a>.</p>
 
 </div>
 </div>
@@ -831,11 +870,42 @@ Private Attributes</h2></td></tr>
 
 <p>read a configuration file (for now, just setup the default config.) </p>
 
-<p class="definition">Definition at line <a class="el" href="Params_8cxx_source.html#l00075">75</a> of file <a class="el" href="Params_8cxx_source.html">Params.cxx</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Params_8cxx_source.html#l00079">79</a> of file <a class="el" href="Params_8cxx_source.html">Params.cxx</a>.</p>
 
-<p class="reference">References <a class="el" href="Params_8hxx_source.html#l00146">clock_source</a>, <a class="el" href="Params_8hxx_source.html#l00148">rx_ant</a>, <a class="el" href="Params_8hxx_source.html#l00147">rx_rate</a>, <a class="el" href="Params_8hxx_source.html#l00148">tx_ant</a>, and <a class="el" href="Params_8hxx_source.html#l00147">tx_rate</a>.</p>
+<p class="reference">References <a class="el" href="Params_8hxx_source.html#l00152">clock_source</a>, <a class="el" href="Params_8hxx_source.html#l00154">rx_ant</a>, <a class="el" href="Params_8hxx_source.html#l00153">rx_rate</a>, <a class="el" href="Params_8hxx_source.html#l00154">tx_ant</a>, and <a class="el" href="Params_8hxx_source.html#l00153">tx_rate</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="Params_8hxx_source.html#l00076">getTXAnt()</a>, and <a class="el" href="Params_8cxx_source.html#l00032">Params()</a>.</p>
+
+</div>
+</div>
+<a id="a40fce2a5d2c196af06ea339fd78547ac"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a40fce2a5d2c196af06ea339fd78547ac">&#9670;&nbsp;</a></span>reportMemInfo()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool SoDa::Params::reportMemInfo </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00125">125</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
+
+<p class="reference">References <a class="el" href="Params_8hxx_source.html#l00141">report_mem_info</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="SoDaServer_8cxx_source.html#l00156">doWork()</a>.</p>
 
 </div>
 </div>
@@ -857,7 +927,7 @@ Private Attributes</h2></td></tr>
 
 <p>save config data to a configuration file (for now, do nothing.) </p>
 
-<p class="definition">Definition at line <a class="el" href="Params_8cxx_source.html#l00086">86</a> of file <a class="el" href="Params_8cxx_source.html">Params.cxx</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Params_8cxx_source.html#l00090">90</a> of file <a class="el" href="Params_8cxx_source.html">Params.cxx</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="Params_8hxx_source.html#l00076">getTXAnt()</a>.</p>
 
@@ -884,7 +954,7 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00154">154</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00160">160</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="Params_8hxx_source.html#l00110">getAudioPortName()</a>, and <a class="el" href="Params_8cxx_source.html#l00032">Params()</a>.</p>
 
@@ -910,9 +980,9 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00146">146</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00152">152</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="Params_8hxx_source.html#l00064">getClockSource()</a>, and <a class="el" href="Params_8cxx_source.html#l00075">readConfigFile()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="Params_8hxx_source.html#l00064">getClockSource()</a>, and <a class="el" href="Params_8cxx_source.html#l00079">readConfigFile()</a>.</p>
 
 </div>
 </div>
@@ -936,7 +1006,7 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00142">142</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00148">148</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="Params_8cxx_source.html#l00032">Params()</a>.</p>
 
@@ -962,7 +1032,7 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00160">160</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00166">166</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="Params_8hxx_source.html#l00115">getDebugLevel()</a>, and <a class="el" href="Params_8cxx_source.html#l00032">Params()</a>.</p>
 
@@ -988,7 +1058,7 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00157">157</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00163">163</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="Params_8hxx_source.html#l00112">forceFracN()</a>, <a class="el" href="Params_8hxx_source.html#l00113">forceIntN()</a>, and <a class="el" href="Params_8cxx_source.html#l00032">Params()</a>.</p>
 
@@ -1014,7 +1084,7 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00158">158</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00164">164</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="Params_8hxx_source.html#l00112">forceFracN()</a>, <a class="el" href="Params_8hxx_source.html#l00113">forceIntN()</a>, and <a class="el" href="Params_8cxx_source.html#l00032">Params()</a>.</p>
 
@@ -1040,7 +1110,7 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00138">138</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00144">144</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="Params_8hxx_source.html#l00119">getGPSHostName()</a>, and <a class="el" href="Params_8cxx_source.html#l00032">Params()</a>.</p>
 
@@ -1066,7 +1136,7 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00139">139</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00145">145</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="Params_8hxx_source.html#l00121">getGPSPortName()</a>, and <a class="el" href="Params_8cxx_source.html#l00032">Params()</a>.</p>
 
@@ -1092,7 +1162,7 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00144">144</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00150">150</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="Params_8hxx_source.html#l00123">getLockFileName()</a>, and <a class="el" href="Params_8cxx_source.html#l00032">Params()</a>.</p>
 
@@ -1118,7 +1188,7 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00136">136</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00139">139</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="Params_8cxx_source.html#l00032">Params()</a>.</p>
 
@@ -1144,7 +1214,7 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00141">141</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00147">147</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="Params_8hxx_source.html#l00056">getRadioArgs()</a>, and <a class="el" href="Params_8cxx_source.html#l00032">Params()</a>.</p>
 
@@ -1170,9 +1240,61 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00140">140</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00146">146</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="Params_8hxx_source.html#l00117">getRadioType()</a>, <a class="el" href="Params_8hxx_source.html#l00125">isRadioType()</a>, and <a class="el" href="Params_8cxx_source.html#l00032">Params()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="Params_8hxx_source.html#l00117">getRadioType()</a>, <a class="el" href="Params_8hxx_source.html#l00128">isRadioType()</a>, and <a class="el" href="Params_8cxx_source.html#l00032">Params()</a>.</p>
+
+</div>
+</div>
+<a id="aabe73e0ba7febf5a483fe8ab282f0319"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aabe73e0ba7febf5a483fe8ab282f0319">&#9670;&nbsp;</a></span>report_file_name</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string SoDa::Params::report_file_name</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00142">142</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="Params_8hxx_source.html#l00126">getReportFileName()</a>, and <a class="el" href="Params_8cxx_source.html#l00032">Params()</a>.</p>
+
+</div>
+</div>
+<a id="a1696a4643e2e04c7e07f76f82c0d3b73"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1696a4643e2e04c7e07f76f82c0d3b73">&#9670;&nbsp;</a></span>report_mem_info</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool SoDa::Params::report_mem_info</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00141">141</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="Params_8cxx_source.html#l00032">Params()</a>, and <a class="el" href="Params_8hxx_source.html#l00125">reportMemInfo()</a>.</p>
 
 </div>
 </div>
@@ -1196,9 +1318,9 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00148">148</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00154">154</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="Params_8hxx_source.html#l00071">getRXAnt()</a>, and <a class="el" href="Params_8cxx_source.html#l00075">readConfigFile()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="Params_8hxx_source.html#l00071">getRXAnt()</a>, and <a class="el" href="Params_8cxx_source.html#l00079">readConfigFile()</a>.</p>
 
 </div>
 </div>
@@ -1222,9 +1344,9 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00147">147</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00153">153</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="Params_8cxx_source.html#l00075">readConfigFile()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="Params_8cxx_source.html#l00079">readConfigFile()</a>.</p>
 
 </div>
 </div>
@@ -1248,7 +1370,7 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00151">151</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00157">157</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="Params_8hxx_source.html#l00108">getServerSocketBasename()</a>, and <a class="el" href="Params_8cxx_source.html#l00032">Params()</a>.</p>
 
@@ -1274,9 +1396,9 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00148">148</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00154">154</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="Params_8hxx_source.html#l00076">getTXAnt()</a>, and <a class="el" href="Params_8cxx_source.html#l00075">readConfigFile()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="Params_8hxx_source.html#l00076">getTXAnt()</a>, and <a class="el" href="Params_8cxx_source.html#l00079">readConfigFile()</a>.</p>
 
 </div>
 </div>
@@ -1300,9 +1422,9 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00147">147</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Params_8hxx_source.html#l00153">153</a> of file <a class="el" href="Params_8hxx_source.html">Params.hxx</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="Params_8cxx_source.html#l00075">readConfigFile()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="Params_8cxx_source.html#l00079">readConfigFile()</a>.</p>
 
 </div>
 </div>
@@ -1313,7 +1435,7 @@ Private Attributes</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Sep 15 2017 21:28:41 for SoDaRadio-5.0.1-master:9075e65 by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Sep 24 2017 12:16:39 for SoDaRadio-5.0.3-master:8901fb5 by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.13
 </small></address>
