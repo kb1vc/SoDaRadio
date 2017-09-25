@@ -18,7 +18,7 @@ digital signal processing concepts.
 * Improve on the performance of my earlier microwave systems that used an ``analog'' IF radio.
  
 Over time, SoDaRadio sprouted a bunch of features -- assisted logging
-(epecially for the ARRL 10GHz and Up Cumulative Contest), GPS
+(especially for the ARRL 10GHz and Up Cumulative Contest), GPS
 monitoring, bearing and distance calculation, and finally a hamlib
 network interface.
 

@@ -1,6 +1,6 @@
 # SoDa -- A Software Defined Radio for the Ettus Research USRP
 
-SoDaRadio is a multi-mode VHF/UHF/Microwave radio transciever
+SoDaRadio is a multi-mode VHF/UHF/Microwave radio transceiver
 that runs on Linux.   It has been tested on several Ettus
 USRP models including the N200/WBX, N210/WBX, N210/SBX, N200/UBX,
 and the B210. 
@@ -123,11 +123,11 @@ sudo make install
 This will run for a while.  You should see *absolutely no errors or warnings*
 as I put real effort into making sure the system builds cleanly.  If you get a
 warning or error, copy the text of the warning/error into an email and send 
-it to radiogeek381 at gmail.com  with the output of the folliwing command: 
+it to radiogeek381 at gmail.com  with the output of the following command: 
 ~~~~
 git rev-parse HEAD
 ~~~~
-The command must be typed somwhere in the tree that you just created with
+The command must be typed somewhere in the tree that you just created with
 the git clone command. 
 
 
@@ -190,10 +190,10 @@ middle of the numbers to go up, below to go down.  To move to a new
 digit, click MB3 on the right half of the number display to go down, 
 left half to go up.  Yes this is crap UI design.  I'll fix it soon.
 
-Once you've selected a ferquency, hit the "Center RX Freq" button 
+Once you've selected a frequency, hit the "Center RX Freq" button 
 on the waterfall display.  That will center your chosen frequency in 
 the waterfall window.  After that, you can click on the waterfall to 
-move the RX freqeuncy.  
+move the RX frequency.  
 
 I often click the "TX/RX Lock" button, since I don't spend a whole lot
 of time working split.  
