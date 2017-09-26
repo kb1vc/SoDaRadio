@@ -31,7 +31,7 @@ and the current and previous Ubuntu LTS releases.
 
 Ready to build-it-yourself?  Jump down to "Building from scratch."
 
-Alternatively, if you are running Ubuntu 16.04, Fedora 25, or Fedora 24, you can
+Alternatively, if you are running Ubuntu 16.04, Fedora 26, Fedora 25, or Fedora 24, you can
 download binary kits that just "do the right thing."  They'll install all the 
 prerequisites, put the necessary files in the right place and are generally a 
 pain-reduced way of getting SoDaRadio running.  The only real downside to the binary
@@ -139,15 +139,16 @@ the Ettus software, then SoDaRadio should not present any particular problems.
 
 #### Fedora
 
-The following works for installing on Fedora 25.  Fedora 24 is identical 
+The following works for installing on Fedora 26.  Fedora 25 and 24 are identical 
 
 1. Download the appropriate rpm. The following links will take you to the repository 
 location for the kit. Go to that page and hit the download button.
+   * [Get SoDaRadio for Fedora 26 here](/packages/rpm/SoDaRadio-5.0.3-1.x86_64.Fedora-26.rpm)
    * [Get SoDaRadio for Fedora 25 here](/packages/rpm/SoDaRadio-5.0.3-1.x86_64.Fedora-25.rpm)
    * [Get SoDaRadio for Fedora 24 here](/packages/rpm/SoDaRadio-5.0.3-1.x86_64.Fedora-24.rpm)
 1. Install the kit using dnf (substitute the correct package name in the command below).
 ~~~~
-sudo dnf install ./SoDaRadio-5.0.3-1.x86_64.Fedora-25.rpm
+sudo dnf install ./SoDaRadio-5.0.3-1.x86_64.Fedora-26.rpm
 ~~~~
 
 
