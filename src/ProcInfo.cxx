@@ -30,7 +30,7 @@
 
 void kb1vc::ProcInfo::openFiles(const std::string & of_name)
 {
-  f_statm.open(statm_file_name);
+  f_statm.open(statm_file_name.c_str());
   if(f_statm.bad()) {
     std::cerr << boost::format("ProcInfo could not open input file %s for object %s\n")
       % statm_file_name % unit_name; 
@@ -40,7 +40,7 @@ void kb1vc::ProcInfo::openFiles(const std::string & of_name)
     stat_file_ok = true; 
   }
 
-  f_report.open(of_name); 
+  f_report.open(of_name.c_str()); 
   if(f_report.bad()) {
     std::cerr << boost::format("ProcInfo could not open output report file %s for object %s\n")
       % of_name % unit_name; 
