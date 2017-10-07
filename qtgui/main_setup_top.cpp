@@ -60,11 +60,13 @@ void MainWindow::setupTopControls()
 	  this, SLOT(setTXFreq(double))); 
   
   connect(ui->RXfreq2TXfreq_btn, &QPushButton::clicked, 
-	  this, [=] (bool checked) {
+	  this, [=] (bool checked) { 
+	    (void) checked; 
 	    setTXFreq(ui->RXFreq_lab->getFreq());
 	  });
   connect(ui->TXfreq2RXfreq_btn, &QPushButton::clicked, 
-	  this, [=] (bool checked) {
+	  this, [=] (bool checked) { 
+	    (void) checked;
 	    setRXFreq(ui->TXFreq_lab->getFreq());
 	  });
 }

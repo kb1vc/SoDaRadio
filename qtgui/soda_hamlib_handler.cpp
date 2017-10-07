@@ -152,6 +152,8 @@ void GUISoDa::HamlibHandler::processCommand(const QString & cmd, QTcpSocket * so
 
 bool GUISoDa::HamlibHandler::cmdDumpState(QTextStream & out, QTextStream & in, bool getval)
 {
+  (void) in;
+  (void) getval; 
   out << "0\n"; // protocol version
   out << "1 \n"; // seems to be ignored...
   out << "2 \n"; // ITU region
@@ -341,6 +343,8 @@ bool GUISoDa::HamlibHandler::cmdSplitVFO(QTextStream & out, QTextStream & in, bo
 
 bool GUISoDa::HamlibHandler::cmdQuit(QTextStream & out, QTextStream & in, bool getval)
 {
+  (void) in;
+  (void) getval; 
   out << "q" << endl;
   qDebug() << "called cmdQuit\n";
   return false; 

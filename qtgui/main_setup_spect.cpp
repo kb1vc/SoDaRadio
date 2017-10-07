@@ -62,7 +62,9 @@ void MainWindow::setupWaterFall()
 	    ui->waterfall_plt, SLOT(updateData(double, float*)));
 
     connect(ui->wf_RX2Center_btn, &QPushButton::clicked, 
-	    [this](bool v) { listener->setSpectrumCenter(listener->getRXFreq()); });
+	    [this](bool v) { 
+	      (void) v;
+	      listener->setSpectrumCenter(listener->getRXFreq()); });
 
     connect(ui->wf_updateRate_sl, SIGNAL(valueChanged(int)), 
 	    listener, SLOT(setSpectrumUpdateRate(int))); 
@@ -99,7 +101,9 @@ void MainWindow::setupSpectrum()
 	  ui->spectrum_plt, SLOT(updateData(double, float*)));
 
   connect(ui->sp_RX2Center_btn, &QPushButton::clicked, 
-	  [this](bool v) { listener->setSpectrumCenter(listener->getRXFreq()); });
+	  [this](bool v) { 
+	    (void) v; 
+	    listener->setSpectrumCenter(listener->getRXFreq()); });
   connect(ui->sp_avgWindow_sl, SIGNAL(valueChanged(int)), 
 	    listener, SLOT(setSpectrumAvgWindow(int))); 
 

@@ -67,6 +67,7 @@ find_package(ALSA REQUIRED QUIET)
 find_package(FFTW3f REQUIRED QUIET)
 
 add_definitions(-DHAVE_LIBASOUND=1)
+add_definitions(-DHAVE_SOAPY_SDR=${HAVE_SOAPY_SDR})
 add_definitions(-DHAVE_UHD=${HAVE_UHD})
 
 IF(GPSLIB_FOUND)
@@ -75,6 +76,15 @@ IF(GPSLIB_FOUND)
   LIST(APPEND Radio_LIBRARIES ${GPSLIB_LIBRARIES})
 ENDIF()
 
+IF(${HAVE_SOAPY_SDR})
+  LIST(APPEND  SoDaServer_SRCS
+    SoapyCtrl.cxx
+    SoapyRX.cxx
+    SoapyTX.cxx    
+    )
+  LIST(APPEND Radio_INCLUDE_DIRS ${SoapySDR_INCLUDE_DIRS})
+  LIST(APPEND Radio_LIBRARIES ${SoapySDR_LIBRARIES})
+ENDIF()
 
 IF(${HAVE_UHD})
   LIST(APPEND SoDaServer_SRCS

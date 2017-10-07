@@ -56,6 +56,8 @@ bool GUISoDa::HamlibServer::start() {
   if( !this->listen( QHostAddress::LocalHost, port_num ) ) {
     QMessageBox::critical( (QWidget *)this->parent(), tr("Error!"), tr("Cannot listen to port %1").arg(port_num) );
   }
+
+  return true; 
 }
 
 void GUISoDa::HamlibServer::incomingConnection(qintptr descriptor) {
