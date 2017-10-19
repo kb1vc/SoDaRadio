@@ -47,7 +47,6 @@ static unsigned int ipow(unsigned int x, unsigned int y)
   return ret; 
 }
 
-#if 0
 SoDa::OSFilter::OSFilter(float * filter_impulse_response,
 			 unsigned int filter_length,
 			 float filter_gain, 
@@ -118,7 +117,6 @@ SoDa::OSFilter::OSFilter(float * filter_impulse_response,
   // setup the fft buffers
   setupFFT();
 }
-#endif
 
 SoDa::OSFilter::OSFilter(float low_cutoff,
 			 float low_pass_edge,

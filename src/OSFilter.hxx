@@ -52,7 +52,6 @@ namespace SoDa {
     
 
     /// constructor
-#if 0    
     /// Build the filter from the time domain FIR filter sequence CASCADED with the filter
     /// specified by the [cascade] parameter
     /// @param filter_impulse_response time domain FIR filter coefficient array -- real
@@ -67,7 +66,6 @@ namespace SoDa {
 	     unsigned int inout_buffer_length,
 	     OSFilter * cascade = NULL,
 	     unsigned int suggested_transform_length = 0);
-#endif
     
     /// constructor
     /// Build the filter from a filter spec for a bandpass filter
