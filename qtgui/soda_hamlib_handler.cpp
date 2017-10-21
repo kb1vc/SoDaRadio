@@ -136,8 +136,22 @@ void GUISoDa::HamlibHandler::processCommand(const QString & cmd, QTcpSocket * so
     in >> cmdkey; 
 
     if(cmdkey.size() == 0) continue; 
-
-    if(set_command_map.count(cmdkey) != 0) {
+    if((cmdkey[0] != 'g') && (cmdkey[0] != 's') && (cmdkey[0] != '\\')) {
+      for(int i = 0; i < cmdkey.size(); i++) {
+	QString cmdchar = cmdkey.mid(i,1);
+	if(set_command_map.count(cmdchar) != 0) {
+	  (this->*set_command_map[cmdchar])(out, in, false);
+	}
+	else if(get_command_map.count(cmdchar) != 0) {
+	  (this->*get_command_map[cmdchar])(out, in, true);
+	}
+	else {
+	  qDebug() << QString("HAMLIB handler can't deal with this command [%1]\n").arg(cmdchar);
+	  out << "RPRT " << RIG_EINVAL << endl;
+	}
+      }
+    }
+    else if(set_command_map.count(cmdkey) != 0) {
       (this->*set_command_map[cmdkey])(out, in, false);
     }
     else if(get_command_map.count(cmdkey) != 0) {
