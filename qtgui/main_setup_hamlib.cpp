@@ -37,6 +37,11 @@ void MainWindow::setupHamlib()
 {
   // connect updates or status reports to the hamlib handler 
   // so that it can maintain its own view of the radio state.
+  connect(ui->spectrum_plt, SIGNAL(xClick(double)), hlib_server->getHandler(), SLOT(reportRXFreq(double)));    
+
+  connect(ui->waterfall_plt, SIGNAL(xClick(double)), hlib_server->getHandler(), SLOT(reportRXFreq(double)));    
+  
+  
   connect(ui->RXFreq_lab, SIGNAL(newFreq(double)), 
 	  hlib_server->getHandler(), SLOT(reportRXFreq(double))); 
 

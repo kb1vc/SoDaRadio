@@ -112,8 +112,13 @@ void MainWindow::updateBandDisplay(double freq)
 void MainWindow::setRXFreq_nocross(double freq)
 {
   // tell the radio. 
-  listener->setRXFreq(freq); 
-  
+  listener->setRXFreq(freq);
+
+  // tell the hamlib listener
+  if(hlib_server != NULL) {
+    hlib_server->getHandler()->reportRXFreq(freq);
+  }
+
   // tell the waterfall
   ui->waterfall_plt->setFreqMarker(freq); 
 
@@ -130,7 +135,7 @@ void MainWindow::setTXFreq_nocross(double freq)
   // tell the radio. 
   listener->setTXFreq(freq); 
   
-  // tell the RX freq display
+  // tell the TX freq display
   ui->TXFreq_lab->setFreq(freq); 
 }
 
