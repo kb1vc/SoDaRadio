@@ -44,6 +44,9 @@ namespace SoDa {
     QuadratureOscillator() {
       idx = 0;
       ang = 0.0;
+      last = std::complex<double>(1.0,0.0);
+      ejw = last;
+
       // default IF freq is SampRate/1000;
       setPhaseIncr(2.0 * M_PI / 1000.0);
     }
@@ -59,14 +62,32 @@ namespace SoDa {
      * stuff but it really didn't help that much with computation
      * time, as the oscillators account for such a small part of the
      * total run time. 
+     *
+     * (notes from March, 2018) 
+     * Well, no, the oscillators account for about 30% of the run time
+     * when the compiler optimizations are turned on.  Changing from 
+     * sincos to a complex multiply based scheme eliminates the 
+     * NCO from the list of "expensive" functions. 
+     * 
+     * The code still retains the choice, if it is necessary for some 
+     * reason to use the sincos scheme, but by default, the NCO will be
+     * based on a complex multiply.
      */
     std::complex<double> stepOscCD() {
-      double s,c;
-#if __linux__
-      sincos(ang, &s, &c);
+#ifdef USE_SINCOS_NCO
+      return stepOscCD_sincos();
 #else
+      return stepOscCD_complex();      
+#endif    
+    }    
+
+    std::complex<double> stepOscCD_sincos() {
+      double s,c;
+#  if __linux__
+      sincos(ang, &s, &c);
+#  else
       s = sin(ang); c = cos(ang); 
-#endif	
+#  endif	
       ang = (ang > M_PI) ? (ang - (2.0 * M_PI)) : ang; 
       idx = 0; 
 
@@ -75,6 +96,18 @@ namespace SoDa {
       s = -s; 
       std::complex<double> ret(c, s);
       return ret; 
+    }
+
+    std::complex<double> stepOscCD_complex() {
+      std::complex<double> nval;
+      idx++;
+      nval = last * ejw;     
+      if(idx > 512) {
+	idx = 0; 
+	nval = nval / abs(nval);
+      }
+      last = nval;
+      return nval; 
     }
     
     /**
@@ -106,11 +139,13 @@ namespace SoDa {
      */
     void setPhaseIncr(double _pi) {
       phase_incr = _pi;
+      ejw = exp(std::complex<double>(0.0, -phase_incr));
     }
     
   private:
     double phase_incr;
     double ang; 
+    std::complex<double> ejw, last; 
     int idx; 
   };
 }

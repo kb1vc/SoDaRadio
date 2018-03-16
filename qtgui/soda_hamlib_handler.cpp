@@ -240,7 +240,7 @@ bool GUISoDa::HamlibHandler::cmdVFO(QTextStream & out, QTextStream & in, bool ge
     out << current_VFO << endl;
   }
   else {
-    in >> current_VFO; 
+    in >> current_VFO;
     out << "RPRT 0" << endl; 
   }
   return true;
@@ -254,7 +254,7 @@ bool GUISoDa::HamlibHandler::cmdFreq(QTextStream & out, QTextStream & in, bool g
   }
   else {
     double setfreq; 
-    in >> setfreq; 
+    in >> setfreq;
     if(!split_enabled || (current_VFO == "VFOA")) {
       rx_freq = setfreq;
       emit setRXFreq(setfreq);             

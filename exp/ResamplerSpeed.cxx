@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017 Matthew H. Reilly (kb1vc)
+Copyright (c) 2018, Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,54 +25,50 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+#include <complex>
+#include <iostream>
+#include <fstream>
+#include <stdlib.h>
+#include "TDReSamplers625x48.hxx"
+#include "ReSampler.hxx"
+#include "ReSamplers625x48.hxx"
 
-#include "soda_hamlib_listener.hpp"
-#include "soda_hamlib_handler.hpp"
+#include <time.h>
+#include <fftw3.h>
+#include <math.h>
+#include <string.h>
+#include <stdio.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <stdio.h>
+
+#include <sys/time.h>
 
 
-GUISoDa::HamlibListener::HamlibListener(qintptr desc, 
-				       GUISoDa::HamlibHandler * _handler,
-				       QObject *parent) : QThread(parent), 
-							  handler_p(_handler), 
-							  socket_desc(desc) 
+int main(int argc, char * argv[])
 {
-  // not much else to do. 
-}
-
-void GUISoDa::HamlibListener::run()
-{
-  socket_p = new QTcpSocket(); 
-
-  if(!socket_p->setSocketDescriptor(socket_desc)) {
-    emit error(socket_p->error()); 
-    return; 
+  int itercount = 5000;
+  std::complex<float> cin[60000], cout[2304];
+  int i; 
+  double ang; 
+  for(i = 0; i < 60000; i++) {
+    cin[i] = std::complex<float>(sin(ang), cos(ang)); 
+    ang += 0.01;
   }
+ 
+  SoDa::TDResampler625x48 rs625x48; 
+  SoDa::ReSample625to48 rsc(30000);
 
-  connect(socket_p, SIGNAL(readyRead()), this, SLOT(readyRead()), Qt::DirectConnection);
-  connect(socket_p, SIGNAL(disconnected()), this, SLOT(disconnected()));
-
-  exec();
-}
-
-void GUISoDa::HamlibListener::readyRead() {
-  QByteArray array = socket_p->read(socket_p->bytesAvailable());
-
-  char * as = array.data();
-
-  int lim = array.count();
-  for(int i = 0; i < lim; i++) {
-    if(as[i] == '\n') {
-      std::cerr << boost::format("{%s}\n") % as;       
-      handler_p->processCommand(current_command, socket_p);
-      current_command = QString("");
-    }
-    else {
-      current_command.append(as[i]);
+  if((argc < 2) || (argv[0][0] == 't')) {
+    for(i = 0; i < itercount; i++) {
+      rs625x48.apply(cin, cout, 30000, 2304);
     }
   }
+  else {
+    for(i = 0; i < itercount; i++) {
+      rsc.apply(cin, cout);
+    }
+  }
 }
 
-void GUISoDa::HamlibListener::disconnected() {
-  qDebug() << "\n\nHamlib listener got disconnect!!!\n\n";
-  socket_p->deleteLater();
-}

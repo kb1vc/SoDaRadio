@@ -66,6 +66,14 @@ set(CPACK_DEBIAN_PACKAGE_DEPENDS "libuhd003 (>= 3.10), uhd-host (>= 3.10), libgp
 
 INCLUDE(CPack)
 
+# optimizations
+IF(NOT CMAKE_BUILD_TYPE)
+  SET(CMAKE_BUILD_TYPE Release)
+ENDIF()
+
+SET(CMAKE_CXX_FLAGS_DEBUG "-g")
+SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -ffast-math")
+
 MESSAGE("SoDaRadio_VERSION=[${SoDaRadio_VERSION}]")
 
 FIND_PACKAGE(Git QUIET)

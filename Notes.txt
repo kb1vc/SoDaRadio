@@ -200,8 +200,122 @@ window length of 12.
 
 low HF power is small
 
-bets available from tx_waveforms demo
+best available from tx_waveforms demo
 40m 17dBm
 30m 19dBm
 20m 20dBm
+
+--------------------
+
+-----------------------
+
+March 2018 -- oprofile suggests a few things:
+
+15% of runtime for SoDaServer is in sincos call for the
+quadrature oscillator.  Does this suggest that we should
+just do the tune-to-baseband step in the USRP?  Probably
+not, as the DC balance logic in the FPGA has been known
+to cause some confusion, and may not behave in a similar
+manner across implementations?
+
+15% of runtime is in fftw -- mostly in Resample625to48
+ 1         0.1279  SoDaServer               SoDa::Spectrogram::apply_common(std::complex<float>*, unsigned int)
+  98       12.5320  SoDaServer               SoDa::Spectrogram::apply_acc(std::complex<float>*, unsigned int, float*, float)
+  121      15.4731  SoDaServer               SoDa::BaseBandRX::demodulate(SoDa::SoDaBuf*)
+  180      23.0179  SoDaServer               SoDa::BaseBandRX::demodulateSSB(std::complex<float>*, SoDa::Command::ModulationType)
+  382      48.8491  SoDaServer               SoDa::ReSample625to48::apply(std::complex<float>*, std::complex<float>*)
+206010   14.2674  libfftw3f.so.3.5.5       /usr/lib64/libfftw3f.so.3.5.5
+  206010   100.000  libfftw3f.so.3.5.5       /usr/lib64/libfftw3f.so.3.5.5 [self]
+
+10% of runtime is in complex mul -- almost all in doMixer (23%) and Resampler::apply (66%)
+This suggests that the resampler might benefit from a multi-rate filter approach.
+
+Finally, the delay in passing samples through the filters and resamplers
+may be contributing to troubles with FT8 -- the RX processing delay is
+very long.  This is likely caused by excessive buffering delays given the
+requirements of the overlap-and-save implementation. (It works on
+complete buffers.)
+
+So, the next bit of work:
+0. Look at NCO alternatives to sincos... 
+1. Build a resampler that is a polyphase filter.
+2. Generify the resampler so that we can pick a
+frequency domain or time domain resampler at
+run time.
+3. Reimplement the filters in the same way.
+4. Look at improving the baseband mixer/oscillator to
+reduce the amount of compute time spent on sincos
+and complex mul.
+
+Turning on "ffast-math" gets us to an interesting point -- sincos is
+now 30% of the run time, and libfftw3f is 35%.
+
+
+Task 0: NCO
+
+NCOexp in the exp directory compares a recursive NCO (y[n] = e^jw * y[n-1]),
+with gain correction at 2048 sample intervals, to a sincos implementation.
+100e6 iterations of sincos takes about 3 seconds, while the recursive
+implementation takes just 0.4 seconds.  There is some small accumulated
+error, but this is as likely attributable to the angle accumulation
+as it is to errors in the recursion.
+
+It is very clear that the recursive NCO is a far better approach. 
+
+Now that QuadratureOscillator.hxx has been changed to a recursive
+oscillator, libfftw3f takes up <half> the compute time in SoDaServer
+with another 10% in the resampler::apply function.  This is where
+one would expect it to be, given the great reliance on frequency
+domain filters. 
+
+
+--------------------------
+
+
+WSJTX (Mar 2018)  When running WSJTX, note that it <must>
+use its own hamlib library to talk via netrigctl, otherwise
+it breaks the connection with a complaint of "Protocol error"
+relating to getting a vfo setting.
+
+Building WSJTx from scratch requires building <their> version
+of hamlib and installing it in a local dir.  Then remove the
+libhamlib....so... files from that local dir to prevent
+linking dynamically.
+
+=---------------------
+
+In designing the new time-domain resampler:
+
+We need to get from 625kSamp/sec to 48kSamp/sec.
+
+625 = 5 * 5 * 5 * 5
+48 = 1 * 3 * 4 * 4
+
+The sample rate sequence is then
+
+625k 125k 75k 60k 48k
+
+We want a passband of 12kHz out of the last
+stage.
+
+So, we need four prototype filters. We'll aim for
+15 taps each.
+
+The first LPF needs a corner frequency of
+12kHz, and stopband starting at 125k - 12 or
+about 100kHz
+
+Stage	out SR	Corner      StopBand	Filter Name
+First (125k)	25k	    100kHz	F51_125k
+Second	(75k)	12 to 20k   60kHz	F53_75k
+Third	(60k)	12 to 20k   40kHz	F54_60k
+Fourth	(48k)	12 to 20k   35kHz	F54_48k
+
+The filter design files and coefficient files are in
+filters/resampler
+
+
+Using the Iowa Hills design tools, the filters all
+look respectable at 15 taps each.  That makes all the
+stage filters 3 taps long. 
 

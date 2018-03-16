@@ -233,3 +233,27 @@ set(ProcInfo_test_SRCS ProcInfo_test.cxx ../src/ProcInfo.hxx ../src/ProcInfo.cxx
 add_executable(ProcInfo_test ${ProcInfo_test_SRCS})
 
 target_link_libraries(ProcInfo_test ${Boost_LIBRARIES})
+
+add_executable(NCOexp NCOexp.cxx)
+
+target_link_libraries(NCOexp ${Boost_LIBRARIES})
+
+set(TDReSampler_Test_SRCS
+    TDReSampler_Test.cxx
+    ../src/TDReSamplers625x48.cxx
+    ../src/SoDaBase.cxx)
+
+add_executable(TDReSampler_Test ${TDReSampler_Test_SRCS})
+
+target_link_libraries(TDReSampler_Test ${TEST_LIBS})
+
+set(ResamplerSpeed_SRCS
+  ResamplerSpeed.cxx
+  ../src/ReSampler.cxx
+  ../src/ReSamplers625x48.cxx
+  ../src/TDReSamplers625x48.cxx
+  ../src/SoDaBase.cxx)
+
+add_executable(ResamplerSpeed ${ResamplerSpeed_SRCS})
+target_link_libraries(ResamplerSpeed ${TEST_LIBS})
+
