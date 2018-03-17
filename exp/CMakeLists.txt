@@ -238,20 +238,20 @@ add_executable(NCOexp NCOexp.cxx)
 
 target_link_libraries(NCOexp ${Boost_LIBRARIES})
 
-set(TDReSampler_Test_SRCS
-    TDReSampler_Test.cxx
-    ../src/TDReSamplers625x48.cxx
+set(TDResampler_Test_SRCS
+    TDResampler_Test.cxx
+    ../src/TDResamplerTables625x48.cxx
     ../src/SoDaBase.cxx)
 
-add_executable(TDReSampler_Test ${TDReSampler_Test_SRCS})
+add_executable(TDResampler_Test ${TDResampler_Test_SRCS})
 
-target_link_libraries(TDReSampler_Test ${TEST_LIBS})
+target_link_libraries(TDResampler_Test ${TEST_LIBS})
 
 set(ResamplerSpeed_SRCS
   ResamplerSpeed.cxx
   ../src/ReSampler.cxx
   ../src/ReSamplers625x48.cxx
-  ../src/TDReSamplers625x48.cxx
+  ../src/TDResamplerTables625x48.cxx
   ../src/SoDaBase.cxx)
 
 add_executable(ResamplerSpeed ${ResamplerSpeed_SRCS})

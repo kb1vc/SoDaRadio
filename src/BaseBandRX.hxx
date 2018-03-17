@@ -34,7 +34,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Command.hxx"
 #include "OSFilter.hxx"
 #include "HilbertTransformer.hxx"
-#include "ReSamplers625x48.hxx"
+#include "TDResamplers625x48.hxx"
 #include "AudioIfc.hxx"
 #include "MedianFilter.hxx"
 
@@ -241,9 +241,9 @@ namespace SoDa {
     float * sidetone_silence;  ///< a sequence of zero samples to stuff silence into the audio
 
     // resampler -- downsample from 625K samples / sec to 48K samples/sec
-    SoDa::ReSample625to48 * rf_resampler; ///< downsample the RF input to 48KS/s
+    SoDa::TDResampler625x48<std::complex<float> > * rf_resampler; ///< downsample the RF input to 48KS/s
     // a second resampler for wideband fm
-    SoDa::ReSample625to48 * wbfm_resampler; ///< downsample the RF input to 48KS/s for WBFM unit
+    SoDa::TDResampler625x48<float>  * wbfm_resampler; ///< downsample the RF input to 48KS/s for WBFM unit
 
     /**
      * @brief build the audio filter map for selected bandwidths

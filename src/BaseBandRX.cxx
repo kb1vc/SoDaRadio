@@ -55,11 +55,11 @@ SoDa::BaseBandRX::BaseBandRX(Params * params,
   audio_buffer_size = params->getAFBufferSize();
   rf_buffer_size = params->getRFBufferSize();
   // setup the resampler now...
-  float rsgain = ((float) rf_buffer_size);
-  rf_resampler = new SoDa::ReSample625to48(rf_buffer_size, rsgain);
-  // and the WBFM resampler -- same shape, different state
-  wbfm_resampler = new SoDa::ReSample625to48(rf_buffer_size, rsgain);
   buildFilterMap();
+
+  // build the resamplers
+  rf_resampler = new SoDa::TDResampler625x48<std::complex<float> >(100.0);
+  wbfm_resampler = new SoDa::TDResampler625x48<float>(1.0);  
 
   af_filter_selection = SoDa::Command::BW_6000;
   cur_audio_filter = filter_map[af_filter_selection];
@@ -148,7 +148,7 @@ void SoDa::BaseBandRX::demodulateWBFM(SoDaBuf * rxbuf, SoDa::Command::Modulation
     last_phase_samp = phase; 
   }
   // now downsample it
-  wbfm_resampler->apply(demod_out, audio_buffer);
+  wbfm_resampler->apply(demod_out, audio_buffer, rf_buffer_size, audio_buffer_size);
   // do a median filter to eliminate the pops.
   // better not. fmMedianFilter.apply(audio_buffer, audio_buffer, audio_buffer_size); 
   // gain was arrived at by trial and error.  
@@ -251,7 +251,7 @@ void SoDa::BaseBandRX::demodulate(SoDaBuf * rxbuf)
   // Note that audio_buffer_size must be (sample_length / decimation rate)
   
   if((rx_modulation != SoDa::Command::WBFM) && (rx_modulation != SoDa::Command::NBFM)) {
-    rf_resampler->apply(rxbuf->getComplexBuf(), dbufi);
+    rf_resampler->apply(rxbuf->getComplexBuf(), dbufi, rf_buffer_size, audio_buffer_size);
     
     // now do the low pass filter
     if(rx_modulation == SoDa::Command::AM) {
@@ -265,7 +265,7 @@ void SoDa::BaseBandRX::demodulate(SoDaBuf * rxbuf)
     // first, bandpass the RF down to about 25 kHz wide...
     std::complex<float> * rfbuf = rxbuf->getComplexBuf();
     nbfm_pre_filter->apply(rfbuf, rfbuf, 1.0);
-    rf_resampler->apply(rfbuf, dbufo);
+    rf_resampler->apply(rfbuf, dbufo, rf_buffer_size, audio_buffer_size);
   }
 
  

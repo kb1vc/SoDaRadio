@@ -13,6 +13,7 @@ set(SoDaServer_SRCS
     Command.cxx
     OSFilter.cxx
     HilbertTransformer.cxx
+    TDResamplerTables625x48.cxx
     ReSampler.cxx
     ReSamplers625x48.cxx
     Spectrogram.cxx
@@ -31,6 +32,8 @@ set(SoDaServer_SRCS
     OSFilter.hxx
     Params.hxx
     QuadratureOscillator.hxx
+    TDResamplers625x48.hxx
+    TDResamplerTables625x48.hxx    
     ReSampler.hxx
     ReSamplers625x48.hxx
     SoDaBase.hxx

@@ -295,27 +295,24 @@ The sample rate sequence is then
 
 625k 125k 75k 60k 48k
 
-We want a passband of 12kHz out of the last
-stage.
+Used the Iowa Hills filter design software to create the
+prototype filters.
 
-So, we need four prototype filters. We'll aim for
-15 taps each.
+from the commit message: 
+    Filled out time domain resampler to get from 625 to 48... This is
+    the RX side resampler.  It is about 3x faster than the FFT based
+    resampler, but does not have the steep skirts or bodacious out-of-band
+    suppression.  However, the actual suppresion is more than adequate, with
+    the major alias peaks 80dB down from center.
+    The attenuation at +/- 24kHz is only -46dB which is a little
+    disappointing, but we could improve that a bit with some additional
+    filter taps in the last stage.
+    
+    Tuning and optimization improved rejection beyond 24kHz a little bit.
+    Current performance advantage is still about 3x.  Vector instructions
+    may improve things if the order of the subfilters is inverted (to allow
+    the filter application to become a dot product, rather than a convolution.)
 
-The first LPF needs a corner frequency of
-12kHz, and stopband starting at 125k - 12 or
-about 100kHz
-
-Stage	out SR	Corner      StopBand	Filter Name
-First (125k)	25k	    100kHz	F51_125k
-Second	(75k)	12 to 20k   60kHz	F53_75k
-Third	(60k)	12 to 20k   40kHz	F54_60k
-Fourth	(48k)	12 to 20k   35kHz	F54_48k
-
-The filter design files and coefficient files are in
-filters/resampler
-
-
-Using the Iowa Hills design tools, the filters all
-look respectable at 15 taps each.  That makes all the
-stage filters 3 taps long. 
+With the FFT based resampler, SoDaServer consumes about 58% of the my vitage
+i7 920 cpu at 2.7 GHz throttled down to about 1.7 GHz.
 

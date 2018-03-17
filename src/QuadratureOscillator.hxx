@@ -73,6 +73,7 @@ namespace SoDa {
      * reason to use the sincos scheme, but by default, the NCO will be
      * based on a complex multiply.
      */
+    
     std::complex<double> stepOscCD() {
 #ifdef USE_SINCOS_NCO
       return stepOscCD_sincos();

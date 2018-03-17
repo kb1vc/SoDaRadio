@@ -29,7 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
-#include "TDReSamplers625x48.hxx"
+#include "TDResamplers625x48.hxx"
 #include "ReSampler.hxx"
 #include "ReSamplers625x48.hxx"
 
@@ -57,7 +57,7 @@ int main(int argc, char * argv[])
     ang += 0.01;
   }
  
-  SoDa::TDResampler625x48 rs625x48; 
+  SoDa::TDResampler625x48<std::complex<float> >  rs625x48; 
   SoDa::ReSample625to48 rsc(30000);
 
   if((argc < 2) || (argv[0][0] == 't')) {

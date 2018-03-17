@@ -29,7 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
-#include "TDReSamplers625x48.hxx"
+#include "TDResamplers625x48.hxx"
 #include <time.h>
 #include <fftw3.h>
 #include <math.h>
@@ -603,7 +603,7 @@ float PMLPF32_5x4_48[] = { // fs 240 fc 0.1 kb 2.2 tw 0.045
 
 using namespace std; 
 
-void doFreqTest(SoDa::TDFilter & filt, const std::string & fbase_name, 
+void doFreqTest(SoDa::TDFilter<std::complex<float> > & filt, const std::string & fbase_name, 
 		float anginc, 
 		int inlen, int outlen) 
 {
@@ -641,7 +641,7 @@ void doFreqTest(SoDa::TDFilter & filt, const std::string & fbase_name,
   inf.close();
 }
 
-void doSweepTest(SoDa::TDFilter & filt, const std::string & fname, int inlen, int outlen) 
+void doSweepTest(SoDa::TDFilter<std::complex<float> > & filt, const std::string & fname, int inlen, int outlen) 
 {
   std::complex<float> invec[inlen];
   std::complex<float> outvec[outlen];
@@ -675,7 +675,7 @@ void doSweepTest(SoDa::TDFilter & filt, const std::string & fname, int inlen, in
   outf.close();
 }
 
-void doSweepCascade(SoDa::TDFilter & filt1, SoDa::TDFilter & filt2, const std::string & fname, int inlen, int outlen) 
+void doSweepCascade(SoDa::TDFilter<std::complex<float> > & filt1, SoDa::TDFilter<std::complex<float> > & filt2, const std::string & fname, int inlen, int outlen) 
 {
   std::complex<float> invec[inlen];
   std::complex<float> s2vec[inlen];  
@@ -711,7 +711,7 @@ void doSweepCascade(SoDa::TDFilter & filt1, SoDa::TDFilter & filt2, const std::s
   outf.close();
 }
 
-void doSweepChain(SoDa::TDFilter ** filters, int num_filters, const std::string & fname, int inlen, int outlen) 
+void doSweepChain(SoDa::TDFilter<std::complex<float> > ** filters, int num_filters, const std::string & fname, int inlen, int outlen) 
 {
   std::complex<float> invec[inlen];
   std::complex<float> between[inlen];  
@@ -757,39 +757,22 @@ int main(int argc, char * argv[])
   (void) argc; (void) argv; 
 
 
-  SoDa::TDDecimator decimate5(5, LPF_5x1_125, 15);
-  // SoDa::TDRationalResampler rs53_75(5, 3, LPF24_5x3_75, 24); // not good
-  // SoDa::TDRationalResampler rs53_75(5, 3, RCLPF24_5x3_75, 24);
-  SoDa::TDRationalResampler rs53_75(5, 3, PMLPF30_5x3_75, 30);  
-  
-  //  SoDa::TDRationalResampler rs51_125(5, 1, LPF_5x1_125, 15);
-  SoDa::TDRationalResampler rs51_125(5, 1, HCLPF35_5x1_125, 35);  
-  //  SoDa::TDRationalResampler rs51_125(5, 1, PMLPF18_5x1_125, 18);
-  SoDa::TDRationalResampler rs54_60(5, 4, PMLPF32_5x4_60, 32);
-  // SoDa::TDRationalResampler rs54_60(5, 4, PMLPF32SINC_5x4_60, 32);  
-  //SoDa::TDRationalResampler rs54_48(5, 4, PMLPF32_5x4_48, 32);
-  SoDa::TDRationalResampler rs54_48(5, 4, PMLPF40_5x4_48, 40);  
+  SoDa::TDRationalResampler<std::complex<float> > rs53_75(5, 3, PMLPF30_5x3_75, 30);  
+  SoDa::TDRationalResampler<std::complex<float> > rs51_125(5, 1, HCLPF35_5x1_125, 35);  
+  SoDa::TDRationalResampler<std::complex<float> > rs54_60(5, 4, PMLPF32_5x4_60, 32);
+  SoDa::TDRationalResampler<std::complex<float> > rs54_48(5, 4, PMLPF40_5x4_48, 40);  
  
-  SoDa::TDResampler625x48 rs625x48; 
+  SoDa::TDResampler625x48<std::complex<float> > rs625x48; 
 
-  // doSweepTest(decimate5, "decimate5_resp.dat", 500, 100);
-  // doFreqTest(decimate5, "decimate5_freq", 0.01, 500, 100);
 
   doSweepTest(rs625x48, "rs625x48.dat", 62500, 4800); 
   doSweepTest(rs53_75, "rs53_75_resp.dat", 5000, 3000);
   doSweepTest(rs54_60, "rs54_60_resp.dat", 5000, 4000);
   doSweepTest(rs54_48, "rs54_48_resp.dat", 5000, 4000);  
-  // doFreqTest(rs53_75, "rs53_75_2r2_freq", 2.2, 500, 300);  
-  // doFreqTest(rs53_75, "rs53_75_1r1_freq", 1.1, 500, 300);
-  // doFreqTest(rs53_75, "rs53_75_0r1_freq", 0.1, 500, 300);
-  // doFreqTest(rs53_75, "rs53_75_0r01_freq", 0.01, 500, 300);    
 
   doSweepTest(rs51_125, "rs51_125_resp.dat", 5000, 1000);
-  // doFreqTest(rs51_125, "rs51_125_1r1_freq", 1.1, 500, 300);
-  // doFreqTest(rs51_125, "rs51_125_0r1_freq", 0.1, 500, 300);
-  // doFreqTest(rs51_125, "rs51_125_0r01_freq", 0.01, 500, 300);
 
-  SoDa::TDFilter * resamp_chain[4];
+  SoDa::TDFilter<std::complex<float> > * resamp_chain[4];
   resamp_chain[0] = &rs51_125; 
   resamp_chain[1] = &rs53_75;
   resamp_chain[2] = &rs54_60;
@@ -801,28 +784,6 @@ int main(int argc, char * argv[])
   doSweepChain(resamp_chain, 4, "rsChain_resp.dat", 5000, 3000);  
   
 
-  // SoDa::TDFilter * tfilt_chain[4];
-    
-  // tfilt_chain[0] = new SoDa::TDDecimator(5, RS_5x1_125_19, 19);
-  // tfilt_chain[1] = new SoDa::TDRationalResampler(5, 3, RS_5x3_75_18, 18);
-  // tfilt_chain[2] = new SoDa::TDRationalResampler(5, 4, RS_5x4_60_20, 20);
-  // tfilt_chain[3] = new SoDa::TDRationalResampler(5, 4, RS_5x4_48_20, 20);
-
-  // doSweepChain(tfilt_chain, 4, "TFChain_resp.dat", 50000, 30000);
-  // doSweepChain(tfilt_chain, 3, "TFChain_resp3.dat", 50000, 30000);
-  // doSweepChain(tfilt_chain, 2, "TFChain_resp2.dat", 50000, 30000);
-  // doSweepChain(tfilt_chain, 1, "TFChain_resp1.dat", 50000, 30000);
-
-  // SoDa::TDFilter * hybrid_chain[4];  
-  // hybrid_chain[0] = new SoDa::TDDecimator(5, RS_5x1_125_19, 19);
-  // hybrid_chain[1] = new SoDa::TDRationalResampler(5, 3, RS_5x3_75_18, 18);
-  // hybrid_chain[2] = new SoDa::TDRationalResampler(5, 4, PMLPF15_5x4_60, 15);
-  // hybrid_chain[3] = new SoDa::TDRationalResampler(5, 4, PMLPF15_5x4_60, 15);
-
-  // doSweepChain(hybrid_chain, 4, "HBChain_resp.dat", 50000, 30000);
-  // doSweepChain(hybrid_chain, 3, "HBChain_resp3.dat", 50000, 30000);
-  // doSweepChain(hybrid_chain, 2, "HBChain_resp2.dat", 50000, 30000);
-  // doSweepChain(hybrid_chain, 1, "HBChain_resp1.dat", 50000, 30000);
   
 }
 
