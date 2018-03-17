@@ -30,7 +30,8 @@ HEADERS  += mainwindow.hpp \
     soda_comboboxes.hpp \
     soda_plot_picker.hpp \
     soda_spect.hpp
-    
+
+QT += widgets
 
 FORMS    += mainwindow.ui
 

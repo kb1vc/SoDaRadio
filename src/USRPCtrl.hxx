@@ -43,14 +43,20 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Params.hxx"
 #include "TRControl.hxx"
 #include "PropTree.hxx"
+#include <uhd/version.hpp>
+#if UHD_VERSION < 3110000
+#  include <uhd/utils/msg.hpp>
+#  include <uhd/utils/thread_priority.hpp>
+#else
+#  include <uhd/utils/thread.hpp>
+#endif
 
-#include <uhd/utils/thread_priority.hpp>
+
 #include <uhd/utils/safe_main.hpp>
 #include <uhd/usrp/multi_usrp.hpp>
 #include <uhd/usrp/dboard_base.hpp>
 #include <uhd/types/tune_request.hpp>
 #include <uhd/types/tune_result.hpp>
-#include <uhd/utils/msg.hpp>
 
 namespace SoDa {
 
@@ -81,10 +87,11 @@ namespace SoDa {
     /// @return a pointer to the USRP radio object
     uhd::usrp::multi_usrp::sptr getUSRP() { return usrp; }
 
-
-    /// This is the more permanent message handler... 
+#if UHD_VERSION < 3110000
+    /// This is the more permanent message handler used before the elimination of the msg class    
     static void normal_message_handler(uhd::msg::type_t type, const std::string & msg);
-
+#endif
+    
     /// This is a singleton object -- the last (and only, we hope) such object
     /// to be created sets a static pointer to itself.  This looks pretty gross, but
     /// it is necessary to provide context to the error message handlers.
