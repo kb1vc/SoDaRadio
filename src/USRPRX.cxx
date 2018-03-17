@@ -29,8 +29,13 @@
 #include "USRPRX.hxx"
 #include "QuadratureOscillator.hxx"
 
+#include <uhd/version.hpp>
 #include <uhd/utils/safe_main.hpp>
-#include <uhd/utils/thread_priority.hpp>
+#if UHD_VERSION < 3110000
+#  include <uhd/utils/thread_priority.hpp>
+#else 
+#  include <uhd/utils/thread.hpp>
+#endif
 #include <uhd/usrp/multi_usrp.hpp>
 #include <fftw3.h>
 #include <sys/types.h>

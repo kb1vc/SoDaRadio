@@ -29,11 +29,17 @@
 #include "USRPCtrl.hxx"
 #include "SoDaBase.hxx"
 #include "USRPFrontEnd.hxx"
-#include <uhd/utils/thread_priority.hpp>
+#include <uhd/version.hpp>
+#if UHD_VERSION < 3110000
+#  include <uhd/utils/msg.hpp>
+#  include <uhd/utils/thread_priority.hpp>
+#else
+#  include <uhd/utils/log.hpp>
+#  include <uhd/utils/thread.hpp>
+#endif
 #include <uhd/utils/safe_main.hpp>
 #include <uhd/usrp/multi_usrp.hpp>
 #include <uhd/usrp/multi_usrp.hpp>
-#include <uhd/utils/msg.hpp>
 #include <uhd/types/tune_request.hpp>
 #include <uhd/types/tune_result.hpp>
 #include <boost/format.hpp>
@@ -58,8 +64,15 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
   SoDa::USRPCtrl::singleton_ctrl_obj = this;
 
   // setup a normal message handler that doesn't babble
-  // so much. 
+  // so much.
+  
+  // sigh -- this disappeared in V3.11
+#if UHD_VERSION < 3110000
   uhd::msg::register_handler(normal_message_handler);
+#else
+  // turn off logging below ERROR
+  uhd::log::set_console_level(uhd::log::severity_level::warning);
+#endif
   
   // initialize variables
   last_rx_req_freq = 0.0; // at least this is a number...
@@ -921,7 +934,7 @@ void SoDa::USRPCtrl::applyTargetFreqCorrection(double target_freq, double avoid_
 }
 
 
-
+#if UHD_VERSION < 3110000
 void SoDa::USRPCtrl::normal_message_handler(uhd::msg::type_t type, const std::string & msg)
 {
   switch (type) {
@@ -936,6 +949,7 @@ void SoDa::USRPCtrl::normal_message_handler(uhd::msg::type_t type, const std::st
     break; 
   }
 }
+#endif
 
 void SoDa::USRPCtrl::testIntNMode(bool force_int_N, bool force_frac_N)
 {
