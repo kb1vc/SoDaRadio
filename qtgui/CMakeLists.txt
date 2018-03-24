@@ -4,6 +4,9 @@ SET(CMAKE_BUILD_TYPE "Debug")
 
 SET(SoDaRadio_SRCS
   main_sodaradio.cpp
+)
+  
+SET(SoDaRadio_Lib_SRCS
   mainwindow.cpp
   freqlabel.cpp
   soda_logtable.cpp
@@ -78,15 +81,21 @@ QT5_WRAP_UI(SoDaRadio_form_moc ${SoDaRadio_UIS})
 
 #QT5_USE_MODULES(mainwindow Widgets Core Gui)
 
-ADD_EXECUTABLE(SoDaRadio ${SoDaRadio_SRCS} mainwindow ${SoDaRadio_hdr_moc} ${SoDaRadio_form_moc})
-
-TARGET_COMPILE_OPTIONS(SoDaRadio BEFORE PUBLIC -Wno-deprecated-declarations)
-
-TARGET_LINK_LIBRARIES(SoDaRadio m rt ${Boost_LIBRARIES} 
+ADD_LIBRARY(SoDaRadio_Lib STATIC 
+  ${SoDaRadio_Lib_SRCS} 
+  ${SoDaRadio_hdr_moc} 
+  ${SoDaRadio_form_moc})
+  
+TARGET_LINK_LIBRARIES(SoDaRadio_Lib m rt ${Boost_LIBRARIES} 
   Qt5::Widgets Qt5::PrintSupport
   Qt5::Core Qt5::Gui Qt5::Network Qt5::Multimedia
   ${QWT_LIBRARIES} )
 
+ADD_EXECUTABLE(SoDaRadio ${SoDaRadio_SRCS})
+
+TARGET_COMPILE_OPTIONS(SoDaRadio BEFORE PUBLIC -Wno-deprecated-declarations)
+
+TARGET_LINK_LIBRARIES(SoDaRadio SoDaRadio_Lib m rt ${Boost_LIBRARIES}  )
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
 
