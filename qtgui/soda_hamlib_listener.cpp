@@ -62,7 +62,6 @@ void GUISoDa::HamlibListener::readyRead() {
   int lim = array.count();
   for(int i = 0; i < lim; i++) {
     if(as[i] == '\n') {
-      std::cerr << boost::format("{%s}\n") % as;       
       handler_p->processCommand(current_command, socket_p);
       current_command = QString("");
     }
