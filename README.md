@@ -159,10 +159,10 @@ SoDaRadio builds and runs on Ubuntu 14.04, but the deb package for it does not w
 The kit for Ubuntu 16.04, however, appears to work just fine.  
 
 1. Download the deb file.  The following link will take you to the repository location
-for the kit.  Go to that page and hit the download button.  [Get SoDaRadio for Ubuntu 16.04 here](/packages/deb/SoDaRadio-5.0.3-1.x86_64.Ubuntu-16.04.deb)
+for the kit.  Go to that page and hit the download button.  [Get SoDaRadio for Ubuntu 16.04 here](/packages/deb/SoDaRadio-5.1.5-1.x86_64.Ubuntu-16.04.deb)
 2. Install the kit using apt
 ~~~~
-sudo apt install ./SoDaRadio-5.0.3-1.x86_64.Ubuntu-16.04.deb
+sudo apt install ./SoDaRadio-5.1.5-1.x86_64.Ubuntu-16.04.deb
 ~~~~
 
 NEW AND IMPROVED!
