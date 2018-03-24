@@ -165,6 +165,11 @@ for the kit.  Go to that page and hit the download button.  [Get SoDaRadio for U
 sudo apt install ./SoDaRadio-5.0.3-1.x86_64.Ubuntu-16.04.deb
 ~~~~
 
+NEW AND IMPROVED!
+You can [get SoDaRadio for Ubuntu 17.10 here](/packages/deb/SoDaRadio-5.1.5-1.x86_64.Ubuntu-17.10.deb)
+There isn't much testing against this, as my VM is having trouble making a network connection. (sigh)
+Please report success/failure to the github issues discussion.
+
 ## Using SoDaRadio
 
 To start the SoDaRadio, connect your Ettus USRP to 
