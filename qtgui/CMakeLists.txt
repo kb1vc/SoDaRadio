@@ -70,9 +70,11 @@ QT5_WRAP_CPP(SoDaRadio_hdr_moc ${SoDaRadio_HDRS})
 QT5_WRAP_UI(SoDaRadio_form_moc ${SoDaRadio_UIS})
 
 ADD_LIBRARY(mainwindow ${SoDaRadio_hdr_moc} ${SoDaRadio_form_moc})
-QT5_USE_MODULES(mainwindow Widgets Core Gui)
+# QT5_USE_MODULES(mainwindow Widgets Core Gui)
+QT5_USE_MODULES(mainwindow Widgets)
   
-ADD_EXECUTABLE(SoDaRadio ${SoDaRadio_SRCS} mainwindow ${SoDaRadio_hdr_moc} ${SoDaRadio_form_moc})
+#ADD_EXECUTABLE(SoDaRadio ${SoDaRadio_SRCS} mainwindow ${SoDaRadio_hdr_moc} ${SoDaRadio_form_moc})
+ADD_EXECUTABLE(SoDaRadio ${SoDaRadio_SRCS} mainwindow)
 
 TARGET_COMPILE_OPTIONS(SoDaRadio BEFORE PUBLIC -Wno-deprecated-declarations)
 

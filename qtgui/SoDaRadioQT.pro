@@ -31,7 +31,7 @@ HEADERS  += mainwindow.hpp \
     soda_plot_picker.hpp \
     soda_spect.hpp
 
-QT += widgets
+# QT += widgets
 
 FORMS    += mainwindow.ui
 
