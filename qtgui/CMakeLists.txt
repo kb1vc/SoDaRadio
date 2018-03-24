@@ -63,24 +63,34 @@ SET(CMAKE_AUTOMOC ON)
 SET(CMAKE_AUTOUIC ON)
 SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-INCLUDE_DIRECTORIES(SYSTEM ${Boost_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR} ${QWT_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES(SYSTEM ${Boost_INCLUDE_DIRS} 
+  ${Qt5Widgets_INCLUDE_DIRS} 
+  ${CMAKE_CURRENT_SOURCE_DIR} 
+  ${QWT_INCLUDE_DIRS} 
+  ${CMAKE_CURRENT_BINARY_DIR})
+
 ADD_DEFINITIONS(${Qt5Widgets_DEFINITIONS})
 
 QT5_WRAP_CPP(SoDaRadio_hdr_moc ${SoDaRadio_HDRS})
 QT5_WRAP_UI(SoDaRadio_form_moc ${SoDaRadio_UIS})
 
-ADD_LIBRARY(mainwindow ${SoDaRadio_hdr_moc} ${SoDaRadio_form_moc})
-QT5_USE_MODULES(mainwindow Widgets Core Gui)
-  
+# ADD_LIBRARY(mainwindow ${SoDaRadio_hdr_moc} ${SoDaRadio_form_moc})
+
+#QT5_USE_MODULES(mainwindow Widgets Core Gui)
+
 ADD_EXECUTABLE(SoDaRadio ${SoDaRadio_SRCS} mainwindow ${SoDaRadio_hdr_moc} ${SoDaRadio_form_moc})
 
 TARGET_COMPILE_OPTIONS(SoDaRadio BEFORE PUBLIC -Wno-deprecated-declarations)
 
-TARGET_LINK_LIBRARIES(SoDaRadio m rt ${Boost_LIBRARIES} Qt5::Widgets Qt5::PrintSupport  ${QWT_LIBRARIES})
+TARGET_LINK_LIBRARIES(SoDaRadio m rt ${Boost_LIBRARIES} 
+  Qt5::Widgets Qt5::PrintSupport
+  Qt5::Core Qt5::Gui Qt5::Network Qt5::Multimedia
+  ${QWT_LIBRARIES} )
+
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
 
-QT5_USE_MODULES(SoDaRadio Core Gui Widgets PrintSupport Network Multimedia)
+# QT5_USE_MODULES(SoDaRadio Core Gui Widgets PrintSupport Network Multimedia)
 
 
 INSTALL(TARGETS SoDaRadio DESTINATION bin)
