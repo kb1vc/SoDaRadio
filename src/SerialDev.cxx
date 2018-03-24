@@ -109,9 +109,9 @@ namespace SoDa
   {
     if(!serial_port_open) return false;
 
-    write(port, str.c_str(), str.size());
+    ssize_t s = write(port, str.c_str(), str.size());
 
-    return true; 
+    return s >= 0; 
   }
 
   bool SerialDev::getString(std::string & str, unsigned int maxlen)
