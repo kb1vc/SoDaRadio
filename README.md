@@ -184,7 +184,7 @@ SoDaRadio
 If you haven't installed SoDaRadio, but have built it from scratch,
 you can start SoDaRadio from the build directory like this: 
 ~~~~~
-qtgui/SoDaRadio --server=src/SoDaRadio 
+qtgui/SoDaRadio --server=src/SoDaServer
 ~~~~~
 
 It should come up tuned to something like 10,368.100 or nearby.
