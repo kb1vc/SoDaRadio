@@ -26,6 +26,7 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include "Debug.hxx"
 #include "AudioALSA.hxx"
 #if HAVE_ASOUNDLIB
 #include <alsa/asoundlib.h>
@@ -60,7 +61,6 @@ namespace SoDa {
     char pcm_name[] =  "default"; 
     
     // const char *pcm_name = audio_port_name.c_str();
-
     if(snd_pcm_open(&pcm_out, pcm_name, SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK) < 0) {
       std::cerr << boost::format("can't open Alsa PCM device [%s] for output ... Crap.\n") % pcm_name;
       exit(-1); 
@@ -107,6 +107,7 @@ namespace SoDa {
   void AudioALSA::setupParams(snd_pcm_t * dev, snd_pcm_hw_params_t *  & hw_params_ptr)
   {
     snd_pcm_hw_params_t * hw_paramsp;
+    boost::mutex::scoped_lock mt_lock(alsa_lock);
     
     snd_pcm_hw_params_alloca(&hw_paramsp);
 
@@ -137,10 +138,19 @@ namespace SoDa {
 		"setupParams prepare audio interface", true);
   }
 
+  bool AudioALSA::recvBufferReady(unsigned int len) {
+      boost::mutex::scoped_lock lock(alsa_lock);
+      return recvBufferReady_priv(len);
+  }
 
-  bool AudioALSA::recvBufferReady(unsigned int len)  {
+  bool AudioALSA::recvBufferReady_priv(unsigned int len)  {
     snd_pcm_sframes_t sframes_ready = snd_pcm_avail(pcm_in);
-    if(sframes_ready == -EPIPE) {
+
+    if(sframes_ready == -EBADFD) {
+      debugMsg("recvBufferReady got EBADFD, tried recovery");
+      return false; 
+    }
+    else if(sframes_ready == -EPIPE) {
       // we got an under-run... just ignore it.
       int err; 
       if((err = snd_pcm_recover(pcm_in, sframes_ready, 1)) < 0) {
@@ -152,30 +162,45 @@ namespace SoDa {
     if(sframes_ready < 0) {
       checkStatus(sframes_ready, "recvBufferReady", false);
     }
+
+    debugMsg((boost::format("recvBufferReady len = %d sframs_ready = %d\n")
+	      % len % sframes_ready).str());
     return sframes_ready >= len; 
   }
 
-  bool AudioALSA::sendBufferReady(unsigned int len)  {
-    snd_pcm_sframes_t sframes_ready;
 
+  bool AudioALSA::sendBufferReady(unsigned int len)  {
+    boost::mutex::scoped_lock lock(alsa_lock);
+    return sendBufferReady_priv(len);
+  }
+
+
+  bool AudioALSA::sendBufferReady_priv(unsigned int len)  {
+    debugMsg("sendBufferReady");
+
+    snd_pcm_sframes_t sframes_ready;
     while(1) {
       sframes_ready= snd_pcm_avail(pcm_out);
     
       if(sframes_ready == -EPIPE) {
 	// we got an under-run... we can't just ignore it.
 	// if pcm_avail returns -EPIPE we need to recover and restart the pipe... sigh.
-	// std::cerr << boost::format("snd_pcm_avail returns EPIPE -- current state is %s\n") % currentPlaybackState();
 	int err; 
 	if((err = snd_pcm_recover(pcm_out, sframes_ready, 1)) < 0) {
+	  debugMsg((boost::format("sendBufferReady_priv snd_pcm_avail returns EPIPE, now  %d\n")
+		    % err).str());
 	  checkStatus(err, "sendBufferReady got EPIPE, tried recovery", false);
-	}
-	if((err = snd_pcm_start(pcm_out)) < 0) {
+
+	  if((err = snd_pcm_start(pcm_out)) < 0) {
 	  throw
-	    SoDaException((boost::format("AudioALSA::wakeOut() Failed to wake after sleepOut() -- %s")
+	    SoDaException((boost::format("AudioALSA::sendBufferReady() Failed to wake after sleepOut() -- %s")
 			   % snd_strerror(err)).str(), this);
+	  }
 	}
       }
       else {
+	debugMsg((boost::format("sendBufferReady_priv snd_pcm_avail returns %d\n")
+		  % sframes_ready).str());
 	checkStatus(sframes_ready, "sendBufferReady", false);
 	break;
       }
@@ -183,20 +208,32 @@ namespace SoDa {
     return sframes_ready >= len; 
   }
 
-  int AudioALSA::send(void * buf, unsigned int len) {
+  int AudioALSA::send(void * buf, unsigned int len, bool when_ready) {
+    debugMsg("send");    
     int err;
     int olen = len;
+    boost::mutex::scoped_lock mt_lock(alsa_lock);      
+
+    if(when_ready && !sendBufferReady_priv(len)) return 0; 
 
     char * cbuf = (char *) buf; 
+    int cont_count = 0; 
     while(1) {
       err = snd_pcm_writei(pcm_out, cbuf, len);
       
       if(err == (int) len) return len; 
-      else if(err == -EAGAIN) continue;
+      else if((err == -EAGAIN) || (err == 0)) {
+	cont_count++; 
+	if(cont_count >= 10) {
+	  debugMsg((boost::format("Got 10 EAGAIN responses to pcm_writei  retval = %d\n") % err).str()); 
+	  cont_count = 0; 
+	}
+	continue;
+      }
       else if(err == -EPIPE) {
 	// we got an under-run... just ignore it.
 	if((err = snd_pcm_recover(pcm_out, err, 1)) < 0) {
-	checkStatus(err, "send got EPIPE, tried recovery", false);
+	  checkStatus(err, "send got EPIPE, tried recovery", false);
 	}
       }
       else if(err < 0) {
@@ -211,26 +248,34 @@ namespace SoDa {
     return olen; 
   }
 
-  int AudioALSA::recv(void * buf, unsigned int len, bool block) {
-    (void) block;
+  int AudioALSA::recv(void * buf, unsigned int len, bool when_ready) {
     int err;
     int olen = len;
+    int loopcount = 0; 
+    {
+      boost::mutex::scoped_lock mt_lock(alsa_lock);      
 
-    char * cbuf = (char *) buf; 
-    while(1) {
-      err = snd_pcm_readi(pcm_in, cbuf, len);
+      if(when_ready && !recvBufferReady_priv(len)) return 0;
 
-      if(err == (int)len) return len; 
-      else if(err == -EAGAIN) continue; 
-      else if(err < 0) {
-	checkStatus(err, "recv", true);
-      }
-      else if(err != (int)len) {
-	len -= err;
-	cbuf += (err * datatype_size);
+      char * cbuf = (char *) buf; 
+      while(1) {
+	loopcount++; 
+	err = snd_pcm_readi(pcm_in, cbuf, len);
+
+	if(err == (int)len) {
+	  break; 
+	}
+	else if(err == -EAGAIN) continue; 
+	else if(err < 0) {
+	  checkStatus(err, "recv", true);
+	}
+	else if(err != (int)len) {
+	  len -= err;
+	  cbuf += (err * datatype_size);
+	}
       }
     }
-
+    debugMsg((boost::format("recv: returned %d loops %d\n") % olen % loopcount).str());
     return olen; 
   }
 

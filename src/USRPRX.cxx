@@ -262,10 +262,9 @@ void SoDa::USRPRX::execSetCommand(Command * cmd)
 	debugMsg("In TX ON -- stream continues");
       }
       else {
-	// Otherwise
-	// stop the RX stream
+	// We used to stop the RX stream, but we don't anymore. 
 	debugMsg("In TX ON -- stopped stream");	
-	stopStream();
+	// stopStream();
       }
       enable_spectrum_report = false;
     }
@@ -273,8 +272,13 @@ void SoDa::USRPRX::execSetCommand(Command * cmd)
       // start the RX stream.
       //usleep(750000);
       debugMsg("In TX OFF -- restart stream");
+      // we never stopped the stream
+      // but we need to start it the very first time. 
       startStream();
       enable_spectrum_report = true;
+      // tell the baseband unit that it is ready to start. 
+      cmd_stream->put(new Command(Command::SET, Command::TX_STATE, 
+				  4));
     }
     break; 
   default:

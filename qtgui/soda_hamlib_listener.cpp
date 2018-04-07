@@ -72,6 +72,5 @@ void GUISoDa::HamlibListener::readyRead() {
 }
 
 void GUISoDa::HamlibListener::disconnected() {
-  qDebug() << "\n\nHamlib listener got disconnect!!!\n\n";
   socket_p->deleteLater();
 }

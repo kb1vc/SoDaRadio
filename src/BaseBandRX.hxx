@@ -198,6 +198,12 @@ namespace SoDa {
     void pendAudioBuffer(float * b); 
     
     /**
+     * @brief put an empty (zero signal) audio buffer on the pending for output list
+     *
+     */ 
+    void pendNullBuffer();
+    
+    /**
      * @brief return the next queued audio buffer to pass to the audio output device
      *
      * @return a pointer to the next buffer in sequence
@@ -283,7 +289,10 @@ namespace SoDa {
     bool audio_save_enable; 
     std::ofstream audio_file;
     std::ofstream audio_file2;     
-    
+
+    // recent audio level
+    float audio_level; 
+    float log_audio_buffer_size; 
   };
 }
 

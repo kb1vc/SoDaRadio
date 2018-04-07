@@ -45,12 +45,6 @@ SoDa::CWTX::CWTX(Params * params, CmdMBox * _cwtxt_stream, DatMBox * _cw_env_str
   rf_sample_rate = params->getTXRate();
   rf_buffer_size = params->getRFBufferSize();
   
-  // build the beacon buffer.
-  beacon_envelope = new float[rf_buffer_size];
-  for(unsigned int i = 0; i < rf_buffer_size; i++) {
-    beacon_envelope[i] = 0.0;
-  }
-
   // setup the CW generator unit
   cwgen = new SoDa::CWGenerator(_cw_env_stream, rf_sample_rate, rf_buffer_size);
   

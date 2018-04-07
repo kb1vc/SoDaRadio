@@ -54,6 +54,10 @@ SoDa::BaseBandRX::BaseBandRX(Params * params,
   rf_sample_rate = params->getRXRate(); 
   audio_buffer_size = params->getAFBufferSize();
   rf_buffer_size = params->getRFBufferSize();
+
+  // setup the audio level meter
+  log_audio_buffer_size = log10((float) audio_buffer_size); 
+
   // setup the resampler now...
   buildFilterMap();
 
@@ -118,6 +122,11 @@ SoDa::BaseBandRX::BaseBandRX(Params * params,
   audio_save_enable = false;
   //audio_file.open("soda_audio.bin", std::ios::out | std::ios::binary);
   //audio_file2.open("soda_audio_iq_fm.bin", std::ios::out | std::ios::binary);
+
+  // pend a null buffer or two just to keep the out stream from 
+  // under-flowing
+  pendNullBuffer();
+  pendNullBuffer();
 }
 
 void SoDa::BaseBandRX::demodulateWBFM(SoDaBuf * rxbuf, SoDa::Command::ModulationType mod, float af_gain)
@@ -349,7 +358,7 @@ void SoDa::BaseBandRX::execSetCommand(SoDa::Command * cmd)
       else {
 	audio_rx_stream_enabled = false;
 	debugMsg("audio_rx_stream_enabled = false\n");
-	audio_ifc->sleepOut();
+	// 	audio_ifc->sleepOut();
       }
     }
     if(cmd->iparms[0] == 2) { // the CTRL unit has done the setup.... 
@@ -357,9 +366,6 @@ void SoDa::BaseBandRX::execSetCommand(SoDa::Command * cmd)
       cur_af_gain = &af_gain; 
       audio_rx_stream_enabled = true;
       debugMsg("audio_rx_stream_enabled = true\n");      
-      // audio_rx_stream_needs_start = true;
-      audio_rx_stream_needs_start = false;      
-      audio_ifc->wakeOut();      
     }
     break;
   case SoDa::Command::RX_AF_FILTER: // set af filter bw.
@@ -429,9 +435,6 @@ void SoDa::BaseBandRX::run()
   SoDaBuf * rxbuf;
   Command * cmd; 
 
-  int rxbufcount = 0;
-  int afbufcount = 0;
-
   int trim_count = 0; 
   int add_count = 0;     
 
@@ -440,9 +443,11 @@ void SoDa::BaseBandRX::run()
   int catchup_count = 0;
 
   int restart_count = 0;
+
   while(!exitflag) {
     bool did_work = false;
     bool did_audio_work = false; 
+
     if((cmd = cmd_stream->get(cmd_subs)) != NULL) {
       // process the command.
       execCommand(cmd);
@@ -451,95 +456,102 @@ void SoDa::BaseBandRX::run()
       cmd_stream->free(cmd); 
     }
 
-    if(audio_rx_stream_enabled) {
-      if(readyAudioBuffers()) {
-	if(!in_catchup && (readyAudioBuffers() > 8)) {
-	  // If we've fallen 8 buffers behind, (about 400mS)
-	  // then go into catchup mode, where we'll gain about 0.4 mS
-	  // on each 2304 sample frame. 
-	  in_catchup = true;
-	  in_fallback = false; 
-	  catchup_count++; 
-	}
-	if(in_catchup && (readyAudioBuffers() < 2)) { /// 6)) {
-	  in_catchup = false; 
-	}
+    // Send audio buffers to the audio output
+    if(readyAudioBuffers()) {
+      if(!in_catchup && (readyAudioBuffers() > 8)) {
+	// If we've fallen 8 buffers behind, (about 400mS)
+	// then go into catchup mode, where we'll gain about 0.4 mS
+	// on each 2304 sample frame. 
+	in_catchup = true;
+	in_fallback = false; 
+	catchup_count++; 
+      }
+      if(in_catchup && (readyAudioBuffers() < 2)) { /// 6)) {
+	in_catchup = false; 
+      }
 #if 0
-	if(!in_fallback && (readyAudioBuffers() < 3)) {
-	  in_fallback = true; 
-	  in_catchup = false; 
-	  fallback_count++; 
-	}
-	if(in_fallback && (readyAudioBuffers() > 5)) {
-	  in_fallback = false;
-	}
+      if(!in_fallback && (readyAudioBuffers() < 3)) {
+	in_fallback = true; 
+	in_catchup = false; 
+      }
+      if(in_fallback && (readyAudioBuffers() > 5)) {
+	in_fallback = false;
+      }
 #endif
-	int rbsize = readyAudioBuffers(); 
-	if((audio_rx_stream_needs_start && (rbsize > 1)) ||
-	   (!audio_rx_stream_needs_start && (rbsize > 1))) {
+      int rbsize = readyAudioBuffers(); 
+      if(rbsize > 1) {
 
-	  if(audio_rx_stream_needs_start) {
-	    audio_ifc->wakeOut(); 
-	    audio_rx_stream_needs_start = false; 
-	    restart_count++; 
-	  }
+	if(audio_rx_stream_needs_start) {
+	  audio_ifc->wakeOut(); 
+	  audio_rx_stream_needs_start = false; 
+	  restart_count++; 
+	}
 	  
-	  while(1) {
-	    if(audio_ifc->sendBufferReady(audio_buffer_size + (in_fallback ? 1 : 0))) {
-	      float * outb = getNextAudioBuffer();
-	      if(outb == NULL) {
-		break; 
-	      }
-
-	      did_work = true;
-	      did_audio_work = true; 
-
-	      if(in_catchup) {
-		// this is where the random generator comes in.
-		int trim = (random() & catchup_rand_mask);
-		// drop out one "randomly" selected sample in the first (power of two) part of the buffer.
-		audio_ifc->send(outb, trim);
-		audio_ifc->send(&(outb[trim+1]), (audio_buffer_size - (trim + 1))); 
-		trim_count++; 
-	      }
-	      else if(in_fallback) {
-		// duplicate one "randomly" selected sample in the first (power of two) part of the buffer.
-		int dup = (random() & catchup_rand_mask);
-		audio_ifc->send(outb, dup);
-		audio_ifc->send(&(outb[dup]), (audio_buffer_size - dup)); 
-		add_count++; 
-	      }
-	      else {
-		audio_ifc->send(outb, audio_buffer_size);
-	      }
-
-	      // is this a problem?  Is it possible to free the buffer too soon? 
-	      freeAudioBuffer(outb);
-
-	      afbufcount++;
-	    }
-	    else {
-	      null_audio_buf_count++; 
-	      if(rbsize > 10) {
-		// what is the state of the audio ifc? 
-		debugMsg(boost::format("ALSA State [%s] rbsize = %d\n") % audio_ifc->currentPlaybackState() % rbsize);
-	      }
+	while(1) {
+	  if(audio_ifc->sendBufferReady(audio_buffer_size + (in_fallback ? 1 : 0))) {
+	    float * outb = getNextAudioBuffer();
+	    if(outb == NULL) {
 	      break; 
 	    }
+
+	    did_work = true;
+	    did_audio_work = true; 
+
+	    if(in_catchup) {
+	      // this is where the random generator comes in.
+	      int trim = (random() & catchup_rand_mask);
+	      // drop out one "randomly" selected sample in the first (power of two) part of the buffer.
+	      audio_ifc->send(outb, trim);
+	      audio_ifc->send(&(outb[trim+1]), (audio_buffer_size - (trim + 1))); 
+	      trim_count++; 
+	      catchup_count++; 
+	    }
+	    else if(in_fallback) {
+	      // duplicate one "randomly" selected sample in the first (power of two) part of the buffer.
+	      int dup = (random() & catchup_rand_mask);
+	      audio_ifc->send(outb, dup);
+	      audio_ifc->send(&(outb[dup]), (audio_buffer_size - dup)); 
+	      add_count++; 
+	    }
+	    else {
+	      audio_ifc->send(outb, audio_buffer_size);
+	    }
+
+	    // is this a problem?  Is it possible to free the buffer too soon? 
+	    freeAudioBuffer(outb);
+
+	  }
+	  else {
+	    null_audio_buf_count++; 
+	    if(rbsize > 10) {
+	      // what is the state of the audio ifc? 
+	      debugMsg(boost::format("ALSA State [%s] rbsize = %d\n") % audio_ifc->currentPlaybackState() % rbsize);
+	    }
+	    break; 
 	  }
 	}
       }
-      int bcount = 0; 
-      for(bcount = 0; (bcount < 2) && ((rxbuf = rx_stream->get(rx_subs)) != NULL); bcount++) {
-	if(rxbuf == NULL) break; 
-	did_work = true; 
+    }
+
+    // now look for incoming buffers from the rx_stream. 
+    int bcount = 0; 
+    for(bcount = 0; (bcount < 2) && ((rxbuf = rx_stream->get(rx_subs)) != NULL); bcount++) {
+      if(rxbuf == NULL) break; 
+      did_work = true; 
+      // if we're in TX mode, we should just pend silence and ignore the incoming buffer
+      // otherwise, demodulate it.
+
+      if(audio_rx_stream_enabled) {
 	// demodulate the buffer.
 	demodulate(rxbuf); 
-	// now free the buffer up.
-	rx_stream->free(rxbuf); 
-	rxbufcount++; 
       }
+      else {
+	pendNullBuffer();
+      }
+      // now free the buffer up.
+      rx_stream->free(rxbuf); 
     }
+
 
     if(!did_audio_work && !did_work) {
       usleep(1000); 
@@ -579,6 +591,14 @@ int SoDa::BaseBandRX::readyAudioBuffers()
   return ready_buffers.size();
 }
 
+void SoDa::BaseBandRX::pendNullBuffer() {
+  float * nullbuf = getFreeAudioBuffer(); 
+  for(int i = 0; i < audio_buffer_size; i++) {
+    nullbuf[i] = 0.0; 
+  }
+  pendAudioBuffer(nullbuf);
+}
+
 void SoDa::BaseBandRX::pendAudioBuffer(float * b)
 {
   {
@@ -588,6 +608,11 @@ void SoDa::BaseBandRX::pendAudioBuffer(float * b)
   if(audio_save_enable) {
     audio_file.write((char*) b, audio_buffer_size * sizeof(float));
   }
+  float al = 1.0e-19; // really small...
+  for(int i = 0; i < audio_buffer_size; i++) {
+    al += b[i] * b[i]; 
+  }
+  audio_level = 10.0 * (log10(al / af_gain) - log_audio_buffer_size); 
 }
 
 float * SoDa::BaseBandRX::getNextAudioBuffer()
@@ -618,6 +643,7 @@ void SoDa::BaseBandRX::buildFilterMap()
   // work
   
   filter_map[SoDa::Command::BW_2000] = new SoDa::OSFilter(200.0, 300.0, 2300.0, 2400.0, 512, 1.0, audio_sample_rate, audio_buffer_size);
+  filter_map[SoDa::Command::BW_WSPR] = new SoDa::OSFilter(1100.0, 1400.0, 1600.0, 1900.0, 512, 1.0, audio_sample_rate, audio_buffer_size);  
   filter_map[SoDa::Command::BW_500] = new SoDa::OSFilter(300.0, 400.0, 900.0, 1000.0, 512, 1.0, audio_sample_rate, audio_buffer_size);
 
   filter_map[SoDa::Command::BW_100] = new SoDa::OSFilter(300.0, 400.0, 500.0, 600.0, 512, 1.0, audio_sample_rate, audio_buffer_size);

@@ -1055,8 +1055,9 @@ void SoDa::USRPCtrl::reportAFFilters()
     cmd_stream->put(new Command(Command::REP, Command::AF_FILT_ENTRY,
 				"6000", ((int) SoDa::Command::BW_6000)));
     cmd_stream->put(new Command(Command::REP, Command::AF_FILT_ENTRY,
+				"WSPR", ((int) SoDa::Command::BW_WSPR)));
+    cmd_stream->put(new Command(Command::REP, Command::AF_FILT_ENTRY,
 				"PASS", ((int) SoDa::Command::BW_PASS)));
-
 }
 
 void SoDa::USRPCtrl::reportAntennas() 

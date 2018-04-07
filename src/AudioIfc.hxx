@@ -77,9 +77,11 @@ namespace SoDa {
      * send -- send a buffer to the audio output
      * @param buf buffer of type described by the DataFormat selected at init
      * @param len number of elements in the buffer to send
+     * @param when_ready if true, test with sendBufferReady and return 0 if not ready
+     * otherwise perform the send regardless.
      * @return number of elements transferred to the audio output
      */
-    virtual int send(void * buf, unsigned int len) = 0; 
+    virtual int send(void * buf, unsigned int len, bool when_ready = false) = 0; 
 
     /**
      * sendBufferReady -- is there enough space in the audio device
@@ -94,10 +96,11 @@ namespace SoDa {
      * recv -- get a buffer of data from the audio input
      * @param buf buffer of type described by the DataFormat selected at init
      * @param len number of elements in the buffer to send
-     * @param block block on this call if no data is available (ignored)
+     * @param when_ready if true, test with sendBufferReady and return 0 if not ready
+     * otherwise perform the recv regardless.
      * @return number of elements transferred to the audio output
      */
-    virtual int recv(void * buf, unsigned int len, bool block = true) = 0;
+    virtual int recv(void * buf, unsigned int len, bool when_ready = false) = 0;
 
     /**
      * recvBufferReady -- is there enough space in the audio device

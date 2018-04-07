@@ -480,7 +480,7 @@ namespace SoDa {
     /**
      * @brief these are the possible audio filter bandwidths
      */
-    enum AudioFilterBW { BW_100, BW_500, BW_2000, BW_6000, BW_PASS, BW_NULL };
+    enum AudioFilterBW { BW_100, BW_500, BW_2000, BW_6000, BW_PASS, BW_WSPR, BW_NULL };
 
     /**
      * @brief a selector to identify a particular unit for debug reports

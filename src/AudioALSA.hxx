@@ -38,6 +38,7 @@
 #  define ALSA_DEF { throw SoDa::SoDaException("ALSA Sound Library is not enabled in this build version."); } 
 #endif
 #include <boost/format.hpp>
+#include <boost/thread/mutex.hpp>
 #include <iostream>
 #include <stdexcept>
 
@@ -60,7 +61,7 @@ namespace SoDa {
    * console. 
    * 
    */
-  class AudioALSA : public AudioIfc {
+  class AudioALSA : public AudioIfc, public Debug {
   public:
     /**
      * constructor
@@ -76,6 +77,7 @@ namespace SoDa {
 	      std::string audio_port_name = std::string("default"));
 
     ~AudioALSA() {
+      boost::mutex::scoped_lock lock(alsa_lock);          
 #if HAVE_LIBASOUND
       snd_pcm_close(pcm_out);
 #endif      
@@ -85,9 +87,11 @@ namespace SoDa {
      * send -- send a buffer to the audio output
      * @param buf buffer of type described by the DataFormat selected at init
      * @param len number of elements in the buffer to send
+     * @param when_ready if true, test with sendBufferReady and return 0 if not ready
+     * otherwise perform the send regardless.
      * @return number of elements transferred to the audio output
      */
-    int send(void * buf, unsigned int len) ALSA_DEF ;
+    int send(void * buf, unsigned int len, bool when_ready = false) ALSA_DEF ;
 
     /**
      * sendBufferReady -- is there enough space in the audio device
@@ -101,10 +105,11 @@ namespace SoDa {
      * recv -- get a buffer of data from the audio input
      * @param buf buffer of type described by the DataFormat selected at init
      * @param len number of elements in the buffer to get
-     * @param block make this a blocking call --- ignored. 
+     * @param when_ready if true, test with sendBufferReady and return 0 if not ready
+     * otherwise perform the recv regardless.
      * @return number of elements transferred from the audio input
      */
-    int recv(void * buf, unsigned int len, bool block = true) ALSA_DEF ; 
+    int recv(void * buf, unsigned int len, bool when_ready = false) ALSA_DEF ; 
 
     /**
      * recvBufferReady -- are there samples waiting in the audio device?
@@ -119,15 +124,25 @@ namespace SoDa {
      * while the reciever is muted.
      */
     void sleepOut() {
+      debugMsg("Sleep Out");      
 #if HAVE_LIBASOUND
-      snd_pcm_drain(pcm_out);
+      int err; 
+      {
+	boost::mutex::scoped_lock mt_lock(alsa_lock);
+	err = snd_pcm_drain(pcm_out);
+      }
+      if(err != 0) {
+	std::cerr << boost::format("snd_pcm_drain returned %d\n") % err; 
+      }
 #endif
     }
     /**
      * start the output stream
      */
     void wakeOut() {
+      debugMsg("Wake Out");
 #if HAVE_LIBASOUND
+      boost::mutex::scoped_lock mt_lock(alsa_lock);      
       int err; 
       if((err = snd_pcm_prepare(pcm_out)) < 0) {
 	throw
@@ -147,7 +162,9 @@ namespace SoDa {
      * while the transmitter is inactive.
      */
     void sleepIn() {
+      debugMsg("Sleep In");            
 #if HAVE_LIBASOUND
+      boost::mutex::scoped_lock mt_lock(alsa_lock);
       snd_pcm_drop(pcm_in);
 
       // now read the input buffers until they're empty
@@ -156,6 +173,7 @@ namespace SoDa {
       int stat = 1;
       while(stat > 0) {
 	stat = snd_pcm_readi(pcm_in, buf, len);
+	std::cerr << "-@-";
 	if(stat == 0) break; 
 	else if(stat == -EAGAIN) continue; 
 	else break; 
@@ -167,7 +185,9 @@ namespace SoDa {
      * start the input stream
      */
     void wakeIn() {
+      debugMsg("Wake In");                  
 #if HAVE_LIBASOUND
+      boost::mutex::scoped_lock mt_lock(alsa_lock);      
       int err; 
       if((err = snd_pcm_prepare(pcm_in)) < 0) {
 	throw
@@ -182,12 +202,17 @@ namespace SoDa {
 #endif
     }
 #if HAVE_LIBASOUND
-    std::string currentPlaybackState() { 
-      std::string cs = currentState(pcm_out);      
+    std::string currentPlaybackState() {
+      boost::mutex::scoped_lock mt_lock(alsa_lock);            
+      debugMsg("curPlaybackState");                  
+      std::string cs; 
+      cs = currentState(pcm_out);      
       return (boost::format("%s  ready_frames = %d") % cs % snd_pcm_avail(pcm_out)).str();
     }
 
-    std::string currentCaptureState() { 
+    std::string currentCaptureState() {
+      boost::mutex::scoped_lock mt_lock(alsa_lock);                  
+      debugMsg("curCaptureState");                        
       return currentState(pcm_in);
     }
 #endif
@@ -202,7 +227,8 @@ namespace SoDa {
      *
      */
     std::string currentState(snd_pcm_t * dev) {
-      snd_pcm_state_t st = snd_pcm_state(dev);
+      snd_pcm_state_t st;
+      st = snd_pcm_state(dev);
 
       switch (st) {
       case SND_PCM_STATE_OPEN:
@@ -268,14 +294,40 @@ namespace SoDa {
      * @param fatal -- if true, throw an exception, otherwise print an error to std::cerr
      */
     void checkStatus(int err, const std::string & exp, bool fatal = false) {
-      
       if (err < 0) {
 	if(fatal) throw SoDaException((boost::format("%s %s") % exp % snd_strerror(err)).str(), this);
 	else std::cerr << boost::format("%s %s %s\n") % getObjName() % exp % snd_strerror(err);
       }
     }
+
+  private:
+    /**
+     * recvBufferReady_priv -- are there samples waiting in the audio device?
+     *                    
+     * actual implementation of ready check, but without protecting mutex. 
+     *
+     * @param len the number of samples that we wish to get
+     * @return true if len samples are waiting in in the device buffer
+     */
+    bool recvBufferReady_priv(unsigned int len) ALSA_DEF ;    
+
+    /**
+     * sendBufferReady_priv -- is there enough space in the audio device
+     *                    send buffer for a call from send?
+     * actual implementation, but without protecting mutex.
+     *
+     * @param len the number of samples that we wish to send
+     * @return true if there is sufficient space. 
+     */
+    bool sendBufferReady_priv(unsigned int len) ALSA_DEF ;
+    
 #endif // HAVE_LIBASOUND
+
+  private:
+    boost::mutex alsa_lock;
+    
   };
+
 }
 
 

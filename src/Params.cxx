@@ -80,7 +80,7 @@ void SoDa::Params::readConfigFile(std::string & cf_name)
 {
   (void)cf_name;
   // do nothing for now... later this will be the .xml file.
-  clock_source = "internal";
+  clock_source_internal = true;
   rx_rate = 625000.0; // 100.0e6/256.;
   tx_rate = 625000.0 / 2.0 ; //100.0e6/2048.;
   rx_ant = "RX2";

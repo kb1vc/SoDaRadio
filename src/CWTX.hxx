@@ -109,8 +109,6 @@ namespace SoDa {
     double rf_sample_rate; ///< samples/sec for generating the envelope
     unsigned int rf_buffer_size; ///< the size of the envelope buffer
 
-    float * beacon_envelope; ///< the currently generated envelope
-
     std::queue<char> text_queue; ///< characters waiting to be sent
     boost::mutex text_lock; ///< lock for text_queue
     

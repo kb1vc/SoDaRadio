@@ -59,9 +59,9 @@ namespace SoDa {
 
     /**
      * @brief where does the reference come from?
-     * @return "EXTERNAL" or "INTERNAL" 
+     * @return 1 for external, 0 for internal
      */
-    std::string getClockSource() const { return clock_source; }
+    int getClockSource() const { return clock_source_internal ? 0 : 1; }
 
 
     /**
@@ -149,7 +149,7 @@ namespace SoDa {
 
     std::string lock_file_name; 
 
-    std::string clock_source;
+    bool clock_source_internal;
     double rx_rate, tx_rate;
     std::string rx_ant, tx_ant;
 

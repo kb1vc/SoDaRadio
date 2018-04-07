@@ -116,7 +116,10 @@ namespace GUISoDa {
     void setSidetoneVolume(int vol);
     void setTXPower(int vol); 
 
+    void setClockRef(int external);
+
     void setPTT(bool on);
+    void setCarrier(bool on);    
 
     void sendCW(const QString & txt);
     void clearCWBuffer();

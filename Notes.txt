@@ -316,3 +316,63 @@ from the commit message:
 With the FFT based resampler, SoDaServer consumes about 58% of the my vitage
 i7 920 cpu at 2.7 GHz throttled down to about 1.7 GHz.
 
+--------------------
+
+5.2.0 adds CARRIER/BEACON mode for tuning up.
+Measurements with TX gain set to "11" and a 30dB+ pad
+between the UBX and a Tek 492
+
+	     max     min
+3.5 MHz	     txpower at max produces many harmonics
+    	     tx power below saturation is 8dBm out,
+	     harmonic at 7MHz is only 20dB down
+	     0dBm out, harmonics are 25dB down or so.
+	     
+7 MHz	     10dBm out, 14MHz is 30dB down .. 21 > 40dB down
+  	     8dBm  all harmonics > 40dB down
+	     
+14 MHz	     max power 20dBm but 2 and 42 are at 0dBm.
+   	     at 10dBm both are > 40dB down.
+	     compression starts at around 15dBm...
+	     
+50 MHz	     15dBm out, 100MHz is > 40dB down
+144 MHz	     max power is 18dBm with harmonics
+    	     432 spur is -30dB ...
+	     15dBm out, no spurs.
+	     
+
+222 MHz	     max 18dBm harmonics are < 30dB down
+    	     15dBm harmonics disappear > 40dB
+
+432 MHz	     max 15dBm no harmonics (> 40dB)
+
+902 MHz      15dBm clean (> 40dB down)
+    	     There is a spur at 892 that is only -35dB.
+	     Driving a little lighter (13dB?) makes the spur
+	     drop below -40dB. 
+
+1296 MHz     max power is about 15dBm
+ 	     at 12dBm no spurs close in (within 50 MHz > 40dB down)
+	     harmonic at 3.9 is < 20dB down.
+	     
+	     
+2304 MHz     at 12dBm no spurs close in (within 50 MHz > 40dB down)
+     	     all harmonics > 40dB down
+
+3456 MHz     10dBm out, max. spur about 30dB down at about 5MHz below carrier.
+     	     spur persists at 0dBm ...
+
+5760.1 MHz   -10dBm out at max.  This may be due to the attenuators
+             dropping out above 4GHz or so...
+	     Yup.. Taking out 15dB got us up to -5dBm
+	     No pads -- 0dBm ... hmmm... what's going on here...?
+	     close in spurs are -20dB
+	     at -20dBm out, the spurs are down ~ 30dB
+	     spurs are 2.5MHz above the carrier.
+
+
+Hmmmm... can we use "sidetone" volume (feedthrough from TX to RX)
+to detect the point at which the transmitter becomes non-linear?
+
+
+

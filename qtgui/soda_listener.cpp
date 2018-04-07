@@ -27,6 +27,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "soda_listener.hpp"
+#include <boost/format.hpp>
 
 GUISoDa::Listener::Listener(QObject * parent, const QString & _socket_basename) : QObject(parent) {
   quit = false;
@@ -192,14 +193,14 @@ bool GUISoDa::Listener::put(const SoDa::Command & cmd)
 
 void GUISoDa::Listener::setRXFreq(double freq) {
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_RETUNE_FREQ, freq))) {
-    perror("What happened here?");
+    perror((boost::format("Failed to send SET command in function %s\n") % __PRETTY_FUNCTION__).str().c_str());;
   }
   current_rx_freq = freq;   
 }
 
 void GUISoDa::Listener::setTXFreq(double freq) {
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_RETUNE_FREQ, freq))) {
-    perror("What happened here?");
+    perror((boost::format("Failed to send SET command in function %s\n") % __PRETTY_FUNCTION__).str().c_str());;
   }
   current_tx_freq = freq; 
 }
@@ -207,14 +208,14 @@ void GUISoDa::Listener::setTXFreq(double freq) {
 void GUISoDa::Listener::setRXGain(int gain) {
   double dgain = gain;   
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_RF_GAIN, dgain))) {
-    perror("What happened here?");
+    perror((boost::format("Failed to send SET command in function %s\n") % __PRETTY_FUNCTION__).str().c_str());;
   }
 }
 
 void GUISoDa::Listener::setTXGain(int gain) {
   double dgain = gain;   
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_RF_GAIN, dgain))) {
-    perror("What happened here?");
+    perror((boost::format("Failed to send SET command in function %s\n") % __PRETTY_FUNCTION__).str().c_str());;
   }
 }
 
@@ -223,14 +224,14 @@ void GUISoDa::Listener::setAFGain(int gain) {
   // this is a little complex...
   dgain = 50.0 * (log10(dgain) / log10(100.0));
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_AF_GAIN, dgain))) {
-    perror("What happened here?");
+    perror((boost::format("Failed to send SET command in function %s\n") % __PRETTY_FUNCTION__).str().c_str());;
   }
 }
 
 void GUISoDa::Listener::setAFSidetoneGain(int gain) {
   double dgain = gain;   
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_AF_SIDETONE_GAIN, dgain))) {
-    perror("What happened here?");
+    perror((boost::format("Failed to send SET command in function %s\n") % __PRETTY_FUNCTION__).str().c_str());;
   }
 }
 
@@ -239,17 +240,17 @@ void GUISoDa::Listener::setModulation(int mod_id)
 {
 
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_MODE, mod_id))) {
-    perror("What happened here?");
+    perror((boost::format("Failed to send SET command in function %s\n") % __PRETTY_FUNCTION__).str().c_str());;
   }
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_MODE, mod_id))) {
-    perror("What happened here?");
+    perror((boost::format("Failed to send SET command in function %s\n") % __PRETTY_FUNCTION__).str().c_str());;
   }
 }
 
 void GUISoDa::Listener::setAFFilter(int id)
 {
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_AF_FILTER, id))) {
-    perror("What happened here?");
+    perror((boost::format("Failed to send SET command in function %s\n") % __PRETTY_FUNCTION__).str().c_str());;
   }
 }
 
@@ -302,56 +303,64 @@ bool GUISoDa::Listener::handleREP(const SoDa::Command & cmd)
 void GUISoDa::Listener::setRXAnt(const QString & antname)
 {
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_ANT, antname.toStdString()))) {
-    perror("What happened here?");
+    perror((boost::format("Failed to send SET command in function %s\n") % __PRETTY_FUNCTION__).str().c_str());;
   }
 }
 
 void GUISoDa::Listener::setTXAnt(const QString & antname)
 {
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_ANT, antname.toStdString()))) {
-    perror("What happened here?");
+    perror((boost::format("Failed to send SET command in function %s\n") % __PRETTY_FUNCTION__).str().c_str());;
   }
 }
 
 void GUISoDa::Listener::setSpectrumCenter(double freq) 
 {
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::SPEC_CENTER_FREQ, freq))) {
-    perror("What happened here?");
+    perror((boost::format("Failed to send SET command in function %s\n") % __PRETTY_FUNCTION__).str().c_str());;
   }
 }
 
 void GUISoDa::Listener::setSpectrumUpdateRate(int rate)
 {
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::SPEC_UPDATE_RATE, rate))) {
-    perror("What happened here?");
+    perror((boost::format("Failed to send SET command in function %s\n") % __PRETTY_FUNCTION__).str().c_str());;
   }
 }  
 
 void GUISoDa::Listener::setSpectrumAvgWindow(int window)
 {
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::SPEC_AVG_WINDOW, window))) {
-    perror("What happened here?");
+    perror((boost::format("Failed to send SET command in function %s\n") % __PRETTY_FUNCTION__).str().c_str());;
   }
 }
 
 void GUISoDa::Listener::setCWSpeed(int speed)
 {
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_CW_SPEED, speed))) {
-    perror("What happened here?");
+    perror((boost::format("Failed to send SET command in function %s\n") % __PRETTY_FUNCTION__).str().c_str());;
   }
 }
 
 void GUISoDa::Listener::setSidetoneVolume(int vol)
 {
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_AF_SIDETONE_GAIN, (double) vol))) {
-    perror("What happened here?");
+    perror((boost::format("Failed to send SET command in function %s\n") % __PRETTY_FUNCTION__).str().c_str());;
   }
 }
 
 void GUISoDa::Listener::setTXPower(int power)
 {
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_RF_GAIN, (double) power))) {
-    perror("What happened here?");
+    perror((boost::format("Failed to send SET command in function %s\n") % __PRETTY_FUNCTION__).str().c_str());;
+  }
+}
+
+void GUISoDa::Listener::setClockRef(int external)
+{
+  int clock_source = (external != Qt::Unchecked) ? 1 : 0;
+  if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::CLOCK_SOURCE, clock_source))) {
+    perror((boost::format("Failed to send SET command in function %s\n") % __PRETTY_FUNCTION__).str().c_str());;
   }
 }
 
@@ -359,14 +368,22 @@ void GUISoDa::Listener::setPTT(bool on)
 {
   int tx_state = on ? 1 : 0;
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_STATE, tx_state))) {
-    perror("What happened here?");
+    perror((boost::format("Failed to send SET command in function %s\n") % __PRETTY_FUNCTION__).str().c_str());;
+  }
+}
+
+void GUISoDa::Listener::setCarrier(bool on)
+{
+  int carrier_state = on ? 1 : 0;
+  if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_BEACON, carrier_state))) {
+    perror((boost::format("Failed to send SET command in function %s\n") % __PRETTY_FUNCTION__).str().c_str());;
   }
 }
 
 void GUISoDa::Listener::clearCWBuffer()
 {
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_CW_FLUSHTEXT))) {
-    perror("What happened here?");
+    perror((boost::format("Failed to send SET command in function %s\n") % __PRETTY_FUNCTION__).str().c_str());;
   }
 }
 
@@ -392,7 +409,7 @@ void GUISoDa::Listener::sendCW(const QString & txt)
 
     if((j >= SoDa::Command::getMaxStringLen()) || (i == txt.size())) {
       if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_CW_TEXT, cwbuf))) {
-	perror("What happened here?");
+	perror((boost::format("Failed to send SET command in function %s\n") % __PRETTY_FUNCTION__).str().c_str());;
       }
       j = 0; 
     }

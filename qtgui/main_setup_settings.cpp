@@ -49,6 +49,8 @@ void MainWindow::setupSettings()
   connect(ui->FromGrid_le, SIGNAL(textChanged(const QString &)),
 	  ui->FromGrid_lab, SLOT(setText(const QString &)));
 
+  connect(ui->externalRefClock_ck, SIGNAL(stateChanged(int)), 
+	  listener, SLOT(setClockRef(int)));
 
   connect(ui->openLog_btn, SIGNAL(clicked()),
 	  ui->LogView, SLOT(readLogReportDlg()));

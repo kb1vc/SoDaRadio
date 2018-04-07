@@ -129,7 +129,10 @@ void MainWindow::setupMidControls()
   connect(ui->CWBK_btn, &QPushButton::pressed,
 	  [=]() {
 	    sendCannedCW(" _bk ");
-	  });	  
+	  });
+  
+  connect(ui->Carrier_btn, SIGNAL(toggled(bool)), 
+	  listener, SLOT(setCarrier(bool)));
 }
 
 void MainWindow::sendCannedCW(const QString & txt) 

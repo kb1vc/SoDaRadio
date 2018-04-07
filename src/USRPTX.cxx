@@ -160,6 +160,7 @@ void SoDa::USRPTX::run()
     }
     else if(tx_enabled &&
 	    tx_bits &&
+	    !beacon_mode &&
 	    ((tx_modulation == SoDa::Command::CW_L) ||
 	     (tx_modulation == SoDa::Command::CW_U))) {
       cwenv = cw_env_stream->get(cw_subs);
@@ -187,7 +188,9 @@ void SoDa::USRPTX::run()
     }
     else if(tx_enabled &&
 	    tx_bits &&
-	    beacon_mode) {
+	    beacon_mode &&
+	    ((tx_modulation == SoDa::Command::CW_L) ||
+	     (tx_modulation == SoDa::Command::CW_U))) {
       // modulate a carrier with a constant envelope
       doCW(cw_buf, beacon_env, tx_buffer_size);
       // now send it to the USRP
