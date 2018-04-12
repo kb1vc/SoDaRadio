@@ -20,6 +20,7 @@ Interested in more detail?  Take a look at the [documentation here](docs/index.h
 
 Interested in how SoDaRadio got [here?](History.md) 
 
+
 ## Getting SoDaRadio
 
 You have two choices here.  
@@ -31,7 +32,7 @@ and the current and previous Ubuntu LTS releases.
 
 Ready to build-it-yourself?  Jump down to "Building from scratch."
 
-Alternatively, if you are running Ubuntu 16.04, Fedora 26, Fedora 25, or Fedora 24, you can
+Alternatively, if you are running Ubuntu 16.04, or Fedora 27 you can
 download binary kits that just "do the right thing."  They'll install all the 
 prerequisites, put the necessary files in the right place and are generally a 
 pain-reduced way of getting SoDaRadio running.  The only real downside to the binary
@@ -55,8 +56,8 @@ The next steps depend on which distribution you are using.
 
 #### Fedora prerequisites
 
-This process has been tested on straight-out-of-the-box Fedora 25 and Fedora 24
-releases.  It installs all the prerequisites.  (If you really need to use the 
+This process has been tested on a straight-out-of-the-box Fedora 27 release.
+It installs all the prerequisites.  (If you really need to use the 
 libuhd version that you've installed yourself for some other reason, skip the
 last installation step.)
 
@@ -139,35 +140,40 @@ the Ettus software, then SoDaRadio should not present any particular problems.
 
 #### Fedora
 
-The following works for installing on Fedora 26.  Fedora 25 and 24 are identical 
+The following works for installing on Fedora 27. Older kits for Fedora 26, 25, and 24
+are no longer supported. Version 5.3 fixes significant problems with T/R switching
+in older versions. 
 
 1. Download the appropriate rpm. The following links will take you to the repository 
 location for the kit. Go to that page and hit the download button.
-   * [Get SoDaRadio for Fedora 26 here](/packages/rpm/SoDaRadio-5.0.3-1.x86_64.Fedora-26.rpm)
-   * [Get SoDaRadio for Fedora 25 here](/packages/rpm/SoDaRadio-5.0.3-1.x86_64.Fedora-25.rpm)
-   * [Get SoDaRadio for Fedora 24 here](/packages/rpm/SoDaRadio-5.0.3-1.x86_64.Fedora-24.rpm)
-1. Install the kit using dnf (substitute the correct package name in the command below).
+   * [Get SoDaRadio for Fedora 27 here](/packages/rpm/SoDaRadio-5.3.0-1.x86_64.Fedora-27.rpm)
+   * [Get SoDaRadio for Fedora 26 here](/packages/rpm/SoDaRadio-5.3.0-1.x86_64.Fedora-26.rpm)
+   * [Get (obsolete version of) SoDaRadio for Fedora 25 here](/packages/rpm/SoDaRadio-5.0.3-1.x86_64.Fedora-25.rpm)
+   * [Get (obsolete version of) SoDaRadio for Fedora 24 here](/packages/rpm/SoDaRadio-5.0.3-1.x86_64.Fedora-24.rpm)
+2. Install the kit using dnf (substitute the correct package name in the command below).
 ~~~~
-sudo dnf install ./SoDaRadio-5.0.3-1.x86_64.Fedora-26.rpm
+sudo dnf install ./SoDaRadio-5.3.0-1.x86_64.Fedora-27.rpm
 ~~~~
 
+Version 5.3 corrects some very nasty bugs in the earlier release.  In particular
+T/R switching events could cause the ALSA audio output to lock up or stammer. This
+has since been fixed.  (See the git logs for version soda-5.3.0 )
 
 #### Ubuntu
 
 SoDaRadio builds and runs on Ubuntu 14.04, but the deb package for it does not work for some mysterious reason. 
 
-The kit for Ubuntu 16.04, however, appears to work just fine.  
+The kit for Ubuntu 16.04 and 17.10, however, appear to work just fine.  
 
 1. Download the deb file.  The following link will take you to the repository location
-for the kit.  Go to that page and hit the download button.  [Get SoDaRadio for Ubuntu 16.04 here](/packages/deb/SoDaRadio-5.1.5-1.x86_64.Ubuntu-16.04.deb)
+for the kit.  Go to that page and hit the download button.
+[Get SoDaRadio for Ubuntu 17.10 here](/packages/deb/SoDaRadio-5.3.0-1.x86_64.Ubuntu-17.10.deb)
+[Get SoDaRadio for Ubuntu 16.04 here](/packages/deb/SoDaRadio-5.3.0-1.x86_64.Ubuntu-16.04.deb)
 2. Install the kit using apt
 ~~~~
-sudo apt install ./SoDaRadio-5.1.5-1.x86_64.Ubuntu-16.04.deb
+sudo apt install ./SoDaRadio-5.3.0-1.x86_64.Ubuntu-17.10.deb
 ~~~~
 
-NEW AND IMPROVED!
-You can [get SoDaRadio for Ubuntu 17.10 here](/packages/deb/SoDaRadio-5.1.5-1.x86_64.Ubuntu-17.10.deb)
-There isn't much testing against this, as my VM is having trouble making a network connection. (sigh)
 Please report success/failure to the github issues discussion.
 
 ## Using SoDaRadio
@@ -207,4 +213,33 @@ of time working split.
 Poke buttons.  Try things.  Don't hit the "TX" button unless
 you have something connected and the necessary license to operate
 in that band. 
+
+## Version News
+
+Version 5.3.0 has a couple of new features:
+
+1. It is no longer horribly broken.  Previous revisions were subject to
+a race between restarting an ALSA audio output stream and stuffing the
+first samples into the stream.  For reasons that I can't fathom, none of
+the guidance that I found on ALSA for restarting or resetting a stream
+that had run dry would work.  So, v5.3.0 reworks the TR switching on the
+receiver to eliminate the race.  Now SoDa radio never stops the audio
+stream once it has been started.
+
+2. The "Carrier" toggle button now actually sends a dead carrier.
+This is handy for tuning and for other things. (See item 5.)
+
+3. There is now a "turn on the external 10MHz reference" button in the
+SETUP tab.  This allows the USRP to use an external 10MHz reference to
+drive the USRP oscillators.  I use a Trimble Thunderbolt that stays on
+all the time.  This is a huge improvement over the internal master
+oscillator.
+
+4. As an experiment, I've added a WSPR filter choice.  I don't think it
+is all that great, and it has some unintended side-lobes.  (Normally, I
+use the "PASS" filter for WSJT.)
+
+5. Recently, the Ebay Angels delivered a Tek 492 spectrum analyzer to the
+shack.  The Notes.txt file in the source blob has the results of some
+measurements of output from a UBX module.
 
