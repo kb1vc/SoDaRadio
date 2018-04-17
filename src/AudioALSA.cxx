@@ -163,8 +163,6 @@ namespace SoDa {
       checkStatus(sframes_ready, "recvBufferReady", false);
     }
 
-    debugMsg((boost::format("recvBufferReady len = %d sframs_ready = %d\n")
-	      % len % sframes_ready).str());
     return sframes_ready >= len; 
   }
 
@@ -176,7 +174,6 @@ namespace SoDa {
 
 
   bool AudioALSA::sendBufferReady_priv(unsigned int len)  {
-    debugMsg("sendBufferReady");
 
     snd_pcm_sframes_t sframes_ready;
     while(1) {
@@ -187,8 +184,6 @@ namespace SoDa {
 	// if pcm_avail returns -EPIPE we need to recover and restart the pipe... sigh.
 	int err; 
 	if((err = snd_pcm_recover(pcm_out, sframes_ready, 1)) < 0) {
-	  debugMsg((boost::format("sendBufferReady_priv snd_pcm_avail returns EPIPE, now  %d\n")
-		    % err).str());
 	  checkStatus(err, "sendBufferReady got EPIPE, tried recovery", false);
 
 	  if((err = snd_pcm_start(pcm_out)) < 0) {
@@ -199,8 +194,6 @@ namespace SoDa {
 	}
       }
       else {
-	debugMsg((boost::format("sendBufferReady_priv snd_pcm_avail returns %d\n")
-		  % sframes_ready).str());
 	checkStatus(sframes_ready, "sendBufferReady", false);
 	break;
       }
@@ -209,7 +202,6 @@ namespace SoDa {
   }
 
   int AudioALSA::send(void * buf, unsigned int len, bool when_ready) {
-    debugMsg("send");    
     int err;
     int olen = len;
     boost::mutex::scoped_lock mt_lock(alsa_lock);      
@@ -225,7 +217,6 @@ namespace SoDa {
       else if((err == -EAGAIN) || (err == 0)) {
 	cont_count++; 
 	if(cont_count >= 10) {
-	  debugMsg((boost::format("Got 10 EAGAIN responses to pcm_writei  retval = %d\n") % err).str()); 
 	  cont_count = 0; 
 	}
 	continue;
@@ -275,7 +266,6 @@ namespace SoDa {
 	}
       }
     }
-    debugMsg((boost::format("recv: returned %d loops %d\n") % olen % loopcount).str());
     return olen; 
   }
 
