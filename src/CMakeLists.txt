@@ -96,7 +96,9 @@ include_directories(SYSTEM ${Boost_INCLUDE_DIRS} ${Radio_INCLUDE_DIRS} ${ALSA_IN
 
 add_executable(SoDaServer ${SoDaServer_SRCS})
 
-target_link_libraries(SoDaServer rt ${Boost_LIBRARIES}  ${Radio_LIBRARIES} ${ALSA_LIBRARIES} ${FFTW3F_LIBRARIES})
+target_link_libraries(SoDaServer rt
+    Threads::Threads
+    ${Boost_LIBRARIES}  ${Radio_LIBRARIES} ${ALSA_LIBRARIES} ${FFTW3F_LIBRARIES})
 
 
 install(TARGETS SoDaServer DESTINATION bin)

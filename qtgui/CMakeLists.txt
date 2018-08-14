@@ -89,13 +89,17 @@ ADD_LIBRARY(SoDaRadio_Lib STATIC
 TARGET_LINK_LIBRARIES(SoDaRadio_Lib m rt ${Boost_LIBRARIES} 
   Qt5::Widgets Qt5::PrintSupport
   Qt5::Core Qt5::Gui Qt5::Network Qt5::Multimedia
+  Threads::Threads
   ${QWT_LIBRARIES} )
 
 ADD_EXECUTABLE(SoDaRadio ${SoDaRadio_SRCS})
 
 TARGET_COMPILE_OPTIONS(SoDaRadio BEFORE PUBLIC -Wno-deprecated-declarations)
 
-TARGET_LINK_LIBRARIES(SoDaRadio SoDaRadio_Lib m rt ${Boost_LIBRARIES}  )
+TARGET_LINK_LIBRARIES(SoDaRadio SoDaRadio_Lib
+    m rt
+    Threads::Threads
+    ${Boost_LIBRARIES}  )
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
 

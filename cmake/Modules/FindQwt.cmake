@@ -80,7 +80,7 @@ endif ()
 
 
 find_library ( QWT_LIBRARY
-  NAMES qwt-qt5
+  NAMES qwt-qt5 qwt
   HINTS ${QT_LIBRARY_DIR}
 )
 
@@ -106,7 +106,7 @@ endif ()
 
 
 mark_as_advanced (
-  QWT_LIBRARY 
+  QWT_LIBRARY
   QWT_LIBRARIES
   QWT_INCLUDE_DIR
   QWT_INCLUDE_DIRS

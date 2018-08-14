@@ -30,6 +30,7 @@
 #include <string>
 #include <sstream>
 #include <map>
+#include <iostream>
 
 int SoDa::Command::command_sequence_number = 0;
 bool SoDa::Command::table_needs_init = true; 
