@@ -320,7 +320,7 @@ namespace SoDa {
      * @return true if there is sufficient space. 
      */
     bool sendBufferReady_priv(unsigned int len) ALSA_DEF ;
-    
+
 #endif // HAVE_LIBASOUND
 
   private:

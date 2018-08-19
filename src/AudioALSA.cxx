@@ -109,33 +109,36 @@ namespace SoDa {
     snd_pcm_hw_params_t * hw_paramsp;
     boost::mutex::scoped_lock mt_lock(alsa_lock);
     
-    snd_pcm_hw_params_alloca(&hw_paramsp);
+    checkStatus(snd_pcm_hw_params_malloc(&hw_paramsp), 
+		"ALSA failed to allocate hardware params block", 
+		true); 
+
 
     hw_params_ptr = hw_paramsp;
 
-    checkStatus(snd_pcm_hw_params_any (dev, hw_paramsp), "setupParams init parm block", true);
+    checkStatus(snd_pcm_hw_params_any (dev, hw_paramsp), "ALSA failed in setupParams init parm block", true);
     
     checkStatus(snd_pcm_hw_params_set_access (dev, hw_paramsp, SND_PCM_ACCESS_RW_INTERLEAVED),
-		"setupParams set access", true);
+		"ALSA failed in setupParams set access", true);
 
     checkStatus(snd_pcm_hw_params_set_format (dev, hw_paramsp, translateFormat(format)),
-		"setupParams set format", true);
+		"ALSA failed in setupParams set format", true);
 	
     checkStatus(snd_pcm_hw_params_set_rate_near (dev, hw_paramsp, &sample_rate, 0), 
-		"setupParams set sample rate", true);
+		"ALSA failed in setupParams set sample rate", true);
 	
     checkStatus(snd_pcm_hw_params_set_channels (dev, hw_paramsp, 1), 
 		"setupParams set number of channels", true);
 
     checkStatus(snd_pcm_hw_params_set_buffer_size (dev, hw_paramsp,
 						   sample_count_hint * datatype_size), 
-		"setupParams set buffer size", true);
+		"ALSA failed in setupParams set buffer size", true);
 
     checkStatus(snd_pcm_hw_params (dev, hw_paramsp), 
-		"setupParams set parameter block", true);
+		"ALSA failed in setupParams set parameter block", true);
 	
     checkStatus(snd_pcm_prepare (dev), 
-		"setupParams prepare audio interface", true);
+		"ALSA failed in setupParams prepare audio interface", true);
   }
 
   bool AudioALSA::recvBufferReady(unsigned int len) {
@@ -153,6 +156,7 @@ namespace SoDa {
     else if(sframes_ready == -EPIPE) {
       // we got an under-run... just ignore it.
       int err; 
+      std::cerr << "A";  // but put a goat dropping on the console
       if((err = snd_pcm_recover(pcm_in, sframes_ready, 1)) < 0) {
 	checkStatus(err, "recvBufferReady got EPIPE, tried recovery", false);
       }
