@@ -31,6 +31,8 @@
 */
 
 #include "SoDaBase.hxx"
+#include "BufferPool.hxx"
+
 namespace SoDa {
   /**
    * @brief Generic Audio Interface Class
@@ -43,43 +45,38 @@ namespace SoDa {
    */
   class AudioIfc : public SoDaBase {
   public:
-    enum DataFormat { FLOAT, DFLOAT, INT32, INT16, INT8 };
-
     /*
      * constructor
      * @param sample_rate in Hz -- 48000 is a good choice
-     * @param fmt -- the format of the data (FLOAT, DFLOAT, INT32, INT16, INT8)
      * @param _sample_count_hint -- the size of the buffers passed to
      *                              and from the audio device (in samples)
      */
     AudioIfc(unsigned int _sample_rate,
-	     DataFormat _fmt,
 	     unsigned int _sample_count_hint,
 	     const std::string & name = "AudioIfc") : SoDaBase(name) {
+      rx_buffer_pool = NULL;
+      tx_buffer_pool = NULL;      
       sample_rate = _sample_rate;
       sample_count_hint = _sample_count_hint;
-      format = _fmt;
-      switch (format) {
-      case FLOAT: datatype_size = sizeof(float);
-	break; 
-      case DFLOAT: datatype_size = sizeof(double);
-	break; 
-      case INT32: datatype_size = sizeof(int);
-	break; 
-      case INT16: datatype_size = sizeof(short);
-	break; 
-      case INT8: datatype_size = sizeof(char);
-	break; 
-      }
+      datatype_size = sizeof(float);
     }
 
+    void setRXBufferPool(BufferPool<float> * bp) {
+      rx_buffer_pool = bp; 
+    }
+
+    void setTXBufferPool(BufferPool<float> * bp) {
+      tx_buffer_pool = bp; 
+    }
+    
     /**
      * send -- send a buffer to the audio output
      * @param buf buffer of type described by the DataFormat selected at init
      * @param len number of elements in the buffer to send
      * @param when_ready if true, test with sendBufferReady and return 0 if not ready
      * otherwise perform the send regardless.
-     * @return number of elements transferred to the audio output
+     * @return number of elements transferred to the audio output, -1 if we got 
+     * an underflow. 
      */
     virtual int send(void * buf, unsigned int len, bool when_ready = false) = 0; 
 
@@ -170,13 +167,15 @@ namespace SoDa {
 
   protected:
     unsigned int sample_rate;
-    DataFormat format;
     unsigned int sample_count_hint; 
 
     float in_gain;
     float out_gain; 
 
     int datatype_size; 
+
+    BufferPool<float> * rx_buffer_pool;
+    BufferPool<float> * tx_buffer_pool;     
   };
 }
 

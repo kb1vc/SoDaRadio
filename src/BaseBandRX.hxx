@@ -37,6 +37,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "TDResamplers625x48.hxx"
 #include "AudioIfc.hxx"
 #include "MedianFilter.hxx"
+#include "BufferPool.hxx"
 
 #include <queue>
 #include <boost/thread.hpp>
@@ -200,8 +201,9 @@ namespace SoDa {
     /**
      * @brief put an empty (zero signal) audio buffer on the pending for output list
      *
+     * @param count number of buffers to pend onto the list.
      */ 
-    void pendNullBuffer();
+    void pendNullBuffer(int count = 1);
     
     /**
      * @brief return the next queued audio buffer to pass to the audio output device
@@ -213,19 +215,6 @@ namespace SoDa {
      * @brief empty the queue of pending audio buffers, we're going into TX mode.
      */
     void flushAudioBuffers();
-    /**
-     * @brief add an audio buffer to the free list, we've dispatched it.
-     *
-     * @param b pointer to audio buffer. 
-     */
-    void freeAudioBuffer(float * b);
-    /**
-     * @brief remove a buffer from the free list, or allocate
-     * one if the free list is empty.
-     *
-     * @return a pointer to a free audio buffer
-     */
-    float * getFreeAudioBuffer();
 
     /**
      * @brief return number audio buffers available
@@ -238,6 +227,8 @@ namespace SoDa {
     bool in_fallback;  ///< when true, the audio server has gotten ahead...
     unsigned int catchup_rand_mask; ///< a mask to use for fast selection of a random index into an audio buffer. 
 
+    BufferPool<float> * bpool;
+    
     std::queue<float *> free_buffers; ///< a pool of free audio buffers
     std::queue<float *> ready_buffers; ///< a list of audio buffers ready to send to the output
 

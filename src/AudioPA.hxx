@@ -33,12 +33,7 @@
 #include "AudioIfc.hxx"
 
 #include <boost/format.hpp>
-#if HAVE_LIBPORTAUDIO
-#  include <portaudio.h>
-#  define PORTAUDIO_DEF
-#else 
-#  define PORTAUDIO_DEF { throw SoDa::SoDaException("PortAudio Library is not enabled in this build version."); }
-#endif
+#include <portaudio.h>
 #include <iostream>
 #include <stdexcept>
 
@@ -62,26 +57,30 @@ namespace SoDa {
     /**
      * constructor
      * @param _sample_rate in Hz -- 48000 is a good choice
-     * @param _fmt -- the format of the data (FLOAT, DFLOAT, INT32, INT16, INT8)
      * @param _sample_count_hint -- the size of the buffers passed to and from the audio device (in samples)
+     * @param _port_name
      */
-    AudioPA(unsigned int _sample_rate, AudioIfc::DataFormat _fmt, unsigned int _sample_count_hint = 1024) ;
+    AudioPA(unsigned int _sample_rate, 
+	    unsigned int _sample_count_hint = 1024,
+	    const std::string  & _port_name = std::string("default"));
 
     ~AudioPA() { }
     /**
      * sendBuf -- send a buffer to the audio output
      * @param buf buffer of type described by the DataFormat selected at init
      * @param len number of elements in the buffer to send
+     * @param when_ready if true, test with sendBufferReady and return 0 if not ready
+     * otherwise perform the send regardless.
      * @return number of elements transferred to the audio output
      */
-    int send(void * buf, unsigned int len) { (void) buf; (void) len; PORTAUDIO_DEF }
+    int send(void * buf, unsigned int len, bool when_ready = false);
 
     /**
      * sendBufferReady -- is there enough space in the audio device send buffer for a call from send?
      * @param len the number of samples that we wish to send
      * @return true if there is sufficient space. 
      */
-    bool sendBufferReady(unsigned int len) { (void) len; PORTAUDIO_DEF } 
+    bool sendBufferReady(unsigned int len);
 
     /**
      * recvBuf -- get a buffer of data from the audio input
@@ -90,33 +89,29 @@ namespace SoDa {
      * @param block block on this call if data is not ready (assumed true).
      * @return number of elements transferred from the audio input
      */
-    int recv(void * buf, unsigned int len, bool block = true) { (void) buf; (void) len; (void) block; PORTAUDIO_DEF }
+    int recv(void * buf, unsigned int len, bool block = true);
 
     /**
      * recvBufferReady -- is there enough space in the audio device recv buffer for a call from recv?
      * @param len the number of samples that we wish to get
      * @return true if there is sufficient space. 
      */
-    bool recvBufferReady(unsigned int len) { (void) len; PORTAUDIO_DEF }
+    bool recvBufferReady(unsigned int len);
 
     /**
      * stop the output stream so that we don't encounter a buffer underflow
      * while the reciever is muted.
      */
     void sleepOut() {
-#if HAVE_LIBPORTAUDIO
       pa_stat = Pa_StopStream(pa_outstream);
       if(pa_stat != paStreamIsStopped) checkStatus(pa_stat, "sleepOut");      
-#endif
     }
     /**
      * start the output stream
      */
     void wakeOut() {
-#if HAVE_LIBPORTAUDIO
       pa_stat = Pa_StartStream(pa_outstream);
       if(pa_stat != paStreamIsNotStopped) checkStatus(pa_stat, "wakeOut");
-#endif
     }
         
     /**
@@ -124,43 +119,28 @@ namespace SoDa {
      * while the transmitter is inactive.
      */
     void sleepIn() {
-#if HAVE_LIBPORTAUDIO
       pa_stat = Pa_StopStream(pa_instream);
       if(pa_stat != paStreamIsStopped) checkStatus(pa_stat, "sleepIn");      
-#endif
     }
     /**
      * start the input stream
      */
     void wakeIn() {
-#if HAVE_LIBPORTAUDIO
       pa_stat = Pa_StartStream(pa_instream);
       if(pa_stat != paStreamIsNotStopped) checkStatus(pa_stat, "wakeIn");
-#endif
     }
 
   protected:
-#if HAVE_LIBPORTAUDIO    
     PaStream * pa_instream; ///< The capture (input) handle. 
     PaStream * pa_outstream; ///< The playback (output) handle. 
     PaError pa_stat; 
 
-    
-    /**
-     * PA has predefined data type codes corresponding to float/ints of various sizes.
-     * @param fmt the AudioIfc::DataFormat spec (FLOAT, DFLOAT, INT32, INT16, INT8)
-     * @return a format specifier from the PA PCM format list.
-     */
-    PaSampleFormat translateFormat(AudioIfc::DataFormat fmt) PORTAUDIO_DEF ;
-#endif
-    
     /**
      * checkStatus -- test a return value and do the right thing
      * @param v the value returned from the call to the PortAudio widget
      * @param exp a string explaining why we were calling the routine in the first place
      * @param fatal if true, we signal an exception, otherwise, just print to the console.
      */
-#if HAVE_LIBPORTAUDIO 
     void checkStatus(PaError v, const std::string & exp, bool fatal = false) {
 
       if (v != paNoError) {
@@ -168,7 +148,6 @@ namespace SoDa {
 	else std::cerr << boost::format("%s: %s %s\n") % getObjName() % exp % Pa_GetErrorText(v);
       }
     }
-#endif
   };
 }
 

@@ -30,14 +30,20 @@
 #include <boost/format.hpp>
 
 namespace SoDa {
-#if HAVE_LIBPORTAUDIO
-  AudioPA::AudioPA(unsigned int _sample_rate, DataFormat _fmt, unsigned int _sample_count_hint) :
-    AudioIfc(_sample_rate, _fmt, _sample_count_hint, "AudioPA Port Audio Interface") {
+  void dummyEatPAErrors(const char * msg) {
+    return; 
+  }
+
+  AudioPA::AudioPA(unsigned int _sample_rate, 
+		   unsigned int _sample_count_hint,
+		   const std::string & _port_name) :
+    AudioIfc(_sample_rate,_sample_count_hint, "AudioPA Port Audio Interface") {
+    
     checkStatus(pa_stat = Pa_Initialize(), "Init");
 
-    checkStatus(Pa_OpenDefaultStream(&pa_instream, 1, 0, translateFormat(_fmt), sample_rate, sample_count_hint, NULL, NULL), "OpenIn");
+    checkStatus(Pa_OpenDefaultStream(&pa_instream, 1, 0, paFloat32, sample_rate, sample_count_hint, NULL, NULL), "OpenIn");
 
-    checkStatus(Pa_OpenDefaultStream(&pa_outstream, 0, 1, translateFormat(_fmt), sample_rate, sample_count_hint, NULL, NULL), "OpenOut");
+    checkStatus(Pa_OpenDefaultStream(&pa_outstream, 0, 1, paFloat32, sample_rate, sample_count_hint, NULL, NULL), "OpenOut");
     
     
   }
@@ -56,19 +62,32 @@ namespace SoDa {
   }
 
   
-  int AudioPA::send(void * buf, unsigned int len) {
+  int AudioPA::send(void * buf, unsigned int len, bool when_ready) {
     int err;
     int olen = len;
 
-    if(!Pa_IsStreamActive(pa_outstream)) {
-      checkStatus(Pa_StartStream(pa_outstream), "sendWake");
-    }
-    pa_stat = Pa_WriteStream(pa_outstream, buf, len);
+    for(int i = 0; i < 100; i++) {
+      if(when_ready && !sendBufferReady(len)) return 0;
+    
+      if(!Pa_IsStreamActive(pa_outstream)) {
+	checkStatus(Pa_StartStream(pa_outstream), "sendWake", i > 98);
+      }
 
-    if(pa_stat != 0) {
-      std::cerr << boost::format("write to audio interface failed (%s)\n") % Pa_GetErrorText(pa_stat);
+      pa_stat = Pa_WriteStream(pa_outstream, buf, len);
+
+      if(pa_stat != 0) {
+	std::cerr << boost::format("write to audio interface failed (%s)\n") % Pa_GetErrorText(pa_stat);
+	checkStatus(Pa_StopStream(pa_outstream), "AudioPA::send -- failed attempt to stop after write failure", i > 98);
+
+	checkStatus(Pa_StartStream(pa_outstream), "AudioPA::send -- failed restart after write failure", i > 98);
+	return -1; 
+      }
+      else {
+	return olen; 
+      }
     }
-    return olen; 
+
+    return 0; 
   }
   
   int AudioPA::recv(void * buf, unsigned int len, bool block) {
@@ -85,28 +104,5 @@ namespace SoDa {
     return olen; 
   }
 
-  
-  PaSampleFormat AudioPA::translateFormat(AudioIfc::DataFormat fmt) {
-    switch(fmt) {
-    case FLOAT: return paFloat32;
-      break; 
-    case DFLOAT:
-      throw (new SoDaException("Unsupported data type DFLOAT for PortAudio driver.", this));
-      break;
-    case INT32: return paInt32;
-      break; 
-    case INT16: return paInt16;
-      break; 
-    case INT8: return paInt8;
-      break; 
-    }
-    return paInt16;
-  }
-
-#else
-  AudioPA::AudioPA(unsigned int _sample_rate, DataFormat _fmt, unsigned int _sample_count_hint) :
-    AudioIfc(_sample_rate, _fmt, _sample_count_hint, "AudioPA Port Audio Interface") {
-    throw SoDaException("PortAudio Library is not enabled in this build version.");
-  }
-#endif // HAVE_LIBPORTAUDIO
 }
+

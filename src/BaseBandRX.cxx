@@ -68,15 +68,22 @@ SoDa::BaseBandRX::BaseBandRX(Params * params,
   af_filter_selection = SoDa::Command::BW_6000;
   cur_audio_filter = filter_map[af_filter_selection];
 
+  
   // initial af gain
   af_gain = 1.0;
   af_sidetone_gain = 1.0;
   cur_af_gain = &af_gain; 
   unsigned int i, j;
+
+  // allocate the audio buffer pool
+  bpool = new BufferPool<float>(audio_buffer_size);
+  // tell the audio interface about it.
+  audio_ifc->setRXBufferPool(bpool); 
+  
   // prime the audio stream so that we don't fall behind
   // right away.
   for(j = 0; j < 6; j++) {
-    sidetone_silence = getFreeAudioBuffer();
+    sidetone_silence = bpool->getBuffer();
     for(i = 0; i < audio_buffer_size; i++) {
       sidetone_silence[i] = 0.0; 
     }
@@ -114,6 +121,7 @@ SoDa::BaseBandRX::BaseBandRX(Params * params,
   // debug help
   dbg_ctr = 0;
 
+
   audio_rx_stream_enabled = true;
   debugMsg("audio_rx_stream_enabled = true\n");  
   audio_rx_stream_needs_start = true;
@@ -125,15 +133,14 @@ SoDa::BaseBandRX::BaseBandRX(Params * params,
 
   // pend a null buffer or two just to keep the out stream from 
   // under-flowing
-  pendNullBuffer();
-  pendNullBuffer();
+  pendNullBuffer(2);
 }
 
 void SoDa::BaseBandRX::demodulateWBFM(SoDaBuf * rxbuf, SoDa::Command::ModulationType mod, float af_gain)
 {
   (void) mod;
   // now allocate a new audio buffer from the buffer ring
-  float * audio_buffer = getFreeAudioBuffer(); 
+  float * audio_buffer = bpool->getBuffer();
   float demod_out[rf_buffer_size];
   unsigned int i;
 
@@ -170,7 +177,7 @@ void SoDa::BaseBandRX::demodulateNBFM(std::complex<float> * dbuf, SoDa::Command:
 {
   (void) mod;
   // now allocate a new audio buffer from the buffer ring
-  float * audio_buffer = getFreeAudioBuffer(); 
+  float * audio_buffer = bpool->getBuffer();
   std::complex<float> demod_out[audio_buffer_size];
 
   // Interestingly, arctan based demodulation (see Lyons p 486 for instance)
@@ -210,7 +217,7 @@ void SoDa::BaseBandRX::demodulateNBFM(std::complex<float> * dbuf, SoDa::Command:
 void SoDa::BaseBandRX::demodulateSSB(std::complex<float> * dbuf, SoDa::Command::ModulationType mod)
 {
   // now allocate a new audio buffer from the buffer ring
-  float * audio_buffer = getFreeAudioBuffer(); 
+  float * audio_buffer = bpool->getBuffer();
 
   // shift the Q channel by pi/2
   // note that this hilbert filter transforms the Q channel and delays the I channel
@@ -229,7 +236,7 @@ void SoDa::BaseBandRX::demodulateSSB(std::complex<float> * dbuf, SoDa::Command::
 void SoDa::BaseBandRX::demodulateAM(std::complex<float> * dbuf)
 {
   // now allocate a new audio buffer from the buffer ring
-  float * audio_buffer = getFreeAudioBuffer(); 
+  float * audio_buffer = bpool->getBuffer();
 
   unsigned int i;
   float maxval = 0.0;
@@ -458,26 +465,34 @@ void SoDa::BaseBandRX::run()
 
     // Send audio buffers to the audio output
     if(readyAudioBuffers()) {
+      if(readyAudioBuffers() < 2) {
+	// this is an emergency -- pend a few empty buffers
+	pendNullBuffer(3);
+      }
       if(!in_catchup && (readyAudioBuffers() > 8)) {
-	// If we've fallen 8 buffers behind, (about 400mS)
-	// then go into catchup mode, where we'll gain about 0.4 mS
-	// on each 2304 sample frame. 
+	// If the audio output has fallen 8 buffers behind, (about 400mS)
+	// then go into catchup mode (shorten each outbound buffer), 
+	// where we'll gain about 0.4 mS
+	// on each 2304 sample frame.
+	std::cerr << "BaseBandRX: enter catchup mode\n";		
 	in_catchup = true;
 	in_fallback = false; 
 	catchup_count++; 
       }
-      if(in_catchup && (readyAudioBuffers() < 2)) { /// 6)) {
+      if(in_catchup && (readyAudioBuffers() < 6)) { /// 6)) {
+	std::cerr << "BaseBandRX: exit catchup mode\n";
 	in_catchup = false; 
       }
-#if 0
       if(!in_fallback && (readyAudioBuffers() < 3)) {
+	std::cerr << "BaseBandRX: enter fallback mode\n";	
 	in_fallback = true; 
 	in_catchup = false; 
       }
       if(in_fallback && (readyAudioBuffers() > 5)) {
+	std::cerr << "BaseBandRX: exit fallback mode\n";	
 	in_fallback = false;
       }
-#endif
+
       int rbsize = readyAudioBuffers(); 
       if(rbsize > 1) {
 
@@ -518,14 +533,14 @@ void SoDa::BaseBandRX::run()
 	    }
 
 	    // is this a problem?  Is it possible to free the buffer too soon? 
-	    freeAudioBuffer(outb);
+	    bpool->freeBuffer(outb);
 
 	  }
 	  else {
 	    null_audio_buf_count++; 
 	    if(rbsize > 10) {
 	      // what is the state of the audio ifc? 
-	      debugMsg(boost::format("ALSA State [%s] rbsize = %d\n") % audio_ifc->currentPlaybackState() % rbsize);
+	      debugMsg(boost::format("Audio State [%s] rbsize = %d\n") % audio_ifc->currentPlaybackState() % rbsize);
 	    }
 	    break; 
 	  }
@@ -567,23 +582,7 @@ void SoDa::BaseBandRX::run()
 }
 
 
-void SoDa::BaseBandRX::freeAudioBuffer(float * b) {
-  boost::mutex::scoped_lock lock(free_lock);
-  free_buffers.push(b); 
-}
 
-float * SoDa::BaseBandRX::getFreeAudioBuffer() {
-  float * ret; 
-  boost::mutex::scoped_lock lock(free_lock);
-  if(free_buffers.empty()) {
-    ret = new float[audio_buffer_size]; 
-  }
-  else {
-    ret = free_buffers.front();
-    free_buffers.pop();
-  }
-  return ret; 
-}
 
 int SoDa::BaseBandRX::readyAudioBuffers() 
 {
@@ -591,12 +590,14 @@ int SoDa::BaseBandRX::readyAudioBuffers()
   return ready_buffers.size();
 }
 
-void SoDa::BaseBandRX::pendNullBuffer() {
-  float * nullbuf = getFreeAudioBuffer(); 
-  for(int i = 0; i < audio_buffer_size; i++) {
-    nullbuf[i] = 0.0; 
+void SoDa::BaseBandRX::pendNullBuffer(int count) {
+  for(int b = 0; b < count; b++) {
+    float * nullbuf = bpool->getBuffer();
+    for(int i = 0; i < audio_buffer_size; i++) {
+      nullbuf[i] = 0.0; 
+    }
+    pendAudioBuffer(nullbuf);
   }
-  pendAudioBuffer(nullbuf);
 }
 
 void SoDa::BaseBandRX::pendAudioBuffer(float * b)
@@ -631,7 +632,7 @@ void SoDa::BaseBandRX::flushAudioBuffers()
   while(!ready_buffers.empty()) {
     float * v = ready_buffers.front(); 
     ready_buffers.pop();
-    freeAudioBuffer(v);
+    bpool->freeBuffer(v);
   }
   return;
 }

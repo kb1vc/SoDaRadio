@@ -43,10 +43,9 @@
 namespace SoDa {
 #if HAVE_LIBASOUND
   AudioALSA::AudioALSA(unsigned int _sample_rate,
-		       DataFormat _fmt,
 		       unsigned int _sample_count_hint, 
 		       std::string audio_port_name) :
-    AudioIfc(_sample_rate, _fmt, _sample_count_hint, "AudioALSA ALSA Interface") {
+    AudioIfc(_sample_rate, _sample_count_hint, "AudioALSA ALSA Interface") {
 
     // code is largely borrowed from equalarea.com/paul/alsa-audio.html
     setupPlayback(audio_port_name);
@@ -121,7 +120,7 @@ namespace SoDa {
     checkStatus(snd_pcm_hw_params_set_access (dev, hw_paramsp, SND_PCM_ACCESS_RW_INTERLEAVED),
 		"ALSA failed in setupParams set access", true);
 
-    checkStatus(snd_pcm_hw_params_set_format (dev, hw_paramsp, translateFormat(format)),
+    checkStatus(snd_pcm_hw_params_set_format (dev, hw_paramsp, SND_PCM_FORMAT_FLOAT),
 		"ALSA failed in setupParams set format", true);
 	
     checkStatus(snd_pcm_hw_params_set_rate_near (dev, hw_paramsp, &sample_rate, 0), 
@@ -272,29 +271,11 @@ namespace SoDa {
     }
     return olen; 
   }
-
-  
-  snd_pcm_format_t AudioALSA::translateFormat(AudioIfc::DataFormat fmt) {
-    switch(fmt) {
-    case FLOAT: return SND_PCM_FORMAT_FLOAT;
-      break; 
-    case DFLOAT: return SND_PCM_FORMAT_FLOAT64;
-      break;
-    case INT32: return SND_PCM_FORMAT_S32;
-      break; 
-    case INT16: return SND_PCM_FORMAT_S16;
-      break; 
-    case INT8: return SND_PCM_FORMAT_S8;
-      break; 
-    }
-    return SND_PCM_FORMAT_S16_LE; 
-  }
 #else 
   AudioALSA::AudioALSA(unsigned int _sample_rate,
-		       DataFormat _fmt,
 		       unsigned int _sample_count_hint,
 		       std::string audio_port_name) :
-    AudioIfc(_sample_rate, _fmt, _sample_count_hint, "AudioALSA ALSA Interface")
+    AudioIfc(_sample_rate, _sample_count_hint, "AudioALSA ALSA Interface")
   {
     std::cerr << "ALSA Sound Library is not enabled in this build version.";  
     throw SoDa::SoDaException("ALSA Sound Library is not enabled in this build version.");  

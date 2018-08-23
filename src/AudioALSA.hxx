@@ -66,13 +66,11 @@ namespace SoDa {
     /**
      * constructor
      * @param _sample_rate in Hz  48000 is a good choice
-     * @param _fmt  the format of the data (FLOAT, DFLOAT, INT32, INT16, INT8)
      * @param _sample_count_hint  the size of the buffers passed to and from
      *                              the audio device (in samples)
      * @param audio_port_name  which ALSA device are we connecting to?
      */
     AudioALSA(unsigned int _sample_rate,
-	      AudioIfc::DataFormat _fmt,
 	      unsigned int _sample_count_hint = 1024,
 	      std::string audio_port_name = std::string("default"));
 
@@ -280,13 +278,6 @@ namespace SoDa {
      */
     void setupParams(snd_pcm_t * dev, snd_pcm_hw_params_t * & hw_params);
     
-    /**
-     * ALSA has predefined data type codes corresponding to float/ints of various sizes.
-     * @param fmt the AudioIfc::DataFormat spec (FLOAT, DFLOAT, INT32, INT16, INT8)
-     * @return a format specifier from the ALSA PCM format list.
-     */
-    snd_pcm_format_t translateFormat(AudioIfc::DataFormat fmt);
-
     /**
      * checkStatus check to see if the return status from an alsa call was OK
      * @param err -- the error number
