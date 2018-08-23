@@ -54,39 +54,34 @@ namespace SoDa {
     AudioIfc(unsigned int _sample_rate,
 	     unsigned int _sample_count_hint,
 	     const std::string & name = "AudioIfc") : SoDaBase(name) {
-      rx_buffer_pool = NULL;
-      tx_buffer_pool = NULL;      
       sample_rate = _sample_rate;
       sample_count_hint = _sample_count_hint;
       datatype_size = sizeof(float);
     }
 
-    void setRXBufferPool(BufferPool<float> * bp) {
-      rx_buffer_pool = bp; 
-    }
 
-    void setTXBufferPool(BufferPool<float> * bp) {
-      tx_buffer_pool = bp; 
-    }
-    
+    /**
+     * @brief buffer allocator. 
+     * @param audio_buffer_size number of elements in the audio buffer (duh.)
+     * @return a buffer
+     */
+    float * getBuffer(unsigned int audio_buffer_size) = 0;
+
+    /** 
+     * @brief flush outstanding RX buffers (we're about to switch to TX...)
+     *
+     */
+    void flushRXBuffers() = 0; 
+
     /**
      * send -- send a buffer to the audio output
      * @param buf buffer of type described by the DataFormat selected at init
      * @param len number of elements in the buffer to send
-     * @param when_ready if true, test with sendBufferReady and return 0 if not ready
-     * otherwise perform the send regardless.
      * @return number of elements transferred to the audio output, -1 if we got 
      * an underflow. 
      */
-    virtual int send(void * buf, unsigned int len, bool when_ready = false) = 0; 
+    virtual int send(void * buf, unsigned int len) = 0; 
 
-    /**
-     * sendBufferReady -- is there enough space in the audio device
-     *                    send buffer for a call from send?
-     * @param len the number of samples that we wish to send
-     * @return true if there is sufficient space. 
-     */
-    virtual bool sendBufferReady(unsigned int len) = 0; 
 
 
     /**
@@ -161,9 +156,6 @@ namespace SoDa {
      */
     virtual void wakeIn() = 0;
         
-
-    virtual std::string currentPlaybackState() { return std::string("UNKNOWN"); }
-    virtual std::string currentCaptureState() { return std::string("UNKNOWN"); }    
 
   protected:
     unsigned int sample_rate;

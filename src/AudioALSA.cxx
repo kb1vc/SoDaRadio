@@ -28,9 +28,7 @@
 
 #include "Debug.hxx"
 #include "AudioALSA.hxx"
-#if HAVE_ASOUNDLIB
 #include <alsa/asoundlib.h>
-#endif
 
 #include <boost/format.hpp>
 
@@ -41,7 +39,6 @@
 #define ALSA_USE_SIMPLE_SETUP
 
 namespace SoDa {
-#if HAVE_LIBASOUND
   AudioALSA::AudioALSA(unsigned int _sample_rate,
 		       unsigned int _sample_count_hint, 
 		       std::string audio_port_name) :
@@ -60,12 +57,11 @@ namespace SoDa {
     char pcm_name[] =  "default"; 
     
     // const char *pcm_name = audio_port_name.c_str();
-    if(snd_pcm_open(&pcm_out, pcm_name, SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK) < 0) {
-      std::cerr << boost::format("can't open Alsa PCM device [%s] for output ... Crap.\n") % pcm_name;
+    if(snd_pcm_open(&pcm_out, pcm_name, SND_PCM_STREAM_PLAYBACK, 0) < 0) {
+      std::cerr << boost::format("can't open Alsa PCM device [%s] for output ...\n") % pcm_name;
       exit(-1); 
     }
 
-#ifdef ALSA_USE_SIMPLE_SETUP    
     checkStatus(snd_pcm_set_params(pcm_out,
 				   SND_PCM_FORMAT_FLOAT, 
 				   SND_PCM_ACCESS_RW_INTERLEAVED, 
@@ -74,9 +70,19 @@ namespace SoDa {
 				   1, 
 				   500000), // 100000),
 		"Failed to do simple set params for output.", true); 
-#else   
-    setupParams(pcm_out, hw_out_params);
-#endif
+
+    // we need to setup the async callback 
+    // hints on this are from https://alsa.opensrc.org/Asynchronous_Playback_(Howto)
+    snd_pcm_sw_params_t * sw_params; 
+    snd_pcm_sw_params_malloc(&sw_params); 
+    snd_pcm_sw_params_current(pcm_out, sw_params); 
+    snd_pcm_sw_params_set_start_threshold(pcm_out, sw_params, sample_rate >> 4); // start when we've got about 1/16 of a second. 
+    snd_pcm_sw_params_set_avail_min(pcm_out, sw_params, sample_count_hint); // the period size is going to be "sample_count_hint"
+    snd_pcm_sw_params(pcm_out, sw_params); 
+    snd_pcm_sw_params_free(sw_params);
+
+    snd_async_add_pcm_handler(&pcm_send_callback, pcm_out, AudioALSA::audioOutCallback, this);
+    snd_pcm_start(pcm_out);
   }
 
   void AudioALSA::setupCapture(std::string audio_port_name)
@@ -89,7 +95,6 @@ namespace SoDa {
       exit(-1); 
     }
 
-#ifdef ALSA_USE_SIMPLE_SETUP
     checkStatus(snd_pcm_set_params(pcm_in,
 				   SND_PCM_FORMAT_FLOAT, 
 				   SND_PCM_ACCESS_RW_INTERLEAVED, 
@@ -98,47 +103,8 @@ namespace SoDa {
 				   1, 
 				   500000), // 100000),
 		"Failed to do simple set params for output.", true); 
-#else    
-    setupParams(pcm_in, hw_in_params);
-#endif    
   }
 
-  void AudioALSA::setupParams(snd_pcm_t * dev, snd_pcm_hw_params_t *  & hw_params_ptr)
-  {
-    snd_pcm_hw_params_t * hw_paramsp;
-    boost::mutex::scoped_lock mt_lock(alsa_lock);
-    
-    checkStatus(snd_pcm_hw_params_malloc(&hw_paramsp), 
-		"ALSA failed to allocate hardware params block", 
-		true); 
-
-
-    hw_params_ptr = hw_paramsp;
-
-    checkStatus(snd_pcm_hw_params_any (dev, hw_paramsp), "ALSA failed in setupParams init parm block", true);
-    
-    checkStatus(snd_pcm_hw_params_set_access (dev, hw_paramsp, SND_PCM_ACCESS_RW_INTERLEAVED),
-		"ALSA failed in setupParams set access", true);
-
-    checkStatus(snd_pcm_hw_params_set_format (dev, hw_paramsp, SND_PCM_FORMAT_FLOAT),
-		"ALSA failed in setupParams set format", true);
-	
-    checkStatus(snd_pcm_hw_params_set_rate_near (dev, hw_paramsp, &sample_rate, 0), 
-		"ALSA failed in setupParams set sample rate", true);
-	
-    checkStatus(snd_pcm_hw_params_set_channels (dev, hw_paramsp, 1), 
-		"setupParams set number of channels", true);
-
-    checkStatus(snd_pcm_hw_params_set_buffer_size (dev, hw_paramsp,
-						   sample_count_hint * datatype_size), 
-		"ALSA failed in setupParams set buffer size", true);
-
-    checkStatus(snd_pcm_hw_params (dev, hw_paramsp), 
-		"ALSA failed in setupParams set parameter block", true);
-	
-    checkStatus(snd_pcm_prepare (dev), 
-		"ALSA failed in setupParams prepare audio interface", true);
-  }
 
   bool AudioALSA::recvBufferReady(unsigned int len) {
       boost::mutex::scoped_lock lock(alsa_lock);
@@ -271,14 +237,23 @@ namespace SoDa {
     }
     return olen; 
   }
-#else 
-  AudioALSA::AudioALSA(unsigned int _sample_rate,
-		       unsigned int _sample_count_hint,
-		       std::string audio_port_name) :
-    AudioIfc(_sample_rate, _sample_count_hint, "AudioALSA ALSA Interface")
+
+  void AudioALSA::handleOutReady(snd_async_handler_t * pcm_callback) 
   {
-    std::cerr << "ALSA Sound Library is not enabled in this build version.";  
-    throw SoDa::SoDaException("ALSA Sound Library is not enabled in this build version.");  
+    snd_pcm_sframes_t avail; 
+    int err; 
+      
+    avail = snd_pcm-avail_update(pcm_out); 
+    if(no buffers available) {
+      write_an_empty_buffer;
+    }
+    else {
+      while(avail >= nextBufferSize()) {
+	write_a_buffer_from_the_queue;
+	avail = snd_pcm_avail_update(pcm_out); 
+      }
+    }
   }
-#endif // HAVE_LIBASOUND
+
+
 }

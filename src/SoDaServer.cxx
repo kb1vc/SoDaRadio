@@ -199,15 +199,9 @@ int doWork(SoDa::Params & params)
   /// doWork creates the audio server on the host machine.
   /// choices include a PortAudio interface and an ALSA interface.
   /// These are subclasses of the more generic SoDa::AudioIfc class
-#if USE_PORTAUDIO
-  SoDa::AudioPA audio_ifc(params.getAudioSampleRate(),
-			    params.getAFBufferSize(),
-			    params.getAudioPortName());
-#else
   SoDa::AudioALSA audio_ifc(params.getAudioSampleRate(),
 			    params.getAFBufferSize(),
 			    params.getAudioPortName());
-#endif
   /// doWork creates the audio RX and audio TX unit threads
   /// These are also responsible for implementing IF tuning and modulation. 
   /// @see SoDa::BaseBandRX @see SoDa::BaseBandTX

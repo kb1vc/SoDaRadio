@@ -31,12 +31,7 @@
 #include "SoDaBase.hxx"
 #include "AudioIfc.hxx"
 #include <string>
-#if HAVE_LIBASOUND
-#  include <alsa/asoundlib.h>
-#  define ALSA_DEF
-#else
-#  define ALSA_DEF { throw SoDa::SoDaException("ALSA Sound Library is not enabled in this build version."); } 
-#endif
+#include <alsa/asoundlib.h>
 #include <boost/format.hpp>
 #include <boost/thread/mutex.hpp>
 #include <iostream>
@@ -76,28 +71,30 @@ namespace SoDa {
 
     ~AudioALSA() {
       boost::mutex::scoped_lock lock(alsa_lock);          
-#if HAVE_LIBASOUND
       snd_pcm_close(pcm_out);
-#endif      
     }
+
+
+    /**
+     * @brief buffer allocator. 
+     * @param audio_buffer_size number of elements in the audio buffer (duh.)
+     * @return a buffer
+     */
+    float * getBuffer(unsigned int audio_buffer_size);
+
+    /** 
+     * @brief flush outstanding RX buffers (we're about to switch to TX...)
+     *
+     */
+    void flushRXBuffers();
     
     /**
      * send -- send a buffer to the audio output
      * @param buf buffer of type described by the DataFormat selected at init
      * @param len number of elements in the buffer to send
-     * @param when_ready if true, test with sendBufferReady and return 0 if not ready
-     * otherwise perform the send regardless.
      * @return number of elements transferred to the audio output
      */
-    int send(void * buf, unsigned int len, bool when_ready = false) ALSA_DEF ;
-
-    /**
-     * sendBufferReady -- is there enough space in the audio device
-     *                    send buffer for a call from send?
-     * @param len the number of samples that we wish to send
-     * @return true if there is sufficient space. 
-     */
-    bool sendBufferReady(unsigned int len) ALSA_DEF ;
+    int send(void * buf, unsigned int len)  ;
 
     /**
      * recv -- get a buffer of data from the audio input
@@ -107,7 +104,7 @@ namespace SoDa {
      * otherwise perform the recv regardless.
      * @return number of elements transferred from the audio input
      */
-    int recv(void * buf, unsigned int len, bool when_ready = false) ALSA_DEF ; 
+    int recv(void * buf, unsigned int len, bool when_ready = false)  ; 
 
     /**
      * recvBufferReady -- are there samples waiting in the audio device?
@@ -115,7 +112,7 @@ namespace SoDa {
      * @param len the number of samples that we wish to get
      * @return true if len samples are waiting in in the device buffer
      */
-    bool recvBufferReady(unsigned int len) ALSA_DEF ;
+    bool recvBufferReady(unsigned int len)  ;
 
     /**
      * stop the output stream so that we don't encounter a buffer underflow
@@ -123,7 +120,6 @@ namespace SoDa {
      */
     void sleepOut() {
       debugMsg("Sleep Out");      
-#if HAVE_LIBASOUND
       int err; 
       {
 	boost::mutex::scoped_lock mt_lock(alsa_lock);
@@ -132,14 +128,12 @@ namespace SoDa {
       if(err != 0) {
 	std::cerr << boost::format("snd_pcm_drain returned %d\n") % err; 
       }
-#endif
     }
     /**
      * start the output stream
      */
     void wakeOut() {
       debugMsg("Wake Out");
-#if HAVE_LIBASOUND
       boost::mutex::scoped_lock mt_lock(alsa_lock);      
       int err; 
       if((err = snd_pcm_prepare(pcm_out)) < 0) {
@@ -152,7 +146,6 @@ namespace SoDa {
 	  SoDaException((boost::format("AudioALSA::wakeOut() Failed to wake after sleepOut() pcm_start -- %s")
 			 % snd_strerror(err)).str(), this);
       }
-#endif
     }
         
     /**
@@ -161,7 +154,6 @@ namespace SoDa {
      */
     void sleepIn() {
       debugMsg("Sleep In");            
-#if HAVE_LIBASOUND
       boost::mutex::scoped_lock mt_lock(alsa_lock);
       snd_pcm_drop(pcm_in);
 
@@ -176,7 +168,6 @@ namespace SoDa {
 	else if(stat == -EAGAIN) continue; 
 	else break; 
       }
-#endif
     }
 
     /**
@@ -184,7 +175,6 @@ namespace SoDa {
      */
     void wakeIn() {
       debugMsg("Wake In");                  
-#if HAVE_LIBASOUND
       boost::mutex::scoped_lock mt_lock(alsa_lock);      
       int err; 
       if((err = snd_pcm_prepare(pcm_in)) < 0) {
@@ -197,69 +187,13 @@ namespace SoDa {
 	  SoDaException((boost::format("AudioALSA::wakeIn() Failed to wake after sleepIn() -- %s")
 			 % snd_strerror(err)).str(), this);
       }
-#endif
-    }
-#if HAVE_LIBASOUND
-    std::string currentPlaybackState() {
-      boost::mutex::scoped_lock mt_lock(alsa_lock);            
-      debugMsg("curPlaybackState");                  
-      std::string cs; 
-      cs = currentState(pcm_out);      
-      return (boost::format("%s  ready_frames = %d") % cs % snd_pcm_avail(pcm_out)).str();
     }
 
-    std::string currentCaptureState() {
-      boost::mutex::scoped_lock mt_lock(alsa_lock);                  
-      debugMsg("curCaptureState");                        
-      return currentState(pcm_in);
-    }
-#endif
   protected:
-#if HAVE_LIBASOUND    
     snd_pcm_t * pcm_out; ///< The playback (output) handle. 
     snd_pcm_t * pcm_in;  ///< The capture (input) handle. 
     snd_pcm_hw_params_t * hw_in_params;  ///< the input parameter list
     snd_pcm_hw_params_t * hw_out_params; ///< the output parameter list
-
-    /**
-     *
-     */
-    std::string currentState(snd_pcm_t * dev) {
-      snd_pcm_state_t st;
-      st = snd_pcm_state(dev);
-
-      switch (st) {
-      case SND_PCM_STATE_OPEN:
-	return std::string("SND_PCM_STATE_OPEN");
-	break;
-      case SND_PCM_STATE_SETUP:
-	return std::string("SND_PCM_STATE_SETUP");
-	break;
-      case SND_PCM_STATE_PREPARED:
-	return std::string("SND_PCM_STATE_PREPARED");
-	break;
-      case SND_PCM_STATE_RUNNING:
-	return std::string("SND_PCM_STATE_RUNNING");
-	break;
-      case SND_PCM_STATE_XRUN:
-	return std::string("SND_PCM_STATE_XRUN");
-	break;
-      case SND_PCM_STATE_DRAINING:
-	return std::string("SND_PCM_STATE_DRAINING");
-	break;
-      case SND_PCM_STATE_PAUSED:
-	return std::string("SND_PCM_STATE_PAUSED");
-	break;
-      case SND_PCM_STATE_SUSPENDED:
-	return std::string("SND_PCM_STATE_SUSPENDED");
-	break;
-      case SND_PCM_STATE_DISCONNECTED:
-	return std::string("SND_PCM_STATE_DISCONNECTED");
-	break;
-      default:
-	return std::string("BADSTATE-UNKNOWN");
-      }
-    }
 
     /**
      * setup the playback handle and features. 
@@ -292,6 +226,24 @@ namespace SoDa {
     }
 
   private:
+    snd_async_handler_t * pcm_send_callback; ///< parameter block for audio out callbacks
+
+    /**
+     * @brief callback from alsa output channel -- object method
+     * @param pcm_callback all the dope on why we are here. 
+     */
+    void handleOutReady(snd_async_handler_t * pcm_callback);
+    
+    /** 
+     * @brief callback from alsa output channel -- class method
+     * @param pcm_callback all the dope on why we are here. 
+     */
+    static void audioOutCallback(snd_async_handler_t * pcm_callback) {
+      AudioALSA * obj;
+      obj = static_cast<AudioALSA *> snd_async_handler_get_callback_private(pcm_callback);
+      obj->handleOutReady(pcm_callback); 
+    } 
+
     /**
      * recvBufferReady_priv -- are there samples waiting in the audio device?
      *                    
@@ -300,7 +252,7 @@ namespace SoDa {
      * @param len the number of samples that we wish to get
      * @return true if len samples are waiting in in the device buffer
      */
-    bool recvBufferReady_priv(unsigned int len) ALSA_DEF ;    
+    bool recvBufferReady_priv(unsigned int len)  ;    
 
     /**
      * sendBufferReady_priv -- is there enough space in the audio device
@@ -310,9 +262,7 @@ namespace SoDa {
      * @param len the number of samples that we wish to send
      * @return true if there is sufficient space. 
      */
-    bool sendBufferReady_priv(unsigned int len) ALSA_DEF ;
-
-#endif // HAVE_LIBASOUND
+    bool sendBufferReady_priv(unsigned int len)  ;
 
   private:
     boost::mutex alsa_lock;
