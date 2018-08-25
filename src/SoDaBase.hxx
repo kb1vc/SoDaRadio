@@ -287,7 +287,7 @@ namespace SoDa {
       th = NULL; 
     }
     /**
-     * Execute the threads run loop. 
+     * Execute the thread's run loop. 
      */
     void start() {
       if(th != NULL) return;
