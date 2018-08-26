@@ -1063,14 +1063,13 @@ void SoDa::USRPCtrl::reportAFFilters()
 void SoDa::USRPCtrl::reportAntennas() 
 {
   std::vector<std::string> rx_ants = usrp->get_rx_antennas();
-  BOOST_FOREACH(std::string ant, rx_ants) {
+  for(auto ant: rx_ants) {
     debugMsg(boost::format("Sending RX antenna list element [%s]\n") % ant);
     cmd_stream->put(new Command(Command::REP, Command::RX_ANT_NAME, 
 				ant)); 
-
   }
   std::vector<std::string> tx_ants = usrp->get_tx_antennas();
-  BOOST_FOREACH(std::string ant, tx_ants) {
+  for(auto ant: tx_ants) {
     debugMsg(boost::format("Sending TX antenna list element [%s]\n") % ant);    
     cmd_stream->put(new Command(Command::REP, Command::TX_ANT_NAME, 
 				ant)); 
@@ -1087,7 +1086,7 @@ void SoDa::USRPCtrl::setAntenna(const std::string & ant, char sel)
 
   std::string choice = ants[0];
 
-  BOOST_FOREACH(std::string a, ants) {
+  for(auto a: ants) {
     if (ant == a) {
       choice = ant; 
       break; 

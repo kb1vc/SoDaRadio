@@ -31,8 +31,7 @@
 
 #include <string>
 #include <boost/format.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/condition.hpp>
+#include <mutex>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace SoDa {
@@ -62,7 +61,7 @@ namespace SoDa {
     }
 
     void debugMsg(const std::string & msg, unsigned int threshold = 1) {
-      boost::mutex::scoped_lock lock(debug_msg_mutex);
+      std::lock_guard<std::mutex> lock(debug_msg_mutex);
       if((debug_level >= threshold) || (global_debug_level >= threshold)) {
 	std::cerr << boost::format("%-20s %s\t%s\n") % unit_name % curDateTime() % msg; 
       }
@@ -85,7 +84,7 @@ namespace SoDa {
     static void setGlobalLevel(unsigned int v) { global_debug_level = v; }
     static unsigned int  getGlobalLevel() { return global_debug_level; }
 
-    static boost::mutex debug_msg_mutex; 
+    static std::mutex debug_msg_mutex; 
     
   protected:
 

@@ -152,11 +152,11 @@ namespace GUISoDa {
     }
 
     void processSpectrum();
-  
+
   private:
     QString socket_basename; 
     QLocalSocket * cmd_socket;
-    QLocalSocket * spect_socket; 
+    QLocalSocket * spect_socket;
     bool quit; 
   };
 }

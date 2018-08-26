@@ -30,7 +30,7 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <boost/thread/mutex.hpp>
+#include <mutex>
 #include "SoDaBase.hxx"
 
 namespace SoDa {
@@ -62,7 +62,7 @@ namespace SoDa {
      */
     T * getBuffer() {
       T * ret; 
-      boost::mutex::scoped_lock lock(pool_lock);
+      std::lock_guard<std::mutex> lock(pool_mutex);
       if(pool.empty()) {
 	addNewBuffer(); 
 	addNewBuffer();
@@ -79,7 +79,7 @@ namespace SoDa {
      * @param b pointer to a buffer to be added to the pool.
      */
     void freeBuffer(T * b) {
-      boost::mutex::scoped_lock lock(pool_lock);
+      std::lock_guard<std::mutex> lock(pool_mutex);
       pool.push(b); 
     }
   private:
@@ -95,7 +95,7 @@ namespace SoDa {
     }
 
     std::queue<T*> pool; ///< the buffer pool
-    boost::mutex pool_lock; ///< lock for the free_buffers pool    
+    std::mutex pool_mutex; ///< lock for the free_buffers pool    
     unsigned int buffer_size; ///< the size of each block in the buffer pool
   }; 
 }

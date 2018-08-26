@@ -106,7 +106,7 @@ namespace SoDa {
   void AudioALSA::setupParams(snd_pcm_t * dev, snd_pcm_hw_params_t *  & hw_params_ptr)
   {
     snd_pcm_hw_params_t * hw_paramsp;
-    boost::mutex::scoped_lock mt_lock(alsa_lock);
+    std::lock_guard<std::mutex> mt_lock(alsa_mutex);
     
     checkStatus(snd_pcm_hw_params_malloc(&hw_paramsp), 
 		"ALSA failed to allocate hardware params block", 
@@ -141,7 +141,7 @@ namespace SoDa {
   }
 
   bool AudioALSA::recvBufferReady(unsigned int len) {
-      boost::mutex::scoped_lock lock(alsa_lock);
+      std::lock_guard<std::mutex> lock(alsa_mutex);
       return recvBufferReady_priv(len);
   }
 
@@ -171,7 +171,7 @@ namespace SoDa {
 
 
   bool AudioALSA::sendBufferReady(unsigned int len)  {
-    boost::mutex::scoped_lock lock(alsa_lock);
+    std::lock_guard<std::mutex> lock(alsa_mutex);
     return sendBufferReady_priv(len);
   }
 
@@ -207,7 +207,7 @@ namespace SoDa {
   int AudioALSA::send(void * buf, unsigned int len, bool when_ready) {
     int err;
     int olen = len;
-    boost::mutex::scoped_lock mt_lock(alsa_lock);      
+    std::lock_guard<std::mutex> mt_lock(alsa_mutex);      
 
     if(when_ready && !sendBufferReady_priv(len)) return 0; 
 
@@ -247,7 +247,7 @@ namespace SoDa {
     int olen = len;
     int loopcount = 0; 
     {
-      boost::mutex::scoped_lock mt_lock(alsa_lock);      
+      std::lock_guard<std::mutex> mt_lock(alsa_mutex);      
 
       if(when_ready && !recvBufferReady_priv(len)) return 0;
 

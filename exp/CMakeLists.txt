@@ -4,7 +4,7 @@ find_package(FFTW3f REQUIRED QUIET)
 
 add_definitions(-DHAVE_LIBASOUND=1)
 
-include_directories(SYSTEM ${Boost_INCLUDE_DIRS} ${UHD_INCLUDE_DIRS} ${ALSA_INCLUDE_DIRS} ${FFTW3F_INCLUDE_DIRS} ../src)
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS} ${UHD_INCLUDE_DIRS} ${ALSA_INCLUDE_DIRS} ${FFTW3F_INCLUDE_DIRS} ../src ../common)
 
 set(TEST_LIBS ${Boost_LIBRARIES} ${UHD_LIBRARIES} ${ALSA_LIBRARIES} ${FFTW3F_LIBRARIES})
 
@@ -12,7 +12,7 @@ set(TEST_LIBS ${Boost_LIBRARIES} ${UHD_LIBRARIES} ${ALSA_LIBRARIES} ${FFTW3F_LIB
 
 set(FFT_Test_SRCS FFT_Test.cxx)
 
-add_executable(FFT_Test ${FFT_Test_SRCS})
+add_executable(FFT_Test EXCLUDE_FROM_ALL ${FFT_Test_SRCS})
 
 target_link_libraries(FFT_Test ${TEST_LIBS})
 
@@ -28,7 +28,7 @@ set(Sockets_Test_SRCS
     ../src/IPSockets.hxx
     ../src/UDSockets.hxx)
 
-add_executable(Sockets_Test ${Sockets_Test_SRCS})
+add_executable(Sockets_Test  EXCLUDE_FROM_ALL ${Sockets_Test_SRCS})
 
 target_link_libraries(Sockets_Test ${TEST_LIBS})
 
@@ -39,7 +39,7 @@ set(LineSockets_Test_SRCS
     ../src/IPSockets.hxx
     ../src/LineSocket.hxx)
 
-add_executable(LineSockets_Test ${LineSockets_Test_SRCS})
+add_executable(LineSockets_Test EXCLUDE_FROM_ALL ${LineSockets_Test_SRCS})
 
 target_link_libraries(LineSockets_Test ${TEST_LIBS})
 
@@ -50,7 +50,7 @@ target_link_libraries(LineSockets_Test ${TEST_LIBS})
 
 set(MultiMBox_Test_SRCS MultiMBox_Test.cxx ../src/SoDaBase.cxx ../src/Debug.cxx)
 
-add_executable(MultiMBox_Test ${MultiMBox_Test_SRCS})
+add_executable(MultiMBox_Test EXCLUDE_FROM_ALL ${MultiMBox_Test_SRCS})
 
 target_link_libraries(MultiMBox_Test ${TEST_LIBS})
 
@@ -61,7 +61,7 @@ target_link_libraries(MultiMBox_Test ${TEST_LIBS})
 
 set(SoDa_ThreadTest_SRCS SoDa_ThreadTest.cxx ../src/SoDaBase.cxx ../src/Debug.cxx)
 
-add_executable(SoDa_ThreadTest ${SoDa_ThreadTest_SRCS})
+add_executable(SoDa_ThreadTest EXCLUDE_FROM_ALL ${SoDa_ThreadTest_SRCS})
 
 target_link_libraries(SoDa_ThreadTest ${TEST_LIBS})
 
@@ -74,7 +74,7 @@ set(OSFilter_Test_SRCS OSFilter_Test.cxx ../src/OSFilter.cxx)
 
 set(OSFILTER_LIBS ${Boost_LIBRARIES}  ${FFTW3F_LIBRARIES})
 
-add_executable(OSFilter_Test ${OSFilter_Test_SRCS})
+add_executable(OSFilter_Test EXCLUDE_FROM_ALL ${OSFilter_Test_SRCS})
 
 target_link_libraries(OSFilter_Test ${OSFILTER_LIBS})
 
@@ -93,7 +93,7 @@ set(TestServer_SRCS
     ../src/SoDaBase.cxx
     ../src/Debug.cxx)
 
-add_executable(TestServer ${TestServer_SRCS})
+add_executable(TestServer EXCLUDE_FROM_ALL ${TestServer_SRCS})
 
 target_link_libraries(TestServer  rt ${TEST_LIBS})
 
@@ -108,7 +108,7 @@ set(ReSampler_Test_SRCS
     ../src/ReSamplers625x48.cxx
     ../src/SoDaBase.cxx)
 
-add_executable(ReSampler_Test ${ReSampler_Test_SRCS})
+add_executable(ReSampler_Test EXCLUDE_FROM_ALL ${ReSampler_Test_SRCS})
 
 target_link_libraries(ReSampler_Test ${TEST_LIBS})
 
@@ -124,7 +124,7 @@ set(Audio_test_SRCS
     ../src/SoDaBase.cxx
     ../src/Debug.cxx)
 
-add_executable(Audio_test ${Audio_test_SRCS})
+add_executable(Audio_test EXCLUDE_FROM_ALL ${Audio_test_SRCS})
 
 target_link_libraries(Audio_test ${TEST_LIBS})
 
@@ -135,7 +135,7 @@ target_link_libraries(Audio_test ${TEST_LIBS})
 
 set(Hilbert_Test_SRCS Hilbert_Test.cxx ../src/HilbertTransformer.cxx ../src/SoDaBase.cxx)
 
-add_executable(Hilbert_Test ${Hilbert_Test_SRCS})
+add_executable(Hilbert_Test EXCLUDE_FROM_ALL ${Hilbert_Test_SRCS})
 
 target_link_libraries(Hilbert_Test ${TEST_LIBS})
 
@@ -146,7 +146,7 @@ target_link_libraries(Hilbert_Test ${TEST_LIBS})
 
 set(FindHome_Test_SRCS FindHome_Test.cxx ../src/FindHome.cxx ../src/FindHome.hxx)
 
-add_executable(FindHome_Test ${FindHome_Test_SRCS})
+add_executable(FindHome_Test EXCLUDE_FROM_ALL ${FindHome_Test_SRCS})
 
 target_link_libraries(FindHome_Test ${TEST_LIBS})
 
@@ -157,7 +157,7 @@ target_link_libraries(FindHome_Test ${TEST_LIBS})
 
 set(RangeMap_test_SRCS RangeMap_test.cxx ../src/RangeMap.hxx)
 
-add_executable(RangeMap_test ${RangeMap_test_SRCS})
+add_executable(RangeMap_test EXCLUDE_FROM_ALL ${RangeMap_test_SRCS})
 
 target_link_libraries(RangeMap_test ${TEST_LIBS})
 
@@ -168,7 +168,7 @@ target_link_libraries(RangeMap_test ${TEST_LIBS})
 
 set(SerialDev_Test_SRCS SerialDev_Test.cxx ../src/SerialDev.hxx ../src/SerialDev.cxx)
 
-add_executable(SerialDev_Test ${SerialDev_Test_SRCS})
+add_executable(SerialDev_Test EXCLUDE_FROM_ALL ${SerialDev_Test_SRCS})
 
 target_link_libraries(SerialDev_Test ${TEST_LIBS})
 
@@ -188,7 +188,7 @@ set(TRControl_Test_SRCS
     ../src/B200Control.hxx
     ../src/B200Control.cxx)
 
-add_executable(TRControl_Test ${TRControl_Test_SRCS})
+add_executable(TRControl_Test EXCLUDE_FROM_ALL ${TRControl_Test_SRCS})
 
 target_link_libraries(TRControl_Test ${TEST_LIBS})
 
@@ -199,7 +199,7 @@ target_link_libraries(TRControl_Test ${TEST_LIBS})
 
 set(IntN_FreqTable_SRCS IntN_FreqTable.cxx)
 
-add_executable(IntN_FreqTable ${IntN_FreqTable_SRCS})
+add_executable(IntN_FreqTable EXCLUDE_FROM_ALL ${IntN_FreqTable_SRCS})
 
 target_link_libraries(IntN_FreqTable ${TEST_LIBS})
 
@@ -210,7 +210,7 @@ target_link_libraries(IntN_FreqTable ${TEST_LIBS})
 IF(${HAVE_UHD})
   set(USRPFrontEnd_test_SRCS USRPFrontEnd_test.cxx ../src/USRPFrontEnd.cxx ../src/PropTree.hxx)
 
-  add_executable(USRPFrontEnd_test ${USRPFrontEnd_test_SRCS})
+  add_executable(USRPFrontEnd_test EXCLUDE_FROM_ALL ${USRPFrontEnd_test_SRCS})
 
   target_link_libraries(USRPFrontEnd_test ${TEST_LIBS})
 ENDIF()
@@ -222,7 +222,7 @@ set(OneFilterTest_SRCS OneFilterTest.cxx ../src/OSFilter.cxx)
 
 set(OSFILTER_LIBS ${Boost_LIBRARIES}  ${FFTW3F_LIBRARIES})
 
-add_executable(OneFilterTest ${OneFilterTest_SRCS})
+add_executable(OneFilterTest EXCLUDE_FROM_ALL ${OneFilterTest_SRCS})
 
 target_link_libraries(OneFilterTest ${OSFILTER_LIBS})
 
@@ -230,11 +230,11 @@ target_link_libraries(OneFilterTest ${OSFILTER_LIBS})
 
 set(ProcInfo_test_SRCS ProcInfo_test.cxx ../src/ProcInfo.hxx ../src/ProcInfo.cxx)
 
-add_executable(ProcInfo_test ${ProcInfo_test_SRCS})
+add_executable(ProcInfo_test EXCLUDE_FROM_ALL ${ProcInfo_test_SRCS})
 
 target_link_libraries(ProcInfo_test ${Boost_LIBRARIES})
 
-add_executable(NCOexp NCOexp.cxx)
+add_executable(NCOexp EXCLUDE_FROM_ALL NCOexp.cxx)
 
 target_link_libraries(NCOexp ${Boost_LIBRARIES})
 
@@ -243,7 +243,7 @@ set(TDResampler_Test_SRCS
     ../src/TDResamplerTables625x48.cxx
     ../src/SoDaBase.cxx)
 
-add_executable(TDResampler_Test ${TDResampler_Test_SRCS})
+add_executable(TDResampler_Test EXCLUDE_FROM_ALL ${TDResampler_Test_SRCS})
 
 target_link_libraries(TDResampler_Test ${TEST_LIBS})
 
@@ -254,6 +254,14 @@ set(ResamplerSpeed_SRCS
   ../src/TDResamplerTables625x48.cxx
   ../src/SoDaBase.cxx)
 
-add_executable(ResamplerSpeed ${ResamplerSpeed_SRCS})
+add_executable(ResamplerSpeed EXCLUDE_FROM_ALL ${ResamplerSpeed_SRCS})
 target_link_libraries(ResamplerSpeed ${TEST_LIBS})
+
+
+
+set(CircularBuffer_test_SRCS CircularBuffer_test.cxx ../common/CircularBuffer.hxx)
+
+add_executable(CircularBuffer_test EXCLUDE_FROM_ALL ${CircularBuffer_test_SRCS})
+
+target_link_libraries(CircularBuffer_test ${TEST_LIBS})
 

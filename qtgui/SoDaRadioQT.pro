@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui multimedia widgets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -18,7 +18,7 @@ SOURCES += main.cpp\
         freqlabel.cpp \
         soda_logtable.cpp \
         soda_wfall.cpp soda_wfall_data.cpp soda_spect.cpp \
-    soda_comboboxes.cpp
+        soda_comboboxes.cpp
 
 HEADERS  += mainwindow.hpp \
     freqlabel.hpp \

@@ -165,9 +165,7 @@ ENDIF()
 # This is the radio interface... 
 ADD_SUBDIRECTORY(src)
 
-IF(BUILD_UNIT_TESTS)
-  ADD_SUBDIRECTORY(exp)
-ENDIF()
+ADD_SUBDIRECTORY(exp)
 
 FIND_PACKAGE(Doxygen QUIET)
 

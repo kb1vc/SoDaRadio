@@ -42,8 +42,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <queue>
 #include <boost/thread.hpp>
 #include <boost/thread/thread.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/condition.hpp>
+#include <mutex>
 #include <fstream>
 #include <string>
 
@@ -232,8 +231,8 @@ namespace SoDa {
     std::queue<float *> free_buffers; ///< a pool of free audio buffers
     std::queue<float *> ready_buffers; ///< a list of audio buffers ready to send to the output
 
-    boost::mutex free_lock; ///< lock for the free_buffers pool
-    boost::mutex ready_lock; ///< lock for the ready_buffers_pool
+    std::mutex free_mutex; ///< lock for the free_buffers pool
+    std::mutex ready_mutex; ///< lock for the ready_buffers_pool
 
     float * sidetone_silence;  ///< a sequence of zero samples to stuff silence into the audio
 

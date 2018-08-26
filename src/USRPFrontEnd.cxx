@@ -52,11 +52,11 @@ namespace SoDa {
       return NULL; 
     }
 
-    BOOST_FOREACH(std::string dbn, dblist) {
+    for(auto dbn: dblist) {
       // now go down the list of tx/rx front ends
       std::string fe_listn = "dboards/" + dbn + fe_name; 
       std::vector<std::string> felist = tree->getPropNames(fe_listn);
-      BOOST_FOREACH(std::string fen, felist) {
+      for(auto fen: felist) {
 	fe_name = fe_listn + "/" + fen; 
 	// now see what the connection type is.... 
 	std::string conn_type = tree->getStringProp(fe_name + "/connection");

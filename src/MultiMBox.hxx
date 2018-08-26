@@ -34,8 +34,8 @@
 #include <map>
 #include <boost/thread.hpp>
 #include <boost/thread/thread.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/condition.hpp>
+#include <mutex>
+#include <condition_variable>
 
 namespace SoDa {
   
@@ -49,7 +49,7 @@ namespace SoDa {
 
     void setReaderCount(unsigned int rc)
     {
-      boost::mutex::scoped_lock lock(rc_mutex);
+      std::lock_guard<std::mutex> lck(rc_mutex);
       reader_count = rc; 
     }
 
@@ -57,7 +57,7 @@ namespace SoDa {
     bool decReaderCount() { return reader_count--; }
 
     bool free(std::queue<MBoxMessage *> & free_list) {
-      boost::mutex::scoped_lock lock(rc_mutex);
+      std::lock_guard<std::mutex> lck(rc_mutex);
       if(reader_count == 1) {
 	reader_count = 0; 
 	free_list.push(this); 
@@ -74,7 +74,7 @@ namespace SoDa {
     
   private:
     unsigned int reader_count;
-    boost::mutex rc_mutex;
+    std::mutex rc_mutex;
     void * mbox_tag; 
   };
 
@@ -100,10 +100,10 @@ namespace SoDa {
       m->setMBoxTag(this); 
       for(i = 0; i < subscriber_count; i++) {
 	Subscriber * s = subscribers[i];
-	boost::mutex::scoped_lock lock(s->postmutex); 
+	std::lock_guard<std::mutex> lck(s->post_mutex);
 	s->posted_list.push(m);
 	s->post_count++; 
-	s->postcond.notify_all(); 
+	s->post_cond.notify_all(); 
       }
     }
 
@@ -119,7 +119,7 @@ namespace SoDa {
       if(m != NULL) {
 	if(keep_freelist && m->checkMBoxTag(this)) {
 	  if(m->readyToDie()) {
-	    boost::mutex::scoped_lock lock(free_lock); 
+	    std::lock_guard<std::mutex> lck(free_mutex);
 	    m->free(free_list);
 	  }
 	  else m->decReaderCount(); 
@@ -134,7 +134,7 @@ namespace SoDa {
     T * alloc()
     {
       T * ret = NULL;
-      boost::mutex::scoped_lock lock(free_lock); 
+      std::lock_guard<std::mutex> lck(free_mutex);
       if(!free_list.empty() && keep_freelist) {
 	ret = (T*) free_list.front();
 	free_list.pop();
@@ -145,7 +145,7 @@ namespace SoDa {
 
     void addToPool(T * v) {
       if(keep_freelist) {
-	boost::mutex::scoped_lock lock(free_lock); 
+	std::lock_guard<std::mutex> lck(free_mutex);	
 	free_list.push(v);
       }
     }
@@ -161,7 +161,7 @@ namespace SoDa {
 	  ++sl) {
 	Subscriber * s = sl->second;
 	{
-	  boost::mutex::scoped_lock lock(s->postmutex);
+	  std::lock_guard<std::mutex> lck(s->post_mutex);
 	  int le = s->posted_list.size();
 	  itercount++; 
 	  // std::cerr << "multimbox list len = " << le
@@ -200,14 +200,14 @@ namespace SoDa {
       }
     
       Subscriber * s = subscribers[subscriber_id];
-      boost::mutex::scoped_lock lock(s->postmutex); 
+      std::unique_lock<std::mutex> lck(s->post_mutex);	  
       if(s->posted_list.empty()) {
 	if(!wait) {
 	  return NULL; 
 	}
 	else {
 	  while(s->posted_list.empty()) {
-	    s->postcond.wait(s->postmutex);
+	    s->post_cond.wait(lck);
 	  }
 	}
       }
@@ -228,14 +228,13 @@ namespace SoDa {
       Subscriber() { post_count = 0; } 
       std::queue<T *> posted_list;
       int post_count; 
-      boost::mutex postmutex;
-      boost::condition postcond; 
+      std::mutex post_mutex; 
+      std::condition_variable post_cond; 
     };
     std::map<int, Subscriber *> subscribers;     
 
     std::queue<MBoxMessage *> free_list;
-    boost::mutex free_lock; 
- 
+    std::mutex free_mutex; 
   }; 
 }
 

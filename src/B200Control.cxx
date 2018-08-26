@@ -28,7 +28,6 @@
 
 #include "B200Control.hxx"
 #include <boost/format.hpp>
-#include <boost/foreach.hpp>
 #include <boost/assign.hpp>
 #include <math.h>
 #include <stdexcept>

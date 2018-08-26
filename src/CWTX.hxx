@@ -37,6 +37,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <time.h>
 #include <sys/time.h>
+#include <mutex>
 
 namespace SoDa {
   /**
@@ -110,10 +111,10 @@ namespace SoDa {
     unsigned int rf_buffer_size; ///< the size of the envelope buffer
 
     std::queue<char> text_queue; ///< characters waiting to be sent
-    boost::mutex text_lock; ///< lock for text_queue
+    std::mutex text_mutex; ///< mutex for text_queue
     
     std::queue<int> break_notification_id_queue;  ///< tags inserted into text stream -- send tag when the CW envelope generator gets to this character.
-    boost::mutex break_id_lock; ///< lock for break_notification queue
+    std::mutex break_id_mutex; ///< mutex for break_notification queue
   }; 
 }
 

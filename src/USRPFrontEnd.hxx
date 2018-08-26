@@ -31,7 +31,6 @@
 
 #include <string>
 #include <boost/format.hpp>
-#include <boost/foreach.hpp>
 #include <iostream>
 #include "PropTree.hxx"
 

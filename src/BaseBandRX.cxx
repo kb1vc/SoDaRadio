@@ -586,7 +586,7 @@ void SoDa::BaseBandRX::run()
 
 int SoDa::BaseBandRX::readyAudioBuffers() 
 {
-  boost::mutex::scoped_lock lock(ready_lock);
+  std::lock_guard<std::mutex> lock(ready_mutex);
   return ready_buffers.size();
 }
 
@@ -603,7 +603,7 @@ void SoDa::BaseBandRX::pendNullBuffer(int count) {
 void SoDa::BaseBandRX::pendAudioBuffer(float * b)
 {
   {
-    boost::mutex::scoped_lock lock(ready_lock);
+    std::lock_guard<std::mutex> lock(ready_mutex);
     ready_buffers.push(b);
   }
   if(audio_save_enable) {
@@ -618,7 +618,7 @@ void SoDa::BaseBandRX::pendAudioBuffer(float * b)
 
 float * SoDa::BaseBandRX::getNextAudioBuffer()
 {
-  boost::mutex::scoped_lock lock(ready_lock); 
+  std::lock_guard<std::mutex> lock(ready_mutex); 
   if(ready_buffers.empty()) return NULL;
   float * ret;
   ret = ready_buffers.front();
@@ -628,7 +628,7 @@ float * SoDa::BaseBandRX::getNextAudioBuffer()
 
 void SoDa::BaseBandRX::flushAudioBuffers()
 {
-  boost::mutex::scoped_lock lock(ready_lock); 
+  std::lock_guard<std::mutex> lock(ready_mutex); 
   while(!ready_buffers.empty()) {
     float * v = ready_buffers.front(); 
     ready_buffers.pop();

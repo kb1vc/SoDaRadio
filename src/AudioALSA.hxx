@@ -31,6 +31,7 @@
 #include "SoDaBase.hxx"
 #include "AudioIfc.hxx"
 #include <string>
+#include <mutex>
 #if HAVE_LIBASOUND
 #  include <alsa/asoundlib.h>
 #  define ALSA_DEF
@@ -38,7 +39,6 @@
 #  define ALSA_DEF { throw SoDa::SoDaException("ALSA Sound Library is not enabled in this build version."); } 
 #endif
 #include <boost/format.hpp>
-#include <boost/thread/mutex.hpp>
 #include <iostream>
 #include <stdexcept>
 
@@ -75,7 +75,7 @@ namespace SoDa {
 	      std::string audio_port_name = std::string("default"));
 
     ~AudioALSA() {
-      boost::mutex::scoped_lock lock(alsa_lock);          
+      std::lock_guard<std::mutex> lock(alsa_mutex);          
 #if HAVE_LIBASOUND
       snd_pcm_close(pcm_out);
 #endif      
@@ -126,7 +126,7 @@ namespace SoDa {
 #if HAVE_LIBASOUND
       int err; 
       {
-	boost::mutex::scoped_lock mt_lock(alsa_lock);
+	std::lock_guard<std::mutex> mt_lock(alsa_mutex);
 	err = snd_pcm_drain(pcm_out);
       }
       if(err != 0) {
@@ -140,7 +140,7 @@ namespace SoDa {
     void wakeOut() {
       debugMsg("Wake Out");
 #if HAVE_LIBASOUND
-      boost::mutex::scoped_lock mt_lock(alsa_lock);      
+      std::lock_guard<std::mutex> mt_lock(alsa_mutex);      
       int err; 
       if((err = snd_pcm_prepare(pcm_out)) < 0) {
 	throw
@@ -162,7 +162,7 @@ namespace SoDa {
     void sleepIn() {
       debugMsg("Sleep In");            
 #if HAVE_LIBASOUND
-      boost::mutex::scoped_lock mt_lock(alsa_lock);
+      std::lock_guard<std::mutex> mt_lock(alsa_mutex);
       snd_pcm_drop(pcm_in);
 
       // now read the input buffers until they're empty
@@ -185,7 +185,7 @@ namespace SoDa {
     void wakeIn() {
       debugMsg("Wake In");                  
 #if HAVE_LIBASOUND
-      boost::mutex::scoped_lock mt_lock(alsa_lock);      
+      std::lock_guard<std::mutex> mt_lock(alsa_mutex);      
       int err; 
       if((err = snd_pcm_prepare(pcm_in)) < 0) {
 	throw
@@ -201,7 +201,7 @@ namespace SoDa {
     }
 #if HAVE_LIBASOUND
     std::string currentPlaybackState() {
-      boost::mutex::scoped_lock mt_lock(alsa_lock);            
+      std::lock_guard<std::mutex> mt_lock(alsa_mutex);            
       debugMsg("curPlaybackState");                  
       std::string cs; 
       cs = currentState(pcm_out);      
@@ -209,7 +209,7 @@ namespace SoDa {
     }
 
     std::string currentCaptureState() {
-      boost::mutex::scoped_lock mt_lock(alsa_lock);                  
+      std::lock_guard<std::mutex> mt_lock(alsa_mutex);                  
       debugMsg("curCaptureState");                        
       return currentState(pcm_in);
     }
@@ -315,8 +315,7 @@ namespace SoDa {
 #endif // HAVE_LIBASOUND
 
   private:
-    boost::mutex alsa_lock;
-    
+    std::mutex alsa_mutex;
   };
 
 }

@@ -104,7 +104,7 @@ bool SoDa::CWTX::sendAvailChar()
   while (cwgen->readyForMore()) {
     itercount++; 
     if(1) {
-      boost::mutex::scoped_lock mt_lock(text_lock);
+      std::lock_guard<std::mutex> mt_lock(text_mutex);
       if(text_queue.empty()) return false;
 
       outchar = text_queue.front(); text_queue.pop();
@@ -187,7 +187,7 @@ void SoDa::CWTX::execSetCommand(Command * cmd)
     enqueueText("\003");
     // pend the iparm to the break notification queue
     if(1) {
-      boost::mutex::scoped_lock lock(break_id_lock);
+      std::lock_guard<std::mutex> lock(break_id_mutex);
       break_notification_id_queue.push(cmd->iparms[0]);
     }
     break; 
@@ -201,7 +201,7 @@ void SoDa::CWTX::execSetCommand(Command * cmd)
 
 void SoDa::CWTX::enqueueText(const char * buf)
 {
-  boost::mutex::scoped_lock lock(text_lock);
+  std::lock_guard<std::mutex> lock(text_mutex);
   
   const char * cp = buf;
   int i;
@@ -217,7 +217,7 @@ void SoDa::CWTX::clearTextQueue()
 {
   // empty the text_queue
   if(1) {
-    boost::mutex::scoped_lock lock(text_lock);
+    std::lock_guard<std::mutex> lock(text_mutex);
   
     int deleted_count = text_queue.size();
   
@@ -237,7 +237,7 @@ void SoDa::CWTX::execRepCommand(Command * cmd)
   case SoDa::Command::TX_CW_EMPTY:
     // The CW generator has run out of things to send. 
     {
-      boost::mutex::scoped_lock mt_lock(break_id_lock);
+      std::lock_guard<std::mutex> mt_lock(break_id_mutex);
       // we got an ETX marker -- get the next completion code from
       // the break queue and send it back in a REPORT
       if(!break_notification_id_queue.empty()) {
