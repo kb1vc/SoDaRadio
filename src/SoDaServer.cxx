@@ -132,12 +132,7 @@
 #include "CWTX.hxx"
 #include "UI.hxx"
 #include "GPSmon.hxx"
-#if HAVE_LIBPORTAUDIO
-#  include "AudioPA.hxx"
-#endif
-#if HAVE_LIBASOUND
-#  include "AudioALSA.hxx"
-#endif
+#include "AudioQt.hxx"
 #include "Command.hxx"
 #include "Debug.hxx"
 
@@ -199,15 +194,10 @@ int doWork(SoDa::Params & params)
   /// doWork creates the audio server on the host machine.
   /// choices include a PortAudio interface and an ALSA interface.
   /// These are subclasses of the more generic SoDa::AudioIfc class
-#if USE_PORTAUDIO
-  SoDa::AudioPA audio_ifc(params.getAudioSampleRate(),
-			    params.getAFBufferSize(),
-			    params.getAudioPortName());
-#else
-  SoDa::AudioALSA audio_ifc(params.getAudioSampleRate(),
-			    params.getAFBufferSize(),
-			    params.getAudioPortName());
-#endif
+  SoDa::AudioQt audio_ifc(params.getAudioSampleRate(),
+			  params.getAFBufferSize(),
+			  params.getServerSocketBasename(),
+			  params.getAudioPortName());
   /// doWork creates the audio RX and audio TX unit threads
   /// These are also responsible for implementing IF tuning and modulation. 
   /// @see SoDa::BaseBandRX @see SoDa::BaseBandTX

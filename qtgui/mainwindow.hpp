@@ -32,11 +32,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QMainWindow>
 #include <QCloseEvent>
 #include <QSettings>
+#include <QAudioDeviceInfo>
 #include "soda_listener.hpp"
 #include "../common/GuiParams.hxx"
 #include "soda_band.hpp"
 #include "soda_hamlib_server.hpp"
-
+#include "soda_audio_listener.hpp"
 namespace Ui {
   class MainWindow;
 }
@@ -113,6 +114,7 @@ protected:
   void setupLogGPS();
 
   void setupSettings();
+  void setupAudioDeviceList();   
   void setupBandConfig();
   void setupLogEditor();
   
@@ -148,7 +150,9 @@ private:
   
   Ui::MainWindow *ui;
 
-  GUISoDa::Listener * listener; 
+  GUISoDa::Listener * listener;
+
+  GUISoDa::AudioRXListener * audio_rx_listener;
 
   GUISoDa::HamlibServer * hlib_server; 
 };

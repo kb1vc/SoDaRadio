@@ -51,8 +51,8 @@ namespace SoDa {
       }
 
     
-      int put(const void * ptr, unsigned int size);
-      int get(void * ptr, unsigned int size);
+      int put(const void * ptr, unsigned int size, bool len_prefix = true);
+      int get(void * ptr, unsigned int size, bool len_prefix = true);
     
       int server_socket, conn_socket, portnum;
       struct sockaddr_un server_address, client_address;
@@ -72,18 +72,25 @@ namespace SoDa {
       }
       bool isReady();
 
-      int get(void *ptr, unsigned int size) {
-	int rv = NetSocket::get(ptr, size);
+      int get(void *ptr, unsigned int size, bool len_prefix = true) {
+	int rv = NetSocket::get(ptr, size, len_prefix);
 	if(rv < 0) ready = false;
 	return rv; 
       }
-      int put(const void *ptr, unsigned int size) {
-	if(!ready) return 0; 
-	int rv = NetSocket::put(ptr, size);
+      int put(const void *ptr, unsigned int size, bool len_prefix = true) {
+	if(!ready && !isReady()) {
+	  return 0; 
+	}
+	int rv = NetSocket::put(ptr, size, len_prefix);
 	if(rv < 0) ready = false;
 	return rv; 
       }
+      void setDebug(bool v) {
+	debug = v;
+      }
+
     private:
+      bool debug; 
       bool ready;
       std::string mailbox_pathname; 
     };

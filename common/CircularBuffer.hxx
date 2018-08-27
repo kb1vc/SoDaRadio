@@ -152,6 +152,13 @@ namespace SoDa {
 	os << buffer[i] << std::endl; 
       }
     }
+    
+    template <typename T2> void dumpBuf(std::ostream & os) {
+      T2 * tptr = (T2*) buffer; 
+      for(int i = 0; i < (buffer_elements * sizeof(T)) / sizeof(T2); i++) {
+	os << i << " " << tptr[i] << std::endl; 
+      }
+    }
   private:
     size_t min(size_t a, size_t b) {
       return (a < b) ? a : b;

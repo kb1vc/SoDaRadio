@@ -52,7 +52,7 @@ bool GUISoDa::Listener::init()
 
   cmd_socket->connectToServer(cmd_socket_name); 
   while(!cmd_socket->waitForConnected(1000)) {
-    qDebug() << QString("Waited connection on local socket [%1_cmd]. Is something wrong?").arg(socket_basename);
+    qDebug() << QString("Waited for connection on local socket [%1_cmd]. Is something wrong?").arg(socket_basename);
     qDebug() << cmd_socket->errorString();
     QThread::sleep(5); // sleep for 5 seconds...    
   }

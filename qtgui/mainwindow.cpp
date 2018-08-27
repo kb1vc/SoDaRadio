@@ -53,6 +53,9 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   // setup the listener. 
   listener = new GUISoDa::Listener(this, QString::fromStdString(params.getServerSocketBasename())); 
 
+  // setup the audio listener
+  audio_rx_listener = new AudioRXListener(this, QString::fromStdString(params.getServerSocketBasename()));
+  
   setupSpectrum();
   setupWaterFall();
     
@@ -78,9 +81,12 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   connect(listener, SIGNAL(fatalError(const QString &)), 
 	  this, SLOT(handleFatalError(const QString &)));
 
-  listener->init();
-  listener->start();
-
+  // connect the audio listener to the rx selector combobox
+  connect(ui->audioOut_cb, QOverload<int>::of(&QComboBox::currentIndexChanged),
+	  [=](int index) {
+	    audio_rx_listener->setRXDevice(ui->audioOut_cb->itemData(index).value<QAudioDeviceInfo>());
+	  });
+				  
   connect(ui->aboutSoDa_btn, SIGNAL(clicked(bool)), 
 	  this, SLOT(displayAppInfo(bool)));
 
@@ -89,6 +95,11 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   current_band_selector = ui->bandSel_cb->currentText(); 
   auto_bandswitch_target = QString("");
 
+
+  listener->init();
+  listener->start();
+  audio_rx_listener->init();
+  
   hlib_server = new HamlibServer(this, params.getHamlibPortNumber());
   
   hlib_server->start();

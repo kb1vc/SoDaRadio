@@ -42,12 +42,14 @@ set(SoDaServer_SRCS
     Spectrogram.hxx
     UDSockets.hxx
     UI.hxx
-    AudioALSA.hxx
-    AudioALSA.cxx
+#    AudioALSA.hxx
+#    AudioALSA.cxx
+    AudioQt.hxx
+    AudioQt.cxx
     AudioIfc.hxx
     MedianFilter.hxx
-    AudioPA.hxx
-    AudioPA.cxx
+#    AudioPA.hxx
+#    AudioPA.cxx
     Debug.hxx
     Debug.cxx
     SerialDev.cxx
@@ -65,7 +67,7 @@ set(SoDaServer_SRCS
     PropTree.hxx
     )
 
-find_package(Portaudio)
+#find_package(Portaudio)
 find_package(ALSA REQUIRED QUIET)
 find_package(FFTW3f REQUIRED QUIET)
 

@@ -35,6 +35,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QtNetwork/QtNetwork>
 
 #include <iostream>
+#include <fstream>
 #include <errno.h>
 #include "../src/Command.hxx"
 #include "../common/CircularBuffer.hxx"
@@ -50,7 +51,13 @@ namespace GUISoDa {
   public:
     AudioRXListener(QObject * parent = 0, const QString & socket_basename = "tmp", 
 		    unsigned int _sample_rate = 48000);
+
     ~AudioRXListener() {
+      qDebug() << QString("**********************!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!**********************");
+      std::ofstream df("buffer_dump.dat");
+      audio_cbuffer_p->dumpBuf<float>(df); 
+      df.close();
+      delete audio_rx_socket;
     }
 
     /**
@@ -122,12 +129,15 @@ namespace GUISoDa {
 					      
   public slots:
     void setAudioGain(float gain); 
-    void setAudioDevice(QAudioDeviceInfo & dev_info);
+    void setRXDevice(const QAudioDeviceInfo & dev_info);
     void closeRadio();
 
 
   protected slots:  
     void processRXAudio();
+    void audioErrorHandler(QLocalSocket::LocalSocketError err) {
+      std::cerr << "Audio Listener Error [" << err << "]\n";
+    }
   
   private:
     QString socket_basename; 
@@ -145,6 +155,11 @@ namespace GUISoDa {
     char * rx_in_buf;
     qint64 rx_in_buf_len; 
     qint64 sample_rate; ///< Audio output samples per second.
+
+    // a buffer of silence
+    float * silence; 
+    
+    qint64 debug_count; 
   };
 }
 #endif

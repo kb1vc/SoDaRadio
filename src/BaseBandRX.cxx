@@ -463,91 +463,6 @@ void SoDa::BaseBandRX::run()
       cmd_stream->free(cmd); 
     }
 
-    // Send audio buffers to the audio output
-    if(readyAudioBuffers()) {
-      if(readyAudioBuffers() < 2) {
-	// this is an emergency -- pend a few empty buffers
-	pendNullBuffer(3);
-      }
-      if(!in_catchup && (readyAudioBuffers() > 8)) {
-	// If the audio output has fallen 8 buffers behind, (about 400mS)
-	// then go into catchup mode (shorten each outbound buffer), 
-	// where we'll gain about 0.4 mS
-	// on each 2304 sample frame.
-	std::cerr << "BaseBandRX: enter catchup mode\n";		
-	in_catchup = true;
-	in_fallback = false; 
-	catchup_count++; 
-      }
-      if(in_catchup && (readyAudioBuffers() < 6)) { /// 6)) {
-	std::cerr << "BaseBandRX: exit catchup mode\n";
-	in_catchup = false; 
-      }
-      if(!in_fallback && (readyAudioBuffers() < 3)) {
-	std::cerr << "BaseBandRX: enter fallback mode\n";	
-	in_fallback = true; 
-	in_catchup = false; 
-      }
-      if(in_fallback && (readyAudioBuffers() > 5)) {
-	std::cerr << "BaseBandRX: exit fallback mode\n";	
-	in_fallback = false;
-      }
-
-      int rbsize = readyAudioBuffers(); 
-      if(rbsize > 1) {
-
-	if(audio_rx_stream_needs_start) {
-	  audio_ifc->wakeOut(); 
-	  audio_rx_stream_needs_start = false; 
-	  restart_count++; 
-	}
-	  
-	while(1) {
-	  if(audio_ifc->sendBufferReady(audio_buffer_size + (in_fallback ? 1 : 0))) {
-	    float * outb = getNextAudioBuffer();
-	    if(outb == NULL) {
-	      break; 
-	    }
-
-	    did_work = true;
-	    did_audio_work = true; 
-
-	    if(in_catchup) {
-	      // this is where the random generator comes in.
-	      int trim = (random() & catchup_rand_mask);
-	      // drop out one "randomly" selected sample in the first (power of two) part of the buffer.
-	      audio_ifc->send(outb, trim);
-	      audio_ifc->send(&(outb[trim+1]), (audio_buffer_size - (trim + 1))); 
-	      trim_count++; 
-	      catchup_count++; 
-	    }
-	    else if(in_fallback) {
-	      // duplicate one "randomly" selected sample in the first (power of two) part of the buffer.
-	      int dup = (random() & catchup_rand_mask);
-	      audio_ifc->send(outb, dup);
-	      audio_ifc->send(&(outb[dup]), (audio_buffer_size - dup)); 
-	      add_count++; 
-	    }
-	    else {
-	      audio_ifc->send(outb, audio_buffer_size);
-	    }
-
-	    // is this a problem?  Is it possible to free the buffer too soon? 
-	    bpool->freeBuffer(outb);
-
-	  }
-	  else {
-	    null_audio_buf_count++; 
-	    if(rbsize > 10) {
-	      // what is the state of the audio ifc? 
-	      debugMsg(boost::format("Audio State [%s] rbsize = %d\n") % audio_ifc->currentPlaybackState() % rbsize);
-	    }
-	    break; 
-	  }
-	}
-      }
-    }
-
     // now look for incoming buffers from the rx_stream. 
     int bcount = 0; 
     for(bcount = 0; (bcount < 2) && ((rxbuf = rx_stream->get(rx_subs)) != NULL); bcount++) {
@@ -602,18 +517,21 @@ void SoDa::BaseBandRX::pendNullBuffer(int count) {
 
 void SoDa::BaseBandRX::pendAudioBuffer(float * b)
 {
-  {
-    std::lock_guard<std::mutex> lock(ready_mutex);
-    ready_buffers.push(b);
-  }
+  // no big deal here.  We're going to send it right to 
+  // the audio device. 
+  audio_ifc->send(b, audio_buffer_size * sizeof(float));
+
   if(audio_save_enable) {
     audio_file.write((char*) b, audio_buffer_size * sizeof(float));
   }
+
   float al = 1.0e-19; // really small...
   for(int i = 0; i < audio_buffer_size; i++) {
     al += b[i] * b[i]; 
   }
-  audio_level = 10.0 * (log10(al / af_gain) - log_audio_buffer_size); 
+  audio_level = 10.0 * (log10(al / af_gain) - log_audio_buffer_size);
+
+  bpool->freeBuffer(b);   
 }
 
 float * SoDa::BaseBandRX::getNextAudioBuffer()

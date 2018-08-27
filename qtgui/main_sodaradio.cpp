@@ -72,7 +72,7 @@ static void startupServer(const QString & lock_file_name, SoDa::GuiParams & p)
 {
   // start the radio server  
   QString server_name;
-
+  
   if(p.getServerName() != "") {
     server_name = ss2QS(p.getServerName());
   }

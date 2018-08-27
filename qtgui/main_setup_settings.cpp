@@ -32,6 +32,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <boost/format.hpp>
 #include "soda_comboboxes.hpp"
 #include "soda_listener.hpp"
+#include <QAudioDeviceInfo>
 
 void MainWindow::setupSettings()
 {
@@ -64,8 +65,34 @@ void MainWindow::setupSettings()
 	  this, SLOT(saveConfigAs_dlg()));
   connect(ui->openConfig_btn, SIGNAL(clicked()), 
 	  this, SLOT(restoreConfig_dlg()));  
+  
+  setupAudioDeviceList(); 
 }
 
+void MainWindow::setupAudioDeviceList() 
+{
+  const QAudioDeviceInfo & def_rx_dev_info = QAudioDeviceInfo::defaultOutputDevice(); 
+  ui->audioOut_cb->addItem(def_rx_dev_info.deviceName(), qVariantFromValue(def_rx_dev_info));
+  for(auto &rx_dev_info: QAudioDeviceInfo::availableDevices(QAudio::AudioOutput)) {
+    if(rx_dev_info != def_rx_dev_info) {
+      ui->audioOut_cb->addItem(rx_dev_info.deviceName(), qVariantFromValue(rx_dev_info));
+    }
+  }
+  
+  // set the initial choice
+  ui->audioOut_cb->setCurrentIndex(0);
+
+  const QAudioDeviceInfo & def_tx_dev_info = QAudioDeviceInfo::defaultInputDevice(); 
+  ui->audioIn_cb->addItem(def_tx_dev_info.deviceName(), qVariantFromValue(def_tx_dev_info));
+  for(auto &tx_dev_info: QAudioDeviceInfo::availableDevices(QAudio::AudioInput)) {
+    if(tx_dev_info != def_tx_dev_info) {
+      ui->audioIn_cb->addItem(tx_dev_info.deviceName(), qVariantFromValue(tx_dev_info));
+    }
+  }
+  
+  // set the initial choice
+  ui->audioIn_cb->setCurrentIndex(0);
+}
 
 void MainWindow::saveConfig()
 {

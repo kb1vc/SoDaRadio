@@ -46,7 +46,10 @@ SoDa::UD::ServerSocket::ServerSocket(const std::string & path)
   int stat; 
   // create the socket. 
   server_socket = socket(AF_UNIX, SOCK_STREAM, 0);
-    
+  
+  // init the debug flag  
+  debug = false; 
+  
   if(server_socket < 0) {
     std::cerr << "Failed to create server socket... I quit." << std::endl;
     exit(-1); 
@@ -124,13 +127,15 @@ bool SoDa::UD::ServerSocket::isReady()
     // note that we've set the server_socket to non-block, so if nobody is here,
     // we should get an EAGAIN or EWOULDBLOCK. 
     int ns = accept(server_socket, (struct sockaddr *) & client_address, &ca_len);
+    
     if(ns < 0) {
       ready = false; 
     }
     else {
       conn_socket = ns;
       int x = fcntl(conn_socket, F_GETFL, 0);
-      fcntl(conn_socket, F_SETFL, x | O_NONBLOCK);
+      int stat = fcntl(conn_socket, F_SETFL, x | O_NONBLOCK);
+      
       ready = true; 
     }
   }
@@ -159,37 +164,45 @@ int SoDa::UD::NetSocket::loopWrite(int fd, const void * ptr, unsigned int nbytes
   }
   return 0; 
 }
-int SoDa::UD::NetSocket::put(const void * ptr, unsigned int size)
+
+int SoDa::UD::NetSocket::put(const void * ptr, unsigned int size, bool len_prefix)
 {
   // we always put a buffer of bytes, preceded by a count of bytes to be sent.
   int stat;
   
-  stat = loopWrite(conn_socket, &size, sizeof(unsigned int));
-  if(stat < 0) return stat; 
+  if(len_prefix) {
+    stat = loopWrite(conn_socket, &size, sizeof(unsigned int));
+    if(stat < 0) return stat; 
+  }
 
   stat = loopWrite(conn_socket, ptr, size);
 
   return stat; 
 }
 
-int SoDa::UD::NetSocket::get(void * ptr, unsigned int size)
+int SoDa::UD::NetSocket::get(void * ptr, unsigned int size, bool len_prefix)
 {
   int stat;
   unsigned int rsize;
 
-  stat = read(conn_socket, &rsize, sizeof(unsigned int));
-  if(stat <= 0) {
-    if((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
-      //      std::cerr << ">>>" << std::endl; 
-      return 0; 
+  int left = size; 
+
+  if(len_prefix) {
+    stat = read(conn_socket, &rsize, sizeof(unsigned int));
+    if(stat <= 0) {
+      if((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
+	//      std::cerr << ">>>" << std::endl; 
+	return 0; 
+      }
+      else {
+	perror("Oops -- socket get -- "); 
+	return stat;
+      }
     }
-    else {
-      perror("Oops -- socket get -- "); 
-      return stat;
-    }
+
+    left = rsize;
   }
 
-  int left = rsize;
   char * bptr = (char*) ptr; 
   while(left > 0) {
     int ls = read(conn_socket, bptr, left);
