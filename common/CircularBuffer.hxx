@@ -27,6 +27,16 @@ namespace SoDa {
       num_read = 0; 
     }
 
+
+    /**
+     * @brief clear the buffer by reseting the pointers. 
+     */
+    void clear() {
+      std::lock_guard<std::mutex> lck(pointer_mutex);       
+      head_pointer = buffer; 
+      tail_pointer = buffer; 
+      num_written = num_read = 0; 
+    }
     
     size_t put(const T * in, size_t len) {
       // several interesting cases: 

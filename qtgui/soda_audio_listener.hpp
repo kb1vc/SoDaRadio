@@ -123,6 +123,7 @@ namespace GUISoDa {
     }
 
 
+
     
   signals:
     void fatalError(const QString & error_string);
@@ -131,15 +132,17 @@ namespace GUISoDa {
     void setAudioGain(float gain); 
     void setRXDevice(const QAudioDeviceInfo & dev_info);
     void closeRadio();
-
+    void audioOutError(QAudio::State new_state);
 
   protected slots:  
     void processRXAudio();
-    void audioErrorHandler(QLocalSocket::LocalSocketError err) {
-      std::cerr << "Audio Listener Error [" << err << "]\n";
+    void audioSocketError(QLocalSocket::LocalSocketError err) {
+      qWarning() << QString("Audio Listener Error [%1]").arg(err);
     }
   
   private:
+    void cleanBuffer();
+    
     QString socket_basename; 
     QLocalSocket * audio_rx_socket;     
     bool quit; 

@@ -894,7 +894,14 @@
                 </widget>
                </item>
                <item row="0" column="1">
-                <widget class="QLineEdit" name="FromCall_le"/>
+                <widget class="QLineEdit" name="FromCall_le">
+                 <property name="minimumSize">
+                  <size>
+                   <width>100</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                </widget>
                </item>
                <item row="1" column="0">
                 <widget class="QLabel" name="label_9">
@@ -904,7 +911,14 @@
                 </widget>
                </item>
                <item row="1" column="1">
-                <widget class="QLineEdit" name="FromGrid_le"/>
+                <widget class="QLineEdit" name="FromGrid_le">
+                 <property name="minimumSize">
+                  <size>
+                   <width>100</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                </widget>
                </item>
               </layout>
              </item>
@@ -1081,7 +1095,14 @@
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_31">
                 <item>
-                 <widget class="QComboBox" name="audioIn_cb"/>
+                 <widget class="QComboBox" name="audioIn_cb">
+                  <property name="maximumSize">
+                   <size>
+                    <width>200</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                 </widget>
                 </item>
                </layout>
               </widget>
@@ -1093,7 +1114,14 @@
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_30">
                 <item>
-                 <widget class="QComboBox" name="audioOut_cb"/>
+                 <widget class="QComboBox" name="audioOut_cb">
+                  <property name="maximumSize">
+                   <size>
+                    <width>200</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                 </widget>
                 </item>
                 <item>
                  <spacer name="verticalSpacer_9">
