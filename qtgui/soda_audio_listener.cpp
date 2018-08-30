@@ -254,7 +254,7 @@ void GUISoDa::AudioRXListener::audioOutError(QAudio::State new_state) {
       break; 
     default:
       // all other errors are fatal, except the crap from audio alsa.. 
-      qInfo("AudioRXListener got a fatal error of some sort on the audio output device.");
+      qInfo("AudioRXListener got a bothersome error (not fatal, not io, not under-run) of some sort on the audio output device.");
       break; 
     }
   }
