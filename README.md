@@ -149,14 +149,20 @@ in older versions.
 
 1. Download the appropriate rpm. The following links will take you to the repository 
 location for the kit. Go to that page and hit the download button.
-   * [Get SoDaRadio for Fedora 27 here](/packages/rpm/SoDaRadio-5.3.0-1.x86_64.Fedora-27.rpm)
-   * [Get SoDaRadio for Fedora 26 here](/packages/rpm/SoDaRadio-5.3.0-1.x86_64.Fedora-26.rpm)
+   * [Get SoDaRadio V6.0.1 for Fedora 28 here](/packages/rpm/SoDaRadio-6.0.1-1.x86_64.Fedora-28.rpm)
+   * [Get (obsolete version of) SoDaRadio for Fedora 27 here](/packages/rpm/SoDaRadio-5.3.0-1.x86_64.Fedora-27.rpm)
+   * [Get (obsolete version of) SoDaRadio for Fedora 26 here](/packages/rpm/SoDaRadio-5.3.0-1.x86_64.Fedora-26.rpm)
    * [Get (obsolete version of) SoDaRadio for Fedora 25 here](/packages/rpm/SoDaRadio-5.0.3-1.x86_64.Fedora-25.rpm)
    * [Get (obsolete version of) SoDaRadio for Fedora 24 here](/packages/rpm/SoDaRadio-5.0.3-1.x86_64.Fedora-24.rpm)
 2. Install the kit using dnf (substitute the correct package name in the command below).
 ~~~~
-sudo dnf install ./SoDaRadio-5.3.0-1.x86_64.Fedora-27.rpm
+sudo dnf install ./SoDaRadio-6.0.1-1.x86_64.Fedora-28.rpm
 ~~~~
+
+Version 6.0.1 fixes some audio problems with 5.3 and more modern distros.  For reasons that are 
+beyond my ken, 5.3 stopped behaving well soon after an upgrade to Fedora 28.  Others have reported 
+similar problems on Ubuntu.  (The audio output stops after a period of time ranging from seconds to days.)
+This has been addressed in version 6. 
 
 Version 5.3 corrects some very nasty bugs in the earlier release.  In particular
 T/R switching events could cause the ALSA audio output to lock up or stammer. This
