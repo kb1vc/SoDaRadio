@@ -1,5 +1,8 @@
 # SoDa -- A Software Defined Radio for the Ettus Research USRP
 
+## New! Improved!!! (See [VersionNews][] below.)
+
+
 SoDaRadio is a multi-mode VHF/UHF/Microwave radio transceiver
 that runs on Linux.   It has been tested on several Ettus
 USRP models including the N200/WBX, N210/WBX, N210/SBX, N200/UBX,
@@ -214,7 +217,26 @@ Poke buttons.  Try things.  Don't hit the "TX" button unless
 you have something connected and the necessary license to operate
 in that band. 
 
-## Version News
+## Version News [VersionNews]
+
+Version 6.0.0 takes a new approach to handling Audio Output
+
+1. The GUI now has an audio listener that collects audio buffers from
+the radio and forwards them to a Qt AudioOutput object.  Qt is much
+better at managing the underlying ALSA audio device than I am.
+
+2. The GUI now allows the user to choose any of the available audio output
+devices. So users who want to link SoDaRadio to fldigi or wsjtx can create
+virtual audio devices and connect through them. (I'll update the wiki with
+an easy recipe for this on Fedora...)
+
+3. The transmit audio chain is still on the SoDaServer side.  This will
+eventually migrate to the GUI as well.  For now, there is a picker that
+chooses a TX audio device, but it has no effect. 
+
+The move to an asynchronous audio chain through QAudioOutput has eliminated
+the instability seen with Version 5.3.
+
 
 Version 5.3.0 has a couple of new features:
 
