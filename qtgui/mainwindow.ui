@@ -464,7 +464,7 @@
        </size>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="Waterfall">
        <attribute name="title">
@@ -1090,12 +1090,21 @@
             <layout class="QVBoxLayout" name="verticalLayout_26">
              <item>
               <widget class="QGroupBox" name="groupBox_9">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="toolTip">
+                <string>Look for this feature in a future feature edition. (It doesn't work yet.)</string>
+               </property>
                <property name="title">
                 <string>TX Input</string>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_31">
                 <item>
                  <widget class="QComboBox" name="audioIn_cb">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
                   <property name="maximumSize">
                    <size>
                     <width>200</width>

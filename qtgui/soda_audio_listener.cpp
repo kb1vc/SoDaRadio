@@ -30,6 +30,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <boost/format.hpp>
 #include <QMessageBox>
 #include <cstring>
+#include <QDateTime>
 
 GUISoDa::AudioRXListener::AudioRXListener(QObject * parent, const QString & _socket_basename, unsigned int _sample_rate) : QIODevice(parent) {
   quit = false;
@@ -214,8 +215,9 @@ qint64 GUISoDa::AudioRXListener::readData(char * data, qint64 maxlen)
   if(avail < maxlen * 3) {
     qint64 etime = audioRX->elapsedUSecs();
     double fetime = (float) etime; 
+    
     qInfo() << QString("[%3] Audio device attempts to read [%1] bytes, only [%2] available.")
-      .arg(maxlen).arg(avail).arg(fetime * 1.0e-6, 0, 'E', 4);
+      .arg(maxlen).arg(avail).arg(QDateTime::currentDateTime().toString("HH:mm:ss.zzz t"));
     memset(data, 0, maxlen); 
     return maxlen; 
   }
