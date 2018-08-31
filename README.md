@@ -1,6 +1,6 @@
 # SoDa -- A Software Defined Radio for the Ettus Research USRP
 
-## New! Improved!!! (See [VersionNews][] below.)
+## New! Improved!!! (See Version News below.)
 
 
 SoDaRadio is a multi-mode VHF/UHF/Microwave radio transceiver
@@ -217,7 +217,7 @@ Poke buttons.  Try things.  Don't hit the "TX" button unless
 you have something connected and the necessary license to operate
 in that band. 
 
-## Version News [VersionNews]
+## [VersionNews]: Version News
 
 Version 6.0.0 takes a new approach to handling Audio Output
 
