@@ -152,7 +152,7 @@ private:
 
   GUISoDa::Listener * listener;
 
-  GUISoDa::AudioRXListener * audio_rx_listener;
+  GUISoDa::AudioListener * audio_listener;
 
   GUISoDa::HamlibServer * hlib_server; 
 };

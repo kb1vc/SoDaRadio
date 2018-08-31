@@ -124,9 +124,7 @@ void GUISoDa::AudioRXListener::processRXAudio() {
       float delay;
       size_t num_elts = audio_cbuffer_p->numElements();
       delay = ((float) (num_elts / sizeof(float))) / ((float) sample_rate); 
-      qDebug() << QString("dbg_count [%1] num_elts = [%4]  delay = [%5]")
-	.arg(debug_count, 6, 16).arg(num_elts).arg(delay);
-      
+      emit(bufferSlack(QString("%1").arg(delay, 4, 'F', 2)));
     }
     debug_count++; 
 
@@ -259,3 +257,4 @@ void GUISoDa::AudioRXListener::audioOutError(QAudio::State new_state) {
     }
   }
 }
+

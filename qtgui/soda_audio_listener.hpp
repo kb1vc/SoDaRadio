@@ -114,20 +114,20 @@ namespace GUISoDa {
     void start() {
       open(QIODevice::ReadOnly); 
     }
-
+    
     /**
      * @brief shut down the QIODevice. 
      */
     void stop() {
       close();
     }
-
-
-
+    
     
   signals:
+    
     void fatalError(const QString & error_string);
-					      
+    void bufferSlack(const QString & slack);
+					   
   public slots:
     void setAudioGain(float gain); 
     void setRXDevice(const QAudioDeviceInfo & dev_info);
@@ -164,5 +164,28 @@ namespace GUISoDa {
     
     qint64 debug_count; 
   };
+
+  // the event loop for audio and network ports lives in its own
+  // thread. 
+  class AudioListener : public QThread {
+  public:
+    AudioListener(QObject * parent = 0, 
+		  const QString & socket_basename = "tmp", 
+		  unsigned int _sample_rate = 48000) {
+      rx_listener = new AudioRXListener(parent, socket_basename, _sample_rate); 
+      this->setObjectName(QString("GUISoDa::AudioListener"));
+    }
+
+    void init() {
+      rx_listener->init();
+    }
+
+    AudioRXListener * getRX() { return rx_listener; }
+    ~AudioListener() {
+      delete rx_listener;
+    }
+  private:
+    AudioRXListener * rx_listener; 
+  }; 
 }
 #endif

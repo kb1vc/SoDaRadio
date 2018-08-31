@@ -464,7 +464,7 @@
        </size>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="Waterfall">
        <attribute name="title">
@@ -2820,9 +2820,36 @@ MB3 right half -- move digit selector right
      </layout>
     </item>
     <item>
-     <layout class="QHBoxLayout" name="LogGPS_lay" stretch="2,0">
+     <layout class="QHBoxLayout" name="LogGPS_lay" stretch="0,2,0">
       <item>
-       <layout class="QHBoxLayout" name="Log_box" stretch="0,0,2">
+       <layout class="QHBoxLayout" name="horizontalLayout_17">
+        <item>
+         <widget class="QLabel" name="buflab">
+          <property name="text">
+           <string>Buffer(s)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="slack_lab">
+          <property name="frameShape">
+           <enum>QFrame::Panel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <property name="text">
+           <string>TextLabel</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="Log_box" stretch="0,0,0,2">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_10"/>
+        </item>
         <item>
          <widget class="QPushButton" name="LogContact_btn">
           <property name="text">

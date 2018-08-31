@@ -54,7 +54,7 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   listener = new GUISoDa::Listener(this, QString::fromStdString(params.getServerSocketBasename())); 
 
   // setup the audio listener
-  audio_rx_listener = new AudioRXListener(this, QString::fromStdString(params.getServerSocketBasename()));
+  audio_listener = new GUISoDa::AudioListener(this, QString::fromStdString(params.getServerSocketBasename()));
   
   setupSpectrum();
   setupWaterFall();
@@ -84,9 +84,11 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   // connect the audio listener to the rx selector combobox
   connect(ui->audioOut_cb, QOverload<int>::of(&QComboBox::currentIndexChanged),
 	  [=](int index) {
-	    audio_rx_listener->setRXDevice(ui->audioOut_cb->itemData(index).value<QAudioDeviceInfo>());
+	    audio_listener->getRX()->setRXDevice(ui->audioOut_cb->itemData(index).value<QAudioDeviceInfo>());
 	  });
-				  
+
+  connect(audio_listener->getRX(), SIGNAL(bufferSlack(const QString &)), 
+	  ui->slack_lab, SLOT(setText(const QString &)));
   connect(ui->aboutSoDa_btn, SIGNAL(clicked(bool)), 
 	  this, SLOT(displayAppInfo(bool)));
 
@@ -98,7 +100,7 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
 
   listener->init();
   listener->start();
-  audio_rx_listener->init();
+  audio_listener->init();
   
   hlib_server = new HamlibServer(this, params.getHamlibPortNumber());
   
