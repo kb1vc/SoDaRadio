@@ -88,7 +88,7 @@ process is pretty much identical for all of the distributions, so continue on to
 
 #### Ubuntu prerequisites (Ubuntu 18.04 required)
 
-# SoDaRadio no longer builds on Ubuntu 16.04 -- its Qt5 version is far out of date
+##### SoDaRadio no longer builds on Ubuntu 16.04 -- its Qt5 version is far out of date
 (This is somewhat frustrating, because the last update to 16.04 was more than a year and a half after the required version of Qt5 came out.)
 
 Run the installation commands as "root" or use sudo.  
@@ -179,8 +179,9 @@ None of the older releases have adequate support for Qt. SoDaRadio versions prio
 1. Download the deb file.  The following link will take you to the repository location
 for the kit.  Go to that page and hit the download button.
 [Get SoDaRadio for Ubuntu 18.04 here](/packages/deb/SoDaRadio-6.0.3-1.x86_64.Ubuntu-18.04.deb
-2. Install the kit using apt
+2. Install the kit using apt -- you might need to add the ettus repository. I do, so that I get a recent libuhd build. 
 ~~~~
+add-apt-repository ppa:ettusresearch/uhd
 sudo apt install ./SoDaRadio-6.0.3-1.x86_64.Ubuntu-18.04.deb
 ~~~~
 
