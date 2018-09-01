@@ -88,7 +88,7 @@ process is pretty much identical for all of the distributions, so continue on to
 
 #### Ubuntu prerequisites (Ubuntu 18.04 required)
 
-##### SoDaRadio no longer builds on Ubuntu 16.04 -- its Qt5 version is far out of date
+SoDaRadio no longer builds on Ubuntu 16.04 -- its Qt5 version is far out of date
 (This is somewhat frustrating, because the last update to 16.04 was more than a year and a half after the required version of Qt5 came out.)
 
 Run the installation commands as "root" or use sudo.  
@@ -173,7 +173,7 @@ has since been fixed.  (See the git logs for version soda-5.3.0 )
 
 #### Ubuntu
 
-SoDaRadio is no longer supported on Ubuntu 16.04, 17.10 or prior releases.
+**SoDaRadio is no longer supported on Ubuntu 16.04, 17.10 or prior releases.**
 None of the older releases have adequate support for Qt. SoDaRadio versions prior to 6.0 may build on Ubuntu systems. 
 
 1. Download the deb file.  The following link will take you to the repository location
