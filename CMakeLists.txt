@@ -13,7 +13,7 @@ PROJECT(SoDaRadio)
 
 SET(SoDaRadio_VERSION_MAJOR 6)
 SET(SoDaRadio_VERSION_MINOR 0)
-SET(SoDaRadio_VERSION_PATCH 1)
+SET(SoDaRadio_VERSION_PATCH 3)
 SET(SoDaRadio_VERSION "${SoDaRadio_VERSION_MAJOR}.${SoDaRadio_VERSION_MINOR}.${SoDaRadio_VERSION_PATCH}")
 
 set(SoDaRadio_PACKAGE_DESCRIPTION 
@@ -145,7 +145,12 @@ IF(CMAKE_VERSION VERSION_GREATER 3.0.0)
     FIND_PACKAGE(Qt5PrintSupport REQUIRED )
     FIND_PACKAGE(Qt5Multimedia REQUIRED )                    
     FIND_PACKAGE(Qwt REQUIRED)    
+    IF(Qt5Widgets_VERSION VERSION_LESS 5.7.0)
+      MESSAGE(FATAL_ERROR "Minimum supported Qt5 version is 5.7")
+    ENDIF()
     ADD_SUBDIRECTORY(qtgui)
+  ELSE()
+    MESSAGE(FATAL_ERROR "The Qt5Widgets library is required to build SoDaRadio")
   ENDIF()
 ENDIF()
 

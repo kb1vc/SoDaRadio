@@ -53,10 +53,6 @@ namespace GUISoDa {
 		    unsigned int _sample_rate = 48000);
 
     ~AudioRXListener() {
-      qDebug() << QString("**********************!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!**********************");
-      std::ofstream df("buffer_dump.dat");
-      audio_cbuffer_p->dumpBuf<float>(df); 
-      df.close();
       delete audio_rx_socket;
     }
 

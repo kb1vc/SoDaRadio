@@ -86,8 +86,8 @@ bool GUISoDa::AudioRXListener::init()
 	  this, SLOT(audioSocketError(QLocalSocket::LocalSocketError)));
 
   // is the audio socket ok? 
-  qDebug() << QString("AUDIO SOCKET STATE: [%1] error string [%2]")
-    .arg(audio_rx_socket->state()).arg(audio_rx_socket->errorString());
+  // qDebug() << QString("AUDIO SOCKET STATE: [%1] error string [%2]")
+  //   .arg(audio_rx_socket->state()).arg(audio_rx_socket->errorString());
   return true; 
 }
 
@@ -102,17 +102,6 @@ void GUISoDa::AudioRXListener::processRXAudio() {
   // (a 2010 edition i7). 
 
   qint64 len = audio_rx_socket->bytesAvailable();
-#if 0
-  // we may have run out of data -- if so, stuff it with 1/8 second of audio
-  size_t num_elts = audio_cbuffer_p->numElements();
-  size_t target_sec = (sample_rate * sizeof(float)) >> 3;
-  if(num_elts < target_sec) {
-    size_t slen = target_sec - num_elts; 
-    slen = slen & (~0x3); // a number of whole floats..
-    audio_cbuffer_p->put((char*) silence, slen); 
-    qDebug() << QString("inserted [%1] samples at dbg_count [%2] num_elts was [%3]").arg(slen / sizeof(float)).arg(debug_count).arg(num_elts);
-  }
-#endif
 
   
   while(len > 0) {
@@ -169,7 +158,7 @@ bool GUISoDa::AudioRXListener::initAudio(const QAudioDeviceInfo & dev_info)
   
   audioRX->setBufferSize((sizeof(float) * sample_rate) >> 2); // buffer up 1/4 second
 
-  qDebug() << QString("audioRX periodSize() = [%1] bufferSize() = [%2] sample rate = [%3]").arg(audioRX->periodSize()).arg(audioRX->bufferSize()).arg(sample_rate);
+  //   qDebug() << QString("audioRX periodSize() = [%1] bufferSize() = [%2] sample rate = [%3]").arg(audioRX->periodSize()).arg(audioRX->bufferSize()).arg(sample_rate);
 
   
   // react to errors when they happen. 
@@ -182,7 +171,7 @@ bool GUISoDa::AudioRXListener::initAudio(const QAudioDeviceInfo & dev_info)
   // tell the audio device where to find the QIODevice.
   audioRX->start(this);
   
-  qDebug() << QString("period size is now [%1]").arg(audioRX->periodSize());
+  //   qDebug() << QString("period size is now [%1]").arg(audioRX->periodSize());
   return true; 
 }	
 
@@ -204,7 +193,6 @@ void  GUISoDa::AudioRXListener::setRXDevice(const QAudioDeviceInfo & dev_info)
   }
 
   initAudio(dev_info);
-  qDebug() << QString("Did initAudio");
 }
 
 

@@ -37,6 +37,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QString>
 #include <QMessageBox>
 #include <QtCoreVersion>
+#include <QtGlobal>
 
 #include "soda_comboboxes.hpp"
 #include "soda_listener.hpp"
@@ -101,6 +102,7 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   listener->init();
   listener->start();
   audio_listener->init();
+  audio_listener->start();
   
   hlib_server = new HamlibServer(this, params.getHamlibPortNumber());
   
