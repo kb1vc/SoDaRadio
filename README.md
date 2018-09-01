@@ -15,9 +15,9 @@ It is non-commercial and released under the BSD 2-Clause license.
 
 SoDaRadio does not yet run on any other hardware platform. 
 
-SoDaRadio has been built on both Fedora and Ubuntu releases.  There is no
+SoDaRadio has been built on both Fedora 28 and Ubuntu 18.04 releases.  There is no
 particular reason that it couldn't run on any Linux release that is clean 
-enough to compile and run the UHD utilities that come with the Ettus software.
+enough to compile and run the UHD utilities that come with the Ettus software and that supports Qt5.7 or later. 
 
 Interested in more detail?  Take a look at the [documentation here](docs/index.html).  ["SoDa -- A Multimode VHF/UHF Software Defined Radio"](papers/SoDa_EasternVHF_2014.pdf) was presented at the 40th Eastern VHF/UHF Conference in 2014.
 
@@ -86,7 +86,10 @@ Now it is time to get a copy of the sources and build the kit.  That
 process is pretty much identical for all of the distributions, so continue on to
 "Compiling and installing on any platform"
 
-#### Ubuntu prerequisites
+#### Ubuntu prerequisites (Ubuntu 18.04 required)
+
+# SoDaRadio no longer builds on Ubuntu 16.04 -- its Qt5 version is far out of date
+(This is somewhat frustrating, because the last update to 16.04 was more than a year and a half after the required version of Qt5 came out.)
 
 Run the installation commands as "root" or use sudo.  
 ~~~~~
