@@ -173,17 +173,15 @@ has since been fixed.  (See the git logs for version soda-5.3.0 )
 
 #### Ubuntu
 
-SoDaRadio builds and runs on Ubuntu 14.04, but the deb package for it does not work for some mysterious reason. 
-
-The kit for Ubuntu 16.04 and 17.10, however, appear to work just fine.  
+SoDaRadio is no longer supported on Ubuntu 16.04, 17.10 or prior releases.
+None of the older releases have adequate support for Qt. SoDaRadio versions prior to 6.0 may build on Ubuntu systems. 
 
 1. Download the deb file.  The following link will take you to the repository location
 for the kit.  Go to that page and hit the download button.
-[Get SoDaRadio for Ubuntu 17.10 here](/packages/deb/SoDaRadio-5.3.0-1.x86_64.Ubuntu-17.10.deb)
-[Get SoDaRadio for Ubuntu 16.04 here](/packages/deb/SoDaRadio-5.3.0-1.x86_64.Ubuntu-16.04.deb)
+[Get SoDaRadio for Ubuntu 18.04 here](/packages/deb/SoDaRadio-6.0.3-1.x86_64.Ubuntu-18.04.deb
 2. Install the kit using apt
 ~~~~
-sudo apt install ./SoDaRadio-5.3.0-1.x86_64.Ubuntu-17.10.deb
+sudo apt install ./SoDaRadio-6.0.3-1.x86_64.Ubuntu-18.04.deb
 ~~~~
 
 Please report success/failure to the github issues discussion.
@@ -192,6 +190,8 @@ Please report success/failure to the github issues discussion.
 
 To start the SoDaRadio, connect your Ettus USRP to 
 the host computer. Connect an antenna to the TX/RX port.
+
+For users of the B2xx series, it is best to initialize the radio with uhd_usrp_probe. Firmware loading can take some time, and SoDaRadio can't tell whether the radio is slowly initializing, or the control link is broken.  
 
 Then execute SoDaRadio
 
