@@ -178,7 +178,7 @@ None of the older releases have adequate support for Qt. SoDaRadio versions prio
 
 1. Download the deb file.  The following link will take you to the repository location
 for the kit.  Go to that page and hit the download button.
-[Get SoDaRadio for Ubuntu 18.04 here](/packages/deb/SoDaRadio-6.0.3-1.x86_64.Ubuntu-18.04.deb
+[Get SoDaRadio for Ubuntu 18.04 here](/packages/deb/SoDaRadio-6.0.3-1.x86_64.Ubuntu-18.04.deb)
 2. Install the kit using apt -- you might need to add the ettus repository. I do, so that I get a recent libuhd build. 
 ~~~~
 add-apt-repository ppa:ettusresearch/uhd
