@@ -44,8 +44,17 @@ void MainWindow::setupSettings()
 	  }); 
   connect(ui->Sidetone_sli, SIGNAL(valueChanged(int)), 
 	  listener, SLOT(setSidetoneVolume(int)));
+  connect(ui->Sidetone_sli, &QSlider::valueChanged,
+	  [=](int s) {
+	    ui->Sidetone_lbl->setText(QString("%1").arg(s, 2));
+	  }); 
+
   connect(ui->TXPower_sli, SIGNAL(valueChanged(int)), 
 	  listener, SLOT(setTXPower(int)));
+  connect(ui->TXPower_sli, &QSlider::valueChanged,
+	  [=](int s) {
+	    ui->TXPower_lbl->setText(QString("%1").arg(s, 2));
+	  }); 
 
   connect(ui->FromGrid_le, SIGNAL(textChanged(const QString &)),
 	  ui->FromGrid_lab, SLOT(setText(const QString &)));

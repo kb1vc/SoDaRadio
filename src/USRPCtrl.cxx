@@ -30,13 +30,8 @@
 #include "SoDaBase.hxx"
 #include "USRPFrontEnd.hxx"
 #include <uhd/version.hpp>
-#if UHD_VERSION < 3110000
-#  include <uhd/utils/msg.hpp>
-#  include <uhd/utils/thread_priority.hpp>
-#else
-#  include <uhd/utils/log.hpp>
-#  include <uhd/utils/thread.hpp>
-#endif
+#include <uhd/utils/log.hpp>
+#include <uhd/utils/thread.hpp>
 #include <uhd/utils/safe_main.hpp>
 #include <uhd/usrp/multi_usrp.hpp>
 #include <uhd/usrp/multi_usrp.hpp>
@@ -66,13 +61,8 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
   // setup a normal message handler that doesn't babble
   // so much.
   
-  // sigh -- this disappeared in V3.11
-#if UHD_VERSION < 3110000
-  uhd::msg::register_handler(normal_message_handler);
-#else
   // turn off logging below ERROR
   uhd::log::set_console_level(uhd::log::severity_level::warning);
-#endif
   
   // initialize variables
   last_rx_req_freq = 0.0; // at least this is a number...
@@ -151,13 +141,6 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
   // we want to avoid setting and getting it....
   if(tx_fe_subtree != NULL) {
     tx_fe_has_enable = tx_fe_subtree->hasProperty("enabled");
-#if 0    
-    std::cerr << "Testing for tx power_mode prop." << std::endl; 
-    if(tx_fe_subtree->hasProperty("power_mode")) {
-      std::cerr << "Found for tx power_mode prop." << std::endl;       
-      tx_fe_subtree->setStringProp("power_mode/value","powersave"); // "performance");     
-    }
-#endif    
   }
 
 
@@ -169,14 +152,6 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
   // we want to avoid setting and getting it....
   if(rx_fe_subtree != NULL) {
     rx_fe_has_enable = rx_fe_subtree->hasProperty("enabled");
-#if 0    
-    if(rx_fe_subtree->hasProperty("power_mode")) {
-      std::cerr << "*****Setting power save mode for RX front end.******" << std::endl;
-      // powersave may be the right choice, see 
-      // http://lists.ettus.com/pipermail/usrp-users_lists.ettus.com/2016-April/019784.html
-      rx_fe_subtree->setStringProp("power_mode/value","powersave"); // "performance"); 
-    }
-#endif    
   }
   if(rx_fe_has_enable) rx_fe_subtree->setBoolProp("enabled",true);
 
@@ -934,22 +909,6 @@ void SoDa::USRPCtrl::applyTargetFreqCorrection(double target_freq, double avoid_
 }
 
 
-#if UHD_VERSION < 3110000
-void SoDa::USRPCtrl::normal_message_handler(uhd::msg::type_t type, const std::string & msg)
-{
-  switch (type) {
-  case uhd::msg::error:
-    std::cerr << "UHD ERROR: " << msg << std::flush;
-    break;
-  case uhd::msg::warning:
-    std::cerr << "UHD WARNING: " << msg << std::flush;
-    break;
-  default:
-    SoDa::USRPCtrl::singleton_ctrl_obj->debugMsg(msg);
-    break; 
-  }
-}
-#endif
 
 void SoDa::USRPCtrl::testIntNMode(bool force_int_N, bool force_frac_N)
 {
