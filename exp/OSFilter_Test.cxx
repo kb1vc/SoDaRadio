@@ -188,7 +188,6 @@ static float lpf2500[] =
 
 
 
-#include "SoDa_filter_tables.hxx"
 
 SoDa::OSFilter ** buildFilterMap(int inbuflen)
 {

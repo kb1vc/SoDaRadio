@@ -37,8 +37,6 @@ set(SoDaServer_SRCS
     ReSampler.hxx
     ReSamplers625x48.hxx
     SoDaBase.hxx
-    SoDa_filter_tables.hxx
-    SoDa_tx_filter_tables.hxx
     Spectrogram.hxx
     UDSockets.hxx
     UI.hxx

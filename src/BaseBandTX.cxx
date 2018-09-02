@@ -40,8 +40,6 @@
 #include "ReSamplers625x48.hxx"
 #include <cstdlib>
 
-// Don't need these anymore #include "SoDa_tx_filter_tables.hxx" 
-
 SoDa::BaseBandTX::BaseBandTX(Params * params, DatMBox * _tx_stream,
 		       CmdMBox * _cmd_stream,
 		       AudioIfc * _audio_ifc
