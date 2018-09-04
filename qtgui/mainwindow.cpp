@@ -67,7 +67,7 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   setupSettings();
   setupBandConfig();
   setupLogEditor();
-
+  setupStatus();
 
   // connect(listener, SIGNAL(repHWMBVersion(const QString &)), 
   // 	  this, SLOT(setWindowTitle(const QString &)));

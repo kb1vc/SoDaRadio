@@ -109,6 +109,14 @@ public slots:
   void displayAppInfo(bool dummy);
 
 protected:
+  int transmit_intervals; 
+  int transmit_seconds; 
+  int elapsed_seconds; 
+  QTime transmit_time; 
+  QTimer one_second_timer; 
+
+  QString secondsToElapsed(int seconds); 
+
   void setupTopControls();
   void setupMidControls();
   void setupLogGPS();
@@ -129,6 +137,8 @@ protected:
   void saveCurrentFreqs();
   
   void sendCannedCW(const QString & txt);
+
+  void setupStatus();  
   
 private:
   void closeEvent(QCloseEvent * event) {

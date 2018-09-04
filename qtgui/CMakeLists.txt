@@ -20,6 +20,7 @@ SET(SoDaRadio_Lib_SRCS
   main_setup_mid.cpp
   main_setup_loggps.cpp
   main_setup_settings.cpp
+  main_setup_status.cpp  
   main_setup_bandconfig.cpp
   main_setup_logeditor.cpp  
   main_setup_spect.cpp
