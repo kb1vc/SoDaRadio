@@ -464,7 +464,7 @@
        </size>
       </property>
       <property name="currentIndex">
-       <number>5</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="Waterfall">
        <attribute name="title">
@@ -1214,6 +1214,16 @@
                 </size>
                </property>
               </spacer>
+             </item>
+             <item>
+              <widget class="QPushButton" name="recDir_btn">
+               <property name="toolTip">
+                <string>Destination directory for audio recordings</string>
+               </property>
+               <property name="text">
+                <string>Record Directory...</string>
+               </property>
+              </widget>
              </item>
             </layout>
            </widget>

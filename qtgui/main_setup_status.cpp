@@ -49,9 +49,9 @@ void MainWindow::setupStatus()
   transmit_seconds = 0; 
   transmit_intervals = 0; 
   
-  ui->StartTime_lbl->setText(QDateTime::currentDateTime().toString("dd-MMM-yy HH:mm:ss.zzz t"));
+  ui->StartTime_lbl->setText(QDateTime::currentDateTime().toString("dd-MMM-yy HH:mm:ss t"));
   
-  connect(ui->PTT_btn, &QPushButton::toggled, 
+  connect(listener, &GUISoDa::Listener::repPTT,
 	  [=](bool fl) {
 	    if(fl) {
 	      transmit_intervals++; 
