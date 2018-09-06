@@ -90,6 +90,18 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
 
   connect(audio_listener->getRX(), SIGNAL(bufferSlack(const QString &)), 
 	  ui->slack_lab, SLOT(setText(const QString &)));
+
+  connect(ui->Record_chk, &QCheckBox::stateChanged,
+	  [=](int changed) {
+	    audio_listener->getRec()->record(changed != Qt::Unchecked);
+	  });
+
+  connect(ui->recDir_btn, &QPushButton::clicked,
+	  [=]() {
+	    audio_listener->getRec()->getRecDirectory(this); 
+	  });
+
+  
   connect(ui->aboutSoDa_btn, SIGNAL(clicked(bool)), 
 	  this, SLOT(displayAppInfo(bool)));
 

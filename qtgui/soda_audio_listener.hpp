@@ -37,7 +37,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iostream>
 #include <fstream>
 #include <errno.h>
-#include "../src/Command.hxx"
+#include <sndfile.h>
 #include "../common/CircularBuffer.hxx"
 
 namespace GUISoDa {
@@ -118,9 +118,10 @@ namespace GUISoDa {
       close();
     }
     
-    
-  signals:
-    
+
+  signals:    
+    // share the audio data with other objects (like the recorder). 
+    void pendAudioBuffer(float *, qint64 len);
     void fatalError(const QString & error_string);
     void bufferSlack(const QString & slack);
 					   
@@ -161,27 +162,66 @@ namespace GUISoDa {
     qint64 debug_count; 
   };
 
+  // put the recorder in its own thread, so if something goes wrong
+  // we don't zorch the rest of the radio. 
+  class AudioRecorder : public QThread {
+    Q_OBJECT
+    
+  public:
+    AudioRecorder(int _sample_rate);
+    ~AudioRecorder() {
+      if(snd_file != NULL) {
+	sf_close(snd_file); 
+	delete rec_buffer; 
+      }
+    }
+
+  public slots:
+    void getRecDirectory(QWidget * par); 
+    
+    // write buffer to circular buffer or to file. 
+    void saveData(float * buf, qint64 len); 
+
+    // start/stop recording
+    void record(bool on); 
+    
+  protected:
+    void openSoundFile(const QString & fname); 
+    
+    QString record_directory; 
+    QString current_file; 
+    
+    SNDFILE * snd_file; 
+    int sample_rate; 
+    
+    SoDa::CircularBuffer<float> * rec_buffer; 
+  }; 
+  
   // the event loop for audio and network ports lives in its own
   // thread. 
   class AudioListener : public QThread {
   public:
     AudioListener(QObject * parent = 0, 
 		  const QString & socket_basename = "tmp", 
-		  unsigned int _sample_rate = 48000) {
-      rx_listener = new AudioRXListener(parent, socket_basename, _sample_rate); 
-      this->setObjectName(QString("GUISoDa::AudioListener"));
-    }
+		  unsigned int _sample_rate = 48000);
 
-    void init() {
-      rx_listener->init();
-    }
-
-    AudioRXListener * getRX() { return rx_listener; }
     ~AudioListener() {
       delete rx_listener;
+      delete rx_recorder; 
     }
+    
+    void init() {
+      rx_listener->init();
+      rx_recorder->start();
+    }
+
+    AudioRXListener * getRX() const { return rx_listener; }
+    AudioRecorder * getRec() const { return rx_recorder; }
+
   private:
     AudioRXListener * rx_listener; 
+    AudioRecorder * rx_recorder; 
   }; 
+
 }
 #endif

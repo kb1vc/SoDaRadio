@@ -2450,10 +2450,7 @@ MB3 right half -- move digit selector right
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="Record_tgl">
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Toggle Recording on/off&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Records audio into file in directory set in &amp;quot;Setting&amp;quot; tab. Filenames are SoDa_MMDDYY_hhmmss.wav&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
+         <widget class="QCheckBox" name="Record_chk">
           <property name="text">
            <string>RECORD</string>
           </property>

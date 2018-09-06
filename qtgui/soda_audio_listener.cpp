@@ -27,10 +27,22 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "soda_audio_listener.hpp"
-#include <boost/format.hpp>
 #include <QMessageBox>
 #include <cstring>
 #include <QDateTime>
+#include <QFileDialog>
+#include <QByteArray>
+
+GUISoDa::AudioListener::AudioListener(QObject * parent,
+				      const QString & socket_basename,
+				      unsigned int _sample_rate) {
+  rx_listener = new AudioRXListener(parent, socket_basename, _sample_rate); 
+  rx_recorder = new AudioRecorder(_sample_rate); 
+  
+  connect(rx_listener, SIGNAL(pendAudioBuffer(float*, qint64)), 
+	  rx_recorder, SLOT(saveData(float*, qint64)));
+  this->setObjectName(QString("GUISoDa::AudioListener"));
+}
 
 GUISoDa::AudioRXListener::AudioRXListener(QObject * parent, const QString & _socket_basename, unsigned int _sample_rate) : QIODevice(parent) {
   quit = false;
@@ -85,6 +97,7 @@ bool GUISoDa::AudioRXListener::init()
   connect(audio_rx_socket, SIGNAL(error(QLocalSocket::LocalSocketError)), 
 	  this, SLOT(audioSocketError(QLocalSocket::LocalSocketError)));
 
+
   // is the audio socket ok? 
   // qDebug() << QString("AUDIO SOCKET STATE: [%1] error string [%2]")
   //   .arg(audio_rx_socket->state()).arg(audio_rx_socket->errorString());
@@ -119,7 +132,9 @@ void GUISoDa::AudioRXListener::processRXAudio() {
     debug_count++; 
 
     if(rlen > 0) {
-      audio_cbuffer_p->put(rx_in_buf, rlen); 
+      audio_cbuffer_p->put(rx_in_buf, rlen);
+      // send the buffer to anyone else who is listening. 
+      emit(pendAudioBuffer((float*) rx_in_buf, rlen / sizeof(float)));
       len = len - rlen; 
     }
     else {
@@ -248,3 +263,90 @@ void GUISoDa::AudioRXListener::audioOutError(QAudio::State new_state) {
   }
 }
 
+GUISoDa::AudioRecorder::AudioRecorder(int _sample_rate)
+{
+  sample_rate = _sample_rate; 
+  snd_file = NULL; 
+
+  record_directory = QString("./");
+
+  // store 5 seconds worth of audio
+  rec_buffer = new SoDa::CircularBuffer<float>(sample_rate * 5);   
+}
+
+void GUISoDa::AudioRecorder::openSoundFile(const QString & fname)
+{
+  //// NOTE!  Since this manipulates snd_file, it must interlock against
+  //// saveData -- this works just fine as long as the two methods are 
+  //// only ever called as or from a slot.  
+
+  SF_INFO info; 
+  info.samplerate = sample_rate; 
+  info.channels = 1; 
+  info.format = SF_FORMAT_WAV | SF_FORMAT_PCM_16; 
+  QByteArray ba = fname.toLatin1(); 
+  snd_file = sf_open(ba.data(), SFM_WRITE, &info); 
+  // fail silently. 
+}
+
+void GUISoDa::AudioRecorder::record(bool on) 
+{
+  //// NOTE!  Since this manipulates snd_file, it must interlock against
+  //// saveData -- this works just fine as long as the two methods are 
+  //// only ever called as slots.  
+  // stop recording, regardless of what just happened. 
+  if(snd_file != NULL) {
+    sf_close(snd_file); 
+    snd_file = NULL; 
+  }
+  
+  if(on) {
+    // if we're turning the recorder on, 
+    // create a new file name. 
+
+    QString fname = QString("%1%2.wav").arg(record_directory).arg(QDateTime::currentDateTime().toString("dd-MMM-yy_HHmmss"));
+
+    qDebug() << QString("About to open sound file [%1]").arg(fname);
+    
+    // open the sound file.     
+    openSoundFile(fname); 
+  }
+}
+
+void GUISoDa::AudioRecorder::saveData(float * buf, qint64 len) 
+{
+  if(snd_file != NULL) {
+    // we're writing a sound file -- is this the first buffer 
+    // to arrive?  If so, dump the circular buffer first...
+    if (rec_buffer->numElements() != 0) {
+      // dump the circular buffer to the sound file. 
+      // 4K elements at a time. 
+      float ibuf[4096]; 
+      int len; 
+      while((len = rec_buffer->get(ibuf, 4096)) > 0) {
+	int rv = sf_write_float(snd_file, ibuf, len); 
+      }
+    }
+
+    // now the circular buffer is empty (and it will stay that
+    // way for a while. 
+    // dump the incoming buffer to the sound file.
+    int rv = sf_write_float(snd_file, buf, len); 
+  }
+  else {
+    // we aren't recording, save the last samples. 
+    rec_buffer->put(buf, len); 
+  }
+}
+
+void GUISoDa::AudioRecorder::getRecDirectory(QWidget * par)
+{
+  QString rec_dir = QFileDialog::getExistingDirectory(par, tr("Select Recording Directory"), 
+						      record_directory,
+						      QFileDialog::ShowDirsOnly | 
+						      QFileDialog::DontResolveSymlinks);
+  qDebug() << QString("Just set record directory to [%1]").arg(rec_dir);  
+  if(!(rec_dir.isNull() || rec_dir.isEmpty())) {
+    record_directory = rec_dir; 
+  }
+}

@@ -115,6 +115,7 @@ INCLUDE_DIRECTORIES("${PROJECT_BINARY_DIR}")
 
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
 
+FIND_PACKAGE(SndFile REQUIRED)
 
 FIND_PACKAGE(Boost 1.45 REQUIRED COMPONENTS program_options thread date_time system filesystem serialization regex QUIET)
 
