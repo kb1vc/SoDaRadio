@@ -299,7 +299,7 @@ void GUISoDa::AudioRecorder::record(bool on)
     // if we're turning the recorder on, 
     // create a new file name. 
 
-    QString fname = QString("%1%2.%3").arg(record_directory).arg(QDateTime::currentDateTime().toString("dd-MMM-yy_HHmmss")).arg("flac");
+    QString fname = QString("%1/%2.%3").arg(record_directory).arg(QDateTime::currentDateTime().toString("dd-MMM-yy_HHmmss")).arg("flac");
     
     // open the sound file.     
     openSoundFile(fname); 
