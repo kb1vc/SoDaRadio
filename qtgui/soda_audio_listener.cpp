@@ -98,9 +98,6 @@ bool GUISoDa::AudioRXListener::init()
 	  this, SLOT(audioSocketError(QLocalSocket::LocalSocketError)));
 
 
-  // is the audio socket ok? 
-  // qDebug() << QString("AUDIO SOCKET STATE: [%1] error string [%2]")
-  //   .arg(audio_rx_socket->state()).arg(audio_rx_socket->errorString());
   return true; 
 }
 
@@ -173,7 +170,6 @@ bool GUISoDa::AudioRXListener::initAudio(const QAudioDeviceInfo & dev_info)
   
   audioRX->setBufferSize((sizeof(float) * sample_rate) >> 2); // buffer up 1/4 second
 
-  //   qDebug() << QString("audioRX periodSize() = [%1] bufferSize() = [%2] sample rate = [%3]").arg(audioRX->periodSize()).arg(audioRX->bufferSize()).arg(sample_rate);
 
   
   // react to errors when they happen. 
@@ -186,7 +182,6 @@ bool GUISoDa::AudioRXListener::initAudio(const QAudioDeviceInfo & dev_info)
   // tell the audio device where to find the QIODevice.
   audioRX->start(this);
   
-  //   qDebug() << QString("period size is now [%1]").arg(audioRX->periodSize());
   return true; 
 }	
 
@@ -197,8 +192,6 @@ void  GUISoDa::AudioRXListener::setAudioGain(float gain)
 
 void  GUISoDa::AudioRXListener::setRXDevice(const QAudioDeviceInfo & dev_info)
 {
-  qDebug() << QString("Setting RX Device to [%1]").arg(dev_info.deviceName());
-  
   if(audioRX != NULL) {
     audioRX->stop();
     audioRX->disconnect(this); 
@@ -283,7 +276,9 @@ void GUISoDa::AudioRecorder::openSoundFile(const QString & fname)
   SF_INFO info; 
   info.samplerate = sample_rate; 
   info.channels = 1; 
-  info.format = SF_FORMAT_WAV | SF_FORMAT_PCM_16; 
+  // FLAC is lossless and a bit more compact than ulaw/wave
+  // info.format = SF_FORMAT_WAV | SF_FORMAT_PCM_16 | SF_FORMAT_ULAW;
+  info.format = SF_FORMAT_FLAC | SF_FORMAT_PCM_16;
   QByteArray ba = fname.toLatin1(); 
   snd_file = sf_open(ba.data(), SFM_WRITE, &info); 
   // fail silently. 
@@ -304,9 +299,7 @@ void GUISoDa::AudioRecorder::record(bool on)
     // if we're turning the recorder on, 
     // create a new file name. 
 
-    QString fname = QString("%1%2.wav").arg(record_directory).arg(QDateTime::currentDateTime().toString("dd-MMM-yy_HHmmss"));
-
-    qDebug() << QString("About to open sound file [%1]").arg(fname);
+    QString fname = QString("%1%2.%3").arg(record_directory).arg(QDateTime::currentDateTime().toString("dd-MMM-yy_HHmmss")).arg("flac");
     
     // open the sound file.     
     openSoundFile(fname); 
@@ -345,7 +338,6 @@ void GUISoDa::AudioRecorder::getRecDirectory(QWidget * par)
 						      record_directory,
 						      QFileDialog::ShowDirsOnly | 
 						      QFileDialog::DontResolveSymlinks);
-  qDebug() << QString("Just set record directory to [%1]").arg(rec_dir);  
   if(!(rec_dir.isNull() || rec_dir.isEmpty())) {
     record_directory = rec_dir; 
   }

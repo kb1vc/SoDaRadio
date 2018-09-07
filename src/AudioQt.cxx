@@ -58,12 +58,9 @@ namespace SoDa {
 
   void AudioQt::setupNetwork(std::string audio_sock_basename) 
   {
-    std::cerr << "Setting up audio socket in AudioQt.\n";
     std::string sockname = audio_sock_basename + "_rxa";
     audio_rx_socket = new SoDa::UD::ServerSocket(sockname);
     audio_rx_socket->setDebug(true);
-    
-    std::cerr << "Set up audio socket in AudioQt. \n[" << sockname << "]\n";    
   }
 
 

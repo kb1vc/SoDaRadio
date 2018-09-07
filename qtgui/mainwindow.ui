@@ -921,6 +921,9 @@
                    <height>0</height>
                   </size>
                  </property>
+                 <property name="toolTip">
+                  <string>Set this station's callsign.</string>
+                 </property>
                 </widget>
                </item>
                <item row="1" column="0">
@@ -938,6 +941,9 @@
                    <height>0</height>
                   </size>
                  </property>
+                 <property name="toolTip">
+                  <string>Set this station's grid.</string>
+                 </property>
                 </widget>
                </item>
               </layout>
@@ -946,6 +952,9 @@
               <layout class="QHBoxLayout" name="horizontalLayout_5">
                <item>
                 <widget class="QCheckBox" name="useGPS_ck">
+                 <property name="toolTip">
+                  <string>Use GPS reported position to set this station's grid.</string>
+                 </property>
                  <property name="layoutDirection">
                   <enum>Qt::RightToLeft</enum>
                  </property>
@@ -1011,6 +1020,9 @@
                  <horstretch>2</horstretch>
                  <verstretch>0</verstretch>
                 </sizepolicy>
+               </property>
+               <property name="toolTip">
+                <string>Use external 10MHz reference for USRP master clock.</string>
                </property>
                <property name="text">
                 <string>External Reference</string>
@@ -1110,12 +1122,21 @@
             <layout class="QVBoxLayout" name="verticalLayout_26">
              <item>
               <widget class="QGroupBox" name="groupBox_9">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="toolTip">
+                <string>Look for this feature in a future feature edition. (It doesn't work yet.)</string>
+               </property>
                <property name="title">
                 <string>TX Input</string>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_31">
                 <item>
                  <widget class="QComboBox" name="audioIn_cb">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
                   <property name="maximumSize">
                    <size>
                     <width>200</width>
@@ -1140,6 +1161,9 @@
                     <width>200</width>
                     <height>16777215</height>
                    </size>
+                  </property>
+                  <property name="toolTip">
+                   <string>Select audio output device.</string>
                   </property>
                  </widget>
                 </item>
@@ -2260,7 +2284,11 @@
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_4">
          <item>
-          <widget class="GUISoDa::IntValComboBox" name="Mode_cb"/>
+          <widget class="GUISoDa::IntValComboBox" name="Mode_cb">
+           <property name="toolTip">
+            <string>Select TX/RX mode.</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>
@@ -2272,7 +2300,11 @@
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_3">
          <item>
-          <widget class="GUISoDa::IntValComboBox" name="AFBw_cb"/>
+          <widget class="GUISoDa::IntValComboBox" name="AFBw_cb">
+           <property name="toolTip">
+            <string>Select audio filter.</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>
@@ -2365,11 +2397,7 @@
             </font>
            </property>
            <property name="toolTip">
-            <string>Select RX Frequency
-MB1 increment/decrement selected digit
-MB3 left half -- move digit selector left
-MB3 right half -- move digit selector right
-</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Select RX Frequency&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;MB1&lt;/span&gt; increment/decrement selected digit&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;MB3&lt;/span&gt; left half -- move digit selector left&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;MB3&lt;/span&gt; right half -- move digit selector right&lt;/p&gt;&lt;p&gt;Increment by clicking &lt;span style=&quot; font-weight:600;&quot;&gt;MB1&lt;/span&gt; in the top half of the digit. Decrement by clicking &lt;span style=&quot; font-weight:600;&quot;&gt;MB1&lt;/span&gt; in the bottom half of the digit.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="toolTipDuration">
             <number>0</number>
@@ -2386,6 +2414,9 @@ MB3 right half -- move digit selector right
        <layout class="QVBoxLayout" name="verticalLayout_16">
         <item>
          <widget class="QPushButton" name="RXfreq2TXfreq_btn">
+          <property name="toolTip">
+           <string>Copy RX frequency to TX.</string>
+          </property>
           <property name="text">
            <string>RX-&gt;TX</string>
           </property>
@@ -2393,6 +2424,9 @@ MB3 right half -- move digit selector right
         </item>
         <item>
          <widget class="QPushButton" name="TXfreq2RXfreq_btn">
+          <property name="toolTip">
+           <string>Copy TX frequency to RX.</string>
+          </property>
           <property name="text">
            <string>TX-&gt;RX</string>
           </property>
@@ -2417,11 +2451,7 @@ MB3 right half -- move digit selector right
             </font>
            </property>
            <property name="toolTip">
-            <string>Select TX Frequency
-MB1 increment/decrement selected digit
-MB3 left half -- move digit selector left
-MB3 right half -- move digit selector right
-</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Select TX Frequency&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;MB1&lt;/span&gt; increment/decrement selected digit&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;MB3&lt;/span&gt; left half -- move digit selector left&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;MB3&lt;/span&gt; right half -- move digit selector right&lt;/p&gt;&lt;p&gt;Increment by clicking &lt;span style=&quot; font-weight:600;&quot;&gt;MB1 &lt;/span&gt;in the top half of the digit. Decrement by clicking &lt;span style=&quot; font-weight:600;&quot;&gt;MB1 &lt;/span&gt;in the bottom half of the digit.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="toolTipDuration">
             <number>0</number>
@@ -2444,6 +2474,9 @@ MB3 right half -- move digit selector right
         </property>
         <item>
          <widget class="QCheckBox" name="TXRXLock_chk">
+          <property name="toolTip">
+           <string>Lock TX and RX frequencies.</string>
+          </property>
           <property name="text">
            <string>TX=RX Lock</string>
           </property>
@@ -2451,6 +2484,9 @@ MB3 right half -- move digit selector right
         </item>
         <item>
          <widget class="QCheckBox" name="Record_chk">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Record previous 10 seconds and following to &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;dd-MMM-yy_HHmmss.flac&lt;/span&gt;&lt;/p&gt;&lt;p&gt;in the &amp;quot;&lt;span style=&quot; font-style:italic;&quot;&gt;Record Directory&lt;/span&gt;&amp;quot; (selected in &lt;span style=&quot; font-weight:600;&quot;&gt;Settings&lt;/span&gt;, defaults to &lt;span style=&quot; font-style:italic;&quot;&gt;current directory&lt;/span&gt;)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="text">
            <string>RECORD</string>
           </property>
@@ -2485,6 +2521,9 @@ MB3 right half -- move digit selector right
             <height>1000</height>
            </size>
           </property>
+          <property name="toolTip">
+           <string>Enter grid of other station.</string>
+          </property>
          </widget>
         </item>
         <item row="1" column="0">
@@ -2507,6 +2546,9 @@ MB3 right half -- move digit selector right
             <width>80</width>
             <height>16777215</height>
            </size>
+          </property>
+          <property name="toolTip">
+           <string>Enter call of other station.</string>
           </property>
          </widget>
         </item>
@@ -2611,7 +2653,11 @@ MB3 right half -- move digit selector right
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_8" stretch="0,0">
          <item>
-          <widget class="QLineEdit" name="CWCurLine_le"/>
+          <widget class="QLineEdit" name="CWCurLine_le">
+           <property name="toolTip">
+            <string>Type CW text here.</string>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="QPlainTextEdit" name="CWOutBound_te">
@@ -2649,6 +2695,9 @@ MB3 right half -- move digit selector right
              <height>16777215</height>
             </size>
            </property>
+           <property name="toolTip">
+            <string>Send call and grid followed by break.</string>
+           </property>
            <property name="text">
             <string>Exchange</string>
            </property>
@@ -2665,6 +2714,9 @@ MB3 right half -- move digit selector right
              <width>16777215</width>
              <height>16777215</height>
             </size>
+           </property>
+           <property name="toolTip">
+            <string>Send call and grid.</string>
            </property>
            <property name="text">
             <string>My Info</string>
@@ -2696,6 +2748,9 @@ MB3 right half -- move digit selector right
              <height>16777215</height>
             </size>
            </property>
+           <property name="toolTip">
+            <string>Send call. (See Settings tab.)</string>
+           </property>
            <property name="text">
             <string>My Call</string>
            </property>
@@ -2712,6 +2767,9 @@ MB3 right half -- move digit selector right
              <width>16777215</width>
              <height>16777215</height>
             </size>
+           </property>
+           <property name="toolTip">
+            <string>Send grid (See Settings tab.)</string>
            </property>
            <property name="text">
             <string>My Grid</string>
@@ -2737,6 +2795,9 @@ MB3 right half -- move digit selector right
              <height>16777215</height>
             </size>
            </property>
+           <property name="toolTip">
+            <string>Send confirmation.</string>
+           </property>
            <property name="text">
             <string>QSL</string>
            </property>
@@ -2747,6 +2808,9 @@ MB3 right half -- move digit selector right
              <width>16777215</width>
              <height>16777215</height>
             </size>
+           </property>
+           <property name="toolTip">
+            <string>Send 73.</string>
            </property>
            <property name="text">
             <string>73</string>
@@ -2765,6 +2829,9 @@ MB3 right half -- move digit selector right
              <height>16777215</height>
             </size>
            </property>
+           <property name="toolTip">
+            <string>Send &quot;break&quot; and switch to RX.</string>
+           </property>
            <property name="text">
             <string>BK</string>
            </property>
@@ -2781,6 +2848,9 @@ MB3 right half -- move digit selector right
              <width>16777215</width>
              <height>16777215</height>
             </size>
+           </property>
+           <property name="toolTip">
+            <string>Send a string of &quot;V&quot;</string>
            </property>
            <property name="text">
             <string>V</string>
@@ -2824,6 +2894,9 @@ MB3 right half -- move digit selector right
           </item>
           <item>
            <widget class="QSpinBox" name="RptCount_spin">
+            <property name="toolTip">
+             <string>Repeat auto send string.</string>
+            </property>
             <property name="minimum">
              <number>1</number>
             </property>
@@ -2842,6 +2915,9 @@ MB3 right half -- move digit selector right
              <width>16777215</width>
              <height>16777215</height>
             </size>
+           </property>
+           <property name="toolTip">
+            <string>Send an unmodulated carrier. (CW mode only)</string>
            </property>
            <property name="text">
             <string>Carrier</string>
@@ -2865,6 +2941,9 @@ MB3 right half -- move digit selector right
              <width>16777215</width>
              <height>16777215</height>
             </size>
+           </property>
+           <property name="toolTip">
+            <string>Clear CW transmit buffer.</string>
            </property>
            <property name="text">
             <string>Clear</string>
@@ -2907,6 +2986,9 @@ MB3 right half -- move digit selector right
               <weight>75</weight>
               <bold>true</bold>
              </font>
+            </property>
+            <property name="toolTip">
+             <string>Push To Talk: toggle between RX and TX</string>
             </property>
             <property name="text">
              <string>PTT</string>
@@ -2954,7 +3036,11 @@ MB3 right half -- move digit selector right
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_22">
            <item>
-            <widget class="QComboBox" name="bandSel_cb"/>
+            <widget class="QComboBox" name="bandSel_cb">
+             <property name="toolTip">
+              <string>Select a band (see the Config. Band tab for settings.)</string>
+             </property>
+            </widget>
            </item>
           </layout>
          </widget>
@@ -2981,6 +3067,9 @@ MB3 right half -- move digit selector right
                  <height>27</height>
                 </size>
                </property>
+               <property name="toolTip">
+                <string>Choose an antenna for the RX input.</string>
+               </property>
               </widget>
              </item>
             </layout>
@@ -3005,6 +3094,9 @@ MB3 right half -- move digit selector right
                  <width>0</width>
                  <height>24</height>
                 </size>
+               </property>
+               <property name="toolTip">
+                <string>Choose an antenna for the TX output.</string>
                </property>
               </widget>
              </item>
@@ -3050,6 +3142,9 @@ MB3 right half -- move digit selector right
         </item>
         <item>
          <widget class="QPushButton" name="LogContact_btn">
+          <property name="toolTip">
+           <string>Enter contact information in log. (See Log tab.)</string>
+          </property>
           <property name="text">
            <string>Log Contact</string>
           </property>
