@@ -75,6 +75,7 @@ Run the installation commands as "root" or use sudo.
  dnf install --assumeyes qt5-qtmultimedia-devel
  dnf install --assumeyes hamlib-devel
  dnf install --assumeyes gpsd-devel gpsd-clients gpsd-libs gpsd
+ dnf install --assumeyes libsndfile-devel
  dnf install --assumeyes rpm-build
  dnf install --assumeyes git
  dnf install --assumeyes redhat-lsb
@@ -101,6 +102,7 @@ apt-get install -y libqt5widgets5
 apt-get install -y libqt5core5a
 apt-get install -y qtbase5-dev qt5-qmake qtbase5-dev-tools
 apt-get install -y libqt5multimedia5
+apt-get install -y libsndfile1-dev
 apt-get install -y qtmultimedia5-dev
 apt install -y debmake
 apt install -y dpkg-dev
