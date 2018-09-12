@@ -64,6 +64,10 @@ It installs all the prerequisites.  (If you really need to use the
 libuhd version that you've installed yourself for some other reason, skip the
 last installation step.)
 
+Note that Version 6.0.5 has been built on Fedora 28 with LibUHD version 3.12. 
+There are some apparent compatibility issues with libUHD version 3.13. These will
+be addressed soon. (Sep-11-2018)
+
 Run the installation commands as "root" or use sudo.  
 ~~~~~
  dnf group install --assumeyes "C Development Tools and Libraries"
