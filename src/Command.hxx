@@ -465,6 +465,16 @@ namespace SoDa {
        */
       CW_CHAR_SENT,
 
+
+      /**
+       * Start recording raw IF stream to file
+       */
+      RF_RECORD_START, 
+
+      /**
+       * Stop recording raw IF stream to file
+       */
+      RF_RECORD_STOP, 
       
       /**
        * No comment

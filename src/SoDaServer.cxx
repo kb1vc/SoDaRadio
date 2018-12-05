@@ -133,6 +133,7 @@
 #include "UI.hxx"
 #include "GPSmon.hxx"
 #include "AudioQt.hxx"
+#include "IFRecorder.hxx"
 #include "Command.hxx"
 #include "Debug.hxx"
 
@@ -210,6 +211,10 @@ int doWork(SoDa::Params & params)
   /// doWork creates the user interface (UI) thread @see SoDa::UI
   SoDa::UI ui(&params, &cwtxt_stream, &rx_stream, &if_stream, &cmd_stream, &gps_stream);
 
+  /// doWork creates an IF listener process that copies the IF stream to an output file
+  /// when requested.
+  SoDa::IFRecorder ifrec(&params, &if_stream, &cmd_stream);
+
 #if HAVE_GPSLIB    
   SoDa::GPSmon gps(&params, &gps_stream); 
 #endif
@@ -230,6 +235,7 @@ int doWork(SoDa::Params & params)
   bbrx.start();
   bbtx.start();
   cwtx.start();
+  ifrec.start();
 
   // now the gps...
 #if HAVE_GPSLIB  
@@ -263,6 +269,7 @@ int doWork(SoDa::Params & params)
   bbrx.join();
   bbtx.join();
   cwtx.join();
+  ifrec.join();
 #if HAVE_GPSLIB    
   gps.join();
 #endif  

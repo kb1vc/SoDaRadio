@@ -121,6 +121,8 @@ namespace GUISoDa {
     void setPTT(bool on);
     void setCarrier(bool on);    
 
+    void recordRF(int checkbox_state);
+    
     void sendCW(const QString & txt);
     void clearCWBuffer();
   

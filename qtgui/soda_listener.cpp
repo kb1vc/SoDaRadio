@@ -372,6 +372,21 @@ void GUISoDa::Listener::setPTT(bool on)
   }
 }
 
+void GUISoDa::Listener::recordRF(int checkbox_state)
+{
+  if(checkbox_state == Qt::Checked) {
+    QString fname = QString("%1.cf").arg(QDateTime::currentDateTime().toString("dd-MMM-yy_HHmmss"));
+    if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RF_RECORD_START, fname.toStdString()))) {
+      perror((boost::format("Failed to send SET START command in function %s\n") % __PRETTY_FUNCTION__).str().c_str());;
+    }
+  }
+  else if(checkbox_state == Qt::Unchecked) {
+    if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RF_RECORD_STOP))) {
+      perror((boost::format("Failed to send SET STOP command in function %s\n") % __PRETTY_FUNCTION__).str().c_str());;
+    }
+  }
+}
+
 void GUISoDa::Listener::setCarrier(bool on)
 {
   int carrier_state = on ? 1 : 0;
