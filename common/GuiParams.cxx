@@ -45,7 +45,7 @@ SoDa::GuiParams::GuiParams(int argc, char ** argv)
     ("uds_name", po::value<std::string>(&server_sock_basename)->default_value(""),
      "unix domain socket name for server to UI client message channels")
     ("config", po::value<std::string>(&config_filename)->default_value(""),
-     "Configuration file with initial settings. Otherwise SoDaRadio will look in ${HOME}/.SoDaRadio/SoDa.soda_cfg"
+     "Configuration file with initial settings. Otherwise SoDaRadio will look in ${HOME}/.config/kb1vc.org/SoDaRadioQT.conf"
      )
     ("log", po::value<std::string>(&log_filename)->default_value("SoDa.soda_log"),
      "Log filename")
