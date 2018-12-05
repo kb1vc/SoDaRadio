@@ -2488,7 +2488,17 @@
            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Record previous 10 seconds and following to &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;dd-MMM-yy_HHmmss.flac&lt;/span&gt;&lt;/p&gt;&lt;p&gt;in the &amp;quot;&lt;span style=&quot; font-style:italic;&quot;&gt;Record Directory&lt;/span&gt;&amp;quot; (selected in &lt;span style=&quot; font-weight:600;&quot;&gt;Settings&lt;/span&gt;, defaults to &lt;span style=&quot; font-style:italic;&quot;&gt;current directory&lt;/span&gt;)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
-           <string>RECORD</string>
+           <string>RECORD AF</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="RecordRF_chk">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Record raw IQ samples from RF stream. &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Recording RF will consume approximately 5MB of disk storage per second.  &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>RECORD RF</string>
           </property>
          </widget>
         </item>

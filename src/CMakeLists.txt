@@ -63,6 +63,8 @@ set(SoDaServer_SRCS
 #    Demod.hxx
 #    Demod.cxx
     PropTree.hxx
+    IFRecorder.cxx
+    IFRecorder.hxx    
     )
 
 #find_package(Portaudio)

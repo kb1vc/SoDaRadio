@@ -103,6 +103,8 @@ void SoDa::Command::initTables()
   target_map_s2v[std::string("MOD_SEL_ENTRY")] = MOD_SEL_ENTRY;
   target_map_s2v[std::string("AF_FILT_ENTRY")] = AF_FILT_ENTRY;
   target_map_s2v[std::string("CW_CHAR_SENT")] = CW_CHAR_SENT;
+  target_map_s2v[std::string("RF_RECORD_START")] = RF_RECORD_START;
+  target_map_s2v[std::string("RF_RECORD_STOP")] = RF_RECORD_STOP;  
     
   target_map_v2s[RX_TUNE_FREQ] = std::string("RX_TUNE_FREQ");
   target_map_v2s[TX_TUNE_FREQ] = std::string("TX_TUNE_FREQ");
@@ -166,6 +168,8 @@ void SoDa::Command::initTables()
   target_map_v2s[MOD_SEL_ENTRY] = std::string("MOD_SEL_ENTRY");
   target_map_v2s[AF_FILT_ENTRY] = std::string("AF_FILT_ENTRY");
   target_map_v2s[CW_CHAR_SENT] = std::string("CW_CHAR_SENT");
+  target_map_v2s[RF_RECORD_START] = std::string("RF_RECORD_START");
+  target_map_v2s[RF_RECORD_STOP] = std::string("RF_RECORD_STOP");    
   
 }
 

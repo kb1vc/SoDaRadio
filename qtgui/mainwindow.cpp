@@ -96,6 +96,9 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
 	    audio_listener->getRec()->record(changed != Qt::Unchecked);
 	  });
 
+  connect(ui->RecordRF_chk, SIGNAL(stateChanged(int)),
+	  listener, SLOT(recordRF(int)));
+
   connect(ui->recDir_btn, &QPushButton::clicked,
 	  [=]() {
 	    audio_listener->getRec()->getRecDirectory(this); 
