@@ -55,7 +55,9 @@ GUISoDa::AudioRXListener::AudioRXListener(QObject * parent, const QString & _soc
     silence[i] = 0.0; 
   }
 
-  debug_count = 0; 
+  status_update_count = 0; 
+
+  max_slack_time = 0.2; // 200ms starts to become a problem for FT8... 
 }
 
 bool GUISoDa::AudioRXListener::init()
@@ -119,14 +121,20 @@ void GUISoDa::AudioRXListener::processRXAudio() {
     qint64 tlen = (len > rx_in_buf_len) ? rx_in_buf_len : len;
     qint64 rlen = audio_rx_socket->read(rx_in_buf, tlen);
 
-    if((debug_count & 0xff) == 0) {
+    if((status_update_count & 0xff) == 0) {
       float * fp = (float*) rx_in_buf;
       float delay;
       size_t num_elts = audio_cbuffer_p->numElements();
       delay = ((float) (num_elts / sizeof(float))) / ((float) sample_rate); 
       emit(bufferSlack(QString("%1").arg(delay, 4, 'F', 2)));
+
+      if(delay > max_slack_time) {
+	// we may be way too far ahead.  
+	qInfo() << QString("Audio RX stream has fallen behind -- clearing outbound buffers of [%1] seconds").arg(delay);
+	cleanBuffer();
+      }
     }
-    debug_count++; 
+    status_update_count++; 
 
     if(rlen > 0) {
       audio_cbuffer_p->put(rx_in_buf, rlen);
@@ -204,26 +212,24 @@ void  GUISoDa::AudioRXListener::setRXDevice(const QAudioDeviceInfo & dev_info)
 }
 
 
-qint64 GUISoDa::AudioRXListener::readData(char * data, qint64 maxlen) 
+qint64 GUISoDa::AudioRXListener::readData(char * data, qint64 max_len) 
 {
   // we may have run out of data.  If so, return silence. 
+  // and stuff silence into the output stream until we get ahead of the game
+  // a little bit. 
   size_t avail = audio_cbuffer_p->numElements(); 
-  if(avail < maxlen * 3) {
-    qint64 etime = audioRX->elapsedUSecs();
-    double fetime = (float) etime; 
-    
+  if(avail < max_len) {
+    // we're below the acceptable reserver... stuff some silence
+    // into the output buffers until we're 
     qInfo() << QString("[%3] Audio device attempts to read [%1] bytes, only [%2] available.")
-      .arg(maxlen).arg(avail).arg(QDateTime::currentDateTime().toString("HH:mm:ss.zzz t"));
-    memset(data, 0, maxlen); 
-    return maxlen; 
+      .arg(max_len).arg(avail).arg(QDateTime::currentDateTime().toString("HH:mm:ss.zzz t"));
+    // stuff some silence in here.. 
+    qint64 fill_len = max_len >> 2; 
+    memset(data, 0, fill_len); 
+    return fill_len;
   }
   else {
-    int ret = (qint64) audio_cbuffer_p->get(data, maxlen);
-    // we may also be way too far ahead.  
-    if(avail > (sample_rate * sizeof(float))) {
-      qInfo() << QString("Audio RX stream has fallen behind -- clearing outbound buffers of [%1] seconds").arg(((float) (avail / sizeof(float))) / ((float) sample_rate));
-      cleanBuffer();
-    }
+    int ret = (qint64) audio_cbuffer_p->get(data, max_len);
     
     return ret; 
   }

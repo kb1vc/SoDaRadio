@@ -156,10 +156,14 @@ namespace GUISoDa {
     qint64 rx_in_buf_len; 
     qint64 sample_rate; ///< Audio output samples per second.
 
+    
     // a buffer of silence
     float * silence; 
     
-    qint64 debug_count; 
+    qint64 status_update_count; 
+
+    // what is the longest delay that we'll tolerate?
+    float max_slack_time; 
   };
 
   // put the recorder in its own thread, so if something goes wrong
