@@ -121,7 +121,7 @@ void GUISoDa::AudioRXListener::processRXAudio() {
     qint64 tlen = (len > rx_in_buf_len) ? rx_in_buf_len : len;
     qint64 rlen = audio_rx_socket->read(rx_in_buf, tlen);
 
-    if((status_update_count & 0xff) == 0) {
+    if((status_update_count & 0x1f) == 0) {
       float * fp = (float*) rx_in_buf;
       float delay;
       size_t num_elts = audio_cbuffer_p->numElements();
@@ -221,8 +221,8 @@ qint64 GUISoDa::AudioRXListener::readData(char * data, qint64 max_len)
   if(avail < max_len) {
     // we're below the acceptable reserver... stuff some silence
     // into the output buffers until we're 
-    qInfo() << QString("[%3] Audio device attempts to read [%1] bytes, only [%2] available.")
-      .arg(max_len).arg(avail).arg(QDateTime::currentDateTime().toString("HH:mm:ss.zzz t"));
+    // qDebug() << QString("[%3] Audio device attempts to read [%1] bytes, only [%2] available.")
+    //  .arg(max_len).arg(avail).arg(QDateTime::currentDateTime().toString("HH:mm:ss.zzz t"));
     // stuff some silence in here.. 
     qint64 fill_len = max_len >> 2; 
     memset(data, 0, fill_len); 

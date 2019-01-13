@@ -50,12 +50,12 @@ void MainWindow::setupSettings()
 	  }); 
 
   connect(ui->TXPower_sli, SIGNAL(valueChanged(int)), 
-	  listener, SLOT(setTXPower(int)));
+	  listener, SLOT(setTXGain(int)));
   connect(ui->TXPower_sli, &QSlider::valueChanged,
 	  [=](int s) {
-	    ui->TXPower_lbl->setText(QString("%1").arg(s, 2));
+	    ui->TXPower_lbl->setText(QString("%1").arg(s, 3));
 	  }); 
-
+  
   connect(ui->FromGrid_le, SIGNAL(textChanged(const QString &)),
 	  ui->FromGrid_lab, SLOT(setText(const QString &)));
 

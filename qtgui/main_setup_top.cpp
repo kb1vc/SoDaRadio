@@ -50,6 +50,11 @@ void MainWindow::setupTopControls()
 
   connect(ui->RFGain_slide, SIGNAL(valueChanged(int)), 
 	  listener, SLOT(setRXGain(int)));
+  connect(ui->RFGain_slide, &QSlider::valueChanged,
+	  [=](int s) {
+	    ui->RFGain_lbl->setText(QString("%1").arg(s, 3));
+	  }); 
+
   connect(ui->AFGain_slide, SIGNAL(valueChanged(int)), 
 	  listener, SLOT(setAFGain(int)));
 

@@ -503,7 +503,9 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
   case Command::RX_RF_GAIN:
     // dparameters ranges from 0 to 100... normalize this
     // to the actual range; 
-    rx_rf_gain = rx_rf_gain_range.start() + cmd->dparms[0] * 0.01 * (rx_rf_gain_range.stop() - rx_rf_gain_range.start());
+    rx_rf_gain = rx_rf_gain_range.stop() + cmd->dparms[0];
+    if(rx_rf_gain > rx_rf_gain_range.stop()) rx_rf_gain = rx_rf_gain_range.stop();
+    if(rx_rf_gain < rx_rf_gain_range.start()) rx_rf_gain = rx_rf_gain_range.start();
     if(!tx_on) {
       usrp->set_rx_gain(rx_rf_gain);
       cmd_stream->put(new Command(Command::REP, Command::RX_RF_GAIN, 
@@ -511,9 +513,12 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
     }
     break; 
   case Command::TX_RF_GAIN:
-    tx_rf_gain = tx_rf_gain_range.start() + cmd->dparms[0] * 0.01 * (tx_rf_gain_range.stop() - tx_rf_gain_range.start());
+    tx_rf_gain = tx_rf_gain_range.stop() + cmd->dparms[0];
+    if(tx_rf_gain > tx_rf_gain_range.stop()) tx_rf_gain = tx_rf_gain_range.stop();
+    if(tx_rf_gain < tx_rf_gain_range.start()) tx_rf_gain = tx_rf_gain_range.start();
     tmp = cmd->dparms[0];
-    debugMsg(boost::format("Setting TX gain to %lg from power %lg") % tx_rf_gain % tmp);
+    debugMsg(boost::format("Setting TX gain to %lg from power %lg range start = %f stop = %f\n") 
+	     % tx_rf_gain % tmp % tx_rf_gain_range.start() % tx_rf_gain_range.stop());
     if(tx_on) {
       usrp->set_tx_gain(tx_rf_gain);
       cmd_stream->put(new Command(Command::REP, Command::TX_RF_GAIN, 
@@ -644,6 +649,12 @@ void SoDa::USRPCtrl::execGetCommand(Command * cmd)
     cmd_stream->put(new Command(Command::REP, Command::TX_SAMP_RATE, 
 			       usrp->get_tx_rate())); 
     break;
+
+  case Command::TX_GAIN_RANGE:
+    cmd_stream->put(new Command(Command::REP, Command::TX_GAIN_RANGE,
+				tx_rf_gain_range.start(), 
+				tx_rf_gain_range.stop()));
+    break; 
 
   case Command::CLOCK_SOURCE:
     res = 0;

@@ -72,7 +72,9 @@ namespace GUISoDa {
   
     void addRXAntName(const QString & ant_name);
     void addTXAntName(const QString & ant_name);  
-  
+
+    void repGainRange(double min_power, double max_power);
+
     void repFilterEdges(double lo, double hi);
 
     void repGPSLatLon(double lat, double lon);
@@ -114,7 +116,6 @@ namespace GUISoDa {
 
     void setCWSpeed(int speed); 
     void setSidetoneVolume(int vol);
-    void setTXPower(int vol); 
 
     void setClockRef(int external);
 
@@ -141,6 +142,10 @@ namespace GUISoDa {
     bool handleSET(const SoDa::Command & cmd);
     bool handleGET(const SoDa::Command & cmd); 
 
+    /// gain range from min to max (reported by radio)
+    double tx_gain_min;
+    double tx_gain_max;
+    
   private:
     void setupSpectrumBuffer(double cfreq, double span, long buflen);
     long spect_buffer_len;

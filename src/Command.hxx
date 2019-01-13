@@ -156,13 +156,13 @@ namespace SoDa {
       /**
        * Set the RX front end attenuator/amp
        *
-       * gain param is a double 0.0 < gain < 40.0
+       * gain param is a double less than 0 relative to max RX gain
        */
       RX_RF_GAIN,
       /**
        * Set the TX final amplifier
        *
-       * gain param is a double 0.0 < gain < 100.0
+       * gain param is a double less than 0 relative to max TX gain
        */
       TX_RF_GAIN,
 

@@ -36,6 +36,8 @@ GUISoDa::Listener::Listener(QObject * parent, const QString & _socket_basename) 
 
 bool GUISoDa::Listener::init()
 {
+  tx_gain_min = 0; 
+  tx_gain_max = 100; 
   cmd_socket = new QLocalSocket(this);
   // first wait for the file to be created
   QString cmd_socket_name = socket_basename + "_cmd"; 
@@ -84,6 +86,7 @@ bool GUISoDa::Listener::init()
 void GUISoDa::Listener::start()
 {
   put(SoDa::Command(SoDa::Command::GET, SoDa::Command::HWMB_REP));
+  put(SoDa::Command(SoDa::Command::GET, SoDa::Command::TX_GAIN_RANGE));  
   return; 
 }
 
@@ -213,7 +216,9 @@ void GUISoDa::Listener::setRXGain(int gain) {
 }
 
 void GUISoDa::Listener::setTXGain(int gain) {
-  double dgain = gain;   
+  // gain is relative to max -- so we subtract from max gain.  
+  double dgain = ((double) gain);  
+  
   if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_RF_GAIN, dgain))) {
     perror((boost::format("Failed to send SET command in function %s\n") % __PRETTY_FUNCTION__).str().c_str());;
   }
@@ -294,6 +299,12 @@ bool GUISoDa::Listener::handleREP(const SoDa::Command & cmd)
   case SoDa::Command::GPS_LATLON:
     emit(repGPSLatLon(cmd.dparms[0], cmd.dparms[1]));
     break; 
+  case SoDa::Command::TX_GAIN_RANGE:
+    emit(repGainRange(cmd.dparms[0], cmd.dparms[1])); 
+    tx_gain_min = cmd.dparms[0]; 
+    tx_gain_max = cmd.dparms[1]; 
+    qDebug() << QString("TX Gain Range [%1] to [%2]").arg(cmd.dparms[0], 10, 'f').arg(cmd.dparms[1], 10, 'f');
+    break;
   default:
     break; 
   }
@@ -349,12 +360,6 @@ void GUISoDa::Listener::setSidetoneVolume(int vol)
   }
 }
 
-void GUISoDa::Listener::setTXPower(int power)
-{
-  if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_RF_GAIN, (double) power))) {
-    perror((boost::format("Failed to send SET command in function %s\n") % __PRETTY_FUNCTION__).str().c_str());;
-  }
-}
 
 void GUISoDa::Listener::setClockRef(int external)
 {
