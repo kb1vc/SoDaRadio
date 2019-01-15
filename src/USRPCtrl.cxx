@@ -374,7 +374,26 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
       tx_request.rf_freq = tvrt_lo_fe_freq;
     }
     else if(supports_IntN_Mode) {
-      applyTargetFreqCorrection(freq, last_rx_req_freq, &tx_request);
+      // This is a little complicated.
+      // For the UBX, at least, the RF oscillator was bleeding through
+      // to the output and appearing > -40dBc.   That is not sufficient
+      // for HF, as many amplifier chains rely on LPFs rather than BPFs
+      // where harmonic suppression is the intent.  However, with a
+      // 12.5 MHz step for the RF PLL, we can end up with a honking
+      // big spur in the TX output at 12.5 MHz when we're transmitting
+      // on 30m or 20m.  Below 30MHz, we turn off the small integer
+      // steps -- the default will be something good... one hopes. 
+      if(freq > 30.0e6) {
+	applyTargetFreqCorrection(freq, last_rx_req_freq, &tx_request);
+      }
+      else {
+	// don't fiddle with adjusting the step size here.
+	// we don't want to use fractional mode if we can avoid it,
+	// as the RF PLL output <still> bleeds through, but it is
+	// within +/- 10 kHz of the carrier.  That's really noxious.
+	// Measured results saw less than 40dB suppression. 
+	tx_request.args = uhd::device_addr_t("mode_n=integer");	
+      }
     }
     else {
       tx_request.rf_freq_policy = uhd::tune_request_t::POLICY_AUTO;
