@@ -376,3 +376,154 @@ to detect the point at which the transmitter becomes non-linear?
 
 
 
+----------------------
+
+January 2019  SoDaRadio version 6.2.0 -- audio tuning branch
+
+
+Noticed spurs about 50kHz above the carrier when transmitting a test
+tone from WSJT on 20m. (N200 with UBX into a 10W amp.)  The spurs were
+seen 'over-the-air' from an RX antenna connected to a spectrum analyzer.
+The transmit power was adjusted to be well below P1dB -- this is not a
+linearity issue.  The WSJT audio level was varied, the spurs were
+still there -- less than 40dB below the carrier.  Alas, 47 CFR 97.307
+require the spurs to be at least 43dB...
+
+These spurs are not present without the amplifier -- that's good news,
+as it means that the problem is in the power amplifier.  50kHz is a hint
+that we may be looking at power supply noise.  That can be fixed.
+
+The harmonic at 28MHz is only 25 dB down, but the LPF at the amplifier
+will deal with that. 
+
+However, a more worrying spur appears about 1.5 MHz below the carrier.
+This appears both for WSJT's test tone and for a CW note.
+
+A raw carrier with the TX gain at max shows the spur at just 40dB down
+(no amplifier).  There are actually TWO spurs, one above the carrier
+and one below. The lower spur is about 3dB stronger.
+
+And now for the odd part --
+If I use the tx_waveforms example program with these switches
+--rate 625e3 --freq 14.095e6 --gain 100 --int-n
+I get a very nice 20dBm tone with no spurs.  The harmonic at 28 is about
+25dB down.
+
+But no spurs at +/- 1.5 MHz.   What's that about?
+
+So I turned off int-n tuning.  No change -- crystal clear.
+
+Now what's different for SoDaRadio?  The TX RF part is pretty much the same
+as tx_waveforms -- no special magic (as far as I can recall).
+
+Another bit of evidence -- the spur appears in SoDaRadio as soon as the
+PTT switch is pressed -- that is, no modulation is required.  At max TX power
+the spur is -12dBm +/-... If TX power is set 10dB down from max, the spur drops
+down to -20dBm.... at TX power 20dB below max, the spur is at about -30dBm.
+(Carrier power is 21 dBm 16dBm, and 8 dBm respectively)  TX power should be
+set to about -6dB for linear behavior.
+
+At TX = -6dB below max, turning on the carrier causes the spur to drop by
+about 1dB.  (hard to measure on the spectrum analyzer). 
+
+The spur appears regardless of mode -- USB and CW_U, LSB, CW_L, AM,
+and even NBFM. (Though the NBFM output is an extra 10dB down, it is
+still a dumpster fire -- this needs a closer look.  At the levels I'm
+seeing, the UBX output is legal (about -40dBc relative to 20dBm gets
+us -20dBm -- the limit is -40dBc or -20dBm, whichever is larger.  The
+rule is a little complicated.)
+
+Hmmm... So.. could this be bleed-through from the RX local oscillator?
+Reference noise?  A difference in tuning settings?
+
+First, let's print out the TX settings each time PTT is activated -- 
+
+So, on TX we got new freq 1.40956e7
+t.rf 1.25e7 a.rf 1.25e7 t.dsp 1.5956e6 a.dsp 1.5956e6
+
+(t. is requested, a. is actual... )
+So the transmit LO is at 1.25e7 MHz.  That is dead-nuts on the spur.
+
+So, what happens if we set the TX frequency to 15.095 MHz?
+The tuning settings were
+rf = 1.25e7 dsp 3.5955e6  and that's where the spur is. 
+
+how about 20 MHz?
+rf = 25MHz, dsp = 4.90045MHz
+And that's where the spur is.
+
+So this is LO leakage from the TX chain.
+
+In looking at the USRPCtrl set1stLOFreq method, the TX side does use
+a 12.5 MHz step size for the reference frequency.  This might be a little
+too big for good spur suppresion.  Now the tuning for 14MHz uses an RF
+tuning of 0MHz... .!
+
+No spur.
+
+Same for 20MHz.
+
+At 28 MHz, there is a spur at 50 MHz as we have a tuning setting
+of rf = 50e6 dsp = -21.9e6
+
+Hmmmm... What happens if we don't do intN at all?
+When we use tx_waveforms, we see the 50MHz spur for a 28 MHz setting.
+We see a 100MHz spur for 78 MHz ... So this is RF oscillator bleed through.
+
+So, testing this with SoDa where we just use the default tuning (no int-n)
+for transmit, the spurs are well within limits -- the RF oscillator steps
+at 12.5 kHz and gets suppressed by 50+ dB... yahoo!
+
+Ahhh.. but at 14.095 MHz the LO feed through is just 4kHz away and is only
+-40dBc... sigh.   Below 50MHz, we really should use int-n and take advantage
+of the fact that the RF oscillator will be either 0MHz or 50MHz. 
+
+So, for now, we test for HF and don't apply the LO correction if the
+requested frequency is below 30MHz, since many good configurations rely
+solely on low-pass filters in the transmit chain, to elminate harmonics.
+Above 30MHz, most ham bands are suitably far enough from the reference that
+we're going to be OK.  On the 6m band, the RF oscillator will be up at
+62.5MHz, suitably far from the carrier that any spur should have been
+taken out by BPFs along the way.
+
+So, the spurs in the HF band are fixed with version 6.3.0
+
+-----------
+
+Now with WSJTx and the new TX indication... We're linear at 18dBm with TX set
+to -3dB and audio at full.  Or audo at -3 and TX at 0  .... as long as the
+sum is -3dB.
+
+Hmmmm.. that sounds familiar.
+
+--------
+
+Next we need to look at that 50kHz spur again.  These only happen with
+the linear amplifier in the line.  (It is a K5BCQ 20W amplifier, but I
+keep the output to about 1W.)  And holy stromboli there is a lot of
+hash around the carrier.  What happens if we swap out the power
+supply?
+
+This appears to be a problem in the amplifier.  I think there may be
+insufficient decoupling?  The spurs may not fall linearly with the carrier,
+but if not, they're pretty close.  Driving the amplifier with the ASTRON
+RS-20M (it loafs along at < 2A) didn't improve things.  There appears
+to be lots of random noise +/- 1MHz from the carrier.  Outside of this
+things are pretty clean.
+
+Most of the noise is +/- 200kHz -- This looks on the 20kHz/box sweep
+like amplitude modulation of two tones at 65kHz and 75kHz.  and multiples
+of 75 kHz... This does not appear to be a switcher...  The products are
+less than 30dB down from the carrier, which is way out of bounds.
+
+These products are <not> present in the output of the N200, so they are
+created in the "linear" amplifier.  Debug is required.
+
+Note that the WA6PWW 10W amplifier doesn't show this hash, but it is
+awful... Way too much gain and it generates spurs of its own around 4MHz.
+
+So, I ought to fix the BCQ amp -- it is a much better design and worth
+the trouble. It sounds like it might be oscillating -- the decoupling
+chain after the last 10-20uH choke is all 0.1, 0.01, and 0.001 uF
+caps.  That puts the corner frequency at about 150kHz... pushing that down
+a bit with a 1uF cap should not be a big deal.  
