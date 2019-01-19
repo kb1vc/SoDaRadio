@@ -52,6 +52,7 @@ GUISoDa::Spect::~Spect()
 
 void GUISoDa::Spect::initPlot()
 {
+  center_on_next_setting = false; 
 
   freq_span_disp = 10e3;
   val_ref = 10.0;
@@ -84,10 +85,10 @@ void GUISoDa::Spect::initPlot()
   // curve_p->setSamples(xdat, ydat, 1000);
 
   // setup the plotpicker -- this creates click events for us.
-  picker_p = new GUISoDa::PlotPicker(QwtPlot::xBottom, QwtPlot::yLeft, canvas());
+  picker_p = new GUISoDa::PlotPicker(QwtPlot::xBottom, QwtPlot::yLeft, canvas(), this);
 
   connect(picker_p, SIGNAL(selected(const QPointF&)), SLOT(pickPoint(const QPointF&)));
-
+  
   QColor fcol = Qt::green;
   fcol.setAlpha(96);
   freq_marker.setBrush(fcol);
@@ -181,6 +182,10 @@ void GUISoDa::Spect::pickPoint(const QPointF & pos)
 {
   double freq = pos.x() - marker_lo_offset; 
   setFreqMarker(freq);
+  if(center_on_next_setting) {
+    center_on_next_setting = false;
+    emit setSpectrumCenter(freq);
+  }
   emit xClick(freq);
 }
 

@@ -204,9 +204,6 @@ void  GUISoDa::AudioRXListener::setRXDevice(const QAudioDeviceInfo & dev_info)
     audioRX->stop();
     audioRX->disconnect(this); 
   }
-  else {
-    qDebug() << QString("Audio RX was non-null");
-  }
 
   initAudio(dev_info);
 }

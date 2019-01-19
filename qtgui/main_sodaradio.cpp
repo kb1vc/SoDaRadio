@@ -65,6 +65,7 @@ static void alertAndExit(const QString & err_msg)
 /**
  * @brief start the radio server process
  * 
+ * @param lock_file_name name of exclusive-access lock file to help us detect zombie server processes. 
  * @param p set of command line parameters, some of which are 
  * passed to the server process.
  */

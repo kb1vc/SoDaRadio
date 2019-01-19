@@ -35,11 +35,45 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <boost/format.hpp>
 
 namespace GUISoDa {
+
+  class WFallPickerClient {
+  public:
+    virtual void handleMouseEvent(const QMouseEvent * ev) = 0; 
+  };
+  
+  class SoDaWFallQwtPickerClickPointMachine : public QwtPickerClickPointMachine {
+  public:
+    SoDaWFallQwtPickerClickPointMachine(WFallPickerClient * client) {
+      picker_client = client; 
+    }
+    QList<QwtPickerMachine::Command> transition(const QwtEventPattern & event_pattern, const QEvent * e) {
+      QList<QwtPickerMachine::Command> cmdList; 
+      if(e->type() == QEvent::MouseButtonPress) {
+	const QMouseEvent * m_e = static_cast<const QMouseEvent *>(e); 
+	if(event_pattern.mouseMatch(QwtEventPattern::MouseSelect2, m_e)) {
+	    // if(m_e->button() == Qt::RightButton) {
+	  picker_client->handleMouseEvent(m_e);
+	  cmdList += Begin;
+	  cmdList += Append;
+	  cmdList += End;
+	  return cmdList; 	  
+	}
+      }
+
+      // if we get there, this was not a QtRightButton press. 
+      return QwtPickerClickPointMachine::transition(event_pattern, e);  
+    }
+
+  protected:
+    WFallPickerClient * picker_client;
+    
+  }; 
+     
   class WFallPicker : public QwtPlotPicker {
   public:
-    WFallPicker(int xAxis, int yAxis, QWidget * canvas) : QwtPlotPicker(xAxis, yAxis, canvas)
+    WFallPicker(int xAxis, int yAxis, QWidget * canvas, WFallPickerClient * client) : QwtPlotPicker(xAxis, yAxis, canvas)
     {
-      setStateMachine(new QwtPickerClickPointMachine);
+      setStateMachine(new SoDaWFallQwtPickerClickPointMachine(client));
       setTrackerMode(QwtPicker::AlwaysOn);
       setTrackerPen(QPen(Qt::white));
     }

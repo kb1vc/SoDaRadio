@@ -78,6 +78,8 @@ namespace SoDa {
      * @param _sample_rate in Hz  48000 is a good choice
      * @param _sample_count_hint  the size of the buffers passed to and from
      *                              the audio device (in samples)
+     * @param audio_sock_basename starting string for the unix-domain socket 
+     *                            that carries the audio stream from the SoDaServer (radio) process
      * @param audio_port_name  which ALSA device are we connecting to?
      */
     AudioQt(unsigned int _sample_rate,

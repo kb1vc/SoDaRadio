@@ -303,7 +303,6 @@ bool GUISoDa::Listener::handleREP(const SoDa::Command & cmd)
     emit(repGainRange(cmd.dparms[0], cmd.dparms[1])); 
     tx_gain_min = cmd.dparms[0]; 
     tx_gain_max = cmd.dparms[1]; 
-    qDebug() << QString("TX Gain Range [%1] to [%2]").arg(cmd.dparms[0], 10, 'f').arg(cmd.dparms[1], 10, 'f');
     break;
   default:
     break; 

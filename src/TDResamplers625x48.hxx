@@ -27,7 +27,7 @@
 */
 
 /**
- * @file TDReSamplers625x48.hxx
+ * @file TDResamplers625x48.hxx
  * @brief Time domain resampler using polyphase filter technique from
  * Lyons "Understanding Digial Signal Processing" chapter 10. 
  *
@@ -67,8 +67,11 @@ namespace SoDa {
      * @param _L interpolation rate.  Output vector will be L * inlen / M
      * @param proto_filter prototype low-pass anti-aliasing filter
      * @param filter_len length of prototype filter. Must be a multiple of L.
+     * @param gain filter gain
      */
-    TDRationalResampler(int _M, int _L, float * proto_filter, int filter_len, float gain = 1.0);
+    TDRationalResampler(int _M, int _L, 
+			float * proto_filter, int filter_len, 
+			float gain = 1.0);
     ~TDRationalResampler() {
       for(int i = 0; i < L; i++) {
 	delete[] filter_bank[i]; 

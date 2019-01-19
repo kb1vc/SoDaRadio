@@ -33,14 +33,50 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QPen>
 #include <qwt/qwt_picker_machine.h>
 #include <boost/format.hpp>
+#include <QObject>
 
 namespace GUISoDa {
+
+  class PlotPickerClient {
+  public:
+    virtual void handleMouseEvent(const QMouseEvent * ev) = 0; 
+  };
+  
+  class SoDaQwtPickerClickPointMachine : public QwtPickerClickPointMachine {
+  public:
+    SoDaQwtPickerClickPointMachine(PlotPickerClient * client) {
+      picker_client = client; 
+    }
+    QList<QwtPickerMachine::Command> transition(const QwtEventPattern & event_pattern, const QEvent * e) {
+      QList<QwtPickerMachine::Command> cmdList; 
+      if(e->type() == QEvent::MouseButtonPress) {
+	const QMouseEvent * m_e = static_cast<const QMouseEvent *>(e); 
+	if(event_pattern.mouseMatch(QwtEventPattern::MouseSelect2, m_e)) {
+	    // if(m_e->button() == Qt::RightButton) {
+	  picker_client->handleMouseEvent(m_e);
+	  cmdList += Begin;
+	  cmdList += Append;
+	  cmdList += End;
+	  return cmdList; 	  
+	}
+      }
+
+      // if we get there, this was not a QtRightButton press. 
+      return QwtPickerClickPointMachine::transition(event_pattern, e);  
+    }
+
+  protected:
+    PlotPickerClient * picker_client;
+    
+  }; 
   
   class PlotPicker : public QwtPlotPicker {
   public:
-    PlotPicker(int xAxis, int yAxis, QWidget * canvas) : QwtPlotPicker(xAxis, yAxis, canvas)
+   
+    PlotPicker(int xAxis, int yAxis, QWidget * canvas, PlotPickerClient * client) : QwtPlotPicker(xAxis, yAxis, canvas)
     {
-      setStateMachine(new QwtPickerClickPointMachine);
+      //setStateMachine(new QwtPickerClickPointMachine);
+      setStateMachine(new SoDaQwtPickerClickPointMachine(client));      
       setTrackerMode(QwtPicker::AlwaysOn);
       setTrackerPen(QPen(Qt::white));
     }
@@ -49,11 +85,16 @@ namespace GUISoDa {
       QColor trbgcolor(Qt::white);
       trbgcolor.setAlpha(128); // translucent highlight
 
-      QwtText text((boost::format("%.4f MHz, %.1f dB") % (pos.x() * 1e-6) % pos.y()).str().c_str());
+      QString str = QString("%1 MHz, %2 dB").arg(pos.x()*1e-6, 0, 'f', 4).arg(pos.y(),0, 'f', 1);
+      QwtText text(str);
+      //      QwtText text((boost::format("%.4f MHz, %.1f dB") % (pos.x() * 1e-6) % pos.y()).str().c_str());
       text.setBackgroundBrush(QBrush(trbgcolor));
 
       return text;
     }
+    
+  private:
+    double last_x; 
   };
 }
 #endif // SODAPLOTPICKER_H

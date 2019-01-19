@@ -46,94 +46,106 @@
 #include "soda_freq_scale_draw.hpp"
 
 namespace GUISoDa {
-class Spect : public QwtPlot
-{
+  class Spect : public QwtPlot, PlotPickerClient
+  {
     Q_OBJECT
 
-public:
+  public:
     explicit Spect(QWidget *parent = 0);
     ~Spect();
 
-  double freqCenter() { return center_freq_disp; }
+    double freqCenter() { return center_freq_disp; }
 
-public slots:
-  void updateData(double cfreq, float * y); 
-  void pickPoint(const QPointF & pos);
-  void setDynamicRange(double drange);
-  void setRefLevel(int rlvl);
-  void setFreqCenter(double cf, bool check_boundary = false);
-  void setFreqSpan(double fs, bool check_boundary = false);  
-  void setFreqSpanKHz(double fs) { setFreqSpan(1e3 * fs, true); }     
-  void setFreqMarker(double f); 
+    void handleMouseEvent(const QMouseEvent * ev) {
+      // if we get here, the user clicked MB3 in the window -- 
+      // center the display on his clicked frequency.
+      center_on_next_setting = true; 
+    }
 
-  void scrollRight(bool v) { 
-    (void) v;
-    setFreqCenter(center_freq_disp + freq_span_disp * 0.25, true); 
-  }
-  void scrollLeft(bool v) { 
-    (void) v;
-    setFreqCenter(center_freq_disp - freq_span_disp * 0.25, true); 
-  }
+  public slots:
+    void updateData(double cfreq, float * y); 
+    void pickPoint(const QPointF & pos);
+    void setDynamicRange(double drange);
+    void setRefLevel(int rlvl);
+    void setFreqCenter(double cf, bool check_boundary = false);
+    void setFreqSpan(double fs, bool check_boundary = false);  
+    void setFreqSpanKHz(double fs) { setFreqSpan(1e3 * fs, true); }     
+    void setFreqMarker(double f); 
+
+    void scrollRight(bool v) { 
+      (void) v;
+      setFreqCenter(center_freq_disp + freq_span_disp * 0.25, true); 
+    }
+    void scrollLeft(bool v) { 
+      (void) v;
+      setFreqCenter(center_freq_disp - freq_span_disp * 0.25, true); 
+    }
   
-  void configureSpectrum(double cfreq, double span, long buckets);
+    void configureSpectrum(double cfreq, double span, long buckets);
     
-  void setMarkerOffset(double lo, double hi);
+    void setMarkerOffset(double lo, double hi);
 
-protected:
+  protected:
 
-  void resetFreqAxis(double cfreq);
+    void resetFreqAxis(double cfreq);
   
-  void replotXAxis();
-  void replotYAxis();
+    void replotXAxis();
+    void replotYAxis();
 
-  double correctCenterFreq(double cfreq);
+    double correctCenterFreq(double cfreq);
 
-public:
-signals:
-  void xClick(double x);
+  public:
+  signals:
+    void xClick(double x);
+    void setSpectrumCenter(double x); // send when we should re-center the spectrum display
+  
+  protected:
+    // storage for data to be plotted. 
+    double * freqs; 
+    double * vals; 
+    int num_buckets; 
 
-protected:
-  // storage for data to be plotted. 
-  double * freqs; 
-  double * vals; 
-  int num_buckets; 
+    // the input data covers a frequency range that 
+    // is not necessarily related to the display range. 
+    double center_freq_in;
+    double freq_span_in; 
 
-  // the input data covers a frequency range that 
-  // is not necessarily related to the display range. 
-  double center_freq_in;
-  double freq_span_in; 
+    // This is the display range (x and y dimensions)
+    // x axis settings
+    double center_freq_disp;
+    double freq_span_disp;
 
-  // This is the display range (x and y dimensions)
-  // x axis settings
-  double center_freq_disp;
-  double freq_span_disp;
+    // y axis settings
+    double val_ref; // value for maximum point on the scale
+    double val_range;
 
-  // y axis settings
-  double val_ref; // value for maximum point on the scale
-  double val_range;
+    // marker offset   
+    double marker_lo_offset; 
+    double marker_hi_offset; 
 
-  // marker offset   
-  double marker_lo_offset; 
-  double marker_hi_offset; 
+    // marked frequency
+    double marker_freq; 
 
-  // marked frequency
-  double marker_freq; 
+    // the last frequency we sent to anybody
 
-  FreqScaleDraw * freq_draw_p;
+    FreqScaleDraw * freq_draw_p;
 
-  QwtPlotCurve * curve_p;
+    QwtPlotCurve * curve_p;
 
-  PlotPicker * picker_p;
+    PlotPicker * picker_p;
 
-  QwtPlotGrid * grid_p;
+    QwtPlotGrid * grid_p;
 
-  QwtPlotShapeItem freq_marker;
+    QwtPlotShapeItem freq_marker;
 
+    // if true, reset the plot center the next time the user
+    // picks a frequency. 
+    bool center_on_next_setting;
 
-private:
-  void initPlot();
+  private:
+    void initPlot();
 
-};
+  };
 }
 
 #endif // XYPLOTWIDGET_H

@@ -40,6 +40,9 @@ void MainWindow::setupWaterFall()
 {
     connect(ui->waterfall_plt,SIGNAL(xClick(double)), this, SLOT(setRXFreq(double)));
     connect(ui->waterfall_plt, &GUISoDa::WFall::xClick, listener, &GUISoDa::Listener::setRXFreq);
+    connect(ui->waterfall_plt, SIGNAL(setSpectrumCenter(double)), 
+	  listener, SLOT(setSpectrumCenter(double)));  
+    
     connect(ui->wf_moveRight_btn, SIGNAL(clicked(bool)), 
 	    ui->waterfall_plt, SLOT(scrollRight(bool)));
     connect(ui->wf_moveLeft_btn, SIGNAL(clicked(bool)), 
@@ -81,6 +84,8 @@ void MainWindow::setupSpectrum()
   ui->spectrum_plt->setDynamicRange(100.0);
   ui->spectrum_plt->setFreqCenter(144.2e6);
   connect(ui->spectrum_plt, SIGNAL(xClick(double)), this, SLOT(setRXFreq(double)));
+  connect(ui->spectrum_plt, SIGNAL(setSpectrumCenter(double)), 
+	  listener, SLOT(setSpectrumCenter(double)));  
   connect(ui->sp_moveRight_btn, SIGNAL(clicked(bool)), 
 	  ui->spectrum_plt, SLOT(scrollRight(bool)));
   connect(ui->sp_moveLeft_btn, SIGNAL(clicked(bool)), 

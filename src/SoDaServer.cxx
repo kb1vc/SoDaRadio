@@ -151,8 +151,7 @@ void deleteLockFile(const std::string & lock_file_name)
 }
 
 /// do the work of creating the SoDa threads
-/// @param argc number of command line arguments
-/// @param argv command line arguments
+/// @param params command line parameter parser object
 int doWork(SoDa::Params & params)
 {
   /// create the components of the radio

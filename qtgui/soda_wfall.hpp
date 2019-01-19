@@ -57,7 +57,7 @@ namespace GUISoDa {
   class PlotSpectrogram ;
   class WFColorMap; 
 
-  class WFall : public QwtPlot
+  class WFall : public QwtPlot, WFallPickerClient
   {
     Q_OBJECT
   
@@ -65,7 +65,14 @@ namespace GUISoDa {
     explicit WFall(QWidget *parent = 0);
     ~WFall();
 
-    double freqCenter() { return center_freq; }	      
+    double freqCenter() { return center_freq; }
+
+    void handleMouseEvent(const QMouseEvent * ev) {
+      // if we get here, the user clicked MB3 in the window -- 
+      // center the display on his clicked frequency.
+      center_on_next_setting = true; 
+    }
+
   public slots:
     void updateData(double cf, float * y);
     void pickPoint(const QPointF & pos);
@@ -104,7 +111,8 @@ namespace GUISoDa {
     
   signals:
     void xClick(double x);
-
+    void setSpectrumCenter(double x); // send when we should re-center the spectrum display
+    
   protected:
 
     double correctCenterFreq(double cfreq);
@@ -123,7 +131,11 @@ namespace GUISoDa {
 
     FreqScaleDraw * freq_scale_p; 
 
-    QwtScaleWidget * right_axis; 
+    QwtScaleWidget * right_axis;
+
+    // if true, reset the plot center the next time the user
+    // picks a frequency. 
+    bool center_on_next_setting;
   private:
     void initPlot();
 

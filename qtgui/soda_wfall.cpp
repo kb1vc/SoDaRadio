@@ -149,6 +149,8 @@ GUISoDa::WFall::~WFall()
 
 void GUISoDa::WFall::initPlot()
 {
+  center_on_next_setting = false;
+  
   sgram = new GUISoDa::PlotSpectrogram();   
   sgram->setRenderThreadCount(1);
 
@@ -175,7 +177,7 @@ void GUISoDa::WFall::initPlot()
   sgram->setDisplayMode(QwtPlotSpectrogram::ImageMode, true);
   sgram->setDefaultContourPen(QPen(Qt::black, 0));
 
-  picker_p = new WFallPicker(QwtPlot::xBottom, QwtPlot::yLeft, canvas());
+  picker_p = new WFallPicker(QwtPlot::xBottom, QwtPlot::yLeft, canvas(), this);
   connect(picker_p, SIGNAL(selected(const QPointF&)), SLOT(pickPoint(const QPointF&)));
 
   last_input_cfreq = 0.0; 
@@ -251,6 +253,11 @@ void GUISoDa::WFall::pickPoint(const QPointF & pos)
 {
   double freq = pos.x() - marker_lo_offset;   
   setFreqMarker(freq);
+  if(center_on_next_setting) {
+    center_on_next_setting = false;
+    emit setSpectrumCenter(freq);
+  }
+
   emit xClick(freq);
 }
 
