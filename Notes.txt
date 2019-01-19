@@ -527,3 +527,15 @@ the trouble. It sounds like it might be oscillating -- the decoupling
 chain after the last 10-20uH choke is all 0.1, 0.01, and 0.001 uF
 caps.  That puts the corner frequency at about 150kHz... pushing that down
 a bit with a 1uF cap should not be a big deal.  
+
+The actual problem was a missing strap to put the amplifier in AB mode rather
+than C... sigh. I wonder how long that had been going on?
+
+New measurements show a spur at 60+kHz from the carrier (up and down) that is
+more than 43 dB down at 1W out.  At 2.5W out (TX power -8dB down from UBX max)
+we're almost 50dB down.  So this may be a power supply issue...?  or noise from
+the voltage regulator? (There's a 78l06 in the bias suply that is bypassed with
+10uF and 100nF... which ought to be enough at 65kHz... but who knows...
+
+
+------
