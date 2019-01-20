@@ -239,6 +239,32 @@ in that band.
 
 ## [VersionNews]: Version News
 
+Version 6.4.x has a few useful changes
+
+1. Scanning across a band is now less painful: MB3 in the spectrum or
+waterfall panel will scroll the center of the display to the chosen
+frequency, and tune the RX to that frequency.  MB1 acts as before: it
+changes the RX frequency without moving the display.  MB1 is important
+as it will not cause the RF front-end to retune, while recentering the
+frequency spectrum will often cause the front-end LO to change. While
+looking for weak signals, it is often handy to hold the front-end (analog)
+part still so that the spurs don't move.  The spurs may move if MB3
+causes the spectrum display to be recentered to a frequency that is otherwise
+close to the edge of the current IF passband.
+
+Summary: MB3 is very useful for scanning.  For digging out whispers, use
+MB1. 
+
+2. Added squelch for the NBFM demod. The squelch control is primitive
+and can be found on the Settings tab. (It isn't on the main panel as
+it isn't used much and space is already tight.)
+
+3. Re-arranged the GUI to make the radio a little less awkward to
+use in the dark, particularly during contest operation.  Grid and
+call text boxes are closer to the PTT button.
+
+
+
 Version 6.0.x takes a new approach to handling Audio Output
 
 0. Version 6.0.5 adds a RECORD button.  Press the button to record the
