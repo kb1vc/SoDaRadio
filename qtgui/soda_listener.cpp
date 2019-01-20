@@ -359,6 +359,12 @@ void GUISoDa::Listener::setSidetoneVolume(int vol)
   }
 }
 
+void GUISoDa::Listener::setSquelchLevel(int lev) 
+{
+  if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::NBFM_SQUELCH, (double) lev))) {
+    perror((boost::format("Failed to send SET command in function %s\n") % __PRETTY_FUNCTION__).str().c_str());;
+  }
+}
 
 void GUISoDa::Listener::setClockRef(int external)
 {

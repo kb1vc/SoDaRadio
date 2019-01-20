@@ -117,6 +117,8 @@ namespace GUISoDa {
     void setCWSpeed(int speed); 
     void setSidetoneVolume(int vol);
 
+    void setSquelchLevel(int lev);
+
     void setClockRef(int external);
 
     void setPTT(bool on);

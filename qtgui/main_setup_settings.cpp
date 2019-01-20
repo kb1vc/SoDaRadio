@@ -74,7 +74,9 @@ void MainWindow::setupSettings()
 	  this, SLOT(saveConfigAs_dlg()));
   connect(ui->openConfig_btn, SIGNAL(clicked()), 
 	  this, SLOT(restoreConfig_dlg()));  
-  
+
+  connect(ui->Squelch_sli, SIGNAL(valueChanged(int)), 
+	  listener, SLOT(setSquelchLevel(int)));
   setupAudioDeviceList(); 
 }
 

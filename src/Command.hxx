@@ -475,6 +475,12 @@ namespace SoDa {
        * Stop recording raw IF stream to file
        */
       RF_RECORD_STOP, 
+
+      
+      /**
+       * Set/Get NBMF squelch level
+       */
+      NBFM_SQUELCH,
       
       /**
        * No comment

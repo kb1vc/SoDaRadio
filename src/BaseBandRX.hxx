@@ -283,6 +283,10 @@ namespace SoDa {
     // recent audio level
     float audio_level; 
     float log_audio_buffer_size; 
+
+    float nbfm_squelch_level;  ///< average amplitude must be greater to trigger demod.
+    int nbfm_squelch_hang_count; ///< if > 0 then send audio.
+    int nbfm_squelch_hang_time; ///< continue FM audio demod for this many frames after threshold drops
   };
 }
 

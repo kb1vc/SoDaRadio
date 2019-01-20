@@ -464,7 +464,7 @@
        </size>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="Waterfall">
        <attribute name="title">
@@ -1121,7 +1121,7 @@
            </spacer>
           </item>
           <item>
-           <widget class="QGroupBox" name="groupBox_7">
+           <widget class="QGroupBox" name="AudioGroupBox">
             <property name="title">
              <string>Audio</string>
             </property>
@@ -1185,6 +1185,31 @@
                    </size>
                   </property>
                  </spacer>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="SquelchBox">
+               <property name="title">
+                <string>Squelch (NBFM only)</string>
+               </property>
+               <layout class="QVBoxLayout" name="verticalLayout_5">
+                <item>
+                 <widget class="QSlider" name="Squelch_sli">
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;IF level required to enable NBFM demod&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Note that squelch level is with reference to RF gain setting. Increased RF gain will decrease the signal strength necessary to break the squelch. &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
+                  <property name="maximum">
+                   <number>12</number>
+                  </property>
+                  <property name="sliderPosition">
+                   <number>6</number>
+                  </property>
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                 </widget>
                 </item>
                </layout>
               </widget>

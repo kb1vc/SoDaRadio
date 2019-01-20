@@ -134,6 +134,12 @@ SoDa::BaseBandRX::BaseBandRX(Params * params,
   // pend a null buffer or two just to keep the out stream from 
   // under-flowing
   pendNullBuffer(2);
+
+  // default NBFM squelch is midlin
+  nbfm_squelch_level = 1000.0 * ((float) audio_buffer_size); // this is really modest
+  // hang time is 5 audio frames (about 1/4 sec)
+  nbfm_squelch_hang_time = 5;
+  // start with initial hang count of 0 (haven't broken squelch yet)
 }
 
 void SoDa::BaseBandRX::demodulateWBFM(SoDaBuf * rxbuf, SoDa::Command::ModulationType mod, float af_gain)
@@ -180,6 +186,9 @@ void SoDa::BaseBandRX::demodulateNBFM(std::complex<float> * dbuf, SoDa::Command:
   float * audio_buffer = bpool->getBuffer();
   std::complex<float> demod_out[audio_buffer_size];
 
+  // First we need to band-limit the input RF -- modulation width is about 12.5kHz,
+  // so the filter should be a 12.5kHz LPF. 
+  
   // Interestingly, arctan based demodulation (see Lyons p 486 for instance)
   // performs much better than the approximation that avoids the atan call.
   // Texts that talk about atan generally don't talk about the problem of
@@ -188,6 +197,7 @@ void SoDa::BaseBandRX::demodulateNBFM(std::complex<float> * dbuf, SoDa::Command:
   // "corrected".  We're really trying to find the angular diference between
   // samples, so the wraparound is important. 
   unsigned int i; 
+  float amp_sum = 0.0; 
   for(i = 0; i < audio_buffer_size; i++) {
     // do the atan demod
     // measure the phase of the incoming signal.
@@ -197,15 +207,27 @@ void SoDa::BaseBandRX::demodulateNBFM(std::complex<float> * dbuf, SoDa::Command:
     if(dphase > M_PI) dphase -= 2.0 * M_PI;
     demod_out[i] = af_gain * dphase; 
     last_phase_samp = phase; 
+    // measure the amplitude of the incoming signal.
+    // measure it over a period of one buffer's worth. 
+    amp_sum += abs(dbuf[i]);
   }
 
+  // now look at the magnitude and compare it to the threshold
+
+  if(amp_sum > nbfm_squelch_level) {
+    nbfm_squelch_hang_count = nbfm_squelch_hang_time;
+  }
+  else if(nbfm_squelch_hang_count > 0) {
+    nbfm_squelch_hang_count--;
+  }
+  
   cur_audio_filter->apply(demod_out, demod_out, 25.0);
   
   if(audio_save_enable) {
     audio_file2.write((char*) demod_out, audio_buffer_size * sizeof(std::complex<float>));
   }
   for(i = 0; i < audio_buffer_size; i++) {
-    audio_buffer[i] = demod_out[i].real(); 
+    audio_buffer[i] = nbfm_squelch_hang_count ? demod_out[i].real() : 0.0; 
   }
   // do a median filter to eliminate the pops.
   // maybe not... fmMedianFilter.apply(audio_buffer, audio_buffer, audio_buffer_size); 
@@ -248,7 +270,7 @@ void SoDa::BaseBandRX::demodulateAM(std::complex<float> * dbuf)
     audio_buffer[i] = v; 
   }
   sumsq = sqrt(sumsq / ((float) audio_buffer_size));
-  // if((dbg_ctr & 0xff) == 0) {
+  // if((dbg_ctr & 0x3f) == 0) {
   //   std::cerr << boost::format("maxval = %f rms = %f\n") % maxval % sumsq;
   // }
 
@@ -399,8 +421,12 @@ void SoDa::BaseBandRX::execSetCommand(SoDa::Command * cmd)
     break; 
   case SoDa::Command::RX_AF_SIDETONE_GAIN: // set audio gain. 
     af_sidetone_gain = powf(10.0, 0.25 * (cmd->dparms[0] - 50.0));
+    // we send out reports for hamlib and other listeners...
     cmd_stream->put(new Command(Command::REP, Command::RX_AF_SIDETONE_GAIN, 
 				50. + 4.0 * log10(af_sidetone_gain)));
+    break;
+  case SoDa::Command::NBFM_SQUELCH:
+    nbfm_squelch_level = powf(10, 0.5 * cmd->dparms[0]) * ((float) audio_buffer_size);
     break; 
   default:
     break; 
@@ -575,7 +601,6 @@ void SoDa::BaseBandRX::buildFilterMap()
 
   am_pre_filter = new SoDa::OSFilter(0.0, 0.0, 8000.0, 9000.0, 512, 1.0, audio_sample_rate, audio_buffer_size);
 
-  nbfm_pre_filter = new SoDa::OSFilter(0.0, 0.0, 25000.0, 32000.0, 512, 1.0, rf_sample_rate, rf_buffer_size);
-
+  nbfm_pre_filter = new SoDa::OSFilter(0.0, 0.0, 12500.0, 14000.0, 512, 1.0, rf_sample_rate, rf_buffer_size);
 
 }

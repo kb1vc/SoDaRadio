@@ -54,6 +54,12 @@ void MainWindow::setupWaterFall()
     connect(ui->wf_freqSpan_cb, SIGNAL(valueChanged(double)), 
 	    ui->waterfall_plt, SLOT(setFreqSpanKHz(double)));
 
+  connect(ui->Display_tabs, &QTabWidget::currentChanged,
+	  [this](int v) {
+	    (void) v;
+	    ui->waterfall_plt->setFreqSpanKHz(ui->wf_freqSpan_cb->value());
+	  });
+    
     ui->waterfall_plt->setMarkerOffset(-100, 1e3);
 
     ui->wf_dynRange_cb->setCurrentIndex(0);
@@ -97,6 +103,12 @@ void MainWindow::setupSpectrum()
   connect(ui->sp_ceilLevel_spb, SIGNAL(valueChanged(int)), 
 	  ui->spectrum_plt, SLOT(setRefLevel(int)));
 
+  connect(ui->Display_tabs, &QTabWidget::currentChanged,
+	  [this](int v) {
+	    (void) v;
+	    ui->spectrum_plt->setFreqSpanKHz(ui->sp_freqSpan_cb->value());
+	  });
+  
   ui->spectrum_plt->setMarkerOffset(0,1e3);
 
 

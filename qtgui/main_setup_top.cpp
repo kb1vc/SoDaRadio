@@ -74,6 +74,7 @@ void MainWindow::setupTopControls()
 	    (void) checked;
 	    setRXFreq(ui->TXFreq_lab->getFreq());
 	  });
+
 }
 
 
