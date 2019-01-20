@@ -43,6 +43,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "soda_listener.hpp"
 #include "../common/GuiParams.hxx"
 
+#include "SoDaLogo_Big.xpm"
+
 using namespace GUISoDa;
 
 MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
@@ -69,6 +71,8 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   setupLogEditor();
   setupStatus();
 
+  this->setWindowIcon(QIcon(QPixmap(SoDaLogo_Big)));
+  
   // connect(listener, SIGNAL(repHWMBVersion(const QString &)), 
   // 	  this, SLOT(setWindowTitle(const QString &)));
   connect(listener, &GUISoDa::Listener::repHWMBVersion,
