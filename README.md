@@ -72,6 +72,10 @@ sudo dnf install ./SoDaRadio-6.4.1-1.x86_64.Fedora-28.rpm
 ~~~~
 
 #### Ubuntu
+WARNING!!!  The 6.4.1 version is somehow broken wrt audio when running on
+Ubuntu 18.04 in a VM hosted on a Fedora 28 system.  I don't know what this
+is about yet.  Any feedback from users running on an actual Ubuntu system
+would be appreciated.
 
 **SoDaRadio is no longer supported on Ubuntu 16.04, 17.10 or prior releases.**
 None of the older releases have adequate support for Qt. SoDaRadio versions prior to 6.0 may build on Ubuntu systems. 
