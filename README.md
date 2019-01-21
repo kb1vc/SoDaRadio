@@ -15,9 +15,10 @@ It is non-commercial and released under the BSD 2-Clause license.
 
 SoDaRadio does not yet run on any other hardware platform. 
 
-SoDaRadio has been built on both Fedora 28 and Ubuntu 18.04 releases.  There is no
-particular reason that it couldn't run on any Linux release that is clean 
-enough to compile and run the UHD utilities that come with the Ettus software and that supports Qt5.7 or later. 
+SoDaRadio has been built on both Fedora 28 and Ubuntu 18.04 releases.
+There is no particular reason that it couldn't run on any Linux
+release that is clean enough to compile and run the UHD utilities that
+come with the Ettus software and that supports Qt5.7 or later.
 
 Interested in more detail?  Take a look at the [documentation here](docs/index.html).  ["SoDa -- A Multimode VHF/UHF Software Defined Radio"](papers/SoDa_EasternVHF_2014.pdf) was presented at the 40th Eastern VHF/UHF Conference in 2014.
 
@@ -28,26 +29,63 @@ Interested in how SoDaRadio got [here?](History.md)
 
 You have two choices here.  
 
-You may build SoDaRadio from scratch using git
-and cmake.  This really does work rather smoothly on Fedora and Ubuntu systems. 
-Before each major release, I do a build on at least two recent Fedora releases, 
-and the current and previous Ubuntu LTS releases. 
+You may build SoDaRadio from scratch using git and cmake.  This really
+does work rather smoothly on Fedora and Ubuntu systems.  Before each
+major release, I do a build on at least two recent Fedora releases,
+and the current and previous Ubuntu LTS releases.
 
 Ready to build-it-yourself?  Jump down to "Building from scratch."
 
-Alternatively, if you are running Ubuntu 16.04, or Fedora 27 you can
-download binary kits that just "do the right thing."  They'll install all the 
-prerequisites, put the necessary files in the right place and are generally a 
-pain-reduced way of getting SoDaRadio running.  The only real downside to the binary
-installation is if you really really must run something other than the libuhd version
-that is supplied by your distribution (if you use Fedora) or by Ettus (if you use
-Unbuntu).  This can be a showstopper for folks who's GnuRadio installation is 
-finicky about which version of libuhd it needs.  If you think you may be one of those
-people, build SoDaRadio from scratch. 
+Alternatively, if you are running Ubuntu 18.04, or Fedora 28 you can
+download binary kits that just "do the right thing."  They'll install
+all the prerequisites, put the necessary files in the right place and
+are generally a pain-reduced way of getting SoDaRadio running.  The
+only real downside to the binary installation is if you really really
+must run something other than the libuhd version that is supplied by
+your distribution (if you use Fedora) or by Ettus (if you use
+Unbuntu).  This can be a showstopper for folks who's GnuRadio
+installation is finicky about which version of libuhd it needs.  If
+you think you may be one of those people, build SoDaRadio from
+scratch. See the instructions below, at "Building from scratch."
 
-If you're OK with using your distributions libuhd release, install from a 
-binary kit. See the
-binary kit installation instructions below, at "Installing from a kit."
+### Installing from a kit
+
+Kit installs are pretty simple.  Download the appropriate package, and
+install with the normal installer for your OS. If you've managed to install 
+the Ettus software, then SoDaRadio should not present any particular problems.
+
+#### Fedora
+
+The following works for installing on Fedora 28. Older kits for Fedora
+27, 26, 25, and 24 are no longer supported. Version 5.3 fixes
+significant problems with T/R switching in older versions.
+
+1. Download the appropriate rpm. The following link will take you to
+the repository location for the kit. Go to that page and hit the
+download button. [Get SoDaRadio V6.4.1 for Fedora 28 here](/packages/rpm/SoDaRadio-6.4.1-1.x86_64.Fedora-28.rpm)
+
+2. The UHD kit that ships with Fedora 28 was built when Moses was in the rushes. Alas, as of January 2018, there don't seem to be RPMs available for versions more recent than 3.10.  So, for a limited time only, you can get [my build of UHD 3.14.0.1 here](/packages/rpm/uhd_3.14.0.HEAD-0-gd20a7ae2_Fedora-28-x86_64.rpm)
+
+~~~~
+sudo dnf install ./uhd_3.14.0.HEAD-0-gd20a7ae2_Fedora-28-x86_64.rpm
+sudo dnf install ./SoDaRadio-6.4.1-1.x86_64.Fedora-28.rpm
+~~~~
+
+#### Ubuntu
+
+**SoDaRadio is no longer supported on Ubuntu 16.04, 17.10 or prior releases.**
+None of the older releases have adequate support for Qt. SoDaRadio versions prior to 6.0 may build on Ubuntu systems. 
+
+1. Download the deb file.  The following link will take you to the repository location
+for the kit.  Go to that page and hit the download button.
+[Get SoDaRadio for Ubuntu 18.04 here](/packages/deb/SoDaRadio-6.4.1-1.x86_64.Ubuntu-18.04.deb)
+2. Install the kit using apt -- you might need to add the ettus repository. I do, so that I get a recent libuhd build. 
+~~~~
+sudo add-apt-repository ppa:ettusresearch/uhd
+sudo apt install ./SoDaRadio-6.0.5-1.x86_64.Ubuntu-18.04.deb
+~~~~
+
+Please report success/failure to the github issues discussion.
 
 ### Building from scratch
 
@@ -59,14 +97,12 @@ The next steps depend on which distribution you are using.
 
 #### Fedora prerequisites
 
-This process has been tested on a straight-out-of-the-box Fedora 27 release.
+This process has been tested on a straight-out-of-the-box Fedora 28 release.
 It installs all the prerequisites.  (If you really need to use the 
 libuhd version that you've installed yourself for some other reason, skip the
 last installation step.)
 
-Note that Version 6.0.5 has been built on Fedora 28 with LibUHD version 3.12. 
-There are some apparent compatibility issues with libUHD version 3.13. These will
-be addressed soon. (Sep-11-2018)
+Note that Version 6.4.1 has been built on Fedora 28 with LibUHD version 3.14.0. 
 
 Run the installation commands as "root" or use sudo.  
 ~~~~~
@@ -144,58 +180,6 @@ The command must be typed somewhere in the tree that you just created with
 the git clone command. 
 
 
-### Installing from a kit
-
-Kit installs are pretty simple.  Download the appropriate package, and
-install with the normal installer for your OS. If you've managed to install 
-the Ettus software, then SoDaRadio should not present any particular problems.
-
-#### Fedora
-
-The following works for installing on Fedora 28. Older kits for Fedora 27, 26, 25, and 24
-are no longer supported. Version 5.3 fixes significant problems with T/R switching
-in older versions. 
-
-1. Download the appropriate rpm. The following links will take you to the repository 
-location for the kit. Go to that page and hit the download button.
-   * [Get SoDaRadio V6.0.5 for Fedora 28 here](/packages/rpm/SoDaRadio-6.0.5-1.x86_64.Fedora-28.rpm)
-   * [Get (obsolete version of) SoDaRadio for Fedora 27 here](/packages/rpm/SoDaRadio-5.3.0-1.x86_64.Fedora-27.rpm)
-   * [Get (obsolete version of) SoDaRadio for Fedora 26 here](/packages/rpm/SoDaRadio-5.3.0-1.x86_64.Fedora-26.rpm)
-   * [Get (obsolete version of) SoDaRadio for Fedora 25 here](/packages/rpm/SoDaRadio-5.0.3-1.x86_64.Fedora-25.rpm)
-   * [Get (obsolete version of) SoDaRadio for Fedora 24 here](/packages/rpm/SoDaRadio-5.0.3-1.x86_64.Fedora-24.rpm)
-2. Install the kit using dnf (substitute the correct package name in the command below).
-~~~~
-sudo dnf install ./SoDaRadio-6.0.5-1.x86_64.Fedora-28.rpm
-~~~~
-
-Version 6.0.5 adds a RECORD button!  
-
-Version 6.0.1 fixes some audio problems with 5.3 and more modern
-distros.  For reasons that are beyond my ken, 5.3 stopped behaving
-well soon after an upgrade to Fedora 28.  Others have reported similar
-problems on Ubuntu.  (The audio output stops after a period of time
-ranging from seconds to days.)  This has been addressed in version 6.
-
-Version 5.3 corrects some very nasty bugs in the earlier release.  In
-particular T/R switching events could cause the ALSA audio output to
-lock up or stammer. This has since been fixed.  (See the git logs for
-version soda-5.3.0 )
-
-#### Ubuntu
-
-**SoDaRadio is no longer supported on Ubuntu 16.04, 17.10 or prior releases.**
-None of the older releases have adequate support for Qt. SoDaRadio versions prior to 6.0 may build on Ubuntu systems. 
-
-1. Download the deb file.  The following link will take you to the repository location
-for the kit.  Go to that page and hit the download button.
-[Get SoDaRadio for Ubuntu 18.04 here](/packages/deb/SoDaRadio-6.0.5-1.x86_64.Ubuntu-18.04.deb)
-2. Install the kit using apt -- you might need to add the ettus repository. I do, so that I get a recent libuhd build. 
-~~~~
-add-apt-repository ppa:ettusresearch/uhd
-sudo apt install ./SoDaRadio-6.0.5-1.x86_64.Ubuntu-18.04.deb
-~~~~
-
-Please report success/failure to the github issues discussion.
 
 ## Using SoDaRadio
 
