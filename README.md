@@ -82,7 +82,7 @@ for the kit.  Go to that page and hit the download button.
 2. Install the kit using apt -- you might need to add the ettus repository. I do, so that I get a recent libuhd build. 
 ~~~~
 sudo add-apt-repository ppa:ettusresearch/uhd
-sudo apt install ./SoDaRadio-6.0.5-1.x86_64.Ubuntu-18.04.deb
+sudo apt install ./SoDaRadio-6.4.1-1.x86_64.Ubuntu-18.04.deb
 ~~~~
 
 Please report success/failure to the github issues discussion.
