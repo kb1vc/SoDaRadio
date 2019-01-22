@@ -64,7 +64,7 @@ set(CPACK_RPM_PACKAGE_AUTOREQPROV " no")
 set(CPACK_DEBIAN_PACKAGE_DESCRIPTION ${SODA_PACKAGE_DESCRIPTION})
 set(CPACK_DEBIAN_PACKAGE_SECTION "hamradio")
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libuhd003 (>= 3.12), uhd-host (>= 3.12), libgps-dev (>= 3.1), gpsd (>= 3.1), libsndfile1")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libuhd003 (>= 3.12), uhd-host (>= 3.12), libgps-dev (>= 3.1), gpsd (>= 3.1), libsndfile1, libqt5multimedia5-plugins")
 
 INCLUDE(CPack)
 
