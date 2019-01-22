@@ -72,10 +72,6 @@ sudo dnf install ./SoDaRadio-6.4.1-1.x86_64.Fedora-28.rpm
 ~~~~
 
 #### Ubuntu
-WARNING!!!  The 6.4.1 version is somehow broken wrt audio when running on
-Ubuntu 18.04 in a VM hosted on a Fedora 28 system.  I don't know what this
-is about yet.  Any feedback from users running on an actual Ubuntu system
-would be appreciated.
 
 **SoDaRadio is no longer supported on Ubuntu 16.04, 17.10 or prior releases.**
 None of the older releases have adequate support for Qt. SoDaRadio versions prior to 6.0 may build on Ubuntu systems. 
@@ -87,6 +83,13 @@ for the kit.  Go to that page and hit the download button.
 ~~~~
 sudo add-apt-repository ppa:ettusresearch/uhd
 sudo apt install ./SoDaRadio-6.4.1-1.x86_64.Ubuntu-18.04.deb
+~~~~
+3. Despite the slick installation process, the Ubuntu install does not setup
+the USRP udev rules for USB devices.  This will prevent use of the B2xx series. So, if the udev rules haven't been setup, do that now.
+~~~~
+sudo cp /usr/lib/uhd/utils/uhd-usrp.rules /etc/udev/rules.d/
+sudo udevadm control --reload-rules
+sudo udevadm trigger
 ~~~~
 
 Please report success/failure to the github issues discussion.
@@ -116,7 +119,7 @@ Run the installation commands as "root" or use sudo.
  dnf install --assumeyes qt5-qtbase-devel
  dnf install --assumeyes qwt-qt5-devel
  dnf install --assumeyes python-mako
- dnf install --assumeyes qt5-qtmultimedia-devel
+ dnf install --assumeyes qt5-qtmultimedia-devel 
  dnf install --assumeyes hamlib-devel
  dnf install --assumeyes gpsd-devel gpsd-clients gpsd-libs gpsd
  dnf install --assumeyes libsndfile-devel
@@ -145,7 +148,7 @@ apt-get install -y libqwt-qt5-dev
 apt-get install -y libqt5widgets5
 apt-get install -y libqt5core5a
 apt-get install -y qtbase5-dev qt5-qmake qtbase5-dev-tools
-apt-get install -y libqt5multimedia5
+apt-get install -y libqt5multimedia5 libqt5multimedia5-plugins
 apt-get install -y libsndfile1-dev
 apt-get install -y qtmultimedia5-dev
 apt install -y debmake
@@ -190,9 +193,16 @@ the git clone command.
 To start the SoDaRadio, connect your Ettus USRP to 
 the host computer. Connect an antenna to the TX/RX port.
 
-For users of the B2xx series, it is best to initialize the radio with uhd_usrp_probe. Firmware loading can take some time, and SoDaRadio can't tell whether the radio is slowly initializing, or the control link is broken.  
+For users of the B2xx series, it is best to initialize the radio with uhd_usrp_probe. Firmware loading can take some time, and SoDaRadio can't tell whether the radio is slowly initializing, or the control link is broken.
 
-Then execute SoDaRadio
+If this is the first time you've activated your USRP, or if the
+library has been updated, it is likely that you'll want to run
+uhd_usrp_probe to find out if the firware files are up-to-date.  If
+not, the UHD utils will tell you so, and direct you to run an update
+script (as root). 
+
+When all is connected, and uhd_usrp_probe makes happy noises, you are ready
+to run: 
 
 ~~~~~
 SoDaRadio
