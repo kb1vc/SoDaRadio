@@ -64,10 +64,10 @@ significant problems with T/R switching in older versions.
 the repository location for the kit. Go to that page and hit the
 download button. [Get SoDaRadio V6.4.1 for Fedora 28 here](/packages/rpm/SoDaRadio-6.4.1-1.x86_64.Fedora-28.rpm)
 
-2. The UHD kit that ships with Fedora 28 was built when Moses was in the rushes. Alas, as of January 2018, there don't seem to be RPMs available for versions more recent than 3.10.  So, for a limited time only, you can get [my build of UHD 3.14.0.1 here](/packages/rpm/uhd_3.14.0.HEAD-0-gd20a7ae2_Fedora-28-x86_64.rpm)
+2. The UHD kit that ships with Fedora 28 was built when Moses was in the rushes. Alas, as of January 2018, there don't seem to be RPMs available for versions more recent than 3.10.  So, for a limited time only, you can get [my build of UHD 3.14.0.1 here](/packages/rpm/uhd_3.14.0.kb1vc_v3.14.0.0-a1-rpm_fix-1-g55771f68_Fedora-28-x86_64.rpm)
 
 ~~~~
-sudo dnf install ./uhd_3.14.0.HEAD-0-gd20a7ae2_Fedora-28-x86_64.rpm
+sudo dnf install ./uhd_3.14.0.kb1vc_v3.14.0.0-a1-rpm_fix-1-g55771f68_Fedora-28-x86_64.rpm
 sudo dnf install ./SoDaRadio-6.4.1-1.x86_64.Fedora-28.rpm
 ~~~~
 
