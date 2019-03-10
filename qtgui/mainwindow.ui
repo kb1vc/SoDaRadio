@@ -464,7 +464,7 @@
        </size>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="Waterfall">
        <attribute name="title">
@@ -1036,6 +1036,9 @@
               </widget>
              </item>
              <item>
+              <layout class="QVBoxLayout" name="verticalLayout_13"/>
+             </item>
+             <item>
               <spacer name="verticalSpacer_6">
                <property name="orientation">
                 <enum>Qt::Vertical</enum>
@@ -1354,7 +1357,7 @@
               <item row="5" column="0">
                <widget class="QLabel" name="label_4">
                 <property name="text">
-                 <string>Min. Freq. (MHz)</string>
+                 <string>Min. RX Freq. (MHz)</string>
                 </property>
                </widget>
               </item>
@@ -1364,7 +1367,7 @@
               <item row="6" column="0">
                <widget class="QLabel" name="label_5">
                 <property name="text">
-                 <string>Max. Freq. (MHz)</string>
+                 <string>Max. RX Freq. (MHz)</string>
                 </property>
                </widget>
               </item>
@@ -1428,29 +1431,6 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QCheckBox" name="BCTransMode_cb">
-                  <property name="layoutDirection">
-                   <enum>Qt::RightToLeft</enum>
-                  </property>
-                  <property name="text">
-                   <string>Transverter Mode</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QCheckBox" name="BCLowInj_cb">
-                  <property name="layoutDirection">
-                   <enum>Qt::RightToLeft</enum>
-                  </property>
-                  <property name="text">
-                   <string>Low Side Injection</string>
-                  </property>
-                  <property name="checked">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item>
                  <spacer name="verticalSpacer_2">
                   <property name="orientation">
                    <enum>Qt::Vertical</enum>
@@ -1482,33 +1462,120 @@
             </item>
             <item>
              <layout class="QFormLayout" name="formLayout">
-              <item row="0" column="0">
+              <item row="3" column="0">
                <widget class="QLabel" name="label_8">
                 <property name="text">
                  <string>LO Freq (MHz)</string>
                 </property>
                </widget>
               </item>
-              <item row="0" column="1">
+              <item row="3" column="1">
                <widget class="QLineEdit" name="BCLOFreq_le">
                 <property name="text">
                  <string>0</string>
                 </property>
                </widget>
               </item>
-              <item row="1" column="0">
+              <item row="4" column="0">
                <widget class="QLabel" name="label_7">
                 <property name="text">
                  <string>LO Mult</string>
                 </property>
                </widget>
               </item>
-              <item row="1" column="1">
+              <item row="4" column="1">
                <widget class="QSpinBox" name="BCLOMult_sb">
                 <property name="minimum">
                  <number>1</number>
                 </property>
                </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QCheckBox" name="BCLowInj_cb">
+                <property name="layoutDirection">
+                 <enum>Qt::LeftToRight</enum>
+                </property>
+                <property name="text">
+                 <string>Low Side Injection</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QCheckBox" name="BCTransMode_cb">
+                <property name="layoutDirection">
+                 <enum>Qt::LeftToRight</enum>
+                </property>
+                <property name="text">
+                 <string>Transverter Mode</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_22">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_14">
+              <item>
+               <widget class="QCheckBox" name="BCFullDuplex_cb">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set to enable RX spectrum and waterfal displays during transmit mode.  &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;When clear, the spectrum and waterfall displays are disabled, and the RX chain is retuned to provide sidetone in (CW mode). &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="text">
+                 <string>Full Duplex (sat. mode)</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="BCTXRXOffset_cb">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set to enable TX = RX + Offset tuning.  (Specify offset frequency below.)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="text">
+                 <string>Enable TX/RX Offset</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_24">
+                <property name="text">
+                 <string>TX = RX + Offset (MHz)</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="BCSatOffset_le">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When TX-RX Lock is set, this frequency will be added to the indicated RX frequency to set the TX frequency.  Any change to the RX frequency will cause a corresponding change in the TX frequency.  &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="verticalSpacer_11">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>20</width>
+                  <height>40</height>
+                 </size>
+                </property>
+               </spacer>
               </item>
              </layout>
             </item>

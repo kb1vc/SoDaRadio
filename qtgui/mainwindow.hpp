@@ -139,6 +139,8 @@ protected:
   void sendCannedCW(const QString & txt);
 
   void setupStatus();  
+
+  double getTXRXOffset() const { return tx_rx_offset; }
   
 private:
   void closeEvent(QCloseEvent * event) {
@@ -165,6 +167,10 @@ private:
   GUISoDa::AudioListener * audio_listener;
 
   GUISoDa::HamlibServer * hlib_server; 
+
+  // UI wide state -- this doesn't really fit anywhere else.
+  void setTXRXOffset(double v) { tx_rx_offset = v; }
+  double tx_rx_offset; 
 };
 
 #endif // MAINWINDOW_H

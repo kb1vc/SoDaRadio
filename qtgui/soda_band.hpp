@@ -38,6 +38,24 @@ namespace GUISoDa {
   class Band {
   public:
     Band() {
+      band_name = ""; 
+      band_index = 0; 
+      def_rx_ant = "";
+      def_tx_ant = "";
+      min_freq = 0.0; 
+      max_freq = 0.0; 
+      def_mode = "";
+      tx_enabled = false; 
+      tverter_mode = false; 
+      lowside_injection = false; 
+      tv_LO_freq = 0.0; 
+      tv_LO_mult = 0.0;
+      last_rx_freq = 0.0;
+      last_tx_freq = 0.0;
+
+      sat_offset = 0.0; 
+      full_duplex = false; 
+      sat_offset_enabled = false; 
     }
 
     void restore(QSettings * set_p) {
@@ -61,6 +79,11 @@ namespace GUISoDa {
       tv_LO_mult = set_p->value("TVLOMult").toDouble();
       tverter_mode = set_p->value("TVMode").toBool();
       lowside_injection = set_p->value("TVLowInjection").toBool();    
+
+      // satellite mode. 
+      sat_offset = set_p->value("SatOffset", 0.0).toDouble();
+      full_duplex = set_p->value("FullDuplex", false).toBool();
+      sat_offset_enabled = set_p->value("SatOffsetEna", false).toBool(); 
     }
 
     void save(QSettings * set_p) const {
@@ -78,6 +101,11 @@ namespace GUISoDa {
       set_p->setValue("TXEna", tx_enabled);
       set_p->setValue("TVMode", tverter_mode);
       set_p->setValue("TVLowInjection", lowside_injection);
+
+      set_p->setValue("SatOffset", sat_offset);
+      set_p->setValue("FullDuplex", full_duplex);
+      set_p->setValue("SatOffsetEna", sat_offset_enabled); 
+
     }
 
     const QString & name() const  { return band_name; }
@@ -96,6 +124,11 @@ namespace GUISoDa {
     bool tverterEna() const  { return tverter_mode; }
     bool tverterLowInjection() const  { return lowside_injection; }
 
+    double satOffset() const { return sat_offset; }
+    bool fullDuplex() const { return full_duplex; }
+    bool satOffsetEna() const { return sat_offset_enabled; }
+
+    
     void setName(const QString & v) { band_name = v; }
     void setIndex(int v) { band_index = v; }
     void setDefRXAnt(const QString & v) { def_rx_ant = v; }
@@ -111,6 +144,11 @@ namespace GUISoDa {
     void setTxEna(bool v) { tx_enabled = v; }
     void setTverterEna(bool v) { tverter_mode = v; }
     void setTverterLowInjection(bool v) { lowside_injection = v; }
+
+    // satellite modes
+    void setSatOffset(double v) { sat_offset = v; }
+    void setFullDuplex(bool v) { full_duplex = v; }
+    void setSatOffsetEna(bool v) { sat_offset_enabled = v; }
 
 
     bool isInBand(double freq) const {
@@ -136,6 +174,10 @@ namespace GUISoDa {
     double tv_LO_mult; 
     double last_rx_freq; 
     double last_tx_freq; 
+
+    double sat_offset; 
+    bool full_duplex; 
+    bool sat_offset_enabled; 
   }; 
 
   class BandMap : public QMap<QString, Band> {

@@ -55,6 +55,7 @@ void MainWindow::setupBandConfig()
   ui->BCMinFreq_le->setValidator(new QDoubleValidator(this));
   ui->BCMaxFreq_le->setValidator(new QDoubleValidator(this));
   ui->BCLOFreq_le->setValidator(new QDoubleValidator(this));
+  ui->BCSatOffset_le->setValidator(new QDoubleValidator(this));  
 
   connect(listener, &GUISoDa::Listener::addRXAntName, 
 	  [this](const QString & v){
@@ -133,6 +134,10 @@ void MainWindow::fillBandMapEntry(const QString & band)
     ui->BCEnableTX_cb->setChecked(b.txEna());
     ui->BCTransMode_cb->setChecked(b.tverterEna());
     ui->BCLowInj_cb->setChecked(b.tverterLowInjection());    
+
+    ui->BCFullDuplex_cb->setChecked(b.fullDuplex());
+    ui->BCSatOffset_le->setText(QString("%1").arg(b.satOffset(), 14, 'f', 6));
+    ui->BCTXRXOffset_cb->setChecked(b.satOffsetEna());
   }
 }
 
@@ -173,9 +178,14 @@ void MainWindow::writeBandMapEntry(bool v)
   b.setTxEna(ui->BCEnableTX_cb->isChecked());
   b.setTverterEna(ui->BCTransMode_cb->isChecked());
   b.setTverterLowInjection(ui->BCLowInj_cb->isChecked());
+
+  b.setSatOffset(ui->BCSatOffset_le->text().toDouble());
+  b.setFullDuplex(ui->BCFullDuplex_cb->isChecked());
+  b.setSatOffsetEna(ui->BCTXRXOffset_cb->isChecked());
   
   b.setLastRXFreq((min_freq + max_freq) * 0.5);
   b.setLastTXFreq((min_freq + max_freq) * 0.5);    
+
 
   band_map[bname] = b; 
 
@@ -199,13 +209,31 @@ void MainWindow::changeBand(const QString & band)
   if(band_map.count(band)) {
     // and set the UI widgets.
     if((band != auto_bandswitch_target)) {
+      if(band_map[band].satOffsetEna()) {
+	qInfo() << QString("changeBand setting band offset for band [%1] offset = %2\n").arg(band).arg(band_map[band].satOffset(), 14, 'f', 6);
+	setTXRXOffset(band_map[band].satOffset());
+	qInfo() << QString("changeBand set band offset for band [%1] offset = %2\n").arg(band).arg(band_map[band].satOffset(), 14, 'f', 6);	
+      }
+      else {
+	qInfo() << QString("changeBand setting band offset for band [%1] to zero\n").arg(band);
+	setTXRXOffset(0.0);
+      }
+
       // but only change these if this was the result of user band input.
       if (auto_bandswitch_target != "") {
         ui->Mode_cb->setValue(band_map[band].defMode());
       }
       double rx_freq = band_map[band].lastRXFreq() * 1e6;
+      qInfo() << QString("changeBand setting rx_freq = %1\n").arg(rx_freq, 14, 'f', 6);
       setRXFreq(rx_freq);
-      setTXFreq(band_map[band].lastTXFreq() * 1e6);
+      qInfo() << QString("changeBand set rx_freq = %1\n").arg(rx_freq, 14, 'f', 6);
+      double tx_freq = band_map[band].lastTXFreq() * 1e6;
+      if(ui->TXRXLock_chk->isChecked()) {
+	tx_freq = tx_freq + band_map[band].satOffset() * 1e6;
+      }
+      qInfo() << QString("changeBand setting tx_freq = %1\n").arg(tx_freq, 14, 'f', 6);      
+      setTXFreq_nocross(tx_freq);
+      qInfo() << QString("changeBand set tx_freq = %1\n").arg(tx_freq, 14, 'f', 6);            
       listener->setSpectrumCenter(rx_freq);      
     }
     else {
@@ -213,8 +241,9 @@ void MainWindow::changeBand(const QString & band)
     }
     
     ui->RXAnt_sel->setCurrentText(band_map[band].defRXAnt());
-    ui->TXAnt_sel->setCurrentText(band_map[band].defTXAnt());    
-    
+    ui->TXAnt_sel->setCurrentText(band_map[band].defTXAnt());
+
+
     current_band_selector = band; 
   }
 }

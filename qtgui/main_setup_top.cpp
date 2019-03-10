@@ -75,21 +75,36 @@ void MainWindow::setupTopControls()
 	    setRXFreq(ui->TXFreq_lab->getFreq());
 	  });
 
+  // this ensures that TX/RX offset is applied if we're in satellite mode
+  connect(ui->TXRXLock_chk, &QCheckBox::clicked,
+	  this, [=] (bool checked) {
+	    (void) checked; 
+	    setRXFreq(ui->RXFreq_lab->getFreq());
+	  });
+
 }
 
 
 void MainWindow::setRXFreq(double freq)
 {
   // coordinate all settings for new frequencies. 
-  setRXFreq_nocross(freq); 
+  setRXFreq_nocross(freq);
+  qInfo().noquote() << QString("Setting rx freq to %1\n").arg(freq, 14, 'f', 6); 
   // if we are TX/RX frequency locked, tell the TX unit
-  if(ui->TXRXLock_chk->isChecked()) setTXFreq_nocross(freq); 
+  if(ui->TXRXLock_chk->isChecked()) {
+    qInfo() << QString("Setting tx freq nocross with offset to %1\n").arg(getTXRXOffset(), 14, 'f', 6);     
+    setTXFreq_nocross(freq + getTXRXOffset() * 1e6);
+  }
 }
 
 void MainWindow::setTXFreq(double freq)
 {
+  qInfo() << QString("Setting tx freq to %1\n").arg(freq, 14, 'f', 6);   
   setTXFreq_nocross(freq); 
-  if(ui->TXRXLock_chk->isChecked()) setRXFreq_nocross(freq); 
+  if(ui->TXRXLock_chk->isChecked()) {
+    qInfo() << QString("Setting rx freq nocross with offset to %1\n").arg(getTXRXOffset(), 14, 'f', 6);         
+    setRXFreq_nocross(freq - getTXRXOffset() * 1e6);
+  }
 }
 
 void MainWindow::updateBandDisplay(double freq)
