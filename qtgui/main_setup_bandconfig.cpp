@@ -210,12 +210,9 @@ void MainWindow::changeBand(const QString & band)
     // and set the UI widgets.
     if((band != auto_bandswitch_target)) {
       if(band_map[band].satOffsetEna()) {
-	qInfo() << QString("changeBand setting band offset for band [%1] offset = %2\n").arg(band).arg(band_map[band].satOffset(), 14, 'f', 6);
 	setTXRXOffset(band_map[band].satOffset());
-	qInfo() << QString("changeBand set band offset for band [%1] offset = %2\n").arg(band).arg(band_map[band].satOffset(), 14, 'f', 6);	
       }
       else {
-	qInfo() << QString("changeBand setting band offset for band [%1] to zero\n").arg(band);
 	setTXRXOffset(0.0);
       }
 
@@ -227,16 +224,12 @@ void MainWindow::changeBand(const QString & band)
         ui->Mode_cb->setValue(band_map[band].defMode());
       }
       double rx_freq = band_map[band].lastRXFreq() * 1e6;
-      qInfo() << QString("changeBand setting rx_freq = %1\n").arg(rx_freq, 14, 'f', 6);
       setRXFreq(rx_freq);
-      qInfo() << QString("changeBand set rx_freq = %1\n").arg(rx_freq, 14, 'f', 6);
       double tx_freq = band_map[band].lastTXFreq() * 1e6;
       if(ui->TXRXLock_chk->isChecked()) {
 	tx_freq = rx_freq + band_map[band].satOffset() * 1e6;
       }
-      qInfo() << QString("changeBand setting tx_freq = %1\n").arg(tx_freq, 14, 'f', 6);      
       setTXFreq_nocross(tx_freq);
-      qInfo() << QString("changeBand set tx_freq = %1\n").arg(tx_freq, 14, 'f', 6);            
       listener->setSpectrumCenter(rx_freq);      
     }
     else {

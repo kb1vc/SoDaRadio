@@ -89,20 +89,16 @@ void MainWindow::setRXFreq(double freq)
 {
   // coordinate all settings for new frequencies. 
   setRXFreq_nocross(freq);
-  qInfo().noquote() << QString("Setting rx freq to %1\n").arg(freq, 14, 'f', 6); 
   // if we are TX/RX frequency locked, tell the TX unit
   if(ui->TXRXLock_chk->isChecked()) {
-    qInfo() << QString("Setting tx freq nocross with offset to %1\n").arg(getTXRXOffset(), 14, 'f', 6);     
     setTXFreq_nocross(freq + getTXRXOffset() * 1e6);
   }
 }
 
 void MainWindow::setTXFreq(double freq)
 {
-  qInfo() << QString("Setting tx freq to %1\n").arg(freq, 14, 'f', 6);   
   setTXFreq_nocross(freq); 
   if(ui->TXRXLock_chk->isChecked()) {
-    qInfo() << QString("Setting rx freq nocross with offset to %1\n").arg(getTXRXOffset(), 14, 'f', 6);         
     setRXFreq_nocross(freq - getTXRXOffset() * 1e6);
   }
 }
