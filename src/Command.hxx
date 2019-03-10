@@ -192,9 +192,13 @@ namespace SoDa {
       /**
        * turn transmitter on and off.
        *
-       * param is integer 0 disables TX, 3 enables TX
+       * param 1 is integer 0 disables TX, 3 enables TX
+       * param 2 is integer 0 is half-duplex, 1 full-duplex
+       * (In full duplex mode, the state of the RX chain is
+       * unchanged when the transmitter is enabled.)
        */
       TX_STATE,
+      
       /**
        * Ignored for now
        */

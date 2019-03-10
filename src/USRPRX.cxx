@@ -266,7 +266,7 @@ void SoDa::USRPRX::execSetCommand(Command * cmd)
 	debugMsg("In TX ON -- stopped stream");	
 	// stopStream();
       }
-      enable_spectrum_report = false;
+      enable_spectrum_report = (cmd->iparms[1] > 0);
     }
     if(cmd->iparms[0] == 2) {
       // start the RX stream.

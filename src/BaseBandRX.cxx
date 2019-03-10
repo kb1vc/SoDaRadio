@@ -380,7 +380,11 @@ void SoDa::BaseBandRX::execSetCommand(SoDa::Command * cmd)
       // aren't going to need anymore.
       debugMsg("In TX ON");      
       flushAudioBuffers(); 
-      if (sidetone_stream_enabled) {
+      if (cmd->iparms[1] != 0) {
+	// we're in full-duplex mode, don't change the RX at all.
+	debugMsg("full duplex mode\n");
+      }
+      else if (sidetone_stream_enabled) {
 	debugMsg("sidetone mode\n"); 
 	cur_af_gain = &af_sidetone_gain;
       }

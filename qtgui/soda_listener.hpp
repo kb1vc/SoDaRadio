@@ -121,7 +121,7 @@ namespace GUISoDa {
 
     void setClockRef(int external);
 
-    void setPTT(bool on);
+    void setPTT(bool on, bool full_duplex = false);
     void setCarrier(bool on);    
 
     void recordRF(int checkbox_state);

@@ -108,6 +108,9 @@ public slots:
   
   void displayAppInfo(bool dummy);
 
+  double getTXRXOffset() const { return tx_rx_offset; }
+  bool getFullDuplex() const { return full_duplex; }
+  
 protected:
   int transmit_intervals; 
   int transmit_seconds; 
@@ -140,7 +143,6 @@ protected:
 
   void setupStatus();  
 
-  double getTXRXOffset() const { return tx_rx_offset; }
   
 private:
   void closeEvent(QCloseEvent * event) {
@@ -171,6 +173,7 @@ private:
   // UI wide state -- this doesn't really fit anywhere else.
   void setTXRXOffset(double v) { tx_rx_offset = v; }
   double tx_rx_offset; 
+  bool full_duplex; // if we're in satellite mode... 
 };
 
 #endif // MAINWINDOW_H

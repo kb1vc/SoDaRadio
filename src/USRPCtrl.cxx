@@ -549,7 +549,8 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
     if(cmd->iparms[0] == 1) {
       // set the txgain to where it is supposed to be.
       tx_on = true; 
-      usrp->set_rx_gain(0.0); 
+      bool full_duplex = cmd->iparms[1] != 0;
+      if(!full_duplex) usrp->set_rx_gain(0.0); 
       usrp->set_tx_gain(tx_rf_gain); 
       cmd_stream->put(new Command(Command::REP, Command::TX_RF_GAIN, 
 				  usrp->get_tx_gain()));
@@ -571,7 +572,7 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
       // and tell the TX unit to turn on the TX
       // This avoids the race between CTRL and TX/RX units for setup and teardown.... 
       cmd_stream->put(new Command(Command::SET, Command::TX_STATE, 
-				  3));
+				  3, cmd->iparms[1]));
     }
     if(cmd->iparms[0] == 0) {
       tx_on = false; 

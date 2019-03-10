@@ -219,6 +219,9 @@ void MainWindow::changeBand(const QString & band)
 	setTXRXOffset(0.0);
       }
 
+      // if we're in full duplex, the spectrum window stays on.
+      full_duplex = band_map[band].fullDuplex();
+      
       // but only change these if this was the result of user band input.
       if (auto_bandswitch_target != "") {
         ui->Mode_cb->setValue(band_map[band].defMode());
@@ -229,7 +232,7 @@ void MainWindow::changeBand(const QString & band)
       qInfo() << QString("changeBand set rx_freq = %1\n").arg(rx_freq, 14, 'f', 6);
       double tx_freq = band_map[band].lastTXFreq() * 1e6;
       if(ui->TXRXLock_chk->isChecked()) {
-	tx_freq = tx_freq + band_map[band].satOffset() * 1e6;
+	tx_freq = rx_freq + band_map[band].satOffset() * 1e6;
       }
       qInfo() << QString("changeBand setting tx_freq = %1\n").arg(tx_freq, 14, 'f', 6);      
       setTXFreq_nocross(tx_freq);

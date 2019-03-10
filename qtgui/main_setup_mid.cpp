@@ -50,8 +50,12 @@ void MainWindow::setupMidControls()
   connect(ui->TXAnt_sel, SIGNAL(currentTextChanged(const QString &)),
 	  listener, SLOT(setTXAnt(const QString &)));
 
-  connect(ui->PTT_btn, SIGNAL(toggled(bool)), 
-	  listener, SLOT(setPTT(bool)));
+  //  connect(ui->PTT_btn, SIGNAL(toggled(bool)), 
+  //	  listener, SLOT(setPTT(bool)));
+  connect(ui->PTT_btn, &QPushButton::toggled,
+	  [=](bool on) {
+	    listener->setPTT(on, getFullDuplex()); 
+	  });
 
   connect(listener, &GUISoDa::Listener::repPTT,
 	  [=](bool on) { ui->TXState_lab->setText(on ? "TX ON" : "TX OFF"); });

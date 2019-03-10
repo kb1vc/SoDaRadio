@@ -66,9 +66,10 @@ void MainWindow::setupHamlib()
   connect(hlib_server->getHandler(), SIGNAL(setTXFreq(double)),
 	  this, SLOT(setTXFreq(double)));
 
-  connect(hlib_server->getHandler(), SIGNAL(setTXOn(bool)), 
-	  this->listener, SLOT(setPTT(bool)));
-	  
+  connect(hlib_server->getHandler(), &GUISoDa::HamlibHandler::setTXOn,
+	  [=](bool on) {
+	    this->listener->setPTT(on, getFullDuplex());
+	  });
 }
 
 

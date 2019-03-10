@@ -374,10 +374,11 @@ void GUISoDa::Listener::setClockRef(int external)
   }
 }
 
-void GUISoDa::Listener::setPTT(bool on)
+void GUISoDa::Listener::setPTT(bool on, bool full_duplex)
 {
   int tx_state = on ? 1 : 0;
-  if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_STATE, tx_state))) {
+  int duplex = full_duplex ? 1 : 0;
+  if(!put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_STATE, tx_state, full_duplex))) {
     perror((boost::format("Failed to send SET command in function %s\n") % __PRETTY_FUNCTION__).str().c_str());;
   }
 }
