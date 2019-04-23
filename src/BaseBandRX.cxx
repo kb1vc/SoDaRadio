@@ -159,6 +159,15 @@ void SoDa::BaseBandRX::demodulateWBFM(SoDaBuf * rxbuf, SoDa::Command::Modulation
   // In this case, dphase will be much bigger than M_PI, and it should be
   // "corrected".  We're really trying to find the angular diference between
   // samples, so the wraparound is important. 
+
+  // broadcast FM has a deviation of +/- 75 kHz or so.  At a sampling
+  // rate of 625kHz, we'd see a maximum angle advance, assuming zero-beat, of
+  // pi * 75 / 625 =  about pi/8
+  // but that puts the audio output way too low... We'd like the audio gain
+  // range to be similar to the audio gain setting for NBFM and even CW
+  // for a moderately strong signal.  So, we make the angle even larger.
+  // much much larger... 
+  float recip_max_phase_diff = 32.0 / (M_PI * 75.0e3 / rf_sample_rate); 
   for(i = 0; i < rf_buffer_size; i++) {
     // do the atan demod
     // measure the phase of the incoming signal.
@@ -166,7 +175,7 @@ void SoDa::BaseBandRX::demodulateWBFM(SoDaBuf * rxbuf, SoDa::Command::Modulation
     float dphase = phase - last_phase_samp;
     if(dphase < -M_PI) dphase += 2.0 * M_PI;
     if(dphase > M_PI) dphase -= 2.0 * M_PI;
-    demod_out[i] = af_gain * dphase; 
+    demod_out[i] = recip_max_phase_diff * dphase; 
     last_phase_samp = phase; 
   }
   // now downsample it
@@ -174,7 +183,7 @@ void SoDa::BaseBandRX::demodulateWBFM(SoDaBuf * rxbuf, SoDa::Command::Modulation
   // do a median filter to eliminate the pops.
   // better not. fmMedianFilter.apply(audio_buffer, audio_buffer, audio_buffer_size); 
   // gain was arrived at by trial and error.  
-  fm_audio_filter->apply(audio_buffer, audio_buffer, 0.0012);
+  fm_audio_filter->apply(audio_buffer, audio_buffer, af_gain);
   // then send it to the audio port.
   pendAudioBuffer(audio_buffer);
 }
@@ -197,7 +206,13 @@ void SoDa::BaseBandRX::demodulateNBFM(std::complex<float> * dbuf, SoDa::Command:
   // "corrected".  We're really trying to find the angular diference between
   // samples, so the wraparound is important. 
   unsigned int i; 
-  float amp_sum = 0.0; 
+  float amp_sum = 0.0;
+  // NB FM has a deviation of +/- 6.25 kHz or so.  At a sampling
+  // rate of 625kHz, we'd see a maximum angle advance, assuming zero-beat, of
+  // pi * 6.25 / 312.5
+  // As with WBFM, we goose the gain a bit 
+  float recip_max_phase_diff = 4.0 / (M_PI * 6.25e3 / rf_sample_rate); 
+  
   for(i = 0; i < audio_buffer_size; i++) {
     // do the atan demod
     // measure the phase of the incoming signal.
@@ -205,7 +220,7 @@ void SoDa::BaseBandRX::demodulateNBFM(std::complex<float> * dbuf, SoDa::Command:
     float dphase = phase - last_phase_samp;
     if(dphase < -M_PI) dphase += 2.0 * M_PI;
     if(dphase > M_PI) dphase -= 2.0 * M_PI;
-    demod_out[i] = af_gain * dphase; 
+    demod_out[i] = recip_max_phase_diff * dphase;     
     last_phase_samp = phase; 
     // measure the amplitude of the incoming signal.
     // measure it over a period of one buffer's worth. 
@@ -221,7 +236,7 @@ void SoDa::BaseBandRX::demodulateNBFM(std::complex<float> * dbuf, SoDa::Command:
     nbfm_squelch_hang_count--;
   }
   
-  cur_audio_filter->apply(demod_out, demod_out, 25.0);
+  cur_audio_filter->apply(demod_out, demod_out, af_gain);
   
   if(audio_save_enable) {
     audio_file2.write((char*) demod_out, audio_buffer_size * sizeof(std::complex<float>));
