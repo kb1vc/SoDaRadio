@@ -50,6 +50,9 @@ SoDa::IFRecorder::IFRecorder(Params * params,
 
   // we aren't recording right now
   write_stream_on = false; 
+
+  // we don't know the current center frequency
+  current_rx_center_freq = 0.0; 
 }
 
 
@@ -77,7 +80,11 @@ void SoDa::IFRecorder::execGetCommand(SoDa::Command * cmd)
 
 void SoDa::IFRecorder::execRepCommand(SoDa::Command * cmd)
 {
-  (void) cmd; 
+  switch (cmd->target) {
+  case SoDa::Command::RX_FE_FREQ:
+    current_rx_center_freq = cmd->dparms[0];
+    break;
+  }
 }
 
 void SoDa::IFRecorder::run()
@@ -129,6 +136,9 @@ void SoDa::IFRecorder::openOutStream(char * ofile_name)
     ostr.close();
   }
   ostr.open(ofile_name, std::ofstream::out | std::ofstream::binary); 
+
+  // write the RX front end frequency
+  ostr.write((char*) &current_rx_center_freq, sizeof(double));
   write_stream_on = true; 
 }
 

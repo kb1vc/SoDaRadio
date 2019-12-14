@@ -118,6 +118,8 @@ namespace SoDa {
     unsigned int rf_buffer_size; ///< size of input RF buffer chunk
     double rf_sample_rate; ///< sample rate of RF input from USRP -- assumed 625KHz
 
+    double current_rx_center_freq; 
+
     DatMBox * rx_stream; ///< mailbox producing rx sample stream from USRP
     CmdMBox * cmd_stream; ///< mailbox producing command stream from user
     unsigned int rx_subs; ///< mailbox subscription ID for rx data stream
