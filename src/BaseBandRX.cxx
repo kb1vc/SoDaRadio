@@ -35,15 +35,12 @@
 #include <sys/stat.h>
 
 SoDa::BaseBandRX::BaseBandRX(Params * params,
-		       DatMBox * _rx_stream, CmdMBox * _cmd_stream,
-		       AudioIfc * _audio_ifc) : SoDa::SoDaThread("BaseBandRX")
+		       AudioIfc * _audio_ifc) : SoDa::Thread("BaseBandRX")
 {
   audio_ifc = _audio_ifc; 
-  rx_stream = _rx_stream;
-  rx_subs = rx_stream->subscribe();
+  rx_stream = NULL;
 
-  cmd_stream = _cmd_stream; 
-  cmd_subs = cmd_stream->subscribe();
+  cmd_stream = NULL;
 
   // set up some convenient defaults
   rx_modulation = SoDa::Command::USB;
@@ -142,7 +139,7 @@ SoDa::BaseBandRX::BaseBandRX(Params * params,
   // start with initial hang count of 0 (haven't broken squelch yet)
 }
 
-void SoDa::BaseBandRX::demodulateWBFM(SoDaBuf * rxbuf, SoDa::Command::ModulationType mod, float af_gain)
+void SoDa::BaseBandRX::demodulateWBFM(SoDa::Buf * rxbuf, SoDa::Command::ModulationType mod, float af_gain)
 {
   (void) mod;
   // now allocate a new audio buffer from the buffer ring
@@ -296,7 +293,7 @@ void SoDa::BaseBandRX::demodulateAM(std::complex<float> * dbuf)
   pendAudioBuffer(audio_buffer);
 }
 
-void SoDa::BaseBandRX::demodulate(SoDaBuf * rxbuf)
+void SoDa::BaseBandRX::demodulate(SoDa::Buf * rxbuf)
 {
   // First we downsample and apply the audio filter unless this is a WBFM signal.
   std::complex<float> dbufi[audio_buffer_size]; 
@@ -342,7 +339,7 @@ void SoDa::BaseBandRX::demodulate(SoDaBuf * rxbuf)
     break; 
   default:
     // all other modes are unsupported just for now.
-    throw(new SoDa::SoDaException("Unsupported Modulation Mode in RX", this)); 
+    throw(new SoDa::Exception("Unsupported Modulation Mode in RX", this)); 
     break; 
   }
 }
@@ -484,7 +481,7 @@ void SoDa::BaseBandRX::execRepCommand(SoDa::Command * cmd)
 void SoDa::BaseBandRX::run()
 {
   bool exitflag = false;
-  SoDaBuf * rxbuf;
+  SoDa::Buf * rxbuf;
   Command * cmd; 
 
   int trim_count = 0; 
@@ -496,6 +493,12 @@ void SoDa::BaseBandRX::run()
 
   int restart_count = 0;
 
+  if((cmd_stream == NULL) || (rx_stream == NULL)) {
+      throw SoDa::Exception((boost::format("Missing a stream connection.\n")).str(), 
+			  this);	
+  }
+  
+  
   while(!exitflag) {
     bool did_work = false;
     bool did_audio_work = false; 
@@ -622,4 +625,15 @@ void SoDa::BaseBandRX::buildFilterMap()
 
   nbfm_pre_filter = new SoDa::OSFilter(0.0, 0.0, 12500.0, 14000.0, 512, 1.0, rf_sample_rate, rf_buffer_size);
 
+}
+
+/// implement the subscription method
+void SoDa::BaseBandRX::subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p)
+{
+  if(SoDa::connectMailBox<SoDa::CmdMBox>(this, cmd_stream, "CMD", mbox_name, mbox_p)) {
+    cmd_subs = cmd_stream->subscribe();
+  }
+  if(SoDa::connectMailBox<SoDa::DatMBox>(this, rx_stream, "RX", mbox_name, mbox_p)) {
+    rx_subs = rx_stream->subscribe();
+  }
 }

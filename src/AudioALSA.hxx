@@ -36,7 +36,7 @@
 #  include <alsa/asoundlib.h>
 #  define ALSA_DEF
 #else
-#  define ALSA_DEF { throw SoDa::SoDaException("ALSA Sound Library is not enabled in this build version."); } 
+#  define ALSA_DEF { throw SoDa::Exception("ALSA Sound Library is not enabled in this build version."); } 
 #endif
 #include <boost/format.hpp>
 #include <iostream>
@@ -144,12 +144,12 @@ namespace SoDa {
       int err; 
       if((err = snd_pcm_prepare(pcm_out)) < 0) {
 	throw
-	  SoDaException((boost::format("AudioALSA::wakeOut() Failed to wake after sleepOut() pcm_prepare -- %s")
+	  SoDa::Exception((boost::format("AudioALSA::wakeOut() Failed to wake after sleepOut() pcm_prepare -- %s")
 			 % snd_strerror(err)).str(), this);
       }
       if((err = snd_pcm_start(pcm_out)) < 0) {
 	throw
-	  SoDaException((boost::format("AudioALSA::wakeOut() Failed to wake after sleepOut() pcm_start -- %s")
+	  SoDa::Exception((boost::format("AudioALSA::wakeOut() Failed to wake after sleepOut() pcm_start -- %s")
 			 % snd_strerror(err)).str(), this);
       }
 #endif
@@ -189,12 +189,12 @@ namespace SoDa {
       int err; 
       if((err = snd_pcm_prepare(pcm_in)) < 0) {
 	throw
-	  SoDaException((boost::format("AudioALSA::wakeIn() Failed to wake after sleepIn() -- %s")
+	  SoDa::Exception((boost::format("AudioALSA::wakeIn() Failed to wake after sleepIn() -- %s")
 			 % snd_strerror(err)).str(), this);
       }
       if((err = snd_pcm_start(pcm_in)) < 0) {
 	throw
-	  SoDaException((boost::format("AudioALSA::wakeIn() Failed to wake after sleepIn() -- %s")
+	  SoDa::Exception((boost::format("AudioALSA::wakeIn() Failed to wake after sleepIn() -- %s")
 			 % snd_strerror(err)).str(), this);
       }
 #endif
@@ -286,7 +286,7 @@ namespace SoDa {
      */
     void checkStatus(int err, const std::string & exp, bool fatal = false) {
       if (err < 0) {
-	if(fatal) throw SoDaException((boost::format("%s %s") % exp % snd_strerror(err)).str(), this);
+	if(fatal) throw SoDa::Exception((boost::format("%s %s") % exp % snd_strerror(err)).str(), this);
 	else std::cerr << boost::format("%s %s %s\n") % getObjName() % exp % snd_strerror(err);
       }
     }

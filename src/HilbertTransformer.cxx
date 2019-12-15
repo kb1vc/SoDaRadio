@@ -51,7 +51,7 @@ static unsigned int ipow(unsigned int x, unsigned int y)
 
 SoDa::HilbertTransformer::HilbertTransformer(unsigned int inout_buffer_length,
 					     unsigned int filter_length) :
-  SoDaBase("HilbertTransformer")
+  SoDa::Base("HilbertTransformer")
 {
   // these are the salient dimensions for this Overlap/Save
   // widget (for terminology, see Lyons pages 719ff
@@ -81,13 +81,13 @@ SoDa::HilbertTransformer::HilbertTransformer(unsigned int inout_buffer_length,
 					 (fftwf_complex *) htu, (fftwf_complex *) HTu_filter, 
 					 FFTW_FORWARD, FFTW_ESTIMATE);
   if(HTu_plan == NULL) {
-    throw SoDaException("Hilbert had trouble creating HT upper plan...\n");
+    throw SoDa::Exception("Hilbert had trouble creating HT upper plan...\n");
   }
   fftwf_plan HTl_plan = fftwf_plan_dft_1d(N,
 					 (fftwf_complex *) htl, (fftwf_complex *) HTl_filter, 
 					 FFTW_FORWARD, FFTW_ESTIMATE);
   if(HTl_plan == NULL) {
-    throw SoDaException("Hilbert had trouble creating HT lower plan...\n");
+    throw SoDa::Exception("Hilbert had trouble creating HT lower plan...\n");
   }
 
   // now build the time domain image of the filter.
@@ -166,7 +166,7 @@ SoDa::HilbertTransformer::HilbertTransformer(unsigned int inout_buffer_length,
 				     (fftwf_complex *) fft_I_input, (fftwf_complex *) fft_I_output,
 				     FFTW_FORWARD, FFTW_ESTIMATE);
   if(forward_I_plan == NULL) {
-    throw SoDaException("Hilbert had trouble creating forward I plan...\n");
+    throw SoDa::Exception("Hilbert had trouble creating forward I plan...\n");
   }
 
   forward_Q_plan = fftwf_plan_dft_1d(N,
@@ -174,20 +174,20 @@ SoDa::HilbertTransformer::HilbertTransformer(unsigned int inout_buffer_length,
 				     (fftwf_complex *) fft_Q_output,
 				     FFTW_FORWARD, FFTW_ESTIMATE);
   if(forward_Q_plan == NULL) {
-    throw SoDaException("Hilbert had trouble creating forward Q plan...\n");
+    throw SoDa::Exception("Hilbert had trouble creating forward Q plan...\n");
   }
 
   backward_I_plan = fftwf_plan_dft_1d(N, (fftwf_complex *) ifft_I_input,
 				      (fftwf_complex *) ifft_I_output,
 				      FFTW_BACKWARD, FFTW_ESTIMATE);
   if(backward_I_plan == NULL) {
-    throw SoDaException("Hilbert had trouble creating backward I plan...\n");
+    throw SoDa::Exception("Hilbert had trouble creating backward I plan...\n");
   }
   backward_Q_plan = fftwf_plan_dft_1d(N, (fftwf_complex *) ifft_Q_input,
 				      (fftwf_complex *) ifft_Q_output,
 				      FFTW_BACKWARD, FFTW_ESTIMATE);
   if(backward_Q_plan == NULL) {
-    throw SoDaException("Hilbert had trouble creating backward Q plan...\n");
+    throw SoDa::Exception("Hilbert had trouble creating backward Q plan...\n");
   }
   // zero out the start of the fft_input buffer for the first iteration.
   for(i = 0; i <= Q-1; i++) {

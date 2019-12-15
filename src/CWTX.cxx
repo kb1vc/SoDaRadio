@@ -29,24 +29,17 @@
 #include "CWTX.hxx"
 #include "CWGenerator.hxx"
 
-SoDa::CWTX::CWTX(Params * params, CmdMBox * _cwtxt_stream, DatMBox * _cw_env_stream, CmdMBox * _cmd_stream) : SoDa::SoDaThread("CWTX")
+SoDa::CWTX::CWTX(Params * params) : SoDa::Thread("CWTX")
 {
-  cwtxt_stream = _cwtxt_stream;
-  cwtxt_subs = cwtxt_stream->subscribe();
-
-  cw_env_stream = _cw_env_stream;
-
-  cmd_stream = _cmd_stream;
-  cmd_subs = cmd_stream->subscribe();
-
+  cwtxt_stream = NULL;
+  cw_env_stream = NULL;
+  cmd_stream = NULL;
 
   // get the controlling audio parameters
   // like the audio sample rate and buffer size
   rf_sample_rate = params->getTXRate();
   rf_buffer_size = params->getRFBufferSize();
   
-  // setup the CW generator unit
-  cwgen = new SoDa::CWGenerator(_cw_env_stream, rf_sample_rate, rf_buffer_size);
   
   sent_char_count = 0;
 }
@@ -55,6 +48,14 @@ void SoDa::CWTX::run()
 {
   bool exitflag = false;
   Command * cmd, *txtcmd; 
+
+  if((cmd_stream == NULL) || (cw_env_stream == NULL) || (cwtxt_stream == NULL)) {
+      throw SoDa::Exception((boost::format("Missing a stream connection.\n")).str(), 
+			  this);	
+  }
+
+  // setup the CW generator unit
+  cwgen = new SoDa::CWGenerator(cw_env_stream, rf_sample_rate, rf_buffer_size);
   
   while(!exitflag) {
     bool workdone = false; 
@@ -251,5 +252,20 @@ void SoDa::CWTX::execRepCommand(Command * cmd)
     break;
   default:
     break;
+  }
+}
+
+
+/// implement the subscription method
+void SoDa::CWTX::subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p)
+{
+  if(SoDa::connectMailBox<SoDa::CmdMBox>(this, cmd_stream, "CMD", mbox_name, mbox_p)) {
+    cmd_subs = cmd_stream->subscribe();
+  }
+  if(SoDa::connectMailBox<SoDa::CmdMBox>(this, cwtxt_stream, "CW_TXT", mbox_name, mbox_p)) {
+    cwtxt_subs = cwtxt_stream->subscribe();
+  }
+  if(SoDa::connectMailBox<SoDa::DatMBox>(this, cw_env_stream, "CW_ENV", mbox_name, mbox_p)) {
+    // we publish
   }
 }

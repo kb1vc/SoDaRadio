@@ -6,6 +6,8 @@ set(SoDaServer_SRCS
     SoDaServer.cxx
     ProcInfo.cxx
     SoDaBase.cxx
+    SoDaThread.cxx
+    SoDaThreadRegistry.cxx    
     CWTX.cxx
     BaseBandRX.cxx
     BaseBandTX.cxx
@@ -65,6 +67,7 @@ set(SoDaServer_SRCS
     PropTree.hxx
     IFRecorder.cxx
     IFRecorder.hxx    
+    SimpleAccessory.cxx
     )
 
 #find_package(Portaudio)

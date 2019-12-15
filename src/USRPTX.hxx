@@ -29,6 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef USRPTX_HDR
 #define USRPTX_HDR
 #include "SoDaBase.hxx"
+#include "SoDaThread.hxx"
 #include "MultiMBox.hxx"
 #include "Command.hxx"
 #include "Params.hxx"
@@ -48,21 +49,20 @@ namespace SoDa {
    * from the CW unit) onto a carrier and passes this to the USRP. 
    *
    */
-  class USRPTX : public SoDaThread {
+  class USRPTX : public SoDa::Thread {
   public:
     /**
      * @brief Constructor for RF Transmit/modulator process
      *
      * @param params block describing intial setup of the radio
      * @param _usrp libuhd handle for the USRP radio
-     * @param _tx_stream audio transmit stream to be used in modulator
-     * @param _cw_env_stream envelope stream from text-to-CW converter
-     * @param _cmd_stream command stream
      *
      */
-    USRPTX(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
-	   DatMBox * _tx_stream, DatMBox * _cw_env_stream,
-	   CmdMBox * _cmd_stream);
+    USRPTX(Params * params, uhd::usrp::multi_usrp::sptr _usrp);
+
+    /// implement the subscription method
+    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
+    
     /**
      * @brief USRPTX run loop: handle commands, and modulate the tx carrier
      */

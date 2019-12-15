@@ -114,6 +114,8 @@
 #include <fstream>
 
 #include "SoDaBase.hxx"
+#include "SoDaThread.hxx"
+#include "SoDaThreadRegistry.hxx"
 #include "MultiMBox.hxx"
 
 #include "ProcInfo.hxx"
@@ -169,56 +171,69 @@ int doWork(SoDa::Params & params)
   SoDa::CmdMBox gps_stream(false);
   SoDa::CmdMBox cwtxt_stream(false);
 
-  SoDa::SoDaThread * ctrl;
-  SoDa::SoDaThread * rx;
-  SoDa::SoDaThread * tx;
+  SoDa::Thread * ctrl;
+  SoDa::Thread * rx;
+  SoDa::Thread * tx;
 
+  SoDa::MailBoxMap mailbox_map;
+
+  mailbox_map["RX"] = &rx_stream;
+  mailbox_map["TX"] = &tx_stream;
+  mailbox_map["CMD"] = &cmd_stream;
+  mailbox_map["CW_TXT"] = &cwtxt_stream;
+  mailbox_map["CW_ENV"] = &cw_env_stream;  
+  mailbox_map["GPS"] = &gps_stream;
+  mailbox_map["IF"] = &if_stream;
+  
   if(params.isRadioType("USRP")) {
-#if HAVE_UHD    
     /// create the USRP Control, RX Streamer, and TX Streamer threads
     /// @see SoDa::USRPCtrl @see SoDa::USRPRX @see SoDa::USRPTX
-    ctrl = new SoDa::USRPCtrl(&params, &cmd_stream);
-    rx = new SoDa::USRPRX(&params, ((SoDa::USRPCtrl *)ctrl)->getUSRP(), &rx_stream, &if_stream, &cmd_stream); 
-    tx = new SoDa::USRPTX(&params, ((SoDa::USRPCtrl *)ctrl)->getUSRP(), &tx_stream, &cw_env_stream, &cmd_stream);
-#else    
-    std::cerr << "lib UHD support not included in this build.\n^C to exit.\n";
-    exit(-1);
-#endif    
+    ctrl = new SoDa::USRPCtrl(&params);
+    rx = new SoDa::USRPRX(&params, ((SoDa::USRPCtrl *)ctrl)->getUSRP());
+    tx = new SoDa::USRPTX(&params, ((SoDa::USRPCtrl *)ctrl)->getUSRP());
   }
   else {
     std::cerr << boost::format("Radio type [%s] is not yet supported\nHit ^C to exit.\n") % params.getRadioType(); 
     exit(-1);
   }
-  
 
-  /// doWork creates the audio server on the host machine.
+  /// Create the audio server on the host machine.
   /// choices include a PortAudio interface and an ALSA interface.
   /// These are subclasses of the more generic SoDa::AudioIfc class
   SoDa::AudioQt audio_ifc(params.getAudioSampleRate(),
 			  params.getAFBufferSize(),
 			  params.getServerSocketBasename(),
 			  params.getAudioPortName());
-  /// doWork creates the audio RX and audio TX unit threads
+  /// Create the audio RX and audio TX unit threads
   /// These are also responsible for implementing IF tuning and modulation. 
   /// @see SoDa::BaseBandRX @see SoDa::BaseBandTX
-  SoDa::BaseBandRX bbrx(&params, &rx_stream, &cmd_stream, &audio_ifc);
-  SoDa::BaseBandTX bbtx(&params, &tx_stream, &cmd_stream, &audio_ifc);
+  SoDa::BaseBandRX bbrx(&params, &audio_ifc);
 
-  /// doWork creates the morse code (CW) tx handler thread @see SoDa::CWTX
-  SoDa::CWTX cwtx(&params, &cwtxt_stream, &cw_env_stream, &cmd_stream); 
-  
-  /// doWork creates the user interface (UI) thread @see SoDa::UI
-  SoDa::UI ui(&params, &cwtxt_stream, &rx_stream, &if_stream, &cmd_stream, &gps_stream);
+  SoDa::BaseBandTX bbtx(&params, &audio_ifc);
 
-  /// doWork creates an IF listener process that copies the IF stream to an output file
+  /// Create the morse code (CW) tx handler thread @see SoDa::CWTX
+  SoDa::CWTX cwtx(&params);
+    
+  /// Create the user interface (UI) thread @see SoDa::UI
+  SoDa::UI ui(&params);
+
+  /// Create an IF listener process that copies the IF stream to an output file
   /// when requested.
-  SoDa::IFRecorder ifrec(&params, &if_stream, &cmd_stream);
+  SoDa::IFRecorder ifrec(&params);
 
 #if HAVE_GPSLIB    
-  SoDa::GPSmon gps(&params, &gps_stream); 
+  SoDa::GPSmon gps(&params);
 #endif
   
   d.debugMsg("Created units.");
+
+  auto registrar = SoDa::ThreadRegistry::getRegistrar();  
+  // hook everyone up to the mailboxes. 
+  registrar->apply([mailbox_map](SoDa::Thread * el) 
+		   bool { 
+		     el->subscribeToMailBoxList(mailbox_map); 
+		     return true;
+		   });
   
   // Now start each of the activities -- they may or may not
   // implement the "start" method -- not all objects need to be threads.
@@ -228,19 +243,17 @@ int doWork(SoDa::Params & params)
   ui.start();
   d.debugMsg("Starting radio units");
   // start command consumers first.
-  ctrl->start();
-  rx->start();
-  tx->start();
-  bbrx.start();
-  bbtx.start();
-  cwtx.start();
-  ifrec.start();
+  // start everyone
+  auto ui_p = & ui; 
 
-  // now the gps...
-#if HAVE_GPSLIB  
-  d.debugMsg("Starting gps");
-  gps.start();
-#endif
+
+  registrar->apply([ui_p](SoDa::Thread * el) 
+		   bool {
+		     if(el != ui_p) {
+		       el->start();
+		     }
+		     return true; 
+		   });
 
   if(params.reportMemInfo()) {
     kb1vc::ProcInfo pi(params.getReportFileName(), "SoDaServer");
@@ -261,21 +274,25 @@ int doWork(SoDa::Params & params)
   else {
     ui.join();
   }
+
+  registrar->apply([ui_p](SoDa::Thread * el)   
+		   bool {
+		     if(el != ui_p) {
+		       el->join();
+		     }
+		     return true; 
+		   });
   
-  ctrl->join();
-  rx->join();
-  tx->join();
-  bbrx.join();
-  bbtx.join();
-  cwtx.join();
-  ifrec.join();
-#if HAVE_GPSLIB    
-  gps.join();
-#endif  
   d.debugMsg("Exit");
   
   // when we get here, we are done... (UI should not return until it gets an "exit/quit" command.)
 
+  registrar->apply([](SoDa::Thread * el) 
+		   bool { 
+		     el->shutDown();
+		     return true;
+		   });
+  
   return 0; 
 }
 
@@ -299,7 +316,7 @@ int main(int argc, char * argv[])
   try {
     doWork(params); 
   }
-  catch (SoDa::SoDaException * exc) {
+  catch (SoDa::Exception * exc) {
     std::cerr << "Exception caught at SoDa main: " << std::endl;
     std::cerr << "\t" << exc->toString() << std::endl; 
   }

@@ -29,6 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef GPS_MON_HDR
 #define GPS_MON_HDR
 #include "SoDaBase.hxx"
+#include "SoDaThread.hxx"
 #include "MultiMBox.hxx"
 #include "Command.hxx"
 #include "Params.hxx"
@@ -42,9 +43,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sys/time.h>
 
 namespace SoDa {
-  class GPSmon : public SoDaThread {
+  class GPSmon : public SoDa::Thread {
   public:
-    GPSmon(Params * params, CmdMBox * cmd_stream);
+    GPSmon(Params * params);
+
+    /// implement the subscription method
+    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
+    
     void run();
   private:
     void execGetCommand(Command * cmd); 

@@ -40,17 +40,15 @@
 #include "ReSamplers625x48.hxx"
 #include <cstdlib>
 
-SoDa::BaseBandTX::BaseBandTX(Params * params, DatMBox * _tx_stream,
-		       CmdMBox * _cmd_stream,
+SoDa::BaseBandTX::BaseBandTX(Params * params, 
 		       AudioIfc * _audio_ifc
-		       ) : SoDa::SoDaThread("BaseBandTX")
+		       ) : SoDa::Thread("BaseBandTX")
 {
   debug_mode = false;
   debug_ctr = 0;
-  tx_stream = _tx_stream;
+  tx_stream = NULL;
 
-  cmd_stream = _cmd_stream; 
-  cmd_subs = cmd_stream->subscribe();
+  cmd_stream = NULL;
 
   audio_buffer_size = params->getAFBufferSize();
   tx_buffer_size = params->getRFBufferSize();
@@ -112,6 +110,11 @@ void SoDa::BaseBandTX::run()
   Command * cmd; 
   float audio_buf[audio_buffer_size];
 
+  if((cmd_stream == NULL) || (tx_stream == NULL)) {
+      throw SoDa::Exception((boost::format("Missing a stream connection.\n")).str(), 
+			  this);	
+  }
+  
   /**
    * This is the BaseBandTX run loop.
    * \code
@@ -148,7 +151,7 @@ void SoDa::BaseBandTX::run()
       // If we're in TX mode that isn't CW....
       // get an input audio buffer.
       if (tx_stream_on && audio_ifc->recv(audio_buf, audio_buffer_size, true)) { 
-	SoDaBuf * txbuf = NULL; 
+	SoDa::Buf * txbuf = NULL; 
 	float * audio_tx_buffer = audio_buf; 
 
 	if(tx_noise_source_ena) {
@@ -192,7 +195,7 @@ void SoDa::BaseBandTX::run()
   }
 }
 
-SoDa::SoDaBuf * SoDa::BaseBandTX::modulateAM(float * audio_buf,
+SoDa::Buf * SoDa::BaseBandTX::modulateAM(float * audio_buf,
 					  unsigned int len,
 					  bool is_usb,
 					  bool is_lsb)
@@ -219,12 +222,12 @@ SoDa::SoDaBuf * SoDa::BaseBandTX::modulateAM(float * audio_buf,
 
   /// Now that the I/Q channels have been populated, get a transmit buffer. 
   /// and upsample the I/Q audio up to the RF rate.
-  SoDa::SoDaBuf * txbuf = tx_stream->alloc();
+  SoDa::Buf * txbuf = tx_stream->alloc();
   if(txbuf == NULL) {
-    txbuf = new SoDaBuf(tx_buffer_size); 
+    txbuf = new SoDa::Buf(tx_buffer_size); 
   }
   if(txbuf->getComplexLen() < tx_buffer_size) {
-    throw(new SoDa::SoDaException("Transmit signal buffer was a bad size.", this));
+    throw(new SoDa::Exception("Transmit signal buffer was a bad size.", this));
   }
   
   /// Upsample the IQ audio (at 48KS/s) to the RF sample rate of 625 KS/s
@@ -235,7 +238,7 @@ SoDa::SoDaBuf * SoDa::BaseBandTX::modulateAM(float * audio_buf,
 }
 
 
-SoDa::SoDaBuf * SoDa::BaseBandTX::modulateFM(float *audio_buf, unsigned int len, double deviation)
+SoDa::Buf * SoDa::BaseBandTX::modulateFM(float *audio_buf, unsigned int len, double deviation)
 {
   (void) len; 
   unsigned int i;
@@ -261,13 +264,13 @@ SoDa::SoDaBuf * SoDa::BaseBandTX::modulateFM(float *audio_buf, unsigned int len,
     audio_IQ_buf[i] = std::complex<float>(oi,oq);
   }
  
-  SoDa::SoDaBuf * txbuf = tx_stream->alloc();
+  SoDa::Buf * txbuf = tx_stream->alloc();
   if(txbuf == NULL){
-    txbuf = new SoDaBuf(tx_buffer_size);
+    txbuf = new SoDa::Buf(tx_buffer_size);
   }
 
   if(txbuf->getComplexLen() < tx_buffer_size){
-    throw(new SoDa::SoDaException("FM: Transmit signal buffer was a bad size.",this));
+    throw(new SoDa::Exception("FM: Transmit signal buffer was a bad size.",this));
   }
   // Upsample the IQ audio (at 48KS/s) to the RF sample rate of 625 KS/s
   interpolator->apply(audio_IQ_buf, txbuf->getComplexBuf());
@@ -359,3 +362,13 @@ void SoDa::BaseBandTX::execRepCommand(SoDa::Command * cmd)
   (void) cmd; 
 }
 
+/// implement the subscription method
+void SoDa::BaseBandTX::subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p)
+{
+  if(SoDa::connectMailBox<SoDa::CmdMBox>(this, cmd_stream, "CMD", mbox_name, mbox_p)) {
+    cmd_subs = cmd_stream->subscribe();
+  }
+  if(SoDa::connectMailBox<SoDa::DatMBox>(this, tx_stream, "TX", mbox_name, mbox_p)) {
+    // we subscribe
+  }
+}

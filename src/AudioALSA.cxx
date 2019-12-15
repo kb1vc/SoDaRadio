@@ -191,7 +191,7 @@ namespace SoDa {
 
 	  if((err = snd_pcm_start(pcm_out)) < 0) {
 	  throw
-	    SoDaException((boost::format("AudioALSA::sendBufferReady() Failed to wake after sleepOut() -- %s")
+	    SoDa::Exception((boost::format("AudioALSA::sendBufferReady() Failed to wake after sleepOut() -- %s")
 			   % snd_strerror(err)).str(), this);
 	  }
 	}
@@ -278,7 +278,7 @@ namespace SoDa {
     AudioIfc(_sample_rate, _sample_count_hint, "AudioALSA ALSA Interface")
   {
     std::cerr << "ALSA Sound Library is not enabled in this build version.";  
-    throw SoDa::SoDaException("ALSA Sound Library is not enabled in this build version.");  
+    throw SoDa::Exception("ALSA Sound Library is not enabled in this build version.");  
   }
 #endif // HAVE_LIBASOUND
 }

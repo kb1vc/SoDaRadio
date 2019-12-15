@@ -29,6 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef USRPRX_HDR
 #define USRPRX_HDR
 #include "SoDaBase.hxx"
+#include "SoDaThread.hxx"
 #include "MultiMBox.hxx"
 #include "Command.hxx"
 #include "Params.hxx"
@@ -43,7 +44,7 @@ namespace SoDa {
    *
    * @image html SoDa_Radio_RX_Signal_Path.svg
    */
-  class USRPRX : public SoDaThread {
+  class USRPRX : public SoDa::Thread {
   public:
     /**
      * The constructor
@@ -51,15 +52,12 @@ namespace SoDa {
      * @param params a pointer to a params object that will tell us
      *        about sample rates and other configuration details.
      * @param usrp a pointer to the UHD USRP object that we are streaming data from.
-     * @param _rx_stream data mailbox used to pass the baseband (IF3) shifted
-     *        incoming RF samples to other units
-     * @param _if_stream data mailbox used to pass the IF2 data to the spectrum units
-     * @param _cmd_stream data mailbox used to carry command, query, and report messages
      */
-    USRPRX(Params * params, uhd::usrp::multi_usrp::sptr usrp,
-	   DatMBox * _rx_stream, DatMBox * _if_stream,
-	   CmdMBox * _cmd_stream);
+    USRPRX(Params * params, uhd::usrp::multi_usrp::sptr usrp);
 
+    /// implement the subscription method
+    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
+    
     /**
      * USRPRX is a thread -- this is its run loop. 
      */
@@ -81,7 +79,7 @@ namespace SoDa {
      *
      * @param inout the input/output RF buffer
      */
-    void doMixer(SoDaBuf * inout);
+    void doMixer(SoDa::Buf * inout);
     void set3rdLOFreq(double IF_tuning);
 
     DatMBox * rx_stream;

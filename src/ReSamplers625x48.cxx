@@ -34,7 +34,7 @@
 
 
 // Implement an overlap-and-save interpolator with zero stuffing. 
-SoDa::ReSample48to625::ReSample48to625(unsigned int inbufsize, float _gain) : SoDaBase("ReSamp 48 to 625") 
+SoDa::ReSample48to625::ReSample48to625(unsigned int inbufsize, float _gain) : SoDa::Base("ReSamp 48 to 625") 
 {
   // create the input and output buffers.
   // set N and MN;
@@ -44,7 +44,7 @@ SoDa::ReSample48to625::ReSample48to625(unsigned int inbufsize, float _gain) : So
 
   // N must be a multiple of 48, otherwise this doesn't work.
   if ((N % 48) != 0) {
-    throw(new SoDa::SoDaException("48 to 625 resampler got an input buffer size that is not a multiple of 48", this)); 
+    throw(new SoDa::Exception("48 to 625 resampler got an input buffer size that is not a multiple of 48", this)); 
   }
 
   // MN is the size of the output buffer. 
@@ -98,7 +98,7 @@ void SoDa::ReSample48to625::apply(float * in, float * out)
 
 
 
-SoDa::ReSample625to48::ReSample625to48(unsigned int inbufsize, float _gain) : SoDaBase("ReSamp 48 to 625") 
+SoDa::ReSample625to48::ReSample625to48(unsigned int inbufsize, float _gain) : SoDa::Base("ReSamp 48 to 625") 
 {
   // create the input and output buffers.
   // set N and MN;
@@ -108,7 +108,7 @@ SoDa::ReSample625to48::ReSample625to48(unsigned int inbufsize, float _gain) : So
 
   // N must be a multiple of 625, otherwise this doesn't work.
   if ((N % 625) != 0) {
-    throw(new SoDa::SoDaException("625 to 48 resampler got an input buffer size that is not a multiple of 48", this)); 
+    throw(new SoDa::Exception("625 to 48 resampler got an input buffer size that is not a multiple of 48", this)); 
   }
 
   // MN is the size of the output buffer. 

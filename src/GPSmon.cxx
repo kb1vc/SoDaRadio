@@ -30,10 +30,9 @@
 #include <list>
 #include <errno.h>
 
-SoDa::GPSmon::GPSmon(Params * params, CmdMBox * _cmd_stream) : SoDa::SoDaThread("GPSmon")
+SoDa::GPSmon::GPSmon(Params * params) : SoDa::Thread("GPSmon")
 {
-  cmd_stream = _cmd_stream;
-  cmd_subs = cmd_stream->subscribe();
+  cmd_stream = NULL;
 
 #if HAVE_GPSLIB  
   // now open the server connection
@@ -60,6 +59,12 @@ void SoDa::GPSmon::run()
   Command * cmd;
   
   int stat; 
+
+  if((cmd_stream == NULL)) {
+      throw SoDa::Exception((boost::format("Missing a stream connection.\n")).str(), 
+			  this);	
+  }
+  
 
   while(!exitflag) {
     while((cmd = cmd_stream->get(cmd_subs)) != NULL) {
@@ -122,4 +127,12 @@ void SoDa::GPSmon::execRepCommand(Command * cmd)
 {
   (void) cmd;
   return;
+}
+
+/// implement the subscription method
+void SoDa::GPSmon::subscribeToMailBox(const std::string & mbox_name, SoDa::BaseMBox * mbox_p)
+{
+  if(SoDa::connectMailBox<SoDa::CmdMBox>(this, cmd_stream, "GPS", mbox_name, mbox_p)) {
+    cmd_subs = cmd_stream->subscribe();    
+  }
 }

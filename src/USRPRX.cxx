@@ -44,18 +44,12 @@
 
 #include <fstream>
 
-SoDa::USRPRX::USRPRX(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
-		     DatMBox * _rx_stream, DatMBox * _if_stream,
-		     CmdMBox * _cmd_stream) : SoDa::SoDaThread("USRPRX")
+SoDa::USRPRX::USRPRX(Params * params, uhd::usrp::multi_usrp::sptr _usrp) : 
+  SoDa::Thread("USRPRX")
 {
-  cmd_stream = _cmd_stream;
-  rx_stream = _rx_stream;
-  if_stream = _if_stream; 
 
   usrp = _usrp; 
   
-  // subscribe to the command stream.
-  cmd_subs = cmd_stream->subscribe();
 
   // create the rx buffer streamers.
   uhd::stream_args_t stream_args("fc32", "sc16");
@@ -86,10 +80,10 @@ SoDa::USRPRX::USRPRX(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
   // enable spectrum reporting at startup
   enable_spectrum_report = true; 
 
-#if 0
-  rf_dumpfile.open("RFDump.dat", std::ios::out | std::ios::binary);
-  if_dumpfile.open("IFDump.dat", std::ios::out | std::ios::binary);
-#endif
+  rx_stream = NULL;
+  if_stream = NULL;
+  cmd_stream = NULL;
+
 }
 
 static void doFFTandDump(int fd, std::complex<float> * in, int len) __attribute__ ((unused));
@@ -108,6 +102,19 @@ static void doFFTandDump(int fd, std::complex<float> * in, int len)
 
 void SoDa::USRPRX::run()
 {
+  if(cmd_stream == NULL) {
+      throw SoDa::Exception((boost::format("Never got command stream subscription\n")).str(), 
+			  this);	
+  }
+  if(rx_stream == NULL) {
+      throw SoDa::Exception((boost::format("Never got rx stream subscription\n")).str(), 
+			  this);	
+  }
+  if(if_stream == NULL) {
+      throw SoDa::Exception((boost::format("Never got if stream subscription\n")).str(), 
+			  this);	
+  }
+  
   uhd::set_thread_priority_safe(); 
   // now do the event loop.  we watch
   // for commands and responses on the command stream.
@@ -118,7 +125,6 @@ void SoDa::USRPRX::run()
   while(!exitflag) {
     Command * cmd = cmd_stream->get(cmd_subs);
     if(cmd != NULL) {
-      //      std::cerr << "\n\nIn RX loop got command\n\n" << std::endl; 
       // process the command.
       execCommand(cmd);
       exitflag |= (cmd->target == Command::STOP); 
@@ -127,13 +133,13 @@ void SoDa::USRPRX::run()
     else if(audio_rx_stream_enabled) {
       // go get some data
       // get a free buffer.
-      SoDaBuf * buf = rx_stream->alloc();
+      SoDa::Buf * buf = rx_stream->alloc();
       if(buf == NULL) {
-	buf = new SoDaBuf(rx_buffer_size); 
+	buf = new SoDa::Buf(rx_buffer_size); 
       }
 
-      if(buf == NULL) throw(new SoDa::SoDaException("USRPRX couldn't allocate SoDaBuf object", this)); 
-      if(buf->getComplexBuf() == NULL) throw(new SoDa::SoDaException("USRPRX allocated empty SoDaBuf object", this));
+      if(buf == NULL) throw SoDa::Exception("USRPRX couldn't allocate SoDa::Buf object", this); 
+      if(buf->getComplexBuf() == NULL) throw SoDa::Exception("USRPRX allocated empty SoDa::Buf object", this);
       
       unsigned int left = rx_buffer_size;
       unsigned int coll_so_far = 0;
@@ -157,16 +163,16 @@ void SoDa::USRPRX::run()
       if(enable_spectrum_report && (if_stream->getSubscriberCount() > 0)) {
 	// clone a buffer, cause we're going to modify
 	// it before the send is complete. 
-	SoDaBuf * if_buf = if_stream->alloc();
+	SoDa::Buf * if_buf = if_stream->alloc();
 	if(if_buf == NULL) {
-	  if_buf = new SoDaBuf(rx_buffer_size); 
+	  if_buf = new SoDa::Buf(rx_buffer_size); 
 	}
 
 	if(if_buf->copy(buf)) {
 	  if_stream->put(if_buf);
 	}
 	else {
-	  throw new SoDaException("SoDaBuf Copy for IF stream failed", this);
+	  throw SoDa::Exception("SoDa::Buf Copy for IF stream failed", this);
 	}
       }
 
@@ -189,7 +195,7 @@ void SoDa::USRPRX::run()
   stopStream(); 
 }
 
-void SoDa::USRPRX::doMixer(SoDaBuf * inout)
+void SoDa::USRPRX::doMixer(SoDa::Buf * inout)
 {
   unsigned int i;
   std::complex<float> o;
@@ -210,7 +216,6 @@ void SoDa::USRPRX::set3rdLOFreq(double IF_tuning)
 
 void SoDa::USRPRX::execCommand(Command * cmd)
 {
-  //  std::cerr << "In USRPRX execCommand" << std::endl;
   switch (cmd->cmd) {
   case Command::GET:
     execGetCommand(cmd); 
@@ -229,7 +234,6 @@ void SoDa::USRPRX::execCommand(Command * cmd)
 void SoDa::USRPRX::startStream()
 {
   if(!audio_rx_stream_enabled) {
-    //  std::cerr << "Starting RX Stream from USRP" << std::endl;
     usrp->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_START_CONTINUOUS, 0);
     audio_rx_stream_enabled = true; 
   }
@@ -237,14 +241,12 @@ void SoDa::USRPRX::startStream()
 
 void SoDa::USRPRX::stopStream()
 {
-  //  std::cerr << "Stoping RX Stream from USRP" << std::endl; 
   usrp->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_STOP_CONTINUOUS, 0);
   audio_rx_stream_enabled = false;
 }
 
 void SoDa::USRPRX::execSetCommand(Command * cmd)
 {
-  //  std::cerr << "In USRPRX execSetCommand" << std::endl;
   switch(cmd->target) {
   case SoDa::Command::RX_MODE:
     rx_modulation = SoDa::Command::ModulationType(cmd->iparms[0]); 
@@ -296,3 +298,16 @@ void SoDa::USRPRX::execRepCommand(Command * cmd)
   (void) cmd; 
 }
 
+/// implement the subscription method
+void SoDa::USRPRX::subscribeToMailBox(const std::string & mbox_name, 
+					SoDa::BaseMBox * mbox_p) {
+  if(SoDa::connectMailBox<SoDa::CmdMBox>(this, cmd_stream, "CMD", mbox_name, mbox_p)) {
+    cmd_subs = cmd_stream->subscribe();
+  }
+  if(SoDa::connectMailBox<SoDa::DatMBox>(this, rx_stream, "RX", mbox_name, mbox_p)) {
+    // we don't subscribe -- we publish
+  }
+  if(SoDa::connectMailBox<SoDa::DatMBox>(this, if_stream, "IF", mbox_name, mbox_p)) {
+    // we don't subscribe -- we publish
+  }
+}

@@ -34,15 +34,11 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-SoDa::IFRecorder::IFRecorder(Params * params,
-		       DatMBox * _rx_stream, CmdMBox * _cmd_stream) : SoDa::SoDaThread("IFRecorder")
+SoDa::IFRecorder::IFRecorder(Params * params) : SoDa::Thread("IFRecorder")
 {
   // setup the streams
-  rx_stream = _rx_stream;
-  rx_subs = rx_stream->subscribe();
-
-  cmd_stream = _cmd_stream; 
-  cmd_subs = cmd_stream->subscribe();
+  rx_stream = NULL;
+  cmd_stream = NULL;
 
   // what is the default sample rate and buffer size?
   rf_sample_rate = params->getRXRate(); 
@@ -90,9 +86,15 @@ void SoDa::IFRecorder::execRepCommand(SoDa::Command * cmd)
 void SoDa::IFRecorder::run()
 {
   bool exitflag = false;
-  SoDaBuf * rxbuf;
+  SoDa::Buf * rxbuf;
   Command * cmd; 
 
+  if((cmd_stream == NULL) || (rx_stream == NULL)) {
+      throw SoDa::Exception((boost::format("Missing a stream connection.\n")).str(), 
+			  this);	
+  }
+  
+  
   while(!exitflag) {
     bool did_work = false;
 
@@ -151,3 +153,13 @@ void SoDa::IFRecorder::closeOutStream()
   write_stream_on = false;
 }
 
+/// implement the subscription method
+void SoDa::IFRecorder::subscribeToMailBox(const std::string & mbox_name, SoDa::BaseMBox * mbox_p)
+{
+  if(SoDa::connectMailBox<SoDa::CmdMBox>(this, cmd_stream, "CMD", mbox_name, mbox_p)) {
+    cmd_subs = cmd_stream->subscribe();
+  }
+  if(SoDa::connectMailBox<SoDa::DatMBox>(this, rx_stream, "RX", mbox_name, mbox_p)) {
+    rx_subs = rx_stream->subscribe();
+  }
+}

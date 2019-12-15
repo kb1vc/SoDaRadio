@@ -29,6 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef IFRECORDER_HDR
 #define IFRECORDER_HDR
 #include "SoDaBase.hxx"
+#include "SoDaThread.hxx"
 #include "Params.hxx"
 #include "MultiMBox.hxx"
 #include "Command.hxx"
@@ -68,19 +69,18 @@ namespace SoDa {
    * USB, and LSB modulation via the phasing method, since both I and Q
    * channels are available. AM is performed with a simple magnitude detector.
    */
-  class IFRecorder : public SoDaThread {
+  class IFRecorder : public SoDa::Thread {
   public:
     /**
      * @brief the constructor
      *
      * @param params command line parameter object
-     * @param if_stream pointer to mailbox holding USRP rf bitstream (straight from the horse's radio)
-     * @param cmd_stream pointer to mailbox holding control/report commands
      **/
-    IFRecorder(Params * params,
-	       DatMBox * if_stream, 
-	       CmdMBox * cmd_stream);
+    IFRecorder(Params * params);
 
+    /// implement the subscription method
+    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
+    
     /**
      * @brief the run method -- does the work of the audio receiver process
      */

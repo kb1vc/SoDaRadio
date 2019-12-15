@@ -78,7 +78,17 @@ namespace SoDa {
     void * mbox_tag; 
   };
 
-  template <typename T> class MultiMBox {
+  /**
+   * A base mailbox class.  
+   */
+  class BaseMBox {
+  public:
+    BaseMBox() {}
+
+    virtual ~BaseMBox() { }
+  };
+  
+  template <typename T> class MultiMBox : public BaseMBox {
   public:
     MultiMBox(bool _keep_freelist = true) {
       subscriber_count = 0;

@@ -29,6 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef CWTX_HDR
 #define CWTX_HDR
 #include "SoDaBase.hxx"
+#include "SoDaThread.hxx"
 #include "MultiMBox.hxx"
 #include "Command.hxx"
 #include "Params.hxx"
@@ -46,16 +47,17 @@ namespace SoDa {
    * This block uses the CWGenerator object to convert text to a
    * CW envelope. 
    */
-  class CWTX : public SoDaThread {
+  class CWTX : public SoDa::Thread {
   public:
     /**
      * @brief Constructor
      * @param params block describing intial setup of the radio
-     * @param cwtxt_stream stream carrying text strings to be converted to morse code
-     * @param cw_env_stream envelope stream from text-to-CW converter
-     * @param cmd_stream command stream
      */
-    CWTX(Params * params, CmdMBox * cwtxt_stream, DatMBox * cw_env_stream, CmdMBox * cmd_stream);
+    CWTX(Params * params);
+
+    /// implement the subscription method
+    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
+
     /**
      * @brief CWTX run loop: translate text to CW envelopes, handle incoming commands
      */
