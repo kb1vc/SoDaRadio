@@ -170,12 +170,12 @@ namespace SoDa {
       int err; 
       if((err = snd_pcm_prepare(pcm_in)) < 0) {
 	throw
-	  SoDaException((boost::format("AudioQt::wakeIn() Failed to wake after sleepIn() -- %s")
+	  SoDa::Exception((boost::format("AudioQt::wakeIn() Failed to wake after sleepIn() -- %s")
 			 % snd_strerror(err)).str(), this);
       }
       if((err = snd_pcm_start(pcm_in)) < 0) {
 	throw
-	  SoDaException((boost::format("AudioQt::wakeIn() Failed to wake after sleepIn() -- %s")
+	  SoDa::Exception((boost::format("AudioQt::wakeIn() Failed to wake after sleepIn() -- %s")
 			 % snd_strerror(err)).str(), this);
       }
     }
@@ -257,7 +257,7 @@ namespace SoDa {
      */
     void checkStatus(int err, const std::string & exp, bool fatal = false) {
       if (err < 0) {
-	if(fatal) throw SoDaException((boost::format("%s %s") % exp % snd_strerror(err)).str(), this);
+	if(fatal) throw SoDa::Exception((boost::format("%s %s") % exp % snd_strerror(err)).str(), this);
 	else std::cerr << boost::format("%s %s %s\n") % getObjName() % exp % snd_strerror(err);
       }
     }

@@ -29,6 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef BASEBANDRX_HDR
 #define BASEBANDRX_HDR
 #include "SoDaBase.hxx"
+#include "SoDaThread.hxx"
 #include "Params.hxx"
 #include "MultiMBox.hxx"
 #include "Command.hxx"
@@ -72,21 +73,20 @@ namespace SoDa {
    * USB, and LSB modulation via the phasing method, since both I and Q
    * channels are available. AM is performed with a simple magnitude detector.
    */
-  class BaseBandRX : public SoDaThread {
+  class BaseBandRX : public SoDa::Thread {
   public:
     /**
      * @brief the constructor
      *
      * @param params command line parameter object
-     * @param rx_stream pointer to mailbox holding USRP RX bitstream
-     * @param cmd_stream pointer to mailbox holding control/report commands
      * @param audio_ifc pointer to the audio output handler
      **/
     BaseBandRX(Params * params,
-	    DatMBox * rx_stream, 
-	    CmdMBox * cmd_stream,
-	    AudioIfc * audio_ifc);
+	       AudioIfc * audio_ifc);
 
+    /// implement the subscription method
+    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
+    
     /**
      * @brief the run method -- does the work of the audio receiver process
      */
@@ -150,7 +150,7 @@ namespace SoDa {
      * @param mod modulation type -- WBFM
      * @param af_gain factor to goose the audio output
      */
-    void demodulateWBFM(SoDaBuf * rxbuf,
+    void demodulateWBFM(SoDa::Buf * rxbuf,
 			SoDa::Command::ModulationType mod,
 			float af_gain);
 
@@ -161,7 +161,7 @@ namespace SoDa {
      *
      * @param rxbuf RF input buffer
      */
-    void demodulate(SoDaBuf * rxbuf);
+    void demodulate(SoDa::Buf * rxbuf);
 
     /**
      * @brief send a report of the lower and upper edges of the IF passband

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012,2017 Matthew H. Reilly (kb1vc)
+Copyright (c) 2019 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,45 +26,43 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef GPS_MON_HDR
-#define GPS_MON_HDR
+#ifndef SODA_THREAD_REGISTRY_HDR
+#define SODA_THREAD_REGISTRY_HDR
+
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
-#include "MultiMBox.hxx"
-#include "Command.hxx"
-#include "Params.hxx"
-#include "UI.hxx"
 
-#ifdef HAVE_GPSLIB
-#include <gps.h>
-#endif
 
-#include <time.h>
-#include <sys/time.h>
+ /**
+  * @file SoDaThreadRegistry.hxx
+  * 
+  * A singleton object that records instances of SoDa Thread objects. 
+  * 
+  * This allows control objects to iterate through threads for things
+  * like subscriptions, start/stop, join, etc. 
+  *
+  * @author Matt Reilly (kb1vc)
+  *
+  */
 
-namespace SoDa {
-  class GPSmon : public SoDa::Thread {
+#include <list>
+
+namespace SoDa { 
+  
+  class ThreadRegistry : public std::list<SoDa::Thread *> {
   public:
-    GPSmon(Params * params);
 
-    /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
+    static ThreadRegistry * getRegistrar();
+
+    void addThread(SoDa::Thread * thread);
     
-    void run();
+    void apply(std::function<bool(SoDa::Thread *)> f);
+    
   private:
-    void execGetCommand(Command * cmd); 
-    void execSetCommand(Command * cmd); 
-    void execRepCommand(Command * cmd); 
+    ThreadRegistry() { }    
 
-    CmdMBox *cmd_stream;
-    unsigned int cmd_subs;
-#if HAVE_GPSLIB
-    // gpsd lib
-    struct gps_data_t gps_data;
-#endif
-    bool gps_server_ready; 
-    
-  }; 
+    static ThreadRegistry * registrar; 
+  };
 }
 
 

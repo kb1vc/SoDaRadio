@@ -39,7 +39,7 @@ namespace SoDa {
   /**
    * Resampler for 48KHz to 625KHz data stream, built on rational ReSampler class
    */
-  class ReSample48to625 : public SoDaBase {
+  class ReSample48to625 : public SoDa::Base {
   public:
     /**
      * @brief Constructor
@@ -78,7 +78,7 @@ namespace SoDa {
   /**
    * Resampler for 625KHz to 48KHz data stream, built on rational ReSampler class
    */
-  class ReSample625to48 : public SoDaBase {
+  class ReSample625to48 : public SoDa::Base {
   public:
     /**
      * @brief Constructor

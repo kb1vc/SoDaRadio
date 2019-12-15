@@ -44,9 +44,9 @@
 namespace SoDa {
 
 
-  template<typename T> class TDFilter : public SoDaBase {
+  template<typename T> class TDFilter : public SoDa::Base {
   public:
-    TDFilter(const std::string & name) : SoDaBase(name) { }
+    TDFilter(const std::string & name) : SoDa::Base(name) { }
 
     /**
      * @brief Perform decimation on a complex float buffer

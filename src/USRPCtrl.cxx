@@ -53,7 +53,8 @@ const double SoDa::USRPCtrl::rxmode_offset = 1.0e6;
 
 SoDa::USRPCtrl * SoDa::USRPCtrl::singleton_ctrl_obj = NULL; 
 
-SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaThread("USRPCtrl")
+
+SoDa::USRPCtrl::USRPCtrl(Params * _params) : SoDa::Thread("USRPCtrl")
 {
   // point to myself.... 
   SoDa::USRPCtrl::singleton_ctrl_obj = this;
@@ -76,17 +77,14 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
   tx_ant = std::string("TX");
   motherboard_name = std::string("UNKNOWN_MB");
   
-  cmd_stream = _cmd_stream;
   params = _params;
 
-  // subscribe to the command stream.
-  subid = cmd_stream->subscribe();
   
   // make the device.
   usrp = uhd::usrp::multi_usrp::make(params->getRadioArgs());
 
   if(usrp == NULL) {
-    throw SoDaException((boost::format("Unable to allocate USRP unit with arguments = [%]\n") % params->getRadioArgs()).str(), this);
+    throw SoDa::Exception((boost::format("Unable to allocate USRP unit with arguments = [%s]\n") % params->getRadioArgs()).str(), this);
   }
 
   // We need to find out if this is a B2xx or something like it -- they don't
@@ -191,11 +189,37 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params, CmdMBox * _cmd_stream) : SoDa::SoDaTh
 
   // if we are in integer-N mode, setup the step table.
   testIntNMode(params->forceIntN(), params->forceFracN()); 
+  
+  // we need a cmd stream
+  cmd_stream = NULL; 
+}
+
+/// implement the subscription method
+void SoDa::USRPCtrl::subscribeToMailBox(const std::string & mbox_name, 
+					SoDa::BaseMBox * mbox_p) {
+  if(mbox_name == "CMD") {
+    SoDa::CmdMBox * _cmd_stream = dynamic_cast<SoDa::CmdMBox *>(mbox_p);
+    if(_cmd_stream != NULL) {
+      cmd_stream = _cmd_stream;
+
+      // subscribe to the command stream.
+      subid = cmd_stream->subscribe();
+    }
+    else {
+      throw SoDa::Exception((boost::format("Bad mailbox pointer for mailbox named = [%s]\n") 
+			   % mbox_name).str() , this);	
+    }
+  }
 }
 
 
 void SoDa::USRPCtrl::run()
 {
+  if(cmd_stream == NULL) {
+      throw SoDa::Exception((boost::format("Never got command stream subscription\n")).str(), 
+			  this);	
+  }
+  
   uhd::set_thread_priority_safe(); 
   // now do the event loop.  we watch
   // for commands and responses on the command stream.

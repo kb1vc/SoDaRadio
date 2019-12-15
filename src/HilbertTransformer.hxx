@@ -51,7 +51,7 @@ namespace SoDa {
    *   real(g(t)) = real(x(t + tau)) and
    *   imag(g(t)) = shift_by_90deg(imag(x(t + tau)))
    */
-  class HilbertTransformer : public SoDaBase {
+  class HilbertTransformer : public SoDa::Base {
   public:
     /**
      * constructor -- build a Hilbert Transformer

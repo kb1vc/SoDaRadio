@@ -99,13 +99,13 @@ namespace SoDa {
      * @brief get an envelope that we can fill in
      * @return a pointer to a floating point envelope buffer
      */
-    SoDaBuf * getFreeSoDaBuf() {
-      SoDaBuf * sb = NULL;
+    SoDa::Buf * getFreeSoDaBuf() {
+      SoDa::Buf * sb = NULL;
       if(env_stream != NULL) {
 	sb = env_stream->alloc();
       }
       if(sb == NULL) {
-	sb = new SoDaBuf(env_buf_len); 
+	sb = new SoDa::Buf(env_buf_len); 
       }
       return sb; 
     }
@@ -144,7 +144,7 @@ namespace SoDa {
     static std::map<char, std::string> morse_map; ///< map from ascii character to dits-and-dahs
 
     // current output buffer
-    SoDaBuf * cur_buf; ///< the current envelope to be filled in
+    SoDa::Buf * cur_buf; ///< the current envelope to be filled in
     unsigned int cur_buf_idx; ///< where are we in the buffer? 
     unsigned int cur_buf_len; ///< how much of the buffer is unfilled? 
     

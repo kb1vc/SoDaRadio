@@ -28,6 +28,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Params.hxx"
 #include <iostream>
+#include <stdlib.h>
+#include <boost/algorithm/string.hpp>
 
 SoDa::Params::Params(int argc, char * argv[])
 {
@@ -35,6 +37,8 @@ SoDa::Params::Params(int argc, char * argv[])
   po::options_description desc("Allowed options");
   desc.add_options()
     ("help", "help message")
+    ("load", po::value<std::vector<std::string> >(&load_list)->multitoken(), 
+     "one or more shared library objects, each containing a SoDa::Thread object")
     ("uhdargs", po::value<std::string>(&radio_args)->default_value(""),
      "extra parameters to pass to device creator (e.g. device id, address, type)")
     ("config",  po::value<std::string>(&config_filename)->default_value("~/.soda/config.xml"),
@@ -73,7 +77,10 @@ SoDa::Params::Params(int argc, char * argv[])
   report_mem_info = (pmap.count("report_file") != 0);
 
   // now we fill in the parameters.
-  readConfigFile(config_filename); 
+  readConfigFile(config_filename);
+
+  // when we're asked for loadable modules, we also scan the SODA_LOAD_LIBS env variable. 
+  load_list_env_appended = false;    
 }
 
 void SoDa::Params::readConfigFile(std::string & cf_name)
@@ -91,4 +98,22 @@ void SoDa::Params::saveConfigFile(std::string & cf_name)
 {
   (void) cf_name; 
   // do nothing for now... later this will be the .xml file. 
+}
+
+const std::vector<std::string> & SoDa::Params::getLibs() {
+  // note that this will append
+  if(!load_list_env_appended) {
+    // did we set an env variable
+    char * envlibs_str = getenv("SODA_LOAD_LIBS");
+    if(envlibs_str != NULL) {
+      std::string envlibs(envlibs_str);
+      std::vector<std::string> spl;
+      boost::algorithm::split(spl, envlibs, boost::is_any_of(", "));
+      for(auto e : spl) {
+	load_list.push_back(e);
+      }
+    }
+  }
+  load_list_env_appended = true;
+  return load_list; 
 }

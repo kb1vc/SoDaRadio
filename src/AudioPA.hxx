@@ -144,7 +144,7 @@ namespace SoDa {
     void checkStatus(PaError v, const std::string & exp, bool fatal = false) {
 
       if (v != paNoError) {
-	if(fatal) throw SoDaException((boost::format("%s %s") % exp % Pa_GetErrorText(v)).str(), this);
+	if(fatal) throw SoDa::Exception((boost::format("%s %s") % exp % Pa_GetErrorText(v)).str(), this);
 	else std::cerr << boost::format("%s: %s %s\n") % getObjName() % exp % Pa_GetErrorText(v);
       }
     }

@@ -31,21 +31,14 @@
 
 const double SoDa::UI::spectrum_span = 200e3;
 
-SoDa::UI::UI(Params * params, CmdMBox * _cwtxt_stream,
-	     DatMBox * _rx_stream, DatMBox * _if_stream, 
-	     CmdMBox * _cmd_stream, CmdMBox * _gps_stream) : SoDa::SoDaThread("UI")
+SoDa::UI::UI(Params * params) : SoDa::Thread("UI")
 {
   // connect to our message streams.
-  cwtxt_stream = _cwtxt_stream;
-  rx_stream = _rx_stream;
-  if_stream = _if_stream; 
-  cmd_stream = _cmd_stream; 
-  gps_stream = _gps_stream; 
+  cwtxt_stream = NULL;
+  if_stream = NULL;
+  cmd_stream = NULL;
+  gps_stream = NULL;
 
-  // subscribe to them.
-  cmd_subs = cmd_stream->subscribe();
-  gps_subs = gps_stream->subscribe();
-  if_subs = if_stream->subscribe(); 
 
   // create the network ports
   // This UI object is a server.
@@ -119,6 +112,15 @@ void SoDa::UI::run()
 {
   SoDa::Command * net_cmd, * ring_cmd;
 
+  if((cwtxt_stream == NULL) || 
+     (if_stream == NULL) || 
+     (cmd_stream == NULL) || 
+     (gps_stream == NULL)) {
+      throw SoDa::Exception((boost::format("Missing a stream connection %p %p %p.\n") 
+			   % cwtxt_stream % if_stream % cmd_stream % gps_stream).str(), 
+			  this);	
+  }
+  
   net_cmd = NULL;
   ring_cmd = NULL;
   
@@ -210,7 +212,7 @@ void SoDa::UI::run()
     
     // listen ont the IF stream
     int bcount;
-    SoDaBuf * if_buf; 
+    SoDa::Buf * if_buf; 
     for(bcount = 0;
 	(bcount < 4) && ((if_buf = if_stream->get(if_subs)) != NULL);
 	bcount++) {
@@ -313,7 +315,7 @@ static unsigned int dbgctrfft = 0;
 static bool first_ready = true;
 static bool calc_max_first = true;
 
-void SoDa::UI::sendFFT(SoDa::SoDaBuf * buf)
+void SoDa::UI::sendFFT(SoDa::Buf * buf)
 {
   fft_send_counter++; 
   dbgctrfft++; 
@@ -407,5 +409,22 @@ void SoDa::UI::sendFFT(SoDa::SoDaBuf * buf)
 	maxmag = spectrum[ii];
       }
     }
+  }
+}
+
+/// implement the subscription method
+void SoDa::UI::subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p)
+{
+  if(SoDa::connectMailBox<SoDa::CmdMBox>(this, cmd_stream, "CMD", mbox_name, mbox_p)) {
+    cmd_subs = cmd_stream->subscribe();
+  }
+  if(SoDa::connectMailBox<SoDa::CmdMBox>(this, cwtxt_stream, "CW_TXT", mbox_name, mbox_p)) {
+    // we publish here. 
+  }
+  if(SoDa::connectMailBox<SoDa::DatMBox>(this, if_stream, "IF", mbox_name, mbox_p)) {
+    if_subs = if_stream->subscribe();
+  }
+  if(SoDa::connectMailBox<SoDa::CmdMBox>(this, gps_stream, "GPS", mbox_name, mbox_p)) {
+    gps_subs = gps_stream->subscribe();
   }
 }

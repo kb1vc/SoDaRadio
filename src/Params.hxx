@@ -34,6 +34,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string>
 #include <algorithm>
 #include <iostream>
+#include <vector>
 
 namespace SoDa {
   /**
@@ -112,6 +113,8 @@ namespace SoDa {
     bool forceFracN() { return force_frac_N_mode && !force_integer_N_mode; }
     bool forceIntN() { return !force_frac_N_mode && force_integer_N_mode; }
 
+    const std::vector<std::string> & getLibs();
+    
     unsigned int getDebugLevel() const { return debug_level; }
 
     std::string getRadioType() const { return radio_type; }
@@ -134,6 +137,7 @@ namespace SoDa {
 
       return res; 
     }
+
   private:
     
     boost::program_options::variables_map pmap;
@@ -146,6 +150,8 @@ namespace SoDa {
     std::string radio_type; 
     std::string radio_args;
     std::string config_filename;
+    std::vector<std::string> load_list;
+    bool load_list_env_appended;
 
     std::string lock_file_name; 
 

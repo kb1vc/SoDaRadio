@@ -43,7 +43,7 @@ namespace SoDa {
    * Port Audio (@see AudioPA),
    * and an IP link.  The network interface has not yet been implemented.
    */
-  class AudioIfc : public SoDaBase {
+  class AudioIfc : public SoDa::Base {
   public:
     /*
      * constructor
@@ -53,7 +53,7 @@ namespace SoDa {
      */
     AudioIfc(unsigned int _sample_rate,
 	     unsigned int _sample_count_hint,
-	     const std::string & name = "AudioIfc") : SoDaBase(name) {
+	     const std::string & name = "AudioIfc") : SoDa::Base(name) {
       rx_buffer_pool = NULL;
       tx_buffer_pool = NULL;      
       sample_rate = _sample_rate;

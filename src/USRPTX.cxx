@@ -41,21 +41,14 @@
 #include <fcntl.h>
 #include <stdio.h>
 
-SoDa::USRPTX::USRPTX(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
-		     DatMBox * _tx_stream, DatMBox * _cw_env_stream,
-		     CmdMBox * _cmd_stream) : SoDa::SoDaThread("USRPTX")
+SoDa::USRPTX::USRPTX(Params * params, uhd::usrp::multi_usrp::sptr _usrp) : SoDa::Thread("USRPTX")
 {
-  cmd_stream = _cmd_stream;
-  tx_stream = _tx_stream;
-  cw_env_stream = _cw_env_stream;
+  cmd_stream = NULL;
+  tx_stream = NULL;
+  cw_env_stream = NULL;
+  
   usrp = _usrp; 
 
-  // subscribe to the command stream.
-  cmd_subs = cmd_stream->subscribe();
-  // subscribe to the tx data stream
-  tx_subs = tx_stream->subscribe();
-  // and to the CW envelope stream
-  cw_subs = cw_env_stream->subscribe(); 
 
   LO_enabled = false;
   LO_configured = false;
@@ -117,6 +110,11 @@ SoDa::USRPTX::USRPTX(Params * params, uhd::usrp::multi_usrp::sptr _usrp,
 
 void SoDa::USRPTX::run()
 {
+  if((cmd_stream == NULL) || (tx_stream == NULL) || (cw_env_stream == NULL)) {
+    throw SoDa::Exception((boost::format("Missing a stream connection.\n")).str(), 
+			  this);	
+  }
+
   uhd::set_thread_priority_safe(); 
   // now do the event loop.  we watch
   // for commands and responses on the command stream.
@@ -128,7 +126,7 @@ void SoDa::USRPTX::run()
   debugMsg("Created tx streamer.\n");
 
   bool exitflag = false;
-  SoDaBuf * txbuf, * cwenv;
+  SoDa::Buf * txbuf, * cwenv;
   Command * cmd; 
   std::vector<std::complex<float> *> buffers(LO_capable ? 2 : 1);
 
@@ -326,3 +324,16 @@ void SoDa::USRPTX::execRepCommand(Command * cmd)
   }
 }
 
+/// implement the subscription method
+void SoDa::USRPTX::subscribeToMailBox(const std::string & mbox_name, 
+					SoDa::BaseMBox * mbox_p) {
+  if(SoDa::connectMailBox<SoDa::CmdMBox>(this, cmd_stream, "CMD", mbox_name, mbox_p)) {
+    cmd_subs = cmd_stream->subscribe();
+  }
+  if(SoDa::connectMailBox<SoDa::DatMBox>(this, tx_stream, "TX", mbox_name, mbox_p)) {
+    tx_subs = tx_stream->subscribe();
+  }
+  if(SoDa::connectMailBox<SoDa::DatMBox>(this, cw_env_stream, "CW_ENV", mbox_name, mbox_p)) {
+    cw_subs = cw_env_stream->subscribe();
+  }
+}

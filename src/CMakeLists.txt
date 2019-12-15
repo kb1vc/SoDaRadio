@@ -6,6 +6,8 @@ set(SoDaServer_SRCS
     SoDaServer.cxx
     ProcInfo.cxx
     SoDaBase.cxx
+    SoDaThread.cxx
+    SoDaThreadRegistry.cxx    
     CWTX.cxx
     BaseBandRX.cxx
     BaseBandTX.cxx
@@ -107,8 +109,9 @@ add_executable(SoDaServer ${SoDaServer_SRCS})
 
 target_link_libraries(SoDaServer rt
     Threads::Threads
-    ${Boost_LIBRARIES}  ${Radio_LIBRARIES} ${ALSA_LIBRARIES} ${FFTW3F_LIBRARIES})
+    ${Boost_LIBRARIES}  ${Radio_LIBRARIES} ${ALSA_LIBRARIES} ${FFTW3F_LIBRARIES} ${CMAKE_DL_LIBS})
 
 
 install(TARGETS SoDaServer DESTINATION bin)
 
+add_library(accessory SHARED SimpleAccessory.cxx)

@@ -32,9 +32,9 @@
 #include <boost/format.hpp>
 
 namespace SoDa {
-  std::map<std::string, SoDaBase *> SoDaBase::ObjectDirectory;
+  std::map<std::string, SoDa::Base *> SoDa::Base::ObjectDirectory;
 
-  SoDaBase::SoDaBase(const std::string & oname)
+  SoDa::Base::Base(const std::string & oname)
   {
     objname = oname;
     if(ObjectDirectory.find(oname) == ObjectDirectory.end()) {
@@ -42,8 +42,8 @@ namespace SoDa {
     }
   }
 
-  SoDaBase * SoDaBase::findSoDaObject(const std::string & oname) {
-    std::map<std::string, SoDaBase *>::iterator mi;
+  SoDa::Base * SoDa::Base::findSoDaObject(const std::string & oname) {
+    std::map<std::string, SoDa::Base *>::iterator mi;
     mi = ObjectDirectory.find(oname);
     if(mi != ObjectDirectory.end()) {
       return mi->second;
@@ -53,7 +53,7 @@ namespace SoDa {
     }
   }
 
-  double SoDaBase::getTime() {
+  double SoDa::Base::getTime() {
     struct timespec tp; 
     clock_gettime(CLOCK_MONOTONIC, &tp); // 60nS average in tight loops, 160nS cold.
     double ret = ((double) tp.tv_sec) + (1.0e-9 * ((double) tp.tv_nsec)); 
@@ -65,5 +65,5 @@ namespace SoDa {
   }
 }
 
-bool SoDa::SoDaBase::first_time = true;
-double SoDa::SoDaBase::base_first_time;
+bool SoDa::Base::first_time = true;
+double SoDa::Base::base_first_time;

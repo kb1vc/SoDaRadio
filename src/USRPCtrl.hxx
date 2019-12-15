@@ -38,6 +38,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef USRPCTRL_HDR
 #define USRPCTRL_HDR
 #include "SoDaBase.hxx"
+#include "SoDaThread.hxx"
 #include "MultiMBox.hxx"
 #include "Command.hxx"
 #include "Params.hxx"
@@ -71,14 +72,13 @@ namespace SoDa {
   ///  requests from other components (including the SoDa::UI listener)
   ///  and dumps status and completion reports back onto
   ///  the command stream channel. 
-  class USRPCtrl : public SoDaThread {
+  class USRPCtrl : public SoDa::Thread {
   public:
     /// Constructor
     /// Build a USRPCtrl thread
     /// @param params Pointer to a parameter object with all the initial settings
     /// and identification for the attached USRP
-    /// @param _cmd_stream Pointer to the command stream message channel.
-    USRPCtrl(Params * params, CmdMBox * _cmd_stream);
+    USRPCtrl(Params * params);
     /// start the thread
     void run();
 
@@ -86,6 +86,9 @@ namespace SoDa {
     /// RX and TX processes to find the associated USRP widget.
     /// @return a pointer to the USRP radio object
     uhd::usrp::multi_usrp::sptr getUSRP() { return usrp; }
+
+    /// implement the subscription method
+    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
 
 #if UHD_VERSION < 3110000
     /// This is the more permanent message handler used before the elimination of the msg class    

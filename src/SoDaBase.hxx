@@ -61,22 +61,22 @@ namespace SoDa {
   /**
    * The Buffer Class
    *
-   * @class SoDaBuf
+   * @class SoDa::Buf
    *
    * This is used to carry blocks of complex or real single precision
-   * floating point samples on the message ring. A SoDaBuf can carry
+   * floating point samples on the message ring. A SoDa::Buf can carry
    * either complex or real values so that buffers for either use
    * can be allocated from the same storage pool.  
    *
    */
-  class SoDaBuf : public MBoxMessage {
+  class Buf : public MBoxMessage {
   public:
     /**
      * constructor: Allocate a complex/real buffer of complex data values
      *
      * @param _size the maximum number of single presion complex values the buffer can hold. 
      */
-    SoDaBuf(unsigned int _size) {
+    Buf(unsigned int _size) {
       maxlen = _size;
       len = maxlen;
       dat = new std::complex<float>[_size];
@@ -86,7 +86,7 @@ namespace SoDa {
       flen = len * 2; 
     }
 
-    bool copy(SoDaBuf * src) {
+    bool copy(Buf * src) {
       if(maxlen >= src->maxlen) {
 	flen = src->flen;
 	memcpy(fdat, src->fdat, sizeof(float) * flen);
@@ -152,19 +152,19 @@ namespace SoDa {
   /**
    * Mailboxes that carry float or complex data are of type DatMBox
    */ 
-  typedef MultiMBox<SoDaBuf> DatMBox;
+  typedef MultiMBox<Buf> DatMBox;
 
 
   /**
    * The SoDa Base class
    *
-   * @class SoDaBase
+   * @class Base
    *
    * All persistent soda objects of any size are given a NAME so that
-   * the SoDaException class can show who is complaining for a given
+   * the SoDa::Exception class can show who is complaining for a given
    * exception. 
    */
-  class SoDaBase {
+  class Base {
   public:
     /**
      * The constructor -- pass a name for the object.
@@ -173,7 +173,7 @@ namespace SoDa {
      *              The first object with a given name will be entered into the directory
      *              Objects can be retrieved from the directory by name with the findSoDaObject function.
      */
-    SoDaBase(const std::string & oname);
+    Base(const std::string & oname);
 
     /**
      * get the name of this object
@@ -187,7 +187,7 @@ namespace SoDa {
      * @param oname a string that names the object
      * @return a pointer to the SoDaBase object (NULL if the name isn't found)
      */
-    SoDaBase * findSoDaObject(const std::string & oname); 
+    Base * findSoDaObject(const std::string & oname); 
 
     /**
      * Get a time stamp in nS resolution that monotonically increases
@@ -203,18 +203,18 @@ namespace SoDa {
     static bool first_time; ///< have we seen the first call to getTime? 
     static double base_first_time; ///< time of first call to getTime from anyone. 
 
-    static std::map<std::string, SoDaBase * > ObjectDirectory; ///< a class member -- directory of all registered objects.
+    static std::map<std::string, Base * > ObjectDirectory; ///< a class member -- directory of all registered objects.
   };
 
   /**
    * The SoDa Exception class
    *
-   * @class SoDaException
+   * @class SoDa::Exception
    *
    * Wherever possible, objects reporting exceptions should signal a subclass of the
-   * SoDaException class. 
+   * SoDa::Exception class. 
    */
-  class SoDaException { 
+  class Exception { 
   public:
     /**
      * The constructor
@@ -222,7 +222,7 @@ namespace SoDa {
      * @param _reason an informative string reporting the cause of the error
      * @param obj  a pointer to the SoDaBase object that triggered the exception (if any).
      */
-    SoDaException(const std::string & _reason, SoDaBase * obj = NULL) 
+    Exception(const std::string & _reason, Base * obj = NULL) 
     {
       thrower = obj;
       reason = _reason; 
@@ -231,9 +231,9 @@ namespace SoDa {
      * The constructor
      *
      * @param _reason an informative string reporting the cause of the error
-     * @param obj  a pointer to the SoDaBase object that triggered the exception (if any).
+     * @param obj  a pointer to the SoDa::Base object that triggered the exception (if any).
      */
-    SoDaException(const char * _reason, SoDaBase * obj) {
+    Exception(const char * _reason, Base * obj) {
       thrower = obj;
       reason = std::string(_reason); 
     }
@@ -263,165 +263,9 @@ namespace SoDa {
       return toString().c_str();
     }
   private:
-    SoDaBase * thrower; ///< who caused the exception, if anyone? 
+    Base * thrower; ///< who caused the exception, if anyone? 
     std::string reason; ///< what was the cause of the exception? 
   };
-
-
-  /**
-   * The Thread baseclass for all SoDa thread objects.
-   *
-   * @class SoDaThread
-   *
-   * The SoDaThread baseclass simplifies interaction with threads.
-   * Since SoDa thread objects aren't created and destroyed very often,
-   * we don't need many bells and whistles here.  Just the ability to
-   * start a thread a join a thread.
-   *
-   * All threads, however, must declare a "run" function, and handlers
-   * for three types of SoDa::Command objects (GET, SET, and REPort)
-   */
-  class SoDaThread : public SoDaBase, public Debug {
-  public:
-    SoDaThread(const std::string & oname) : SoDaBase(oname), Debug(oname) {
-      th = NULL; 
-    }
-    /**
-     * Execute the thread's run loop. 
-     */
-    void start() {
-      if(th != NULL) return;
-      th = new boost::thread(&SoDaThread::outerRun, this);
-    }
-
-    /**
-     * more properly "Wait for this thread to exit its run loop".
-     * returns after the thread has received a STOP message.
-     */
-    void join() {
-      th->join(); 
-    }
-
-    /**
-     * wait for the thread to stop running, or the specified time to pass. 
-     *
-     * @param m timeout in milliseconds
-     * @return true if the thread has stopped, false otherwise. 
-     * 
-     * 
-     */
-    bool waitForJoin(unsigned int m) {
-      return th->try_join_for(boost::chrono::milliseconds(m)); 
-    }
-
-
-
-    /**
-     * Each thread object must define its "run" loop.  This loop
-     * exits only when the thread has received a STOP command on
-     * one of its command mailboxes.
-     */
-    virtual void run() = 0;
-
-    /**
-     * Execute (dispatch) a message removed from the command stream to one
-     * of the basic Command handler functions.
-     *
-     * This sequence appears in so many of the instances of SoDaThread that it
-     * was factored out. 
-     * 
-     * @param cmd the command message to be handled
-     */
-    void execCommand(Command * cmd) 
-    {
-      switch (cmd->cmd) {
-      case Command::GET:
-	execGetCommand(cmd); 
-	break;
-      case Command::SET:
-	execSetCommand(cmd); 
-	break; 
-      case Command::REP:
-	execRepCommand(cmd); 
-	break;
-      default:
-	break; 
-      }
-    }
-
-    /**
-     * optional method to handle "GET" commands -- commands that request a response
-     */
-    virtual void execGetCommand(Command * cmd) { (void) cmd; }
-
-    /**
-     * optional method to handle "SET" commands -- commands that set internal state in the object.
-     */
-    virtual void execSetCommand(Command * cmd) { (void) cmd; }
-
-    /**
-     * optional method that reports status or the result of some action. 
-     */
-    virtual void execRepCommand(Command * cmd) { (void) cmd; } 
-
-  private:
-    boost::thread * th;
-
-
-    /**
-     * the run method that is called by the boost thread handler.
-     * This method wraps the thread objects run loop in an exception
-     * handler so that we can do something useful with it. 
-     */
-    void outerRun() {
-      hookSigSeg();
-      pid_t tid;
-      tid = syscall(SYS_gettid);
-      debugMsg(boost::format("%s starting as TID %x.\n") % getObjName() % tid); 
-      try {
-	run(); 
-      }
-      catch (SoDaException exc) {
-	std::cerr << getObjName() << " caught " << exc.toString() << std::endl;
-      }
-      catch (SoDaException * exc) {
-	std::cerr << getObjName() << " caught " << exc->toString() << std::endl;
-      }
-      catch (const std::exception & e) {
-	std::cerr << getObjName() << " caught exception here: " << e.what() << std::endl; 
-      }
-      catch (...) {
-	std::cerr << getObjName() << " caught unknown exception" << std::endl;
-      }
-      debugMsg(boost::format("%s terminating.\n") % getObjName()); 
-    }
-
-    static void sigsegHandler(int sig)
-    {
-      std::cerr << "\n-----------"
-		<< "\n-----------"
-		<< "\n-----------"
-		<< "\n-----------"
-		<< " A SoDaThread caught a sig segv"
-		<< "\n-----------"
-		<< "\n-----------"
-		<< "\n-----------"
-		<< "\n-----------"
-		<< std::endl;
-      // resignal
-      signal(sig, SIG_DFL);
-      kill(getpid(), SIGSEGV);
-    }
-
-    void hookSigSeg() {
-      struct sigaction act;
-      sigemptyset(&act.sa_mask);
-      act.sa_handler = SoDaThread::sigsegHandler;
-      act.sa_flags = 0;
-      sigaction(SIGSEGV, &act, 0);
-    }
-    
-  }; 
 }
 
 #endif

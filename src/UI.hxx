@@ -29,6 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef UI_HDR
 #define UI_HDR
 #include "SoDaBase.hxx"
+#include "SoDaThread.hxx"
 #include "MultiMBox.hxx"
 #include "Command.hxx"
 #include "Params.hxx"
@@ -37,23 +38,23 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Spectrogram.hxx"
 
 namespace SoDa {
-  class UI : public SoDaThread {
+  class UI : public SoDa::Thread {
   public:
-    UI(Params * params, CmdMBox * cwtxt_stream,
-       DatMBox * rx_stream, DatMBox * if_stream, 
-       CmdMBox * cmd_stream, CmdMBox * gps_stream);
+    UI(Params * params);
     ~UI();
+
+    /// implement the subscription method
+    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
     
     void run();
 
   private:
     // Do an FFT on an rx buffer and send the positive
     // frequencies to any network listeners. 
-    void sendFFT(SoDaBuf * buf);
+    void sendFFT(SoDa::Buf * buf);
 
     // the internal communications paths -- between the SoDa threads. 
     CmdMBox * cwtxt_stream, * cmd_stream, * gps_stream;
-    DatMBox * rx_stream;
     DatMBox * if_stream; 
     unsigned int if_subs, cmd_subs, gps_subs;
 

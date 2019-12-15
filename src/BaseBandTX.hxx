@@ -32,6 +32,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef BASEBANDTX_HDR
 #define BASEBANDTX_HDR
 #include "SoDaBase.hxx"
+#include "SoDaThread.hxx"
 #include "MultiMBox.hxx"
 #include "Params.hxx"
 #include "Command.hxx"
@@ -50,21 +51,22 @@ namespace SoDa {
    *
    */
   class BaseBandRX;  
-  class BaseBandTX : public SoDaThread {
+  class BaseBandTX : public SoDa::Thread {
   public:
     /**
      * constructor
      *
      * @param params command line parameter object
-     * @param tx_stream pointer to mailbox holding USRP RX bitstream
-     * @param cmd_stream pointer to mailbox holding control/report commands
      * @param audio_ifc pointer to the audio output handler
      */
     BaseBandTX(Params * params,
-	    DatMBox * tx_stream,
-	    CmdMBox * cmd_stream,
-	    AudioIfc * audio_ifc
-	    );
+	       AudioIfc * audio_ifc
+	       );
+
+    /// implement the subscription method
+    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
+    
+
     /**
      * @brief the run method -- does the work of the audio transmitter process
      */
@@ -96,7 +98,7 @@ namespace SoDa {
      * if both is_usb and is_lsb are false, the modulator
      * creates an IQ stream that is amplitude modulated
      */
-    SoDa::SoDaBuf * modulateAM(float * audio_buf, unsigned int len, bool is_usb, bool is_lsb); 
+    SoDa::Buf * modulateAM(float * audio_buf, unsigned int len, bool is_usb, bool is_lsb); 
 
     /**
      * @brief create a narrowband/wideband FM modulation envelope
@@ -107,7 +109,7 @@ namespace SoDa {
      *
      * Note that this modulator varies the mic gain to prevent over-deviation. 
      */
-    SoDa::SoDaBuf * modulateFM(float * audio_buf, unsigned int len, double deviation);
+    SoDa::Buf * modulateFM(float * audio_buf, unsigned int len, double deviation);
     double fm_phase;
     double nbfm_deviation; ///< phase advance for 2.5kHz deviation.
     double wbfm_deviation; ///< phase advance for 75kHz deviation
