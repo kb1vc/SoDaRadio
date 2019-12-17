@@ -121,7 +121,17 @@ SoDa::UD::ClientSocket::ClientSocket(const std::string & path, int startup_timeo
 
 bool SoDa::UD::ServerSocket::isReady()
 {
-  if(ready) return true;
+  if(ready) {
+    // is the socket still open? 
+    char buf[32];
+    if(recv(conn_socket, buf, 32, MSG_PEEK | MSG_DONTWAIT) == 0) {
+      // connection has been closed. -- though this never seems to trigger
+      close(conn_socket);
+      ready = false;
+      return false;
+    }
+    return true;
+  }
   else {
     socklen_t ca_len = sizeof(client_address);
     // note that we've set the server_socket to non-block, so if nobody is here,
@@ -132,6 +142,7 @@ bool SoDa::UD::ServerSocket::isReady()
       ready = false; 
     }
     else {
+      std::cerr << boost::format("%s got client connection!\n") % mailbox_pathname;
       conn_socket = ns;
       int x = fcntl(conn_socket, F_GETFL, 0);
       int stat = fcntl(conn_socket, F_SETFL, x | O_NONBLOCK);

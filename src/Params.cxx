@@ -61,8 +61,6 @@ SoDa::Params::Params(int argc, char * argv[])
      "port number for gpsd server")
     ("lockfile", po::value<std::string>(&lock_file_name)->default_value("SoDa.lock"), 
      "lock file to signal that a sodaradio server is active")
-    ("report_file", po::value<std::string>(&report_file_name), 
-     "report file for memory statistics. Report only if a file name is supplied.")
     ;
 
   po::store(po::parse_command_line(argc, argv, desc), pmap);
@@ -73,8 +71,6 @@ SoDa::Params::Params(int argc, char * argv[])
     std::cout << "SoDa -- The 'SoD' stands for Software Defined. The 'a' doesn't stand for anything.   " << desc << std::endl;
     exit(-1); 
   }
-
-  report_mem_info = (pmap.count("report_file") != 0);
 
   // now we fill in the parameters.
   readConfigFile(config_filename);

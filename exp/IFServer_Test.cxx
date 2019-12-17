@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019 Matthew H. Reilly (kb1vc)
+Copyright (c) 2013, Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,49 +26,50 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef SODA_THREAD_REGISTRY_HDR
-#define SODA_THREAD_REGISTRY_HDR
+#include "IPSockets.hxx"
+#include "UDSockets.hxx"
+#include <error.h>
+#include <stdio.h>
 
-#include "SoDaBase.hxx"
-#include "SoDaThread.hxx"
-#include "Debug.hxx"
-
- /**
-  * @file SoDaThreadRegistry.hxx
-  * 
-  * A singleton object that records instances of SoDa Thread objects. 
-  * 
-  * This allows control objects to iterate through threads for things
-  * like subscriptions, start/stop, join, etc. 
-  *
-  * @author Matt Reilly (kb1vc)
-  *
-  */
-
-#include <list>
-
-namespace SoDa { 
-  
-  class ThreadRegistry : public std::list<SoDa::Thread *> {
-  public:
-
-    static ThreadRegistry * getRegistrar();
-
-    void addThread(SoDa::Thread * thread);
-    
-    void apply(std::function<bool(SoDa::Thread *)> f);
-
-    void subscribeThreads(const SoDa::MailBoxMap & mailbox_map);
-    void startThreads();
-    void joinThreads();
-    void shutDownThreads();
-
-  private:
-    ThreadRegistry() { }    
-
-    static ThreadRegistry * registrar; 
-  };
+void usage()
+{
+  fprintf(stderr, "IFServer_Test pathname\n");
+  exit(-1); 
 }
 
+int main(int argc, char * argv[])
+{
+  int portnum;
 
-#endif
+  if(argc < 2) usage(); 
+
+  int empty_count = 0;
+  int iter_count = 0;
+  int found_count = 0;
+  
+  SoDa::UD::ClientSocket * uc; 
+
+  double old_freq = -10.0; 
+
+  uc = new SoDa::UD::ClientSocket(argv[1]);
+  std::cerr << "Created socket\n";
+  int buf_size = 1024 * 1024;
+  auto * buf = new char[buf_size];
+  
+  while(1) {
+    int rs;
+    while((rs = uc->get(buf, buf_size)) <= 0) {
+      usleep(1000); 
+    }
+
+    unsigned long * len = reinterpret_cast<unsigned long*>(buf);
+    double * freq = reinterpret_cast<double*>(&(buf[8])); // buf + sizeof(unsigned int));
+
+    if(*freq != old_freq) {
+      std::cerr << boost::format("Got new frequency: %g\n") % *freq;
+      old_freq = *freq; 
+    }
+  }
+
+  delete uc; 
+}

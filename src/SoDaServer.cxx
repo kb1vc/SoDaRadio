@@ -240,71 +240,28 @@ int doWork(SoDa::Params & params)
   
   d.debugMsg("Created units.");
 
+  // get the thing that knows which threads are part of the radio.
+  // (Some may be loaded dynamically with the "--load" command line parameter.
   auto registrar = SoDa::ThreadRegistry::getRegistrar();  
+
   // hook everyone up to the mailboxes. 
-  registrar->apply([mailbox_map](SoDa::Thread * el) 
-		   bool { 
-		     el->subscribeToMailBoxList(mailbox_map); 
-		     return true;
-		   });
+  registrar->subscribeThreads(mailbox_map);
   
   // Now start each of the activities -- they may or may not
   // implement the "start" method -- not all objects need to be threads.
 
-  d.debugMsg("Starting UI");
-  // start the UI -- configure stuff and all that. 
-  ui.start();
-  d.debugMsg("Starting radio units");
-  // start command consumers first.
-  // start everyone
-  auto ui_p = & ui; 
-
-
-  registrar->apply([ui_p](SoDa::Thread * el) 
-		   bool {
-		     if(el != ui_p) {
-		       el->start();
-		     }
-		     return true; 
-		   });
-
-  if(params.reportMemInfo()) {
-    kb1vc::ProcInfo pi(params.getReportFileName(), "SoDaServer");
-
-    // wait for the user interface to tell us that it is time to quit.
-    // do this in a loop so that we can check on VM status. 
-    int watchdog_count = 0; 
-    pi.reportInfo();
-    while(!ui.waitForJoin(1000)) {
-      watchdog_count++; 
-      // do this check every 10 seconds
-      if(watchdog_count > 10) {
-	pi.reportInfo(true);
-	watchdog_count = 0; 
-      }
-    }
-  }
-  else {
-    ui.join();
-  }
-
-  registrar->apply([ui_p](SoDa::Thread * el)   
-		   bool {
-		     if(el != ui_p) {
-		       el->join();
-		     }
-		     return true; 
-		   });
+  d.debugMsg("Starting Threads");
   
-  d.debugMsg("Exit");
+  // start all the threads
+  registrar->startThreads();
+
+  registrar->joinThreads();
+
+  // once everyone has joined, we're due to stop
+  registrar->shutDownThreads();  
   
   // when we get here, we are done... (UI should not return until it gets an "exit/quit" command.)
-
-  registrar->apply([](SoDa::Thread * el) 
-		   bool { 
-		     el->shutDown();
-		     return true;
-		   });
+  d.debugMsg("Exit");
   
   return 0; 
 }

@@ -115,3 +115,5 @@ target_link_libraries(SoDaServer rt
 install(TARGETS SoDaServer DESTINATION bin)
 
 add_library(accessory SHARED SimpleAccessory.cxx)
+
+add_library(IFServer SHARED IFServer.cxx)

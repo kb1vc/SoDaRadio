@@ -36,7 +36,7 @@
 
 namespace kb1vc {
   /** 
-   * A simple base class to provide debug messaging from any derived class. 
+   * A simple base class to provide resource usage reports from any derived class. 
    */
   class ProcInfo {
   public:
