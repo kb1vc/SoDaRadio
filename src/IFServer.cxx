@@ -52,7 +52,6 @@ void IFServer::run() {
 
   SoDa::Buf * rxbuf; 
 
-  int loop_count = 0; 
   int sent_count = 0; 
 
   while(!exitflag) {
@@ -82,12 +81,6 @@ void IFServer::run() {
 
     if(!did_work) {
       usleep(10000);
-    }
-
-    loop_count++; 
-    if((loop_count % 0x3ff) == 0) {
-      std::cerr << loop_count << "  " << sent_count << " len = " << len << std::endl;
-      
     }
   }
 }

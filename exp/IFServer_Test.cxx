@@ -28,6 +28,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "IPSockets.hxx"
 #include "UDSockets.hxx"
+#include "IFClient.hxx"
 #include <error.h>
 #include <stdio.h>
 
@@ -51,14 +52,14 @@ int main(int argc, char * argv[])
 
   double old_freq = -10.0; 
 
-  uc = new SoDa::UD::ClientSocket(argv[1]);
+  if_socket = new SoDa::UD::ClientSocket(argv[1]);
   std::cerr << "Created socket\n";
   int buf_size = 1024 * 1024;
   auto * buf = new char[buf_size];
   
   while(1) {
     int rs;
-    while((rs = uc->get(buf, buf_size)) <= 0) {
+    while((rs = if_socket->get(buf, buf_size)) <= 0) {
       usleep(1000); 
     }
 
@@ -66,10 +67,10 @@ int main(int argc, char * argv[])
     double * freq = reinterpret_cast<double*>(&(buf[8])); // buf + sizeof(unsigned int));
 
     if(*freq != old_freq) {
-      std::cerr << boost::format("Got new frequency: %g\n") % *freq;
+      std::cerr << boost::format("Got new frequency: %10.6f\n") % (*freq * 1e-6);
       old_freq = *freq; 
     }
   }
 
-  delete uc; 
+  delete if_socket; 
 }

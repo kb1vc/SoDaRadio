@@ -195,6 +195,7 @@ int SoDa::UD::NetSocket::get(void * ptr, unsigned int size, bool len_prefix)
 {
   int stat;
   unsigned int rsize;
+  unsigned int ret_size = 0; 
 
   int left = size; 
 
@@ -229,6 +230,7 @@ int SoDa::UD::NetSocket::get(void * ptr, unsigned int size, bool len_prefix)
     else {
 	left -= ls;
 	bptr += ls; 
+	ret_size += ls; 
     }
   }
   
@@ -251,6 +253,6 @@ int SoDa::UD::NetSocket::get(void * ptr, unsigned int size, bool len_prefix)
     }
   }
 
-  return size; 
+  return ret_size; 
 
 }
