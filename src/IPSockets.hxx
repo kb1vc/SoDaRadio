@@ -28,8 +28,8 @@
 
 #ifndef IPSOCKETS_HDR
 #define IPSOCKETS_HDR
-#include "SoDaBase.hxx"
-#include "Command.hxx"
+//#include "SoDaBase.hxx"
+//#include "Command.hxx"
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -37,6 +37,8 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <fcntl.h>
+#include <unistd.h>
+#include <boost/format.hpp>
 
 #include <stdexcept>
 

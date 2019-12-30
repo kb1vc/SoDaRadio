@@ -1,0 +1,18 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8.9) # this lets out really old distros like CentOS 6
+
+
+PROJECT(IFServer)
+
+FIND_PACKAGE(Boost 1.45 REQUIRED COMPONENTS program_options thread date_time system filesystem serialization regex QUIET)
+
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS}) 
+
+add_library(IFServer SHARED IFServer.cxx)
+
+set(IFServer_Test_SRCS
+    IFServer_Test.cxx)
+
+  set(TEST_LIBS ${Boost_LIBRARIES} libSoDaSockets.a)
+  
+add_executable(IFServer_Test ${IFServer_Test_SRCS})
+target_link_libraries(IFServer_Test ${TEST_LIBS})

@@ -26,10 +26,11 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "IPSockets.hxx"
-#include "UDSockets.hxx"
+#include <SoDaRadio/IPSockets.hxx>
+#include <SoDaRadio/UDSockets.hxx>
 #include <error.h>
 #include <stdio.h>
+#include <iostream>
 
 void usage()
 {

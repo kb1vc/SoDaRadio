@@ -116,17 +116,22 @@ install(TARGETS SoDaServer DESTINATION bin)
 
 add_library(accessory SHARED SimpleAccessory.cxx)
 
-add_library(IFServer SHARED IFServer.cxx)
-
 # Export header files that are required to build loadable modules
 set(Loadable_INCLS
   SoDaBase.hxx
   SoDaThread.hxx
   UDSockets.hxx
+  IPSockets.hxx  
   Command.hxx
   MultiMBox.hxx
   Debug.hxx
   )
 
-
 install(FILES ${Loadable_INCLS} DESTINATION "include/SoDaRadio")
+
+set(SoDaSockets_SRCS
+  UDSockets.cxx
+  IPSockets.cxx)
+
+add_library(SoDaSockets STATIC ${SoDaSockets_SRCS})
+install(TARGETS SoDaSockets DESTINATION lib)

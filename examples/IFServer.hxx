@@ -29,9 +29,9 @@
 #ifndef SODA_IF_SERVER_HDR
 #define SODA_IF_SERVER_HDR
 
-#include "SoDaBase.hxx"
-#include "SoDaThread.hxx"
-#include "UDSockets.hxx"
+#include <SoDaRadio/SoDaBase.hxx>
+#include <SoDaRadio/SoDaThread.hxx>
+#include <SoDaRadio/UDSockets.hxx>
 /**
  * @file IFServer.hxx
  *

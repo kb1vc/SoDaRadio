@@ -39,6 +39,7 @@
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <strings.h>
 
 SoDa::IP::ServerSocket::ServerSocket(int portnum, TransportType transport)
 {

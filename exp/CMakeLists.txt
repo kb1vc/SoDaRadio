@@ -265,11 +265,3 @@ add_executable(CircularBuffer_test EXCLUDE_FROM_ALL ${CircularBuffer_test_SRCS})
 
 target_link_libraries(CircularBuffer_test ${TEST_LIBS})
 
-
-set(IFServer_Test_SRCS
-    IFServer_Test.cxx
-    ../src/UDSockets.cxx
-    ../src/UDSockets.hxx)
-
-add_executable(IFServer_Test EXCLUDE_FROM_ALL ${IFServer_Test_SRCS})
-target_link_libraries(IFServer_Test ${TEST_LIBS})

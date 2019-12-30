@@ -28,9 +28,6 @@
 
 #ifndef UDSOCKETS_HDR
 #define UDSOCKETS_HDR
-#include "SoDaBase.hxx"
-#include "MultiMBox.hxx"
-#include "Command.hxx"
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -38,6 +35,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <sys/un.h>
+#include <unistd.h>
 
 #include <string>
 
