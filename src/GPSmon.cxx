@@ -79,8 +79,11 @@ void SoDa::GPSmon::run()
 #if HAVE_GPSLIB
       while (gps_waiting(&gps_data, 100000)) {
 	errno = 0;
-
-	stat = gps_read(&gps_data); 
+#if GPSD_API_MAJOR_VERSION < 7
+	stat = gps_read(&gps_data);
+#else
+	stat = gps_read(&gps_data, NULL, 0);	
+#endif
 	if(stat == -1) gps_server_ready = false; 
 	else if(stat != 0) {
 

@@ -160,9 +160,8 @@ void GUISoDa::AudioRXListener::cleanBuffer()
   audio_cbuffer_p->clear();
 }
 
-bool GUISoDa::AudioRXListener::initAudio(const QAudioDeviceInfo & dev_info)
-{
-  QAudioFormat format; 
+QAudioFormat GUISoDa::AudioRXListener::createAudioFormat(unsigned int sample_rate) {
+  QAudioFormat format;
   format.setSampleRate(sample_rate);
   format.setChannelCount(1);
   format.setSampleSize(32);
@@ -170,10 +169,16 @@ bool GUISoDa::AudioRXListener::initAudio(const QAudioDeviceInfo & dev_info)
   format.setByteOrder(QAudioFormat::LittleEndian);
   format.setSampleType(QAudioFormat::Float);
   
+  return format; 
+}
+
+bool GUISoDa::AudioRXListener::initAudio(const QAudioDeviceInfo & dev_info)
+{
+  QAudioFormat format = createAudioFormat();
+  
   if(!dev_info.isFormatSupported(format)) {
     qDebug() << QString("Sound system will not support [%1] floating point samples/sec").arg(sample_rate); 
   }
-
   audioRX.reset(new QAudioOutput(dev_info, format));
   
   audioRX->setBufferSize((sizeof(float) * sample_rate) >> 2); // buffer up 1/4 second
@@ -189,7 +194,6 @@ bool GUISoDa::AudioRXListener::initAudio(const QAudioDeviceInfo & dev_info)
 
   // tell the audio device where to find the QIODevice.
   audioRX->start(this);
-  
   return true; 
 }	
 
@@ -205,6 +209,7 @@ void  GUISoDa::AudioRXListener::setRXDevice(const QAudioDeviceInfo & dev_info)
     audioRX->disconnect(this); 
   }
 
+  QList<QAudioDeviceInfo> devs = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
   initAudio(dev_info);
 }
 

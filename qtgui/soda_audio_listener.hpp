@@ -49,8 +49,9 @@ namespace GUISoDa {
     Q_OBJECT
 
   public:
+    static const unsigned int DEFAULT_SAMPLE_RATE = 48000;
     AudioRXListener(QObject * parent = 0, const QString & socket_basename = "tmp", 
-		    unsigned int _sample_rate = 48000);
+		    unsigned int _sample_rate = DEFAULT_SAMPLE_RATE);
 
     ~AudioRXListener() {
       delete audio_rx_socket;
@@ -117,7 +118,8 @@ namespace GUISoDa {
     void stop() {
       close();
     }
-    
+
+    static QAudioFormat createAudioFormat(unsigned int sample_rate = DEFAULT_SAMPLE_RATE);
 
   signals:    
     // share the audio data with other objects (like the recorder). 
@@ -207,7 +209,7 @@ namespace GUISoDa {
   public:
     AudioListener(QObject * parent = 0, 
 		  const QString & socket_basename = "tmp", 
-		  unsigned int _sample_rate = 48000);
+		  unsigned int _sample_rate = AudioRXListener::DEFAULT_SAMPLE_RATE);
 
     ~AudioListener() {
       delete rx_listener;

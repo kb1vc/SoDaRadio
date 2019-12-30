@@ -84,12 +84,13 @@ void MainWindow::setupAudioDeviceList()
 {
   const QAudioDeviceInfo & def_rx_dev_info = QAudioDeviceInfo::defaultOutputDevice(); 
   ui->audioOut_cb->addItem(def_rx_dev_info.deviceName(), qVariantFromValue(def_rx_dev_info));
+  QAudioFormat format = GUISoDa::AudioRXListener::createAudioFormat();
   for(auto &rx_dev_info: QAudioDeviceInfo::availableDevices(QAudio::AudioOutput)) {
-    if(rx_dev_info != def_rx_dev_info) {
+    if(rx_dev_info.isFormatSupported(format) && (rx_dev_info != def_rx_dev_info)) {
       ui->audioOut_cb->addItem(rx_dev_info.deviceName(), qVariantFromValue(rx_dev_info));
     }
   }
-  
+
   // set the initial choice
   ui->audioOut_cb->setCurrentIndex(0);
 

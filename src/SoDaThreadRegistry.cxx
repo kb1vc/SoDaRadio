@@ -21,7 +21,7 @@ void SoDa::ThreadRegistry::apply(std::function<bool(SoDa::Thread*)> f) {
 }
 
 void SoDa::ThreadRegistry::subscribeThreads(const SoDa::MailBoxMap & mailbox_map) {
-  apply([mailbox_map](SoDa::Thread * el) 
+  apply([mailbox_map](SoDa::Thread * el) ->
 	bool { 
 	  el->subscribeToMailBoxList(mailbox_map); 
 	  return true;
@@ -30,7 +30,7 @@ void SoDa::ThreadRegistry::subscribeThreads(const SoDa::MailBoxMap & mailbox_map
 }
 
 void SoDa::ThreadRegistry::startThreads() {
-  apply([](SoDa::Thread * el) 
+  apply([](SoDa::Thread * el) ->
 	bool {
 	  el->start();
 	  return true; 
@@ -38,7 +38,7 @@ void SoDa::ThreadRegistry::startThreads() {
 } 
  
 void SoDa::ThreadRegistry::joinThreads() {
-  apply([](SoDa::Thread * el) 
+  apply([](SoDa::Thread * el) ->
 	bool {
 	  el->join();
 	  return true;
@@ -46,7 +46,7 @@ void SoDa::ThreadRegistry::joinThreads() {
 }
 
 void SoDa::ThreadRegistry::shutDownThreads() {
-  apply([](SoDa::Thread * el) 
+  apply([](SoDa::Thread * el) ->
 	bool {
 	  el->shutDown();
 	  return true;

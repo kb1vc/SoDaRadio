@@ -89,7 +89,8 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   // connect the audio listener to the rx selector combobox
   connect(ui->audioOut_cb, QOverload<int>::of(&QComboBox::currentIndexChanged),
 	  [=](int index) {
-	    audio_listener->getRX()->setRXDevice(ui->audioOut_cb->itemData(index).value<QAudioDeviceInfo>());
+	    int ridx = ((index >= 0) && (index < ui->audioOut_cb->count())) ? index : 0;
+	    audio_listener->getRX()->setRXDevice(ui->audioOut_cb->itemData(ridx).value<QAudioDeviceInfo>());
 	  });
 
   connect(audio_listener->getRX(), SIGNAL(bufferSlack(const QString &)), 
