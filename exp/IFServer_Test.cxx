@@ -28,7 +28,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "IPSockets.hxx"
 #include "UDSockets.hxx"
-#include "IFClient.hxx"
 #include <error.h>
 #include <stdio.h>
 
@@ -48,7 +47,7 @@ int main(int argc, char * argv[])
   int iter_count = 0;
   int found_count = 0;
   
-  SoDa::UD::ClientSocket * uc; 
+  SoDa::UD::ClientSocket * if_socket; 
 
   double old_freq = -10.0; 
 
