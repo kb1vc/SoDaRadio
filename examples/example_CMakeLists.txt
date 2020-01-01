@@ -11,9 +11,11 @@ FIND_PACKAGE(SoDaRadio 7.0.0 REQUIRED)
 
 INCLUDE_DIRECTORIES(SYSTEM ${Boost_INCLUDE_DIRS}) 
 
+# create the server plugin
 SET(IFServer_SRCS
   IFServer.cxx)
 
+# this function takes care of (most) of the scary details. 
 SODARADIO_BUILD_PLUGIN(IFServer ${IFServer_SRCS})
 
 # Here is the client side that connects to the plugin. 

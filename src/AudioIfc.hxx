@@ -39,9 +39,13 @@ namespace SoDa {
    *
    * This is a pure virtual class that is the interface spec
    * for whatever actual audio interface is provided.  The spec
-   * is suitable for implementations using ALSA (@see AudioALSA),
-   * Port Audio (@see AudioPA),
-   * and an IP link.  The network interface has not yet been implemented.
+   * is suitable for implementations using ALSA, PA, or Qt via
+   * IP link.  
+   * 
+   * Formerly, SoDaRadio used PortAudio, but this proved problematic. 
+   * As of some version prior to 7.0, RX audio is passed through the
+   * unix domain socket interface to the Qt GUI, and TX audio is
+   * captured from an AudioALSA object. 
    */
   class AudioIfc : public SoDa::Base {
   public:

@@ -119,7 +119,6 @@ target_link_libraries(ReSampler_Test ${TEST_LIBS})
 
 set(Audio_test_SRCS
     Audio_test.cxx
-    ../src/AudioPA.cxx
     ../src/AudioALSA.cxx
     ../src/SoDaBase.cxx
     ../src/Debug.cxx)
@@ -155,7 +154,7 @@ target_link_libraries(FindHome_Test ${TEST_LIBS})
 
 ########### next target ###############
 
-set(RangeMap_test_SRCS RangeMap_test.cxx ../src/RangeMap.hxx)
+set(RangeMap_test_SRCS RangeMap_test.cxx RangeMap.hxx)
 
 add_executable(RangeMap_test EXCLUDE_FROM_ALL ${RangeMap_test_SRCS})
 
@@ -227,12 +226,6 @@ add_executable(OneFilterTest EXCLUDE_FROM_ALL ${OneFilterTest_SRCS})
 target_link_libraries(OneFilterTest ${OSFILTER_LIBS})
 
 
-
-set(ProcInfo_test_SRCS ProcInfo_test.cxx ../src/ProcInfo.hxx ../src/ProcInfo.cxx)
-
-add_executable(ProcInfo_test EXCLUDE_FROM_ALL ${ProcInfo_test_SRCS})
-
-target_link_libraries(ProcInfo_test ${Boost_LIBRARIES})
 
 add_executable(NCOexp EXCLUDE_FROM_ALL NCOexp.cxx)
 

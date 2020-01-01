@@ -80,6 +80,20 @@
  * @li SoDa::UI waits for requests and CW text on the UDP socket from the GUI, and forwards status and
  *     spectrum plots back to the GUI. 
  * @li SoDa::GPSmon monitors a connection to the gpsd server (if any)
+ * @li One or more user loadable plugins may connect to any or all of the streams to implement
+ * special user-defined functions. IFServer presents a simple example of a plugin that subscribes 
+ * to the command and the RX IF stream. 
+ *
+ * Audio is handled in two ways in the SoDa::AudioQt class.
+ * 
+ * @li Transmit audio is read from an ALSA device by the SoDaServer process
+ * via the SoDa::AudioQt::recv method.  With time, this function will migrate
+ * to a socket connection the Qt GUI.
+ * @li Receive audio is written by the SoDa::AudioQt send method
+ *  to a socket that, in the normal configuration, 
+ * is connected to the Qt based GUI.  This allows for better flow control and
+ * also simplifies interfacing the audio stream to external modems like "fldigi"
+ * and WSJT-X. 
  *
  * The SoDa receiver architecture is a 3 stage heterodyne design.  
  * The first two IF conversions are performed within the USRP SDR platform.
@@ -118,8 +132,7 @@
 #include "SoDaThreadRegistry.hxx"
 #include "MultiMBox.hxx"
 
-#include "ProcInfo.hxx"
-
+// Include functions to dynamically link any user supplied plugins
 #include <dlfcn.h>
 
 // the radio parts. 

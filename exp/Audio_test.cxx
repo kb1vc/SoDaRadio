@@ -1,6 +1,5 @@
 #include <math.h>
 #include "AudioALSA.hxx"
-#include "AudioPA.hxx"
 #include <iostream>
 #include <time.h>
 int main(int argc, char * argv[])
@@ -16,7 +15,7 @@ int main(int argc, char * argv[])
     audioI = new SoDa::AudioALSA(48000, SoDa::AudioIfc::FLOAT);
   }
   if(argv[1][0] == 'p') {
-    audioI = new SoDa::AudioPA(48000, SoDa::AudioIfc::FLOAT);
+    std::cerr << "SoDaRadio no longer supports or uses Port Audio.\n"
   }
     
 
