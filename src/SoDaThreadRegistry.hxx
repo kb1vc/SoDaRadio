@@ -54,7 +54,15 @@ namespace SoDa {
 
     static ThreadRegistry * getRegistrar();
 
-    void addThread(SoDa::Thread * thread);
+    /**
+     * @brief register a thread so that it can be connected and started
+     * 
+     * @param thread a thread object
+     * @param version the SoDaRadio version the thread object was built with
+     * (This must match the version the registry was built with.)
+     *
+     */
+    void addThread(SoDa::Thread * thread, const std::string & version);
     
     void apply(std::function<bool(SoDa::Thread *)> f);
 

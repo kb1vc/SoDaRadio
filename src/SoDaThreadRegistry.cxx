@@ -1,5 +1,6 @@
 #include "SoDaThread.hxx"
 #include "SoDaThreadRegistry.hxx"
+#include "version.h"
 
 SoDa::ThreadRegistry * SoDa::ThreadRegistry::registrar = NULL; 
 
@@ -10,7 +11,11 @@ SoDa::ThreadRegistry * SoDa::ThreadRegistry::getRegistrar() {
   return registrar; 
 }
 
-void SoDa::ThreadRegistry::addThread(SoDa::Thread * thread) {
+void SoDa::ThreadRegistry::addThread(SoDa::Thread * thread, const std::string & version) {
+  if(version != std::string(SoDaRadio_VERSION)) {
+    throw SoDa::Exception((boost::format("Thread %s attempted to register.  It was built with version %s, but the registrar requires version %s\n")
+			   % thread->getObjName() % version % SoDaRadio_VERSION).str(), thread);
+  }
   push_back(thread);
 }
 

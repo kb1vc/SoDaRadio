@@ -60,3 +60,12 @@ if(SoDaRadio_INCLUDE_DIRS AND SoDaRadio_LIBRARIES)
 elseif(SoDaRadio_FIND_REQUIRED)
   message(FATAL_ERROR "SoDaRadio lib is required, but not found.")
 endif()
+
+FUNCTION(SODARADIO_BUILD_PLUGIN plugin_name source_file_list)
+  FIND_FILE(VERSION_FILE "SoDaRadio/version.h" PATHS ${SoDaRadio_INCLUDE_DIRS})
+  LIST(GET source_file_list 0 first_source_file)
+  SET_SOURCE_FILES_PROPERTIES(${first_source_file} PROPERTIES OBJECT_DEPENDS ${VERSION_FILE})
+  ADD_LIBRARY(${plugin_name} SHARED ${source_file_list})
+  TARGET_INCLUDE_DIRECTORIES(${plugin_name} PUBLIC ${SoDaRadio_INCLUDE_DIRS})
+ENDFUNCTION()
+

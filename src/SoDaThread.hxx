@@ -33,7 +33,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string>
 #include "Debug.hxx"
 #include <boost/thread.hpp>
-
+#include "version.h"
  /**
   * @file SoDaThread.hxx
   * The Baseclass for all SoDa thread objects.  These are used for
@@ -70,7 +70,21 @@ namespace SoDa {
    */
   class Thread : public Base, public Debug {
   public:
-    Thread(const std::string & oname);
+    
+    /** 
+     * @brief make the thread object.  Register it by name and
+     * store a version string, so we can test it against the current
+     * version of the SoDaServer.
+     * @param oname The name of the thread.
+     * @param version a string of the form "M.m.p" where 
+     * M is the major version, m is minor, and p is patch. 
+     * 
+     * Invoking this thread should *always* leave the version parameter as 
+     * the default.  This is a hack to get the actual version information from
+     * the included file (used for the build) rather than from the shared 
+     * library.
+     */
+    Thread(const std::string & oname, const std::string & version = std::string(SoDaRadio_VERSION));
 
     /**
      * @brief the creator of this thread may offer one or more mailboxes

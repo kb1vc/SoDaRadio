@@ -1,20 +1,26 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.9) # this lets out really old distros like CentOS 6
 
-
+# This project builds a simple SoDaRadio plugin that provides a unix domain
+# socket where clients may "read" buffers of the IF stream (complex float
+# samples)
 PROJECT(IFServer)
 
 FIND_PACKAGE(Boost 1.45 REQUIRED)
 
 FIND_PACKAGE(SoDaRadio 7.0.0 REQUIRED)
 
-include_directories(SYSTEM ${Boost_INCLUDE_DIRS}) 
+INCLUDE_DIRECTORIES(SYSTEM ${Boost_INCLUDE_DIRS}) 
 
-add_library(IFServer SHARED IFServer.cxx)
+SET(IFServer_SRCS
+  IFServer.cxx)
 
-set(IFServer_Test_SRCS
+SODARADIO_BUILD_PLUGIN(IFServer ${IFServer_SRCS})
+
+# Here is the client side that connects to the plugin. 
+SET(IFServer_Test_SRCS
   IFServer_Test.cxx)
 
-set(TEST_LIBS ${Boost_LIBRARIES} libSoDaSockets.a)
+SET(TEST_LIBS ${Boost_LIBRARIES} libSoDaSockets.a)
 
-add_executable(IFServer_Test ${IFServer_Test_SRCS})
-target_link_libraries(IFServer_Test ${TEST_LIBS})
+ADD_EXECUTABLE(IFServer_Test ${IFServer_Test_SRCS})
+TARGET_LINK_LIBRARIES(IFServer_Test ${TEST_LIBS})

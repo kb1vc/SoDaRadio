@@ -3,6 +3,7 @@
 #include "Command.hxx"
 #include "MultiMBox.hxx"
 #include "Debug.hxx"
+#include "version.h"
 
 #include <string>
 #include <boost/format.hpp>
@@ -17,9 +18,9 @@ extern "C" {
 #include <unistd.h>
 }
 
-SoDa::Thread::Thread(const std::string & oname) : SoDa::Base(oname), Debug(oname) {
+SoDa::Thread::Thread(const std::string & oname, const std::string & version) : SoDa::Base(oname), Debug(oname) {
   th = NULL; 
-  SoDa::ThreadRegistry::getRegistrar()->addThread(this);
+  SoDa::ThreadRegistry::getRegistrar()->addThread(this, version);
 }
 
 void SoDa::Thread::execCommand(Command * cmd) 
