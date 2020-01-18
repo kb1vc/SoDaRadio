@@ -253,7 +253,9 @@ void SoDa::USRPRX::execSetCommand(Command * cmd)
     break; 
   case Command::RX_LO3_FREQ:
     current_IF_tuning = cmd->dparms[0];
-    set3rdLOFreq(cmd->dparms[0]); 
+    set3rdLOFreq(cmd->dparms[0]);
+    cmd_stream->put(new Command(Command::REP, Command::RX_LO3_FREQ, 
+				cmd->dparms[0]));
     break;
   case SoDa::Command::TX_STATE: // SET TX_ON
     if(cmd->iparms[0] == 3) {
