@@ -95,6 +95,12 @@ namespace SoDa {
        */
       RX_LO3_FREQ,
 
+      /**
+       * The center frequency for IF buffers from USRPRX
+       *
+       * param is frequency as a double
+       */
+      RX_CENTER_FREQ,
       
       /**
        * Set the TX front end (1st LO, the 2nd IF LO), and the 3rd LO

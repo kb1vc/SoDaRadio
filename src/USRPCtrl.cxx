@@ -495,8 +495,9 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
     if((fdiff < 200e3) && (fdiff > 100e3)) {
       cmd_stream->put(new Command(Command::SET, Command::RX_LO3_FREQ, fdiff)); 
       cmd_stream->put(new Command(Command::REP, Command::RX_FE_FREQ, 
-				  last_rx_tune_result.actual_rf_freq, 
-				  last_rx_tune_result.actual_dsp_freq));
+				  last_rx_tune_result.actual_rf_freq - last_rx_tune_result.actual_dsp_freq));
+      cmd_stream->put(new Command(Command::REP, Command::RX_CENTER_FREQ, last_rx_tune_result.actual_rf_freq));
+      
       break; 
     }
     // else -- treat this as a RX_TUNE_FREQ request.
@@ -508,8 +509,8 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
     fdiff = freq - (last_rx_tune_result.actual_rf_freq - last_rx_tune_result.actual_dsp_freq);    
     cmd_stream->put(new Command(Command::SET, Command::RX_LO3_FREQ, fdiff));     
     cmd_stream->put(new Command(Command::REP, Command::RX_FE_FREQ, 
-				last_rx_tune_result.actual_rf_freq,
-				last_rx_tune_result.actual_dsp_freq)); 
+			       last_rx_tune_result.actual_rf_freq - last_rx_tune_result.actual_dsp_freq)); 
+    cmd_stream->put(new Command(Command::REP, Command::RX_CENTER_FREQ, last_rx_tune_result.actual_rf_freq));
     break;
 
   case Command::LO_CHECK:
