@@ -32,7 +32,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <boost/version.hpp>
 #include <uhd/version.hpp>
 #include <iostream>
-#include <boost/format.hpp>
 
 #include <QString>
 #include <QMessageBox>

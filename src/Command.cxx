@@ -37,144 +37,82 @@ bool SoDa::Command::table_needs_init = true;
 std::map<std::string, SoDa::Command::CmdTarget> SoDa::Command::target_map_s2v;
 std::map<SoDa::Command::CmdTarget, std::string> SoDa::Command::target_map_v2s;
 
+void SoDa::Command::initTableEntry(const std::string & st, CmdTarget tgt) {
+  target_map_s2v[st] = tgt;
+  target_map_v2s[tgt] = st;
+}
+
 void SoDa::Command::initTables()
 {
-  table_needs_init = true; 
+  table_needs_init = false; 
   // created from the buildmap file produced by enum_body2map.sh
-  target_map_s2v[std::string("RX_TUNE_FREQ")] = RX_TUNE_FREQ;
-  target_map_s2v[std::string("TX_TUNE_FREQ")] = TX_TUNE_FREQ;
-  target_map_s2v[std::string("RX_RETUNE_FREQ")] = RX_RETUNE_FREQ;
-  target_map_s2v[std::string("TX_RETUNE_FREQ")] = TX_RETUNE_FREQ;
-  target_map_s2v[std::string("RX_FE_FREQ")] = RX_FE_FREQ;
-  target_map_s2v[std::string("TX_FE_FREQ")] = TX_FE_FREQ;
-  target_map_s2v[std::string("RX_LO3_FREQ")] = RX_LO3_FREQ;  
-  target_map_s2v[std::string("RX_CENTER_FREQ")] = RX_CENTER_FREQ;
-  target_map_s2v[std::string("RX_SAMP_RATE")] = RX_SAMP_RATE;
-  target_map_s2v[std::string("TX_SAMP_RATE")] = TX_SAMP_RATE;
-  target_map_s2v[std::string("RX_ANT")] = RX_ANT;
-  target_map_s2v[std::string("TX_ANT")] = TX_ANT;
-  target_map_s2v[std::string("RX_RF_GAIN")] = RX_RF_GAIN;
-  target_map_s2v[std::string("TX_RF_GAIN")] = TX_RF_GAIN;
-  target_map_s2v[std::string("RX_AF_GAIN")] = RX_AF_GAIN;
-  target_map_s2v[std::string("RX_AF_SIDETONE_GAIN")] = RX_AF_SIDETONE_GAIN;
-  target_map_s2v[std::string("TX_AF_GAIN")] = TX_AF_GAIN;
-  target_map_s2v[std::string("TX_STATE")] = TX_STATE;
-  target_map_s2v[std::string("RX_STATE")] = RX_STATE;
-  target_map_s2v[std::string("RX_MODE")] = RX_MODE;
-  target_map_s2v[std::string("TX_MODE")] = TX_MODE;
-  target_map_s2v[std::string("RX_BW")] = RX_BW;
-  target_map_s2v[std::string("RBW")] = RBW;
-  target_map_s2v[std::string("CLOCK_SOURCE")] = CLOCK_SOURCE;
-  target_map_s2v[std::string("LO_CHECK")] = LO_CHECK;
-  target_map_s2v[std::string("LO_OFFSET")] = LO_OFFSET;
-  target_map_s2v[std::string("RX_AF_FILTER")] = RX_AF_FILTER;
-  target_map_s2v[std::string("RX_AF_FILTER_SHAPE")] = RX_AF_FILTER_SHAPE;
-  target_map_s2v[std::string("TX_BEACON")] = TX_BEACON; 
-  target_map_s2v[std::string("TX_CW_SPEED")] = TX_CW_SPEED; 
-  target_map_s2v[std::string("TX_CW_TEXT")] = TX_CW_TEXT; 
-  target_map_s2v[std::string("TX_CW_FLUSHTEXT")] = TX_CW_FLUSHTEXT; 
+  initTableEntry(std::string("RX_TUNE_FREQ"), RX_TUNE_FREQ);
+  initTableEntry(std::string("TX_TUNE_FREQ"), TX_TUNE_FREQ);
+  initTableEntry(std::string("RX_RETUNE_FREQ"), RX_RETUNE_FREQ);
+  initTableEntry(std::string("TX_RETUNE_FREQ"), TX_RETUNE_FREQ);
+  initTableEntry(std::string("RX_FE_FREQ"), RX_FE_FREQ);
+  initTableEntry(std::string("TX_FE_FREQ"), TX_FE_FREQ);
+  initTableEntry(std::string("RX_LO3_FREQ"), RX_LO3_FREQ);
+  initTableEntry(std::string("RX_SAMP_RATE"), RX_SAMP_RATE);
+  initTableEntry(std::string("TX_SAMP_RATE"), TX_SAMP_RATE);
+  initTableEntry(std::string("RX_ANT"), RX_ANT);
+  initTableEntry(std::string("TX_ANT"), TX_ANT);
+  initTableEntry(std::string("RX_RF_GAIN"), RX_RF_GAIN);
+  initTableEntry(std::string("TX_RF_GAIN"), TX_RF_GAIN);
+  initTableEntry(std::string("RX_AF_GAIN"), RX_AF_GAIN);
+  initTableEntry(std::string("RX_AF_SIDETONE_GAIN"), RX_AF_SIDETONE_GAIN);
+  initTableEntry(std::string("TX_AF_GAIN"), TX_AF_GAIN);
+  initTableEntry(std::string("TX_STATE"), TX_STATE);
+  initTableEntry(std::string("RX_STATE"), RX_STATE);
+  initTableEntry(std::string("RX_MODE"), RX_MODE);
+  initTableEntry(std::string("TX_MODE"), TX_MODE);
+  initTableEntry(std::string("RX_BW"), RX_BW);
+  initTableEntry(std::string("RBW"), RBW);
+  initTableEntry(std::string("CLOCK_SOURCE"), CLOCK_SOURCE);
+  initTableEntry(std::string("LO_CHECK"), LO_CHECK);
+  initTableEntry(std::string("LO_OFFSET"), LO_OFFSET);
+  initTableEntry(std::string("RX_AF_FILTER"), RX_AF_FILTER);
+  initTableEntry(std::string("RX_AF_FILTER_SHAPE"), RX_AF_FILTER_SHAPE);
+  initTableEntry(std::string("TX_BEACON"), TX_BEACON); 
+  initTableEntry(std::string("TX_CW_SPEED"), TX_CW_SPEED); 
+  initTableEntry(std::string("TX_CW_TEXT"), TX_CW_TEXT); 
+  initTableEntry(std::string("TX_CW_FLUSHTEXT"), TX_CW_FLUSHTEXT); 
 
-  target_map_s2v[std::string("SPEC_CENTER_FREQ")] = SPEC_CENTER_FREQ; 
-  target_map_s2v[std::string("SPEC_RANGE_LOW")] = SPEC_RANGE_LOW; 
-  target_map_s2v[std::string("SPEC_RANGE_HI")] = SPEC_RANGE_HI; 
-  target_map_s2v[std::string("SPEC_STEP")] = SPEC_STEP; 
-  target_map_s2v[std::string("SPEC_BUF_LEN")] = SPEC_BUF_LEN;
-  target_map_s2v[std::string("SPEC_DIMS")] = SPEC_DIMS; 
-  target_map_s2v[std::string("SPEC_AVG_WINDOW")] = SPEC_AVG_WINDOW;
-  target_map_s2v[std::string("SPEC_UPDATE_RATE")] = SPEC_UPDATE_RATE;
-  target_map_s2v[std::string("SDR_VERSION")] = SDR_VERSION; 
-  target_map_s2v[std::string("DBG_REP")] = DBG_REP; 
+  initTableEntry(std::string("SPEC_CENTER_FREQ"), SPEC_CENTER_FREQ); 
+  initTableEntry(std::string("SPEC_RANGE_LOW"), SPEC_RANGE_LOW); 
+  initTableEntry(std::string("SPEC_RANGE_HI"), SPEC_RANGE_HI); 
+  initTableEntry(std::string("SPEC_STEP"), SPEC_STEP); 
+  initTableEntry(std::string("SPEC_BUF_LEN"), SPEC_BUF_LEN);
+  initTableEntry(std::string("SPEC_DIMS"), SPEC_DIMS); 
+  initTableEntry(std::string("SPEC_AVG_WINDOW"), SPEC_AVG_WINDOW);
+  initTableEntry(std::string("SPEC_UPDATE_RATE"), SPEC_UPDATE_RATE);
+  initTableEntry(std::string("SDR_VERSION"), SDR_VERSION); 
+  initTableEntry(std::string("DBG_REP"), DBG_REP); 
 
-  target_map_s2v[std::string("HWMB_REP")] = HWMB_REP;
-  target_map_s2v[std::string("INIT_SETUP_COMPLETE")] = INIT_SETUP_COMPLETE;
-  target_map_s2v[std::string("TVRT_LO_ENABLE")] = TVRT_LO_ENABLE;
-  target_map_s2v[std::string("TVRT_LO_DISABLE")] = TVRT_LO_DISABLE;
-  target_map_s2v[std::string("TVRT_LO_CONFIG")] = TVRT_LO_CONFIG;
+  initTableEntry(std::string("HWMB_REP"), HWMB_REP);
+  initTableEntry(std::string("INIT_SETUP_COMPLETE"), INIT_SETUP_COMPLETE);
+  initTableEntry(std::string("TVRT_LO_ENABLE"), TVRT_LO_ENABLE);
+  initTableEntry(std::string("TVRT_LO_DISABLE"), TVRT_LO_DISABLE);
+  initTableEntry(std::string("TVRT_LO_CONFIG"), TVRT_LO_CONFIG);
 
-  target_map_s2v[std::string("STOP")] = STOP;
-  target_map_s2v[std::string("STATUS_MESSAGE")] = STATUS_MESSAGE;
+  initTableEntry(std::string("STOP"), STOP);
+  initTableEntry(std::string("STATUS_MESSAGE"), STATUS_MESSAGE);
 
-  target_map_s2v[std::string("TX_AUDIO_IN")] = TX_AUDIO_IN;
-  target_map_s2v[std::string("TX_AUDIO_FILT_ENA")] = TX_AUDIO_FILT_ENA;
+  initTableEntry(std::string("TX_AUDIO_IN"), TX_AUDIO_IN);
+  initTableEntry(std::string("TX_AUDIO_FILT_ENA"), TX_AUDIO_FILT_ENA);
   
-  target_map_s2v[std::string("RX_GAIN_RANGE")] = RX_GAIN_RANGE;
-  target_map_s2v[std::string("TX_GAIN_RANGE")] = TX_GAIN_RANGE;
-  target_map_s2v[std::string("RX_ANT_NAME")] = RX_ANT_NAME;
-  target_map_s2v[std::string("TX_ANT_NAME")] = TX_ANT_NAME;
-  target_map_s2v[std::string("MOD_SEL_ENTRY")] = MOD_SEL_ENTRY;
-  target_map_s2v[std::string("AF_FILT_ENTRY")] = AF_FILT_ENTRY;
-  target_map_s2v[std::string("CW_CHAR_SENT")] = CW_CHAR_SENT;
-  target_map_s2v[std::string("RF_RECORD_START")] = RF_RECORD_START;
-  target_map_s2v[std::string("RF_RECORD_STOP")] = RF_RECORD_STOP;
-  target_map_s2v[std::string("NBFM_SQUELCH")] = NBFM_SQUELCH;
-    
-  target_map_v2s[RX_TUNE_FREQ] = std::string("RX_TUNE_FREQ");
-  target_map_v2s[TX_TUNE_FREQ] = std::string("TX_TUNE_FREQ");
-  target_map_v2s[RX_RETUNE_FREQ] = std::string("RX_RETUNE_FREQ");
-  target_map_v2s[TX_RETUNE_FREQ] = std::string("TX_RETUNE_FREQ");
-  target_map_v2s[RX_FE_FREQ] = std::string("RX_FE_FREQ");
-  target_map_v2s[TX_FE_FREQ] = std::string("TX_FE_FREQ");
-  target_map_v2s[RX_LO3_FREQ] = std::string("RX_LO3_FREQ");
-  target_map_v2s[RX_CENTER_FREQ] = std::string("RX_CENTER_FREQ");  
-  target_map_v2s[RX_SAMP_RATE] = std::string("RX_SAMP_RATE");
-  target_map_v2s[TX_SAMP_RATE] = std::string("TX_SAMP_RATE");
-  target_map_v2s[RX_ANT] = std::string("RX_ANT");
-  target_map_v2s[TX_ANT] = std::string("TX_ANT");
-  target_map_v2s[RX_RF_GAIN] = std::string("RX_RF_GAIN");
-  target_map_v2s[TX_RF_GAIN] = std::string("TX_RF_GAIN");
-  target_map_v2s[RX_AF_GAIN] = std::string("RX_AF_GAIN");
-  target_map_v2s[RX_AF_SIDETONE_GAIN] = std::string("RX_AF_SIDETONE_GAIN");
-  target_map_v2s[TX_AF_GAIN] = std::string("TX_AF_GAIN");
-  target_map_v2s[TX_STATE] = std::string("TX_STATE");
-  target_map_v2s[RX_STATE] = std::string("RX_STATE");
-  target_map_v2s[RX_MODE] = std::string("RX_MODE");
-  target_map_v2s[TX_MODE] = std::string("TX_MODE");
-  target_map_v2s[RX_BW] = std::string("RX_BW");
-  target_map_v2s[RBW] = std::string("RBW");
-  target_map_v2s[CLOCK_SOURCE] = std::string("CLOCK_SOURCE");
-  target_map_v2s[LO_CHECK] = std::string("LO_CHECK");
-  target_map_v2s[LO_OFFSET] = std::string("LO_OFFSET");
-  target_map_v2s[RX_AF_FILTER] = std::string("RX_AF_FILTER");
-  target_map_v2s[RX_AF_FILTER_SHAPE] = std::string("RX_AF_FILTER_SHAPE");  
-  target_map_v2s[TX_BEACON] = std::string("TX_BEACON");
-  target_map_v2s[TX_CW_SPEED] = std::string("TX_CW_SPEED");
-  target_map_v2s[TX_CW_TEXT] = std::string("TX_CW_TEXT");
-  target_map_v2s[TX_CW_FLUSHTEXT] = std::string("TX_CW_FLUSHTEXT");
+  initTableEntry(std::string("RX_GAIN_RANGE"), RX_GAIN_RANGE);
+  initTableEntry(std::string("TX_GAIN_RANGE"), TX_GAIN_RANGE);
+  initTableEntry(std::string("RX_ANT_NAME"), RX_ANT_NAME);
+  initTableEntry(std::string("TX_ANT_NAME"), TX_ANT_NAME);
+  initTableEntry(std::string("MOD_SEL_ENTRY"), MOD_SEL_ENTRY);
+  initTableEntry(std::string("AF_FILT_ENTRY"), AF_FILT_ENTRY);
+  initTableEntry(std::string("CW_CHAR_SENT"), CW_CHAR_SENT);
+  initTableEntry(std::string("RF_RECORD_START"), RF_RECORD_START);
+  initTableEntry(std::string("RF_RECORD_STOP"), RF_RECORD_STOP);
+  initTableEntry(std::string("NBFM_SQUELCH"), NBFM_SQUELCH);
 
-  target_map_v2s[SPEC_CENTER_FREQ] = std::string("SPEC_CENTER_FREQ");
-  target_map_v2s[SPEC_RANGE_LOW] = std::string("SPEC_RANGE_LOW");
-  target_map_v2s[SPEC_RANGE_HI] = std::string("SPEC_RANGE_HI");
-  target_map_v2s[SPEC_STEP] = std::string("SPEC_STEP");
-  target_map_v2s[SPEC_BUF_LEN] = std::string("SPEC_BUF_LEN");
-  target_map_v2s[SPEC_DIMS] = std::string("SPEC_DIMS");
-  target_map_v2s[SPEC_AVG_WINDOW] = std::string("SPEC_AVG_WINDOW");
-  target_map_v2s[SPEC_UPDATE_RATE] = std::string("SPEC_UPDATE_RATE");
-
-  target_map_v2s[SDR_VERSION] = std::string("SDR_VERSION");  
-  target_map_v2s[HWMB_REP] = std::string("HWMB_REP");
-  target_map_v2s[INIT_SETUP_COMPLETE] = std::string("INIT_SETUP_COMPLETE");
-  
-  target_map_v2s[DBG_REP] = std::string("DBG_REP");
-  target_map_v2s[TVRT_LO_ENABLE] = std::string("TVRT_LO_ENABLE");
-  target_map_v2s[TVRT_LO_DISABLE] = std::string("TVRT_LO_DISABLE");
-  target_map_v2s[TVRT_LO_CONFIG] = std::string("TVRT_LO_CONFIG");
-  target_map_v2s[STOP] = std::string("STOP");
-  target_map_v2s[STATUS_MESSAGE] = std::string("STATUS_MESSAGE");
-
-  target_map_v2s[TX_AUDIO_IN] = std::string("TX_AUDIO_IN");
-  target_map_v2s[TX_AUDIO_FILT_ENA] = std::string("TX_AUDIO_FILT_ENA");
-
-  target_map_v2s[RX_GAIN_RANGE] = std::string("RX_GAIN_RANGE");
-  target_map_v2s[TX_GAIN_RANGE] = std::string("TX_GAIN_RANGE");
-  target_map_v2s[RX_ANT_NAME] = std::string("RX_ANT_NAME");
-  target_map_v2s[TX_ANT_NAME] = std::string("TX_ANT_NAME");
-  target_map_v2s[MOD_SEL_ENTRY] = std::string("MOD_SEL_ENTRY");
-  target_map_v2s[AF_FILT_ENTRY] = std::string("AF_FILT_ENTRY");
-  target_map_v2s[CW_CHAR_SENT] = std::string("CW_CHAR_SENT");
-  target_map_v2s[RF_RECORD_START] = std::string("RF_RECORD_START");
-  target_map_v2s[RF_RECORD_STOP] = std::string("RF_RECORD_STOP");
-  target_map_v2s[NBFM_SQUELCH] = std::string("NBFM_SQUELCH");      
-  
+  initTableEntry(std::string("RX_CENTER_FREQ"), RX_CENTER_FREQ);
 }
 
 SoDa::Command * SoDa::Command::parseCommandString(std::string str)

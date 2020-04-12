@@ -277,16 +277,15 @@ bool CWGenerator::sendChar(char c)
   
   std::string symb = morse_map[c];
 
-  for(std::string::iterator si = symb.begin();
-      si != symb.end();
-      ++si) {
-    if(*si == '.') {
+  for(auto si : symb) {
+    if(si == '.') {
       appendToOut(dit, dit_len); 
     }
-    else if(*si == '-') {
+    else if(si == '-') {
       appendToOut(dah, dah_len); 
     }
   }
+
   if(!in_digraph) appendToOut(inter_char_space, ics_len);
   else in_digraph = false; 
   

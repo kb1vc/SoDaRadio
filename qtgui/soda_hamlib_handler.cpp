@@ -27,8 +27,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "soda_hamlib_handler.hpp"
-#include <boost/format.hpp>
-#include <boost/foreach.hpp>
 #include <hamlib/rig.h>
 
 // All the command handling here is according to what I learned from
@@ -297,14 +295,14 @@ bool GUISoDa::HamlibHandler::cmdMode(QTextStream & out, QTextStream & in, bool g
     in >> req_mod; 
     if(req_mod == "?") {
       // tell them what we've got...
-      typedef std::pair<const QString, SoDa::Command::ModulationType> h2sm_t; 
-      QString delim = ""; 
-      BOOST_FOREACH(h2sm_t mp, hl2soda_modmap) {
-	out << delim << mp.first; 
-	delim = " "; 
+      QString delim = "";
+      for(auto & mp : hl2soda_modmap)
+      {
+        out << delim << mp.first;
+        delim = " ";
       }
-      out << endl; 
-      out << "RPRT 0" << endl; 
+      out << endl;
+      out << "RPRT 0" << endl;
     }
     else {
       in >> passband;

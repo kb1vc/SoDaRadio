@@ -32,7 +32,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QWidget>
 #include <QComboBox>
 #include <QString>
-#include <boost/format.hpp>
 #include <vector>
 #include <map> 
 #include <cmath>
