@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017,2018 Matthew H. Reilly (kb1vc)
+Copyright (c) 2017,2018,2019,2020 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -154,7 +154,7 @@ void MainWindow::displayAppInfo(bool dummy)
 </ul>\
 <h2>License:</h2> \
 <p> \
-Copyright (c) 2017, 2018, 2019 Matthew H. Reilly (kb1vc) \
+Copyright (c) 2017, 2018, 2019, 2020 Matthew H. Reilly (kb1vc) \
 All rights reserved.</p> \
 <p>Redistribution and use in source and binary forms, with or without \
 modification, are permitted provided that the following conditions are \
