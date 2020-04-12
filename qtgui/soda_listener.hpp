@@ -137,8 +137,9 @@ namespace GUISoDa {
     double current_tx_freq; 
     int get(char* buf, int maxlen); 
     bool get(SoDa::Command & cmd); 
-    int put(const char * buf, int len); 
-    bool put(const SoDa::Command & cmd);
+    int put(const char * buf, int len);
+    bool put(const SoDa::Command & cmd, const char * func_name = "?");
+    
 
     bool handleREP(const SoDa::Command & cmd);
     bool handleSET(const SoDa::Command & cmd);

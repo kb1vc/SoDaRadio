@@ -29,7 +29,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef SODA_FREQ_SCALE_DRAW_HDR
 #define SODA_FREQ_SCALE_DRAW_HDR
 #include <qwt/qwt_scale_draw.h>
-#include <boost/format.hpp>
 #include <cmath>
 
 namespace GUISoDa {

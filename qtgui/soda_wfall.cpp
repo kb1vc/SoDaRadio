@@ -27,7 +27,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <iostream>
-#include <boost/format.hpp>
 #include <cmath>
 
 #include <qwt/qwt_plot_grid.h>

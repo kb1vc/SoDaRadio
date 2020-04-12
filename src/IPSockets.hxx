@@ -63,6 +63,7 @@ namespace SoDa {
 
     
       int put(const void * ptr, unsigned int size);
+    
       int get(void * ptr, unsigned int size);
 
       int putRaw(const void * ptr, unsigned int size);

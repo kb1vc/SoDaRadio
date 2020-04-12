@@ -32,7 +32,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QColor>
 #include <QPen>
 #include <qwt/qwt_picker_machine.h>
-#include <boost/format.hpp>
 #include <QObject>
 
 namespace GUISoDa {
@@ -87,7 +86,6 @@ namespace GUISoDa {
 
       QString str = QString("%1 MHz, %2 dB").arg(pos.x()*1e-6, 0, 'f', 4).arg(pos.y(),0, 'f', 1);
       QwtText text(str);
-      //      QwtText text((boost::format("%.4f MHz, %.1f dB") % (pos.x() * 1e-6) % pos.y()).str().c_str());
       text.setBackgroundBrush(QBrush(trbgcolor));
 
       return text;

@@ -31,7 +31,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <QString>
 #include <iostream>
-#include <boost/format.hpp>
 
 #include "soda_comboboxes.hpp"
 #include "soda_listener.hpp"

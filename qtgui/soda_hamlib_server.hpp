@@ -32,7 +32,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QString>
 #include <QtNetwork/QtNetwork>
 #include <iostream>
-#include <boost/format.hpp>
 #include <errno.h>
 #include "soda_hamlib_listener.hpp"
 #include "soda_hamlib_handler.hpp"

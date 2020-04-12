@@ -33,7 +33,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QTextStream>
 #include <QtNetwork/QtNetwork>
 #include <iostream>
-#include <boost/format.hpp>
 #include <errno.h>
 
 #include "../src/Command.hxx"
