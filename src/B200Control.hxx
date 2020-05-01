@@ -39,6 +39,27 @@
 
 
 namespace SoDa {
+  /**
+   * @brief B2xxy-z subtypes for simplified usage (DD0VS)
+   * 
+   * This is a workaraound, to integrate B200mini (Sept 2019) into 
+   * SoDaRadio.
+   * All specific action for B200/B210/B2xx are not carried out for
+   * B200mini.
+   * On specific places special care will be taken for B200mini only.
+   * In a first attempt TX/RX relay switching will be implemented via
+   * B200mini GPIO pin. Today (16th of Feb 2020, all versions of B2xx 
+   * have GPIOs). To avoid interferences with the original code only 
+   * B200mini specific actions will be carried, the others are kept
+   * functional.
+   */
+  typedef enum {
+    eB200,      // e = enum; B200 seems to be defined somewhere else
+    eB210,
+    eB200mini,
+    eB200mini_i,
+    eB205mini_i
+    } SoDa_B200_type_t;
   
   /**
    * @brief Transmit/Receive switch control for B200/B210 via the 
@@ -102,6 +123,8 @@ namespace SoDa {
     uhd::usrp::multi_usrp::sptr usrp; 
     
     int mboard; 
+    SoDa_B200_type_t B200_type;   //see comment above
+    std::string modelname;  //is redundant, but used for simpler programming
   };
 }
 #endif
