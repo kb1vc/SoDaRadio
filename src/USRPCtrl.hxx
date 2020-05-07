@@ -272,10 +272,12 @@ namespace SoDa {
     /// size within the passband. It will also adjust the stepsize. 
     /// @param target_freq -- target tuning frequency
     /// @param avoid_freq -- the frequency that we must avoid by at least 1MHz
-    /// @param tune_req -- tune request record. 
+    /// @param tune_req -- tune request record.
+    /// @param spacing -- minimum distance between avoid frequency and RF (in Hz)
     void applyTargetFreqCorrection(double target_freq, 
 				   double avoid_freq, 
-				   uhd::tune_request_t * tune_req);
+				   uhd::tune_request_t * tune_req, 
+				   double spacing = 1e6);
 
 
     /// @brief Test for support for integer-N synthesis

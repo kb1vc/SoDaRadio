@@ -406,9 +406,14 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
       // 12.5 MHz step for the RF PLL, we can end up with a honking
       // big spur in the TX output at 12.5 MHz when we're transmitting
       // on 30m or 20m.  Below 30MHz, we turn off the small integer
-      // steps -- the default will be something good... one hopes. 
-      if(freq > 30.0e6) {
-	applyTargetFreqCorrection(freq, last_rx_req_freq, &tx_request);
+      // steps -- the default will be something good... one hopes.
+
+      // User reports low (-40dBc) spur on TX in-band when no modulation
+      // is present in a B2xx .. This is likely true for other models.
+      // The notion of "avoiding" the tx frequency seems a good one.)
+      if((freq > 30.0e6) || true) {  
+	// applyTargetFreqCorrection(freq, last_rx_req_freq, &tx_request);
+	applyTargetFreqCorrection(freq, freq, &tx_request);	
       }
       else {
 	// don't fiddle with adjusting the step size here.
@@ -420,7 +425,9 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
       }
     }
     else {
-      tx_request.rf_freq_policy = uhd::tune_request_t::POLICY_AUTO;
+      //      tx_request.rf_freq_policy = uhd::tune_request_t::POLICY_AUTO;
+      // Do the frequency shift anyway... IntN or not.  
+      applyTargetFreqCorrection(freq, freq, &tx_request, 10e6);	      
     }
 
     debugMsg(boost::format("Tuning TX unit to new frequency %f (request = %f  (%f %f))\n")
@@ -907,7 +914,7 @@ void SoDa::USRPCtrl::disableTransverterLO()
   usrp->set_tx_freq(100.0e6, 1);
 }
 
-void SoDa::USRPCtrl::applyTargetFreqCorrection(double target_freq, double avoid_freq, uhd::tune_request_t * treq)
+void SoDa::USRPCtrl::applyTargetFreqCorrection(double target_freq, double avoid_freq, uhd::tune_request_t * treq, double spacing)
 {
   debugMsg(boost::format("######   aTFC(%lf...)") % target_freq); 
 
@@ -937,7 +944,7 @@ void SoDa::USRPCtrl::applyTargetFreqCorrection(double target_freq, double avoid_
     
     double rf_freq = N * steps[i]; 
     debugMsg(boost::format("\t\tTRY rf_freq = %lf step = %lf\n") % rf_freq % steps[i]);
-    if(fabs(rf_freq - avoid_freq) > 1.0e6) {
+    if(fabs(rf_freq - avoid_freq) > spacing) {
       // this is an OK choice. 
       debugMsg(boost::format("\t\tACCEPT rf_freq = %lf step = %lf\n") % rf_freq % steps[i]);
       treq->rf_freq = rf_freq; 
