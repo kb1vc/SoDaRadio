@@ -86,8 +86,19 @@ void SoDa::GPSmon::run()
 #endif
 	if(stat == -1) gps_server_ready = false; 
 	else if(stat != 0) {
-
-	  time_t utc_time = (time_t) gps_data.fix.time; 
+#if GPSD_API_MAJOR_VERSION < 9
+	  time_t utc_time = (time_t) gps_data.fix.time;
+#else
+	  // The gpsd folks change datatypes in important
+	  // datastructures and the API from time to time in ways that
+	  // break older code.  This was yet another one of those
+	  // times.
+	  // 
+	  // gps_data.fix.time is now a timespec_t -- an alias for
+	  // struct timespec.
+	  //
+	  time_t utc_time = (time_t) gps_data.fix.time.tv_sec; 
+#endif
 	  struct tm btime; 
 
 	  gmtime_r(&utc_time, &btime); 
