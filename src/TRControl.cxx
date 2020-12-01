@@ -64,7 +64,8 @@ namespace SoDa {
 
     }
     else if ((modelname == std::string("B200")) || 
-	     (modelname == std::string("B210"))) {
+             (modelname == std::string("B210")) ||
+             (modelname == std::string("B200mini"))) {
       return new B200Control(usrp, mboard); 
     }
     else {
