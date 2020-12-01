@@ -5,7 +5,7 @@
 
 #if HAVE_GPSLIB
 #include <gps.h>
-# if GPSD_API_MAJOR_VERSION < 9
+# if GPSD_API_MAJOR_VERSION <= 9
 #   define GPSLIB_MIGHT_BE_USABLE 1
 # else
 #   define GPSLIB_MIGHT_BE_USABLE 0
