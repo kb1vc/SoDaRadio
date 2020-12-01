@@ -179,7 +179,7 @@ ENDIF()
 ## modulation scheme and other settings.
 find_package(PkgConfig)
 pkg_search_module(HAMLIB REQUIRED hamlib)
-pkg_search_module(GPSLIB OPTIONAL libgps)
+pkg_search_module(GPSLIB OPTIONAL libgps<=5)
 
 IF(DISABLE_GPSD)
   SET(HAVE_GPSLIB 0)
@@ -187,12 +187,24 @@ IF(DISABLE_GPSD)
 ELSE()  
   IF(GPSLIB_FOUND)
     SET(HAVE_GPSLIB 1)
-    message("FOUND GPSLIB")
+    message("FOUND GPSLIB version " ${GPSLIB_VERSION})
   ELSE()
     SET(HAVE_GPSLIB 0)
     message("DID NOT FIND GPSLIB")  
   ENDIF()
 ENDIF()
+
+function (getListOfVarsStartingWith _prefix _varResult)
+    get_cmake_property(_vars VARIABLES)
+    string (REGEX MATCHALL "(^|;)${_prefix}[A-Za-z0-9_]*" _matchedVars "${_vars}")
+    set (${_varResult} ${_matchedVars} PARENT_SCOPE)
+endfunction()
+
+getListOfVarsStartingWith("GPS" GPS_VARS)
+
+foreach (v IN LISTS GPS_VARS)
+  message("${v} = ${${v}}")
+endforeach()  
 
 # This is the radio interface... 
 ADD_SUBDIRECTORY(src)

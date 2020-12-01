@@ -28,44 +28,24 @@
 
 #include "GPSmon.hxx"
 #include <list>
-#include <errno.h>
 
 SoDa::GPSmon::GPSmon(Params * params) : SoDa::Thread("GPSmon")
 {
   cmd_stream = NULL;
 
-#if HAVE_GPSLIB  
-  // now open the server connection
-  errno = 0; 
-  int stat = gps_open(params->getGPSHostName().c_str(), 
-		      params->getGPSPortName().c_str(), 
-		      &gps_data); 
-  if(stat != 0) {
-    std::cerr << boost::format("Could not open gpsd server connection. Error : %s\n") % gps_errstr(errno); 
-    gps_server_ready = false; 
-  }
-  else gps_server_ready = true; 
-  
-  (void) gps_stream(&gps_data, WATCH_ENABLE, NULL);
-#else
-  gps_server_ready = false; 
-#endif
-  
+  gps_shim = new SoDa::GPSDShim(params->getGPSHostName(), params->getGPSPortName());
 }
 
 void SoDa::GPSmon::run()
 {
   bool exitflag = false;
   Command * cmd;
-  
-  int stat; 
 
   if((cmd_stream == NULL)) {
       throw SoDa::Exception((boost::format("Missing a stream connection.\n")).str(), 
 			  this);	
   }
   
-
   while(!exitflag) {
     while((cmd = cmd_stream->get(cmd_subs)) != NULL) {
       // process the command.
@@ -74,52 +54,24 @@ void SoDa::GPSmon::run()
       //      std::cerr << "GPSmon got a message. target = " << cmd->target << std::endl; 
       cmd_stream->free(cmd);
     }
-    if(gps_server_ready) {
-      // there is a leak.  It is either from gps_waiting or gps_read
-#if HAVE_GPSLIB
-      while (gps_waiting(&gps_data, 100000)) {
-	errno = 0;
-#if GPSD_API_MAJOR_VERSION < 7
-	stat = gps_read(&gps_data);
-#else
-	stat = gps_read(&gps_data, NULL, 0);	
-#endif
-	if(stat == -1) gps_server_ready = false; 
-	else if(stat != 0) {
-#if GPSD_API_MAJOR_VERSION < 9
-	  time_t utc_time = (time_t) gps_data.fix.time;
-#else
-	  // The gpsd folks change datatypes in important
-	  // datastructures and the API from time to time in ways that
-	  // break older code.  This was yet another one of those
-	  // times.
-	  // 
-	  // gps_data.fix.time is now a timespec_t -- an alias for
-	  // struct timespec.
-	  //
-	  time_t utc_time = (time_t) gps_data.fix.time.tv_sec; 
-#endif
-	  struct tm btime; 
 
-	  gmtime_r(&utc_time, &btime); 
+    double lat, lon;
+    struct tm utc_time;
+    // this could block for 0.1 seconds
+    if(gps_shim->getFix(100000, utc_time, lat, lon)) {
 	  
-	  cmd_stream->put(new SoDa::Command(Command::REP, Command::GPS_UTC, 
-					    (int) btime.tm_hour,
-					    (int) btime.tm_min, 
-					    (int) btime.tm_sec));
+      cmd_stream->put(new SoDa::Command(Command::REP, Command::GPS_UTC, 
+					(int) utc_time.tm_hour,
+					(int) utc_time.tm_min, 
+					(int) utc_time.tm_sec));
 
-	  cmd_stream->put(new SoDa::Command(Command::REP, Command::GPS_LATLON, 
-					    gps_data.fix.latitude, 
-					    gps_data.fix.longitude));
-	}
-	else {
-	  std::cerr << boost::format("gps_read returned %d size is %d\n")
-	    % stat % (sizeof(struct gps_data_t));
-	}
-      }	
-#endif	 
-    }
-    else {
+      cmd_stream->put(new SoDa::Command(Command::REP, Command::GPS_LATLON, 
+					lat, lon)); 
+    }	
+    else if(!gps_shim->isEnabled()) {
+      // If we have no gps widget, the getFix call returned
+      // immediately.  we don't really have anything to do here, so go
+      // to sleep for a little while.
       usleep(100000);
     }
   }
