@@ -56,7 +56,8 @@ set(CPACK_RPM_PACKAGE_RELEASE "1")
 set(CPACK_RPM_PACKAGE_LICENSE "BSD-2-Clause")
 set(CPACK_RPM_PACKAGE_GROUP "Applications/Communications")
 set(CPACK_RPM_PACKAGE_DESCRIPTION  ${SoDaRadio_PACKAGE_DESCRIPTION})
-set(CPACK_RPM_PACKAGE_REQUIRES "boost >= 1.48, uhd >= 3.12.0, fftw-devel >= 3.3, qt5-qtbase >= 5.6, qwt-qt5 >= 6.1.2, gpsd >= 3.1, gpsd-libs >= 3.1, libsndfile, qt5-qtmultimedia")
+# removed , libsndfile
+set(CPACK_RPM_PACKAGE_REQUIRES "boost >= 1.48, uhd >= 3.12.0, fftw-devel >= 3.3, qt5-qtbase >= 5.6, qwt-qt5 >= 6.1.2, gpsd >= 3.1, gpsd-libs >= 3.1, qt5-qtmultimedia")
 set(CPACK_RPM_PACKAGE_RELOCATABLE TRUE)
 # RPM makes a hash out of the uhd dependency if we don't do this:
 set(CPACK_RPM_PACKAGE_AUTOREQPROV " no")
@@ -64,7 +65,8 @@ set(CPACK_RPM_PACKAGE_AUTOREQPROV " no")
 set(CPACK_DEBIAN_PACKAGE_DESCRIPTION ${SODA_PACKAGE_DESCRIPTION})
 set(CPACK_DEBIAN_PACKAGE_SECTION "hamradio")
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libuhd003 (>= 3.12), uhd-host (>= 3.12), libgps-dev (>= 3.1), gpsd (>= 3.1), libsndfile1, libqt5multimedia5-plugins")
+#libsndfile1, 
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libuhd003 (>= 3.12), uhd-host (>= 3.12), libgps-dev (>= 3.1), gpsd (>= 3.1), libqt5multimedia5-plugins")
 
 INCLUDE(CPack)
 
@@ -128,7 +130,7 @@ INSTALL(FILES ${PROJECT_SOURCE_DIR}/SoDaRadioConfig.cmake DESTINATION "lib/cmake
 
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
 
-FIND_PACKAGE(SndFile REQUIRED)
+# FIND_PACKAGE(SndFile REQUIRED)
 
 FIND_PACKAGE(Boost 1.45 REQUIRED COMPONENTS program_options thread date_time system filesystem serialization regex QUIET)
 
