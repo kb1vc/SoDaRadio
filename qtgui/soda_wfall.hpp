@@ -45,7 +45,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QPointF>
 
 #include <iostream>
-#include <boost/format.hpp>
 
 #include "soda_wfall_picker.hpp"
 #include "soda_freq_scale_draw.hpp"

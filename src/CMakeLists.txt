@@ -21,47 +21,15 @@ set(SoDaServer_SRCS
     CWGenerator.cxx
     GPSmon.cxx
     UDSockets.cxx
-    BaseBandRX.hxx
-    BaseBandTX.hxx
-    Command.hxx
-    CWGenerator.hxx
-    CWTX.hxx
-    GPSmon.hxx
-    HilbertTransformer.hxx
-    IPSockets.hxx
-    MultiMBox.hxx
-    OSFilter.hxx
-    Params.hxx
-    QuadratureOscillator.hxx
-    TDResamplers625x48.hxx
-    TDResamplerTables625x48.hxx    
-    ReSampler.hxx
-    ReSamplers625x48.hxx
-    SoDaBase.hxx
-    Spectrogram.hxx
-    UDSockets.hxx
-    UI.hxx
-    AudioQt.hxx
     AudioQt.cxx
-    AudioIfc.hxx
-    MedianFilter.hxx
-    Debug.hxx
     Debug.cxx
     SerialDev.cxx
-    SerialDev.hxx
-    TRControl.hxx
     TRControl.cxx
-    N200Control.hxx
     N200Control.cxx
-    IPSockets.hxx
     IPSockets.cxx
-    B200Control.hxx
     B200Control.cxx
-#    Demod.hxx
-#    Demod.cxx
-    PropTree.hxx
     IFRecorder.cxx
-    IFRecorder.hxx    
+    fix_gpsd_ugliness.cxx
     )
 
 find_package(ALSA REQUIRED QUIET)
@@ -70,7 +38,7 @@ find_package(FFTW3f REQUIRED QUIET)
 add_definitions(-DHAVE_LIBASOUND=1)
 add_definitions(-DHAVE_UHD=${HAVE_UHD})
 
-IF(GPSLIB_FOUND)
+IF(HAVE_GPSLIB)
   ADD_DEFINITIONS(-DHAVE_GPSLIB=1)
   LIST(APPEND Radio_INCLUDE_DIRS ${GPSLIB_INCLUDE_DIRS})
   LIST(APPEND Radio_LIBRARIES ${GPSLIB_LIBRARIES})

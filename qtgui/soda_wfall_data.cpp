@@ -28,7 +28,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "soda_wfall_data.hpp"
 #include <iostream>
-#include <boost/format.hpp>
 
 GUISoDa::WFallData::WFallData() {
   clearReady(); 

@@ -35,7 +35,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QKeyEvent>
 
 #include <iostream>
-#include <boost/format.hpp>
 
 #include <cmath>
 #include <vector>
@@ -80,12 +79,11 @@ namespace GUISoDa {
 
     void stepBy(int steps) {
       cur_index += steps;
-      std::cerr << boost::format("stepBy(%d) -> cur_index = %d\n") % steps % cur_index;     
+     
       if(cur_index < 0) cur_index = 0; 
       if(cur_index >= ((int) values.size())) cur_index = values.size() - 1;
-      std::cerr << boost::format("\tvalues[%d] = %d\n") % cur_index % values[cur_index];         
+         
       setValue(values[cur_index]);
-      std::cerr << boost::format("\tnew value = %d\n") % value();
     }
 
   protected:

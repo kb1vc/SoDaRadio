@@ -32,8 +32,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QColor>
 #include <QPen>
 #include <qwt/qwt_picker_machine.h>
-#include <boost/format.hpp>
-
 namespace GUISoDa {
 
   class WFallPickerClient {
@@ -82,7 +80,9 @@ namespace GUISoDa {
       QColor trbgcolor(Qt::black);
       trbgcolor.setAlpha(200); // translucent highlight
 
-      QwtText text((boost::format("%'.4f MHz") % (pos.x() * 1e-6)).str().c_str());
+      QString str = QString("%1 MHz").arg(pos.x() * 1e-6, 0, 'f', 4);
+
+      QwtText text(str);
       text.setBackgroundBrush(QBrush(trbgcolor));
 
       return text;

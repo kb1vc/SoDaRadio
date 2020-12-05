@@ -31,8 +31,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "soda_hamlib_listener.hpp"
 
 #include <QMessageBox>
-#include <boost/format.hpp>
-#include <boost/foreach.hpp>
 #include <hamlib/rig.h>
 
 using namespace GUISoDa;
@@ -47,7 +45,7 @@ GUISoDa::HamlibServer::~HamlibServer() {
 
   emit stopListeners();
 
-  BOOST_FOREACH(HamlibListener * l, listener_list) {
+  for(auto l : listener_list) {
     l->wait();
   }
 }

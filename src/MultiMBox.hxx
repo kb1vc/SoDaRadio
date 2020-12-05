@@ -37,215 +37,256 @@
 #include <mutex>
 #include <condition_variable>
 
-namespace SoDa {
-  
-  // base class for all messaging schemes. 
-  class MBoxMessage {
-  public:
-    MBoxMessage()
+namespace SoDa
+{
+
+// base class for all messaging schemes.
+class MBoxMessage
+{
+public:
+  MBoxMessage()
+  {
+    reader_count = 0;
+  }
+
+  void setReaderCount(unsigned int rc)
+  {
+    std::lock_guard<std::mutex> lck(rc_mutex);
+    reader_count = rc;
+  }
+
+  bool readyToDie() { return reader_count == 1; }
+  bool decReaderCount() { return reader_count--; }
+
+  bool free(std::queue<MBoxMessage *> &free_list)
+  {
+    std::lock_guard<std::mutex> lck(rc_mutex);
+    if (reader_count == 1)
     {
       reader_count = 0;
+      free_list.push(this);
     }
-
-    void setReaderCount(unsigned int rc)
+    else
     {
-      std::lock_guard<std::mutex> lck(rc_mutex);
-      reader_count = rc; 
+      reader_count--;
     }
+    return true;
+  }
 
-    bool readyToDie() { return reader_count == 1; }
-    bool decReaderCount() { return reader_count--; }
+  // these are to detect "free" actions on the wrong mailbox.
+  void setMBoxTag(void *tag) { mbox_tag = tag; }
+  bool checkMBoxTag(void *tag) { return mbox_tag == tag; }
 
-    bool free(std::queue<MBoxMessage *> & free_list) {
-      std::lock_guard<std::mutex> lck(rc_mutex);
-      if(reader_count == 1) {
-	reader_count = 0; 
-	free_list.push(this); 
-      }
-      else {
-	reader_count--;
-      }
-      return true;
-    }
+private:
+  unsigned int reader_count;
+  std::mutex rc_mutex;
+  void *mbox_tag;
+};
 
-    // these are to detect "free" actions on the wrong mailbox. 
-    void setMBoxTag(void * tag) { mbox_tag = tag; }
-    bool checkMBoxTag(void * tag) { return mbox_tag == tag; }
-    
-  private:
-    unsigned int reader_count;
-    std::mutex rc_mutex;
-    void * mbox_tag; 
-  };
-
-  /**
+/**
    * A base mailbox class.  
    */
-  class BaseMBox {
-  public:
-    BaseMBox() {}
+class BaseMBox
+{
+public:
+  BaseMBox() {}
 
-    virtual ~BaseMBox() { }
-  };
-  
-  template <typename T> class MultiMBox : public BaseMBox {
-  public:
-    MultiMBox(bool _keep_freelist = true) {
-      subscriber_count = 0;
-      keep_freelist = _keep_freelist; 
-    }
+  virtual ~BaseMBox() {}
+};
 
-    int subscribe() {
-      int subscriber_id = subscriber_count;
-      subscriber_count++;
-      subscribers[subscriber_id] = new Subscriber; 
-      return subscriber_id; 
-    }
+class BaseSubscriber
+{
+public:
+  BaseSubscriber(int pc) : post_count(pc) {}
+  int post_count;
+  std::mutex post_mutex;
+  std::condition_variable post_cond;
+};
 
-    int getSubscriberCount() { return subscriber_count; }
-    
-    void put(T * m) {
-      unsigned int i;
-      m->setReaderCount(subscriber_count);
-      m->setMBoxTag(this); 
-      for(i = 0; i < subscriber_count; i++) {
-	Subscriber * s = subscribers[i];
-	std::lock_guard<std::mutex> lck(s->post_mutex);
-	s->posted_list.push(m);
-	s->post_count++; 
-	s->post_cond.notify_all(); 
-      }
-    }
+template <typename T>
+class Subscriber : public BaseSubscriber
+{
+public:
+  Subscriber() : BaseSubscriber(0) {}
+  std::queue<T *> posted_list;
+};
 
-    T * get(unsigned int subscriber_id) {
-      return getCommon(subscriber_id, false); 
-    }
+template <typename T>
+class MultiMBox : public BaseMBox
+{
+public:
+  MultiMBox(bool _keep_freelist = true)
+  {
+    subscriber_count = 0;
+    keep_freelist = _keep_freelist;
+  }
 
-    T * getWait(unsigned int subscriber_id) {
-      return getCommon(subscriber_id, true); 
-    }
+  int subscribe()
+  {
+    int subscriber_id = subscriber_count;
+    subscriber_count++;
+    subscribers[subscriber_id] = new Subscriber<T>;
+    return subscriber_id;
+  }
 
-    void free(T * m) {
-      if(m != NULL) {
-	if(keep_freelist && m->checkMBoxTag(this)) {
-	  if(m->readyToDie()) {
-	    std::lock_guard<std::mutex> lck(free_mutex);
-	    m->free(free_list);
-	  }
-	  else m->decReaderCount(); 
-	}
-	else {
-	  if(m->readyToDie()) delete m;
-	  else m->decReaderCount(); 
-	}
-      }
-    }
+  int getSubscriberCount() { return subscriber_count; }
 
-    T * alloc()
+  void put(T *m)
+  {
+    unsigned int i;
+    m->setReaderCount(subscriber_count);
+    m->setMBoxTag(this);
+    for (i = 0; i < subscriber_count; i++)
     {
-      T * ret = NULL;
+      Subscriber<T> *s = subscribers[i];
+      std::lock_guard<std::mutex> lck(s->post_mutex);
+      s->posted_list.push(m);
+      s->post_count++;
+      s->post_cond.notify_all();
+    }
+  }
+
+  T *get(unsigned int subscriber_id)
+  {
+    return getCommon(subscriber_id, false);
+  }
+
+  T *getWait(unsigned int subscriber_id)
+  {
+    return getCommon(subscriber_id, true);
+  }
+
+  void free(T *m)
+  {
+    if (m != NULL)
+    {
+      if (keep_freelist && m->checkMBoxTag(this))
+      {
+        if (m->readyToDie())
+        {
+          std::lock_guard<std::mutex> lck(free_mutex);
+          m->free(free_list);
+        }
+        else
+          m->decReaderCount();
+      }
+      else
+      {
+        if (m->readyToDie())
+          delete m;
+        else
+          m->decReaderCount();
+      }
+    }
+  }
+
+  T *alloc()
+  {
+    T *ret = NULL;
+    std::lock_guard<std::mutex> lck(free_mutex);
+    if (!free_list.empty() && keep_freelist)
+    {
+      ret = (T *)free_list.front();
+      free_list.pop();
+    }
+
+    return ret;
+  }
+
+  void addToPool(T *v)
+  {
+    if (keep_freelist)
+    {
       std::lock_guard<std::mutex> lck(free_mutex);
-      if(!free_list.empty() && keep_freelist) {
-	ret = (T*) free_list.front();
-	free_list.pop();
-      }
+      free_list.push(v);
+    }
+  }
 
-      return ret; 
+  unsigned int inFlightCount()
+  {
+    // go through the subscribers and find the
+    // longest inflight list.
+    int max_len = 0;
+    int itercount = 0;
+
+    for (auto &sl : subscribers)
+    {
+      Subscriber<T> *s = sl.second;
+      {
+        std::lock_guard<std::mutex> lck(s->post_mutex);
+        int le = s->posted_list.size();
+        itercount++;
+        // std::cerr << "multimbox list len = " << le
+        // 	    << " iter count = " << itercount
+        // 	    << " posted count = " << s->post_count << std::endl;
+        if (le > max_len)
+          max_len = le;
+      }
     }
 
-    void addToPool(T * v) {
-      if(keep_freelist) {
-	std::lock_guard<std::mutex> lck(free_mutex);	
-	free_list.push(v);
-      }
-    }
+    return max_len;
+  }
 
-    unsigned int inFlightCount() {
-      // go through the subscribers and find the
-      // longest inflight list.
-      int max_len = 0;
-      int itercount = 0; 
-      typename std::map<int, typename MultiMBox< T >::Subscriber * >::iterator sl; 
-      for(sl = subscribers.begin();
-	  sl != subscribers.end();
-	  ++sl) {
-	Subscriber * s = sl->second;
-	{
-	  std::lock_guard<std::mutex> lck(s->post_mutex);
-	  int le = s->posted_list.size();
-	  itercount++; 
-	  // std::cerr << "multimbox list len = " << le
-	  // 	    << " iter count = " << itercount
-	  // 	    << " posted count = " << s->post_count << std::endl;
-	  if(le > max_len) max_len = le; 
-	}
-      }
-
-      return max_len; 
-    }
-
-    /**
+  /**
      * @brief flush all items from this mailbox for this subscriber
      *
      * @param subscriber_id oddly named, this is the identity of the requesting subscriber.
      */
-    bool flush(unsigned int subscriber_id) {
-      T * dummy; 
-      while((dummy = getCommon(subscriber_id, false)) != NULL) { 
-	free(dummy);
-      }
-      return true; 
-    }
-      
-    
-  private:
-    T * getCommon(unsigned int subscriber_id, bool wait)
+  bool flush(unsigned int subscriber_id)
+  {
+    T *dummy;
+    while ((dummy = getCommon(subscriber_id, false)) != NULL)
     {
-      if(subscriber_id >= subscriber_count) {
-	// someone is asking for a message from
-	// an unallocated subscriber id... throw
-	// an exception.
-	// or just return empty. 
-	return NULL; 
-      }
-    
-      Subscriber * s = subscribers[subscriber_id];
-      std::unique_lock<std::mutex> lck(s->post_mutex);	  
-      if(s->posted_list.empty()) {
-	if(!wait) {
-	  return NULL; 
-	}
-	else {
-	  while(s->posted_list.empty()) {
-	    s->post_cond.wait(lck);
-	  }
-	}
-      }
+      free(dummy);
+    }
+    return true;
+  }
 
-      // if we get here, then we have a message.
-      T * ret = NULL;
-      ret = s->posted_list.front();
-      s->posted_list.pop();
-      s->post_count--; 
-      return ret; 
+private:
+  T *getCommon(unsigned int subscriber_id, bool wait)
+  {
+    if (subscriber_id >= subscriber_count)
+    {
+      // someone is asking for a message from
+      // an unallocated subscriber id... throw
+      // an exception.
+      // or just return empty.
+      return NULL;
     }
 
-    unsigned int subscriber_count;
-    bool keep_freelist; 
+    Subscriber<T> *s = subscribers[subscriber_id];
+    std::unique_lock<std::mutex> lck(s->post_mutex);
+    if (s->posted_list.empty())
+    {
+      if (!wait)
+      {
+        return NULL;
+      }
+      else
+      {
+        while (s->posted_list.empty())
+        {
+          s->post_cond.wait(lck);
+        }
+      }
+    }
 
-    class Subscriber {
-    public:
-      Subscriber() { post_count = 0; } 
-      std::queue<T *> posted_list;
-      int post_count; 
-      std::mutex post_mutex; 
-      std::condition_variable post_cond; 
-    };
-    std::map<int, Subscriber *> subscribers;     
+    // if we get here, then we have a message.
+    T *ret = NULL;
+    ret = s->posted_list.front();
+    s->posted_list.pop();
+    s->post_count--;
+    return ret;
+  }
 
-    std::queue<MBoxMessage *> free_list;
-    std::mutex free_mutex; 
-  }; 
-}
+  unsigned int subscriber_count;
+  bool keep_freelist;
+
+  std::map<int, Subscriber<T> *> subscribers;
+
+  std::queue<MBoxMessage *> free_list;
+  std::mutex free_mutex;
+};
+} // namespace SoDa
 
 #endif

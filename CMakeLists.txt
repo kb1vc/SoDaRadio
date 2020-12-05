@@ -1,5 +1,12 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.9) # this lets out really old distros like CentOS 6
 
+# Can't seem to fix Package Version warnings... defer.  Never put off to tomorrow what you can do at the end of time
+# see here: https://github.com/PointCloudLibrary/pcl/issues/3680
+# when this is fixed, we can remove the following 3 lines.
+if(NOT DEFINED CMAKE_SUPPRESS_DEVELOPER_WARNINGS)
+  set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS 1 CACHE INTERNAL "No dev warnings")
+endif()
+   
 OPTION(BUILD_RPM "Build an RPM package for this platform, or something like it." OFF)
 OPTION(BUILD_DEB "Build a Debian package for this platform, or something like it." OFF)
 OPTION(BUILD_UNIT_TESTS "Build the unit tests -- not normally useful" OFF)
@@ -13,7 +20,7 @@ PROJECT(SoDaRadio)
 
 SET(SoDaRadio_VERSION_MAJOR 7)
 SET(SoDaRadio_VERSION_MINOR 0)
-SET(SoDaRadio_VERSION_PATCH 2)
+SET(SoDaRadio_VERSION_PATCH 5)
 SET(SoDaRadio_VERSION "${SoDaRadio_VERSION_MAJOR}.${SoDaRadio_VERSION_MINOR}.${SoDaRadio_VERSION_PATCH}")
 
 set(SoDaRadio_PACKAGE_DESCRIPTION 
@@ -175,13 +182,30 @@ ENDIF()
 find_package(PkgConfig)
 pkg_search_module(HAMLIB REQUIRED hamlib)
 pkg_search_module(GPSLIB OPTIONAL libgps)
-IF(GPSLIB_FOUND)
-  SET(HAVE_GPSLIB 1)
-  message("FOUND GPSLIB")
-ELSE()
+
+IF(DISABLE_GPSD)
   SET(HAVE_GPSLIB 0)
-  message("DID NOT FIND GPSLIB")  
+  message("DISABLED GPSLIB")
+ELSE()  
+  IF(GPSLIB_FOUND)
+    SET(HAVE_GPSLIB 1)
+    message("FOUND GPSLIB version " ${GPSLIB_VERSION})
+  ELSE()
+    SET(HAVE_GPSLIB 0)
+    message("DID NOT FIND GPSLIB")  
+  ENDIF()
 ENDIF()
+
+function (getListOfVarsStartingWith _prefix _varResult)
+    get_cmake_property(_vars VARIABLES)
+    string (REGEX MATCHALL "(^|;)${_prefix}[A-Za-z0-9_]*" _matchedVars "${_vars}")
+    set (${_varResult} ${_matchedVars} PARENT_SCOPE)
+endfunction()
+
+#getListOfVarsStartingWith("GPS" GPS_VARS)
+#foreach (v IN LISTS GPS_VARS)
+#  message("${v} = ${${v}}")
+#endforeach()  
 
 # This is the radio interface... 
 ADD_SUBDIRECTORY(src)

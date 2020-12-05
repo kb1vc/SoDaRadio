@@ -34,10 +34,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Command.hxx"
 #include "Params.hxx"
 #include "UI.hxx"
-
-#ifdef HAVE_GPSLIB
-#include <gps.h>
-#endif
+#include "fix_gpsd_ugliness.hxx"
 
 #include <time.h>
 #include <sys/time.h>
@@ -58,12 +55,8 @@ namespace SoDa {
 
     CmdMBox *cmd_stream;
     unsigned int cmd_subs;
-#if HAVE_GPSLIB
-    // gpsd lib
-    struct gps_data_t gps_data;
-#endif
-    bool gps_server_ready; 
-    
+
+    GPSDShim * gps_shim; 
   }; 
 }
 
