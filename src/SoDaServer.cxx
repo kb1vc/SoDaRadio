@@ -149,10 +149,19 @@
 #include "CWTX.hxx"
 #include "UI.hxx"
 #include "GPSmon.hxx"
-#include "AudioQt.hxx"
 #include "IFRecorder.hxx"
 #include "Command.hxx"
 #include "Debug.hxx"
+
+#ifdef HAVE_ASOUND
+#  include "AudioQtRXTX.hxx"
+   using AudioQt = SoDa::AudioQtRXTX;
+#else
+#  include "AudioQtRX.hxx"
+   using AudioQt = SoDa::AudioQtRX;  
+#endif
+
+
 
 void createLockFile(const std::string & lock_file_name)
 {
@@ -224,9 +233,12 @@ int doWork(SoDa::Params & params)
   }
 
   /// Create the audio server on the host machine.
-  /// choices include a PortAudio interface and an ALSA interface.
+  /// Audio is either via Qt for RX and ALSA for TX.
+  /// If ALSA is not present, the server will be RX only.
   /// These are subclasses of the more generic SoDa::AudioIfc class
-  SoDa::AudioQt audio_ifc(params.getAudioSampleRate(),
+  //
+  
+  AudioQt audio_ifc(params.getAudioSampleRate(),
 			  params.getAFBufferSize(),
 			  params.getServerSocketBasename(),
 			  params.getAudioPortName());

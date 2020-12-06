@@ -77,7 +77,7 @@ namespace GUISoDa {
      */
 
     /**
-     * @brief write method for a write only device
+     * @brief write method for a read only device
      *
      * @param data a buffer that we will ignore
      * @param len the length of the buffer that we just ignored

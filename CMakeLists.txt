@@ -1,5 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.9) # this lets out really old distros like CentOS 6
 
+
 # Can't seem to fix Package Version warnings... defer.  Never put off to tomorrow what you can do at the end of time
 # see here: https://github.com/PointCloudLibrary/pcl/issues/3680
 # when this is fixed, we can remove the following 3 lines.
@@ -188,6 +189,16 @@ find_package(PkgConfig)
 pkg_search_module(HAMLIB REQUIRED hamlib)
 pkg_search_module(GPSLIB OPTIONAL libgps)
 
+IF(DISABLE_ALSA)
+  message("ALSA Disabled")
+ELSE()  
+  find_package(ALSA QUIET)  
+ENDIF()
+
+UNSET(ALSA_FOUND CACHE)
+UNSET(DISABLE_ALSA CACHE)
+
+
 IF(DISABLE_GPSD)
   SET(HAVE_GPSLIB 0)
   message("DISABLED GPSLIB")
@@ -200,6 +211,7 @@ ELSE()
     message("DID NOT FIND GPSLIB")  
   ENDIF()
 ENDIF()
+UNSET(DISABLE_GPSD CACHE)
 
 function (getListOfVarsStartingWith _prefix _varResult)
     get_cmake_property(_vars VARIABLES)
