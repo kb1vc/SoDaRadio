@@ -28,6 +28,7 @@
 
 #include "Debug.hxx"
 #include "AudioQt.hxx"
+
 #include <alsa/asoundlib.h>
 
 #include <boost/format.hpp>
@@ -162,19 +163,7 @@ namespace SoDa {
 
   int AudioQt::send(void * buf, unsigned int len, bool when_ready) {
     int ret;
-#if 0    
-    float *fbuf = (float*) buf;
-    int l = len >> 2; 
-    for(int i = 0; i < l; i++) {
-      fbuf[i] = sin(ang); 
-      ang += ang_incr; 
-      if(ang > (2.0 * M_PI)) {
-	ang -= 2.0 * M_PI; 
-      }
-    }
-#endif        
     ret = audio_rx_socket->put(buf, len, false);
-
     return ret; 
   }
 
