@@ -117,15 +117,15 @@ target_link_libraries(ReSampler_Test ${TEST_LIBS})
 
 ########### next target ###############
 
-set(Audio_test_SRCS
-    Audio_test.cxx
-    ../src/AudioALSA.cxx
-    ../src/SoDaBase.cxx
-    ../src/Debug.cxx)
+#set(Audio_test_SRCS
+#    Audio_test.cxx
+#    ../src/AudioALSA.cxx
+#    ../src/SoDaBase.cxx
+#    ../src/Debug.cxx)
 
-add_executable(Audio_test EXCLUDE_FROM_ALL ${Audio_test_SRCS})
+#add_executable(Audio_test EXCLUDE_FROM_ALL ${Audio_test_SRCS})
 
-target_link_libraries(Audio_test ${TEST_LIBS})
+#target_link_libraries(Audio_test ${TEST_LIBS})
 
 #install(TARGETS Audio_test DESTINATION tests)
 
