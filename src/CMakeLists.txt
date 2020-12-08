@@ -68,14 +68,30 @@ include_directories(SYSTEM ${Boost_INCLUDE_DIRS} ${Radio_INCLUDE_DIRS} ${ALSA_IN
 
 add_executable(SoDaServer ${SoDaServer_SRCS})
 
-target_link_libraries(SoDaServer rt
+if(MACOSX)
+  set(RT_LIB "")
+else()
+  set(RT_LIB "rt")  
+endif()
+
+target_link_libraries(SoDaServer ${RT_LIB}
     Threads::Threads
     ${Boost_LIBRARIES}  ${Radio_LIBRARIES} ${ALSA_LIBRARIES} ${FFTW3F_LIBRARIES} ${CMAKE_DL_LIBS})
 
 
 install(TARGETS SoDaServer DESTINATION bin)
 
-add_library(accessory SHARED SimpleAccessory.cxx)
+set(simple_acc_SRCS
+SimpleAccessory.cxx
+SoDaThread.cxx
+SoDaBase.cxx
+Debug.cxx
+SoDaThreadRegistry.cxx
+)
+
+add_library(accessory SHARED ${simple_acc_SRCS})
+target_link_libraries(accessory ${Boost_LIBRARIES})
+
 
 # Export header files that are required to build loadable modules
 set(Loadable_INCLS

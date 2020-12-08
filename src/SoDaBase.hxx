@@ -243,16 +243,15 @@ namespace SoDa {
      * Create a string that explains this exception.
      * @return the exception string
      */
-    std::string toString() {
-      std::string ret; 
+    const std::string & toString() {
       if(thrower != NULL) {
-	ret = (boost::format("SoDa Object [%s] threw exception [%s]\n") % thrower->getObjName() % reason).str();
+	message = (boost::format("SoDa Object [%s] threw exception [%s]\n") % thrower->getObjName() % reason).str();
       }
       else {
-	ret = (boost::format("Unknown SoDa Object threw exception [%s]\n") % reason).str();
+	message = (boost::format("Unknown SoDa Object threw exception [%s]\n") % reason).str();
       }
 
-      return ret;
+      return message;
     }
 
     /**
@@ -260,11 +259,14 @@ namespace SoDa {
      * @return a pointer to a c_str buffer (suitable for generic exception handling.)
      */
     const char * what() {
-      return toString().c_str();
+      toString();
+      return message.c_str();
     }
   private:
     Base * thrower; ///< who caused the exception, if anyone? 
-    std::string reason; ///< what was the cause of the exception? 
+    std::string reason; ///< what was the cause of the exception?
+
+    std::string message; ///< the reason together with the owner. 
   };
 }
 

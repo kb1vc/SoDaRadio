@@ -33,8 +33,6 @@
 #include "UDSockets.hxx"
 #include <string>
 #include <mutex>
-// Only works if we have ALSA
-#include <alsa/asoundlib.h>
 #include <boost/format.hpp>
 #include <iostream>
 #include <stdexcept>

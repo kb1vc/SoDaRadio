@@ -80,6 +80,9 @@ void SoDa::IFRecorder::execRepCommand(SoDa::Command * cmd)
   case SoDa::Command::RX_FE_FREQ:
     current_rx_center_freq = cmd->dparms[0];
     break;
+  default:
+    // do nothing. 
+    break; 
   }
 }
 

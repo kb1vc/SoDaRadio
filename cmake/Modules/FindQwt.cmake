@@ -42,11 +42,12 @@
 # either expressed or implied, of the FreeBSD Project.
 #=============================================================================
 
+message("IN FindQwt.cmake  at src dir / cmake/Modules QT_INCLUDE_DIR = ${QT_INCLUDE_DIR}")
 
 find_path ( QWT_INCLUDE_DIR
   NAMES qwt_plot.h
   HINTS ${QT_INCLUDE_DIR}
-  PATH_SUFFIXES qwt qwt-qt3 qwt-qt4 qwt-qt5 qt5/qwt qt5
+  PATH_SUFFIXES qwt qwt-qt3 qwt-qt4 qwt-qt5 qt5/qwt qt5 qt
 )
 
 set ( QWT_INCLUDE_DIRS ${QWT_INCLUDE_DIR} )

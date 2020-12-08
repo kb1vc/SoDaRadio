@@ -755,7 +755,7 @@ void SoDa::USRPCtrl::initControlGPIO()
   }
   catch (uhd::lookup_error & v) {
     std::cerr << "No daughterboard interface found..." << std::endl;
-    dboard == NULL; 
+    dboard = NULL; 
     supports_tx_gpio = false;
   }
 

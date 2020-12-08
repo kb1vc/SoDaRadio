@@ -17,6 +17,13 @@ IF(CMAKE_VERSION VERSION_GREATER 3.0.0)
   SET(CMAKE_CXX_STANDARD 11)
 ENDIF()
 
+IF(CMAKE_HOST_SYSTEM_NAME MATCHES "Darwin")
+  message("Hey!  This must be a Mac!")
+  set(MACOSX 1)
+ELSE()
+  set(MACOSX 0)
+ENDIF()
+  
 
   
 PROJECT(SoDaRadio)
@@ -49,6 +56,13 @@ EXECUTE_PROCESS(COMMAND ${LSB_RELEASE} -rs
   OUTPUT_VARIABLE OS_RELEASE_VERSION
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
+
+function (getListOfVarsStartingWith _prefix _varResult)
+    get_cmake_property(_vars VARIABLES)
+    string (REGEX MATCHALL "(^|;)${_prefix}[A-Za-z0-9_]*" _matchedVars "${_vars}")
+    set (${_varResult} ${_matchedVars} PARENT_SCOPE)
+endfunction()
+
 
 # Package generation for the source tarball
 SET(CPACK_PACKAGE_VERSION_MAJOR ${SoDaRadio_VERSION_MAJOR})
@@ -140,7 +154,7 @@ INSTALL(FILES ${PROJECT_SOURCE_DIR}/SoDaRadioConfig.cmake DESTINATION "lib/cmake
 
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
 
-# FIND_PACKAGE(SndFile REQUIRED)
+FIND_PACKAGE(SndFile REQUIRED)
 
 FIND_PACKAGE(Boost 1.45 REQUIRED COMPONENTS program_options thread date_time system filesystem serialization regex QUIET)
 
@@ -169,6 +183,14 @@ LIST(APPEND LIBRARIES ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
 
 FIND_PACKAGE(Qt5 REQUIRED COMPONENTS core network printsupport multimedia)
 
+if(1)
+  getListOfVarsStartingWith("Q" ALL_VARS)
+  foreach (v IN LISTS ALL_VARS)
+    message("${v} = ${${v}}")
+  endforeach()  
+endif()
+
+FIND_PACKAGE(Qwt REQUIRED)
 
 ## Need hamlib for just the include files to get hamlib codes for
 ## modulation scheme and other settings.
@@ -200,16 +222,6 @@ ELSE()
 ENDIF()
 UNSET(DISABLE_GPSD CACHE)
 
-function (getListOfVarsStartingWith _prefix _varResult)
-    get_cmake_property(_vars VARIABLES)
-    string (REGEX MATCHALL "(^|;)${_prefix}[A-Za-z0-9_]*" _matchedVars "${_vars}")
-    set (${_varResult} ${_matchedVars} PARENT_SCOPE)
-endfunction()
-
-#getListOfVarsStartingWith("GPS" GPS_VARS)
-#foreach (v IN LISTS GPS_VARS)
-#  message("${v} = ${${v}}")
-#endforeach()  
 
 # This is the radio interface... 
 ADD_SUBDIRECTORY(src)
@@ -217,6 +229,8 @@ ADD_SUBDIRECTORY(src)
 ADD_SUBDIRECTORY(exp)
 
 ADD_SUBDIRECTORY(examples)
+
+ADD_SUBDIRECTORY(qtgui)
 
 FIND_PACKAGE(Doxygen QUIET)
 

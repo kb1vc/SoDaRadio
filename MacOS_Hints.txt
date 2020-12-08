@@ -1,0 +1,11 @@
+port install gnuradio
+port install libuhd-devel
+port install libsnd
+
+install qt from the qt.io mac installer. to /opt/local/qt
+
+install qwt from source to /opt/local -- change QWT_INSTALL_PREFIX to
+point to /opt/local/qwt-$$QWT_VERSION
+
+note that /opt is placed on /System/Volumes/Data which will fill up in short order.  Best to link it to some other volume.  Thanks Apple.
+

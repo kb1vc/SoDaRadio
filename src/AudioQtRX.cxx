@@ -33,11 +33,6 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
-// Use the simple setup, as recent (March 2015) changes to the 
-// ALSA/pulseaudio interactions have made explicit selection
-// of parameters somewhat harder to figure out.  In particular, 
-// buffer management has become far more important.
-#define ALSA_USE_SIMPLE_SETUP
 
 namespace SoDa {
   AudioQtRX::AudioQtRX(unsigned int _sample_rate,

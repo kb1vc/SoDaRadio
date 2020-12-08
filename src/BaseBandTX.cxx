@@ -39,6 +39,11 @@
 #include "OSFilter.hxx"
 #include "ReSamplers625x48.hxx"
 #include <cstdlib>
+#include <math.h>
+// MacOS doesn't provide "sincos" but it does provide something by another name.
+#if defined(__APPLE__)
+#define sincos(a, b, c) __sincos(a, b, c)
+#endif
 
 SoDa::BaseBandTX::BaseBandTX(Params * params, 
 		       AudioIfc * _audio_ifc

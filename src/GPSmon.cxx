@@ -41,7 +41,7 @@ void SoDa::GPSmon::run()
   bool exitflag = false;
   Command * cmd;
 
-  if((cmd_stream == NULL)) {
+  if(cmd_stream == NULL) {
       throw SoDa::Exception((boost::format("Missing a stream connection.\n")).str(), 
 			  this);	
   }

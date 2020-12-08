@@ -43,9 +43,7 @@ void SoDa::Thread::execCommand(Command * cmd)
 
 void  SoDa::Thread::outerRun() {
   hookSigSeg();
-  pid_t tid;
-  tid = syscall(SYS_gettid);
-  debugMsg(boost::format("%s starting as TID %x.\n") % getObjName() % tid); 
+  debugMsg(boost::format("%s starting.\n") % getObjName());
   try {
     run(); 
   }
