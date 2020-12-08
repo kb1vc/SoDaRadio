@@ -1,5 +1,5 @@
 #find_package(Portaudio)
-find_package(ALSA REQUIRED QUIET)
+
 find_package(FFTW3f REQUIRED QUIET)
 
 add_definitions(-DHAVE_LIBASOUND=1)
