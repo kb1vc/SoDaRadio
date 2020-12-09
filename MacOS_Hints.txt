@@ -21,5 +21,8 @@ ln -s /opt/local/qwt/lib/qwt.framework/Versions/6/Headers qwt
 cd /opt/local/lib
 ln -s /opt/local/qwt/lib/qwt.framework/qwt libqwt.dylib
 
+We need to find the qwt lib for some reason -- this is one way to do it,
+though I'm not sure it is the right way.
 
+install_name_tool -change qwt.framework/Versions/6/qwt /opt/local/qwt/lib/qwt.framework/Versions/6/qwt build/qtgui/SoDaRadio
 

@@ -96,7 +96,7 @@ static void startupServer(const QString & lock_file_name, SoDa::GuiParams & p)
   char ub_fix[] = "UBUNTU_MENUPROXY=";
   putenv(ub_fix);
   
-  server_command = QString("%1 --uds_name %2 ").arg(server_name).arg(ss2QS(p.getServerSocketBasename()));
+  server_command = QString("%1 --uds_name \"%2\" ").arg(server_name).arg(ss2QS(p.getServerSocketBasename()));
 
   // now add the uhd args
   QString uhd_args = ss2QS(p.getUHDArgs());
@@ -219,6 +219,7 @@ int main(int argc, char *argv[])
       ssbn = QString::fromStdString(p.getServerSocketBasename());
     }
 
+    
     if(!checkForZombies(server_lock_filename, ssbn)) {
       startupServer(server_lock_filename, p); 
       

@@ -89,7 +89,8 @@ ADD_LIBRARY(SoDaRadio_Lib STATIC
   ${SoDaRadio_Lib_SRCS} 
   ${SoDaRadio_hdr_moc} 
   ${SoDaRadio_form_moc})
-  
+
+message("QWT_LIBRARIES = ${QWT_LIBRARIES}")
 TARGET_LINK_LIBRARIES(SoDaRadio_Lib m ${RT_LIB} ${Boost_LIBRARIES} 
   Qt5::Widgets Qt5::PrintSupport
   Qt5::Core Qt5::Gui Qt5::Network Qt5::Multimedia

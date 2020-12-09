@@ -61,12 +61,14 @@ SoDa::UD::ServerSocket::ServerSocket(const std::string & path)
   // setup the server address
   bzero((char*) &server_address, sizeof(server_address));
   server_address.sun_family = AF_UNIX;
-  strncpy(server_address.sun_path, path.c_str(), sizeof(server_address.sun_path));
-  unlink(server_address.sun_path);
-  int len = strlen(server_address.sun_path) + sizeof(server_address.sun_family); 
+  strncpy(server_address.sun_path, path.c_str(), path.size());
+  unlink(path.c_str());
+  int len = sizeof(server_address); // strlen(server_address.sun_path) + sizeof(server_address.sun_family); 
 
   mailbox_pathname = path; 
 
+  std::cerr << "Creating server socket [" << mailbox_pathname << "]\n";
+  
   // now bind it
   if (bind(server_socket, (struct sockaddr *) &server_address, len) < 0) {
     std::cerr << "Couldn't bind Unix domain socket at path " << path << " I quit." << std::endl;
@@ -80,6 +82,7 @@ SoDa::UD::ServerSocket::ServerSocket(const std::string & path)
     exit(-1); 
   }
 
+  std::cerr << "Created server socket [" << mailbox_pathname << "]\n";
   // mark the socket as "not ready" for input -- it needs to accept first. 
   ready = false; 
 }
@@ -94,9 +97,11 @@ SoDa::UD::ClientSocket::ClientSocket(const std::string & path, int startup_timeo
     exit(-1); 
   }
 
+  mailbox_pathname = path;
+  
   server_address.sun_family = AF_UNIX;
-  strncpy(server_address.sun_path, path.c_str(), sizeof(server_address.sun_path));
-  int len = strlen(server_address.sun_path) + sizeof(server_address.sun_family); 
+  strncpy(server_address.sun_path, path.c_str(), path.size());
+  int len = sizeof(server_address);
 
   int stat; 
   for(retry_count = 0; retry_count < startup_timeout_count; retry_count++) {
@@ -117,6 +122,7 @@ SoDa::UD::ClientSocket::ClientSocket(const std::string & path, int startup_timeo
   int x = fcntl(conn_socket, F_GETFL, 0);
   fcntl(conn_socket, F_SETFL, x | O_NONBLOCK);
 
+  std::cerr << "Created client socket [" << mailbox_pathname << "]\n";  
 }
 
 bool SoDa::UD::ServerSocket::isReady()

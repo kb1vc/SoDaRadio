@@ -30,10 +30,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iostream>
 #include <stdlib.h>
 #include <boost/algorithm/string.hpp>
+#include <boost/format.hpp>
 
 SoDa::Params::Params(int argc, char * argv[])
 {
   namespace po = boost::program_options;
+
+  for(int i = 0; i < argc; i++) {
+    std::cerr << boost::format("Arg[%d] = [%s]\n")
+      % i % argv[i]; 
+  }
+
   po::options_description desc("Allowed options");
   desc.add_options()
     ("help", "help message")
