@@ -68,11 +68,6 @@ include_directories(SYSTEM ${Boost_INCLUDE_DIRS} ${Radio_INCLUDE_DIRS} ${ALSA_IN
 
 add_executable(SoDaServer ${SoDaServer_SRCS})
 
-if(MACOSX)
-  set(RT_LIB "")
-else()
-  set(RT_LIB "rt")  
-endif()
 
 target_link_libraries(SoDaServer ${RT_LIB}
     Threads::Threads

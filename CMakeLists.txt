@@ -183,8 +183,8 @@ LIST(APPEND LIBRARIES ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
 
 FIND_PACKAGE(Qt5 REQUIRED COMPONENTS core network printsupport multimedia)
 
-if(1)
-  getListOfVarsStartingWith("Q" ALL_VARS)
+if(0)
+  getListOfVarsStartingWith("." ALL_VARS)
   foreach (v IN LISTS ALL_VARS)
     message("${v} = ${${v}}")
   endforeach()  
@@ -221,6 +221,13 @@ ELSE()
   ENDIF()
 ENDIF()
 UNSET(DISABLE_GPSD CACHE)
+
+if(MACOSX)
+  set(RT_LIB "")
+else()
+  set(RT_LIB "rt")  
+endif()
+
 
 
 # This is the radio interface... 

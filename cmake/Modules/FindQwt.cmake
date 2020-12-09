@@ -46,8 +46,8 @@ message("IN FindQwt.cmake  at src dir / cmake/Modules QT_INCLUDE_DIR = ${QT_INCL
 
 find_path ( QWT_INCLUDE_DIR
   NAMES qwt_plot.h
-  HINTS ${QT_INCLUDE_DIR}
-  PATH_SUFFIXES qwt qwt-qt3 qwt-qt4 qwt-qt5 qt5/qwt qt5 qt
+  HINTS ${QT_INCLUDE_DIR} /opt/local/include
+  PATH_SUFFIXES qwt qwt-qt5 qt5/qwt qt5
 )
 
 set ( QWT_INCLUDE_DIRS ${QWT_INCLUDE_DIR} )
@@ -82,9 +82,10 @@ endif ()
 
 find_library ( QWT_LIBRARY
   NAMES qwt-qt5 qwt
-  HINTS ${QT_LIBRARY_DIR}
+  HINTS ${QT_LIBRARY_DIR} /opt/local/lib /opt/local/qwt/lib/qwt.framework/Versions/Current
 )
 
+message("Did I find it QWT_LIBRARY=[${QWT_LIBRARY}]")
 set ( QWT_LIBRARIES ${QWT_LIBRARY} )
 
 

@@ -114,7 +114,7 @@ void GUISoDa::LogTable::writeLogReport(const QString & fname)
     for(int j = 0; j < cols; j++) {
       QTableWidgetItem * itm(item(i,j));
       if(itm) {
-	out << QString("%1:%2:%3").arg(i).arg(j).arg(itm->text()) << endl;
+	out << QString("%1:%2:%3").arg(i).arg(j).arg(itm->text()) << Qt::endl;
       }
     }
   }
@@ -127,10 +127,10 @@ void GUISoDa::LogTable::recordChange(int r, int c)
     QTextStream out(log_file_out);
     QTableWidgetItem * itm(item(r,c));    
     if(itm) {
-      out << QString("%1:%2:%3").arg(r).arg(c).arg(item(r,c)->text()) << endl;    
+      out << QString("%1:%2:%3").arg(r).arg(c).arg(item(r,c)->text()) << Qt::endl;    
     }
     else {
-      out << QString("%1:%2: ").arg(r).arg(c) << endl;
+      out << QString("%1:%2: ").arg(r).arg(c) << Qt::endl;
     }
     log_file_out->flush();
   }
