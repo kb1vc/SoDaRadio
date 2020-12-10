@@ -20,8 +20,10 @@ ENDIF()
 IF(CMAKE_HOST_SYSTEM_NAME MATCHES "Darwin")
   message("Hey!  This must be a Mac!")
   set(MACOSX 1)
+  ADD_DEFINITIONS(-DMACOSX=1)
 ELSE()
   set(MACOSX 0)
+  ADD_DEFINITIONS(-DMACOSX=0)  
 ENDIF()
   
 

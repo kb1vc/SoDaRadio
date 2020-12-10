@@ -219,12 +219,16 @@ qint64 GUISoDa::AudioRXListener::readData(char * data, qint64 max_len)
   // we may have run out of data.  If so, return silence. 
   // and stuff silence into the output stream until we get ahead of the game
   // a little bit. 
-  size_t avail = audio_cbuffer_p->numElements(); 
-  if(avail < max_len) {
+  size_t avail = audio_cbuffer_p->numElements();
+
+  // Qt Audio under Mac doesn't go through ALSA, so is much better
+  // behaved. It won't call readData if we have nothing to offer.
+  // and will buffer what it gets. 
+  if((MACOSX == 0) && (avail < max_len)) {
     // we're below the acceptable reserver... stuff some silence
     // into the output buffers until we're 
-    // qDebug() << QString("[%3] Audio device attempts to read [%1] bytes, only [%2] available.")
-    //  .arg(max_len).arg(avail).arg(QDateTime::currentDateTime().toString("HH:mm:ss.zzz t"));
+    qInfo() << QString("[%3] Audio device attempts to read [%1] bytes, only [%2] available.")
+      .arg(max_len).arg(avail).arg(QDateTime::currentDateTime().toString("HH:mm:ss.zzz t"));
     // stuff some silence in here.. 
     qint64 fill_len = max_len >> 2; 
     memset(data, 0, fill_len); 

@@ -513,7 +513,7 @@ void SoDa::BaseBandRX::run()
 
     // now look for incoming buffers from the rx_stream. 
     int bcount = 0; 
-    for(bcount = 0; (bcount < 2) && ((rxbuf = rx_stream->get(rx_subs)) != NULL); bcount++) {
+    for(bcount = 0; (bcount < 5) && ((rxbuf = rx_stream->get(rx_subs)) != NULL); bcount++) {
       if(rxbuf == NULL) break; 
       did_work = true; 
       // if we're in TX mode, we should just pend silence and ignore the incoming buffer
