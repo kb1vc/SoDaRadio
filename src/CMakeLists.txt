@@ -6,6 +6,7 @@ set(FORMAT_SRCS
 	)
 
 add_library(sodaformat SHARED ${FORMAT_SRCS})
+install(TARGETS sodaformat DESTINATION lib)
 
 # Export header files that are required to build loadable modules
 
