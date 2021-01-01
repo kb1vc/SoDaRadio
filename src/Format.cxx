@@ -38,21 +38,24 @@ namespace SoDa {
     return *this; 
   }
 
-  Format & Format::addD(double v, char fmt, unsigned int width, unsigned int frac_precision) {
+  Format & Format::addF(double v, char fmt, unsigned int width, unsigned int frac_precision) {
     std::stringstream ss;    
     switch (fmt) {
     case 'f':
       // fixed floating point format
-      ss << std::fixed << std::setw(width) << std::setprecision(frac_precision) << v;  
+      if(width) ss << std::setw(width); 
+      ss << std::fixed << std::setprecision(frac_precision) << v;  
       break; 
     case 's':
-      // scientific (who cares what the exponent is format)
-      ss << std::scientific << std::setw(width) << std::setprecision(frac_precision) << v;  				    
+      // scientific (who cares what the exponent is? format)
+      if(width) ss << std::setw(width);       
+      ss << std::scientific << std::setprecision(frac_precision) << v;  				    
       break; 
     case 'g':
       // general (who cares what the exponent is format, or how this looks)
-      ss.unsetf(std::ios::fixed | std::ios::scientific); 
-      ss << std::setw(width) << std::setprecision(frac_precision) << v;  				    
+      ss.unsetf(std::ios::fixed | std::ios::scientific);
+      if(width) ss << std::setw(width);             
+      ss << std::setprecision(frac_precision) << v;  				    
       break; 
     case 'e':
       // now this is a tough one.
@@ -95,10 +98,6 @@ namespace SoDa {
 
     insertField(ss.str());
     return *this;     
-  }
-
-  Format & Format::addF(float v, char fmt, unsigned int width, unsigned int frac_precision) {
-    return addD(v, fmt, width, frac_precision);
   }
 
   Format & Format::addS(const std::string & v, unsigned int width) {
