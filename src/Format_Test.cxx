@@ -78,4 +78,9 @@ int main() {
     ef = ef * 0.1;
     std:: cout << "\n\n";
   }
+  
+  SoDa::Format oops("%0\n");
+
+  std::cout << oops.addI(3).addI(4);
+  
 }

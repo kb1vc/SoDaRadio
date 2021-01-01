@@ -108,22 +108,26 @@ Here's how right thinking people write Avogadro's number:  602.214e21
 \endverbatim
  * 
  * 
- * So once we've invoked the first addX method on a format, all the "%0" markers have been
- * replaced.  But we can "re-use" a format object by calling its SoDa::Format::reset method. 
- * as we did here
- * \snippet Format_Test.cxx reset the format
- * Now the format string is restored to its original state with all the "%0" and "%1" and
- * whatever markers back in place. 
+ * So once we've invoked the first addX method on a format, all the
+ * "%0" markers have been replaced.  But we can "re-use" a format
+ * object by calling its SoDa::Format::reset method.  as we did here
+ * \snippet Format_Test.cxx reset the format 
+ * Now the format string is
+ * restored to its original state with all the "%0" and "%1" and
+ * whatever markers back in place.
  * 
- * Each of the addX methods returns a reference to the format object they just fiddled with. 
- * The reset method does too. 
- * That's how this snippet works: 
+ * Each of the addX methods returns a reference to the format object
+ * they just fiddled with.  The reset method does too.  That's how
+ * this snippet works:
+ *
  * \snippet Format_Test.cxx reusing a format and multiple adds
  * 
- * The various methods provide arguments to set the field width and the number of digits after 
- * the decimal point.  When I get *really* focused, I'll add the ability to specify the number
- * of significant figures instead.  This is really far more useful than the "%fN.P" scheme that
- * we've been living with all these years.  But don't get me started on significant digits. 
+ * The various methods provide arguments to set the field width and
+ * the number of digits after the decimal point.  When I get *really*
+ * focused, I'll add the ability to specify the number of significant
+ * figures instead.  This is really far more useful than the "%fN.P"
+ * scheme that we've been living with all these years.  But don't get
+ * me started on significant digits.
  * 
  * Oh what the hell, we've got me started. 
  * 
@@ -150,50 +154,300 @@ Here's how right thinking people write Avogadro's number:  602.214e21
 /**
  * @namespace SoDa
  * 
- * Not much else is spelled that way, so we're probably not going to have too many collisions
- * with code written by other people.  
+ * Not much else is spelled that way, so we're probably not going to
+ * have too many collisions with code written by other people.
  *
- * SoDa is the namespace I use in code like  <a href="https://kb1vc.github.io/SoDaRadio/">SoDaRadio</a>
- * (The S D and R stand for Software Defined Radio.  The o,a,d,i,o don't stand for anything in particular.)
- * But this code has nothing to do with software defined radios or any of that stuff. 
+ * SoDa is the namespace I use in code like <a
+ * href="https://kb1vc.github.io/SoDaRadio/">SoDaRadio</a> (The S D
+ * and R stand for Software Defined Radio.  The o,a,d,i,o don't stand
+ * for anything in particular.)  But this code has nothing to do with
+ * software defined radios or any of that stuff.
  */
 namespace SoDa {
+  
+    /**
+     * @class Format 
+     * @brief A format object that may be "filled in" with
+     * integer, float, double, string, or character values.
+     * 
+     * # The format string
+     * 
+     * The format string supplied here contains value placeholders of
+     * the form "%[0-9]*" That is, a percent sign "%" followed by one
+     * or more decimal digits. Any placeholder may occur at any place
+     * in the string. A placeholder may appear more than once.  So
+     * this string 
+     * \code "first val %0 third val %2 second val %1 third val all over again %2\n" \endcode
+     * is just fine.
+     * 
+     * Values are numbered starting at zero, because that's the way we roll 
+     * here.  Values are supplied by invocations of the Format::addX methods, 
+     * as in 
+     * - addI (integer)  
+     * - addU (unsigned integer) 
+     * - addF (float or double) 
+     * - addS (string)
+     * - addC (character)
+     * 
+     * Most of these provide for additional format directives that determine 
+     * minimum field with and decimal precision. 
+     *
+     * As each .addX method is invoked, it fills in the associated
+     * placeholders.  The format string, thus evolves as the
+     * placeholders are replaced with the formatted representation of
+     * the supplied values.
+     * 
+     * The format string, like any other string object, follows the "\" escape
+     * conventions.  In addition, since "%" is used as a special character, 
+     * the string "%%" may be used to insert a single "%" character. 
+     * 
+     * # Other Places, Other Norms
+     * 
+     * Those in areas where the decimal radix point is *not* "." or those
+     * who simply wish for an alternative may set the radix separator by 
+     * assigning to the static variable SoDa::Format::separator like this
+     * \code SoDa::Format::separator = ','; \endcode
+     * 
+     * # Friendship and Strings
+     *
+     * The output stream operator "<<" is a friend of the SoDa::Format 
+     * class.  
+     * 
+     * The SoDa::Format::str() method will return a reference to the current
+     * state of the format string (with all the placeholders filled in, as
+     * far as the process has progressed.)
+     * 
+     * # When good code goes bad
+     * 
+     * SoDa::Format methods don't return success/failure values to distinguish
+     * between good outcomes and errors.  If something goes wrong that 
+     * SoDa::Format feels bad about, it will throw a SoDa::Format::BadFormat
+     * exception.  This inherits from "std::runtime_exception" so it is 
+     * moderately well behaved. 
+     * 
+     * SoDa::Format uses exceptions because, after years of reading my code
+     * and the code of others, it is a rare and disciplined individual who 
+     * checks every return value for errors.  And their code looks like 
+     * crap. 
+     * 
+     * ### Inside Baseball note
+     * More skillful programmers might have overloaded
+     * one method name for all five types.  However, making a C++ compiler 
+     * distinguish between add(int v) and add(unsigned int v) -- though it
+     * seems obvious that this should work -- proved beyond my ability, and
+     * may be outside of the C++11 definition.  LLVM warned about it loudly. 
+     */
+  
   class Format {
   public:
+    /**
+     * @brief create a format object with placeholders and all that stuff.
+     * 
+     * @param fmt_string the format string with placeholders and stuff. 
+     */
     Format(const std::string & fmt_string);
 
+    /**
+     * @brief insert a signed integer into the format string
+     * 
+     * @param v the signed integer value
+     * @param width the minimum width of the field. 
+     * @return a reference to this SoDa::Format object to allow 
+     * chaining of method invocations. 
+     * 
+     * The width is passed along to the setw I/O manipulator, so it
+     * is no more useful than that.  If the value takes more room than 
+     * the specified width, the width parameter will be ignored and 
+     * the field will be as wide as necessary to accommodate the value. 
+     */
     Format & addI(int v, unsigned int width = 0);
-    Format & addU(unsigned int v, unsigned int width = 0);    
+
+    /**
+     * @brief insert an unsigned integer into the format string
+     * 
+     * @param v the unsigned integer value
+     * @param width the minimum width of the field. 
+     * @return a reference to this SoDa::Format object to allow 
+     * chaining of method invocations. 
+     * 
+     * The width is passed along to the setw I/O manipulator, so it
+     * is no more useful than that.  If the value takes more room than 
+     * the specified width, the width parameter will be ignored and 
+     * the field will be as wide as necessary to accommodate the value. 
+     */
+    Format & addU(unsigned int v, unsigned int width = 0);
+
+
+    /**
+     * @brief insert a float or double into the format string
+     * 
+     * @param v the double precision value (floats will be promoted)
+     * @param fmt a choice of representations (see below)
+     * @param width the minimum width of the field. 
+     * @param frac_precision the number of decimal positions to the
+     * right of the radix point. 
+     * @return a reference to this SoDa::Format object to allow 
+     * chaining of method invocations. 
+     * 
+     *
+     * The default value for the width parameter will take up only 
+     * as much room as the value requires. 
+     * 
+     * 
+     * ### representation choice 'f'
+     * 
+     * The value is converted to a string in the manner of the 
+     * C++ stream "std::fixed" format.  The width parameter sets
+     * the minimum field width, and the frac_precision parameter
+     * determines the number of places to the right of the radix point. 
+     * 
+     *
+     * The default value for the width parameter will take up only 
+     * as much room as the value requires. 
+     * 
+     * ### representation choice 's'
+     * 
+     * The value is converted to a string in the manner of the 
+     * C++ stream "std::scientific" format.  The width parameter sets
+     * the minimum field width, and the frac_precision parameter
+     * determines the number of places to the right of the radix point. 
+     * THe number will be represented as a floating string value in the
+     * range 1.0 to 1.999999999...999 followed by an exponent specifier
+     * like "e+" or "e-" followed by one or more digits. 
+     * 
+     * The exponent may take on just about any value in the range of
+     * the machine's double precision datatype.
+     *
+     * The default value for the width parameter will take up only 
+     * as much room as the value requires. 
+     * 
+     * ### representation choice 'g'
+     * 
+     * If you just want to get the job done and don't care how your
+     * values appear, the 'g' format will use the default  C++ 
+     * stream conversion to float. It could be fixed.  It could
+     * be scientific. 
+     * The width parameter will set the minimum field width. 
+     * 
+     * The default value for the width parameter will take up only 
+     * as much room as the value requires. 
+     * 
+     * ### representation choice 'e'
+     * 
+     * This is similar to the 's' format, but the exponent (power of 10) 
+     * will always be a multiple of 3.  That makes the value useful to 
+     * those who think in Peta, Tera, Giga, Mega, kilo, milli, micro, nano, 
+     * and pico.  Those left in the CGS world can write their own code. 
+     * 
+     * The width parameter is ignored.  The field width is determined by 
+     * the fmt choice and the frac_precision. The field contain a leading
+     * sign, up to three decimal digits, a radix point, frac_precision digits, 
+     * "e+" or "e-" and one or more exponent digits. 
+     * 
+     * The leading (whole) part of the value will be padded with spaces
+     * to the left of the sign. 
+     * 
+     */
     Format & addF(double v, char fmt = 'f', unsigned int width = 0, unsigned int frac_precision = 3);
+
+    /**
+     * @brief insert a string into the format string
+     * 
+     * @param v the string value
+     * @param width the minimum width of the field. 
+     * @return a reference to this SoDa::Format object to allow 
+     * chaining of method invocations. 
+     * 
+     * The width is passed along to the setw I/O manipulator, so it
+     * is no more useful than that.  If the string is wider than the
+     * width, the field will expand to fit the string.  If the string
+     * is smaller than the width the field will be padded to the 
+     * left with spaces. 
+     *
+     * The default value for the width parameter will take up only 
+     * as much room as the value requires. 
+     * 
+     */
     Format & addS(const std::string & v, unsigned int width = 0);
+    
+    /**
+     * @brief insert a character into the format string
+     * 
+     * @param v the character value
+     * @return a reference to this SoDa::Format object to allow 
+     * chaining of method invocations. 
+     * 
+     * Not much to say here. 
+     */
     Format & addC(char v);    
 
+    /**
+     * @brief reset the format string to its original value, with all
+     * the placeholders restored. 
+     * 
+     * This method allows a format object to be re-used.  
+     * 
+     * @return a reference to a format object to allow chaining. 
+     */
     Format & reset();
     
+    /**
+     * @brief Exception to announce that there was something wrong with the 
+     * format string, or that too many values were supplied. 
+     * 
+     * Inherits from std::runtime_error so the catcher may use "what" to
+     * find out what went wrong. 
+     */
     class BadFormat : public std::runtime_error {
     public:
+      /**
+       * @brief build a BadFormat exception object. 
+       * 
+       * @param problem What went wrong
+       * @param fmt a reference to the format so we can print the
+       * original format spec. 
+       */
       BadFormat(const std::string & problem, const Format & fmt) :
-	std::runtime_error(problem + " format string was [" + fmt.getOrig() + "]") { }
+	std::runtime_error(problem + " format string was \n" + fmt.getOrig()) { }
     };
 
+    /**
+     * @brief provide a string representing the current state of the
+     * format string with all placeholders "filled in" as far as 
+     * the last invocation of an add method. 
+     * 
+     * @param check_for_filled_out If a placeholder has not yet been 
+     * replaced, this method *may* throw a BadFormat exception. 
+     * It doesn't yet. 
+     * 
+     * @return a reference to the format string. 
+     */
     const std::string & str(bool check_for_filled_out = false) const; 
 
+    /**
+     * @brief the radix separator character. 
+     * 
+     * For those in locales where pi is 3,14159 or so, the separater
+     * may be replaced, like this: 
+     * 
+     * \code SoDa::Format::separator = ','; \endcode
+     * 
+     */
     static char separator; 
     
-    const std::string & getOrig() const { return orig_fmt_string; }
   protected:
+
+    const std::string & getOrig() const { return orig_fmt_string; }
     
     std::string fmt_string;
     std::string orig_fmt_string; 
     unsigned int cur_arg_number;
-    unsigned int max_field_num; 
+    int max_field_num; 
 
     std::list<size_t> escape_positions;
 
     void initialScan(); 
 
-    std::string toEngineering(double v);
-    
     void insertField(const std::string & s);
   }; 
 }

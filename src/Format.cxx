@@ -49,7 +49,7 @@ namespace SoDa {
     case 's':
       // scientific (who cares what the exponent is? format)
       if(width) ss << std::setw(width);       
-      ss << std::scientific << std::setprecision(frac_precision) << v;  				    
+      ss << std::scientific << std::setprecision(frac_precision) << v;
       break; 
     case 'g':
       // general (who cares what the exponent is format, or how this looks)
