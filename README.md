@@ -40,3 +40,39 @@ instead of the grotesque
 3.22e-4 Farads.
 
 Who even *thinks* like that?
+
+## Installing
+
+Just like any other CMake project.  For instance, to install the
+package in /usr/local ... From this directory
+
+```
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=/usr/local
+make
+sudo make install
+```
+
+This will install the libraries in /usr/local/lib or lib64 as appropriate
+and the include in /usr/local/include/SoDaFormat/Format.hxx
+
+It will also write doxygen output that starts at /usr/local/share/sodaformat/doc/html/index.html
+
+
+## Testing and Using it all
+
+Take a look at the CMakeLists.txt file and FormatExample.cxx in the examples
+directory.  If the installation has gone right, then you should be able to do this from this directory.
+
+```
+cd examples
+mkdir build
+cd build
+cmake ../
+make
+./FormatExample
+```
+
+Did that work?
+

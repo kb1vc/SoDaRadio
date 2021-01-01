@@ -28,7 +28,7 @@
 
 set(SoDaFormat_FOUND TRUE)
 
-include(FindPkgConfig)
+find_package(PkgConfig)
 
 set(SoDaFormat_INCLUDE_HINTS)
 set(SoDaFormat_LIB_HINTS)
