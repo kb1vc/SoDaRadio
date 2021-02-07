@@ -1,6 +1,5 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.11.0) # this lets out really old distros like CentOS 6
 
-include(FetchContent)
 include(CMakePrintHelpers)
 
 # Can't seem to fix Package Version warnings... defer.  Never put off to tomorrow what you can do at the end of time
@@ -33,8 +32,8 @@ ENDIF()
 PROJECT(SoDaRadio)
 
 SET(SoDaRadio_VERSION_MAJOR 7)
-SET(SoDaRadio_VERSION_MINOR 0)
-SET(SoDaRadio_VERSION_PATCH 5)
+SET(SoDaRadio_VERSION_MINOR 1)
+SET(SoDaRadio_VERSION_PATCH 0)
 SET(SoDaRadio_VERSION "${SoDaRadio_VERSION_MAJOR}.${SoDaRadio_VERSION_MINOR}.${SoDaRadio_VERSION_PATCH}")
 
 set(SoDaRadio_PACKAGE_DESCRIPTION 
@@ -243,18 +242,9 @@ else()
   set(RT_LIB "rt")  
 endif()
 
-# get sodaformat
-FetchContent_Populate(
-  SoDaFormatLib
-  GIT_REPOSITORY https://github.com/kb1vc/SoDaFormat.git
-  GIT_TAG main
-  SOURCE_DIR sodaformatlib
-  )
+# Find SoDaFormat and build it if we must. 
+include(${PROJECT_SOURCE_DIR}/cmake/Modules/BuildSoDaFormat.cmake)
 
-
-add_subdirectory(${sodaformatlib_SOURCE_DIR}) #  sodaformatlib/build)
-cmake_print_properties(TARGETS sodaformat PROPERTIES INCLUDE_DIRECTORIES)
-set(SoDaFormat_INCLUDE_DIR ${SoDaFormat_SOURCE_DIR}/src)
 # This is the radio interface... 
 ADD_SUBDIRECTORY(src)
 

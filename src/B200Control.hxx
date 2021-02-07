@@ -33,7 +33,6 @@
 #include "IPSockets.hxx"
 #include <string>
 #include <list>
-#include <boost/format.hpp>
 #include <iostream>
 #include <uhd/usrp/multi_usrp.hpp>
 

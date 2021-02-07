@@ -29,7 +29,6 @@
 #include "Debug.hxx"
 #include "AudioQtRX.hxx"
 
-#include <boost/format.hpp>
 #define _USE_MATH_DEFINES
 #include <cmath>
 

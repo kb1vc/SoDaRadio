@@ -104,15 +104,15 @@ static void doFFTandDump(int fd, std::complex<float> * in, int len)
 void SoDa::USRPRX::run()
 {
   if(cmd_stream == NULL) {
-      throw SoDa::Exception((boost::format("Never got command stream subscription\n")).str(), 
+    throw SoDa::Exception(std::string("Never got command stream subscription\n"), 
 			  this);	
   }
   if(rx_stream == NULL) {
-      throw SoDa::Exception((boost::format("Never got rx stream subscription\n")).str(), 
+    throw SoDa::Exception(std::string("Never got rx stream subscription\n"),
 			  this);	
   }
   if(if_stream == NULL) {
-      throw SoDa::Exception((boost::format("Never got if stream subscription\n")).str(), 
+    throw SoDa::Exception(std::string("Never got if stream subscription\n"),
 			  this);	
   }
   
@@ -150,7 +150,7 @@ void SoDa::USRPRX::run()
 	unsigned int got = rx_bits->recv(&(dbuf[coll_so_far]), left, md);
 	if(got == 0) {
 	  debugMsg("****************************************");
-	  debugMsg(boost::format("RECV got error -- md = [%s]\n") % md.to_pp_string());
+	  debugMsg(SoDa::Format("RECV got error -- md = [%0]\n").addS(md.to_pp_string()));
 	  debugMsg("****************************************");	  
 	}
 	coll_so_far += got;
@@ -212,7 +212,8 @@ void SoDa::USRPRX::set3rdLOFreq(double IF_tuning)
   // calculate the advance of phase for the IF
   // oscilator in terms of radians per sample
   IF_osc.setPhaseIncr(IF_tuning * 2.0 * M_PI / rx_sample_rate);
-  debugMsg(boost::format("Changed 3rdLO to freq = %g\n") % IF_tuning);
+  debugMsg(SoDa::Format("Changed 3rdLO to freq = %0\n")
+	   .addF(IF_tuning, 10, 6, 'e'));
 }
 
 void SoDa::USRPRX::execCommand(Command * cmd)

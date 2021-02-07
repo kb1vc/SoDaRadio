@@ -33,7 +33,6 @@
 #include "UDSockets.hxx"
 #include <string>
 #include <mutex>
-#include <boost/format.hpp>
 #include <iostream>
 #include <stdexcept>
 

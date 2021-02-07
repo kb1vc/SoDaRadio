@@ -39,7 +39,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <string.h>
-#include <boost/format.hpp>
+#include <SoDa/Format.hxx>
 
 SoDa::UD::ServerSocket::ServerSocket(const std::string & path)
 {
@@ -92,8 +92,8 @@ SoDa::UD::ClientSocket::ClientSocket(const std::string & path, int startup_timeo
   int retry_count;
   conn_socket = socket(AF_UNIX, SOCK_STREAM, 0);
   if(conn_socket < 0) {
-    std::cerr << boost::format("Failed to create client socket on [%s]... I quit.\n")
-			       % path; 
+    std::cerr << SoDa::Format("Failed to create client socket on [%0]... I quit.\n")
+      .addS(path); 
     exit(-1); 
   }
 
@@ -148,7 +148,7 @@ bool SoDa::UD::ServerSocket::isReady()
       ready = false; 
     }
     else {
-      std::cerr << boost::format("%s got client connection!\n") % mailbox_pathname;
+      std::cerr << SoDa::Format("%0 got client connection!\n").addS(mailbox_pathname);
       conn_socket = ns;
       int x = fcntl(conn_socket, F_GETFL, 0);
       int stat = fcntl(conn_socket, F_SETFL, x | O_NONBLOCK);

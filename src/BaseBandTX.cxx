@@ -116,7 +116,7 @@ void SoDa::BaseBandTX::run()
   float audio_buf[audio_buffer_size];
 
   if((cmd_stream == NULL) || (tx_stream == NULL)) {
-      throw SoDa::Exception((boost::format("Missing a stream connection.\n")).str(), 
+    throw SoDa::Exception(std::string("Missing a stream connection.\n"),
 			  this);	
   }
   

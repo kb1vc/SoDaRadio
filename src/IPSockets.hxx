@@ -38,7 +38,7 @@
 #include <netdb.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <boost/format.hpp>
+#include <SoDa/Format.hxx>
 
 #include <stdexcept>
 
@@ -48,7 +48,7 @@ namespace SoDa {
     class ReadTimeoutExc : public std::runtime_error {
     public:
       ReadTimeoutExc(std::string sockname) : 
-	std::runtime_error((boost::format("Read operation on %s socket timed out") % sockname).str()) {
+	std::runtime_error(SoDa::Format("Read operation on %0 socket timed out").addS(sockname).str()) {
       }
     }; 
 

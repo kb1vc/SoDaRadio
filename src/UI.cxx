@@ -116,9 +116,13 @@ void SoDa::UI::run()
      (if_stream == NULL) || 
      (cmd_stream == NULL) || 
      (gps_stream == NULL)) {
-      throw SoDa::Exception((boost::format("Missing a stream connection %p %p %p.\n") 
-			   % cwtxt_stream % if_stream % cmd_stream % gps_stream).str(), 
-			  this);	
+    
+      throw SoDa::Exception(SoDa::Format("Missing a stream connection %0 %1 %2 %3.\n") 
+			    .addU((unsigned long) cwtxt_stream, 'x')
+			    .addU((unsigned long) if_stream, 'x')
+			    .addU((unsigned long) cmd_stream, 'x')
+			    .addU((unsigned long) gps_stream, 'x'),
+			    this);	
   }
   
   net_cmd = NULL;
@@ -147,7 +151,10 @@ void SoDa::UI::run()
       if(new_connection) {
 	updateSpectrumState();
 
-	std::string vers= (boost::format("%s GIT %s") % SoDaRadio_VERSION % SoDaRadio_GIT_ID).str(); 
+	std::string vers= SoDa::Format("%0 Git %1")
+	  .addS(SoDaRadio_VERSION)
+	  .addS(SoDaRadio_GIT_ID).str();
+	
 	SoDa::Command * vers_cmd = new SoDa::Command(Command::REP,
 						     Command::SDR_VERSION,
 						     vers.c_str());
@@ -173,7 +180,7 @@ void SoDa::UI::run()
 
     // if there are commands arriving from the socket port, handle them.
     if(got_new_netmsg) {
-      debugMsg(boost::format("UI got message [%s]\n") % net_cmd->toString());
+      debugMsg(SoDa::Format("UI got message [%0]\n").addS(net_cmd->toString()));
       cmd_stream->put(net_cmd);
       didwork = true;
       if(net_cmd->target == SoDa::Command::TX_CW_EMPTY) {
@@ -277,8 +284,9 @@ void SoDa::UI::execSetCommand(Command * cmd)
     if(cmd->iparms[0] > 11) fft_update_interval = 0;
     if(cmd->iparms[0] < 0) fft_update_interval = 11;
     new_spectrum_setting = true;
-    debugMsg(boost::format("Updated SPEC_UPDATE_RATE = %d -> interval = %d\n")
-	     % cmd->iparms[0] % fft_update_interval);
+    debugMsg(SoDa::Format("Updated SPEC_UPDATE_RATE = %0 -> interval = %1\n")
+	     .addI(cmd->iparms[0])
+	     .addI(fft_update_interval));
     break; 
   default:
     break; 
@@ -379,7 +387,7 @@ void SoDa::UI::sendFFT(SoDa::Buf * buf)
     lo_check_mode = false;
     // send the report
     double freq = ((float) maxi) * lo_hz_per_bucket;
-    debugMsg(boost::format("offset = %g\n") % freq); 
+    debugMsg(SoDa::Format("offset = %0\n").addF(freq, 10, 6, 'e')); 
     cmd_stream->put(new SoDa::Command(Command::REP, Command::LO_OFFSET,
 				      freq)); 
     cmd_stream->put(new SoDa::Command(Command::REP, Command::SPEC_RANGE_LOW,

@@ -31,7 +31,8 @@
 
 #include <alsa/asoundlib.h>
 
-#include <boost/format.hpp>
+#include <SoDa/Format.hxx>
+
 #define _USE_MATH_DEFINES
 #include <cmath>
 
@@ -64,7 +65,8 @@ namespace SoDa {
     const char *pcm_cap_name = audio_port_name.c_str();    
     snd_pcm_stream_t instream  = SND_PCM_STREAM_CAPTURE; 
     if(snd_pcm_open(&pcm_in, pcm_cap_name, instream, 0) < 0) {
-      std::cerr << boost::format("can't open Alsa PCM device [%s] for  input... Crap.\n") % pcm_cap_name;
+      std::cerr << SoDa::Format("can't open Alsa PCM device [%0] for  input... Crap.\n")
+	.addS(pcm_cap_name);
       exit(-1); 
     }
 
@@ -211,13 +213,13 @@ namespace SoDa {
     int err; 
     if((err = snd_pcm_prepare(pcm_in)) < 0) {
       throw
-	SoDa::Exception((boost::format("AudioQtRXTX::wakeIn() Failed to wake after sleepIn() -- %s")
-			 % snd_strerror(err)).str(), this);
+	SoDa::Exception(SoDa::Format("AudioQtRXTX::wakeIn() Failed to wake after sleepIn() -- %0")
+			.addS(snd_strerror(err)), this);
     }
     if((err = snd_pcm_start(pcm_in)) < 0) {
       throw
-	SoDa::Exception((boost::format("AudioQtRXTX::wakeIn() Failed to wake after sleepIn() -- %s")
-			 % snd_strerror(err)).str(), this);
+	SoDa::Exception(SoDa::Format("AudioQtRXTX::wakeIn() Failed to wake after sleepIn() -- %0")
+			.addS(snd_strerror(err)), this);
     }
   }
 

@@ -50,7 +50,7 @@ void SoDa::CWTX::run()
   Command * cmd, *txtcmd; 
 
   if((cmd_stream == NULL) || (cw_env_stream == NULL) || (cwtxt_stream == NULL)) {
-      throw SoDa::Exception((boost::format("Missing a stream connection.\n")).str(), 
+    throw SoDa::Exception(std::string("Missing a stream connection.\n"), 
 			  this);	
   }
 

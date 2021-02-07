@@ -37,8 +37,7 @@
 #include <uhd/usrp/multi_usrp.hpp>
 #include <uhd/types/tune_request.hpp>
 #include <uhd/types/tune_result.hpp>
-#include <boost/format.hpp>
-#include <Format.hxx>
+#include <SoDa/Format.hxx>
 #include <boost/property_tree/exceptions.hpp>
 
 

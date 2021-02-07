@@ -33,6 +33,7 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <SoDa/Format.hxx>
 
 SoDa::BaseBandRX::BaseBandRX(Params * params,
 		       AudioIfc * _audio_ifc) : SoDa::Thread("BaseBandRX")
@@ -282,10 +283,6 @@ void SoDa::BaseBandRX::demodulateAM(std::complex<float> * dbuf)
     audio_buffer[i] = v; 
   }
   sumsq = sqrt(sumsq / ((float) audio_buffer_size));
-  // if((dbg_ctr & 0x3f) == 0) {
-  //   std::cerr << boost::format("maxval = %f rms = %f\n") % maxval % sumsq;
-  // }
-
   // audio is biased above DC... it really really needs to get its DC component removed. 
   am_audio_filter->apply(audio_buffer, audio_buffer); 
 
@@ -464,7 +461,10 @@ void SoDa::BaseBandRX::execGetCommand(SoDa::Command * cmd)
     SoDa::Command::UnitSelector us;
     us = SoDa::Command::UnitSelector(cmd->iparms[0]);
     if(us == SoDa::Command::BaseBandRX) {
-      std::cerr << boost::format("%s ready_buffers.size = %d free_buffers.size = %d\n") % getObjName() % readyAudioBuffers() % free_buffers.size();
+      std::cerr << SoDa::Format("%0 ready_buffers.size = %1 free_buffers.size = %2\n")
+	.addS(getObjName())
+	.addI(readyAudioBuffers())
+	.addI(free_buffers.size());
     }
     break; 
   default:
@@ -494,7 +494,7 @@ void SoDa::BaseBandRX::run()
   int restart_count = 0;
 
   if((cmd_stream == NULL) || (rx_stream == NULL)) {
-      throw SoDa::Exception((boost::format("Missing a stream connection.\n")).str(), 
+    throw SoDa::Exception(std::string("Missing a stream connection.\n"),
 			  this);	
   }
   

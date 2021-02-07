@@ -126,6 +126,7 @@
 #include <sys/resource.h>
 
 #include <fstream>
+#include <SoDa/Format.hxx>
 
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
@@ -180,7 +181,7 @@ int loadAccessories(const std::vector<std::string> & libs, SoDa::Debug & d) {
   // are there loadable modules we want to run?
   for(auto l : libs) {
     dlopen(l.c_str(), RTLD_LAZY | RTLD_GLOBAL);
-    d.debugMsg((boost::format("Loaded shared object %s\n") % l).str());    
+    d.debugMsg(SoDa::Format("Loaded shared object %0\n").addS(l));
   }
   return 1; 
 }
@@ -228,7 +229,8 @@ int doWork(SoDa::Params & params)
     tx = new SoDa::USRPTX(&params, ((SoDa::USRPCtrl *)ctrl)->getUSRP());
   }
   else {
-    std::cerr << boost::format("Radio type [%s] is not yet supported\nHit ^C to exit.\n") % params.getRadioType(); 
+    std::cerr << SoDa::Format("Radio type [%0] is not yet supported\nHit ^C to exit.\n")
+      .addS(params.getRadioType()); 
     exit(-1);
   }
 

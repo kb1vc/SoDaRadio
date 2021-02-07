@@ -26,7 +26,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #include "SimpleAccessory.hxx"
-#include <boost/format.hpp>
+#include <SoDa/Format.hxx>
 #include <iostream>
 #include <string>
 
@@ -44,8 +44,11 @@ SimpleAccessory::SimpleAccessory(const std::string & name) : SoDa::Thread(name) 
 }
 
 void SimpleAccessory::printReport() {
-  std::cerr << boost::format("Accessory named %s reports: Get: %8d  Set: %8d  Rep: %8d\n")
-    % getObjName() % get_count % set_count % rep_count; 
+  std::cerr << SoDa::Format("Accessory named %s reports: Get: %8d  Set: %8d  Rep: %8d\n")
+    .addS(getObjName())
+    .addI(get_count, 8)
+    .addI(set_count, 8)
+    .addI(rep_count, 8); 
 }
 
 void SimpleAccessory::run() {

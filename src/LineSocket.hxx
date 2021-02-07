@@ -32,7 +32,7 @@
 #include "IPSockets.hxx"
 #include "UDSockets.hxx"
 #include "Command.hxx"
-
+#include <SoDa/Format.hxx>
 
 #include <stdexcept>
 
@@ -85,12 +85,15 @@ namespace SoDa {
 	if(ready_line_count == 0) {
 	  // get a buffer; 
 	  int gotbytes = read(conn_socket, temp_buf, temp_buf_size);
-	  std::cerr << boost::format("READ Got ret = %d errno = %d ready = %c\n")
-	     % gotbytes % errno % ((char) (isReady() ? 'T' : 'F')); 
+	  std::cerr << SoDa::Format("READ Got ret = %0 errno = %1 ready = %2\n")
+	    .addI(gotbytes)
+	    .addI(errno)
+	    .addC((char) (isReady() ? 'T' : 'F')); 
 	  if(gotbytes < 0) {
 	    if((errno != EWOULDBLOCK) && (errno != EAGAIN)) {
-	      std::cerr << boost::format("READ got ret = %d  errno = %d\n")
-		% gotbytes % errno; 
+	      std::cerr << SoDa::Format("READ got ret = %0  errno = %1\n")
+		.addI(gotbytes)
+		.addI(errno); 
 	      perror("READ: ");
 	      return -1; 
 	    }

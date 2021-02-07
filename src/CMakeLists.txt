@@ -72,7 +72,7 @@ add_executable(SoDaServer ${SoDaServer_SRCS})
 
 target_link_libraries(SoDaServer ${RT_LIB}
   Threads::Threads
-  sodaformat
+  ${SoDaFormat_LIBRARIES}
     ${Boost_LIBRARIES}  ${Radio_LIBRARIES} ${ALSA_LIBRARIES} ${FFTW3F_LIBRARIES} ${CMAKE_DL_LIBS})
 
 
@@ -111,7 +111,3 @@ add_library(SoDaSockets STATIC ${SoDaSockets_SRCS})
 install(TARGETS SoDaSockets DESTINATION lib)
 
 
-getListOfVarsStartingWith("[sS]" vars)
-foreach (v IN LISTS vars)
-  message("${v} = ${${v}}")
-endforeach()
