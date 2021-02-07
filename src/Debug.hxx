@@ -33,6 +33,7 @@
 #include <boost/format.hpp>
 #include <mutex>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <Format.hxx>
 
 namespace SoDa {
   /** 
@@ -71,6 +72,10 @@ namespace SoDa {
       debugMsg(fmt.str(), threshold);
     }
 
+    void debugMsg(const SoDa::Format & fmt, unsigned int threshold = 1) {
+      debugMsg(fmt.str(), threshold);
+    }
+    
     void debugMsg(const char * msg, unsigned int threshold = 1) {
       debugMsg(std::string(msg), threshold); 
     }

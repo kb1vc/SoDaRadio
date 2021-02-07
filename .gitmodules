@@ -1,0 +1,8 @@
+[submodule "external/SoDaFormat"]
+	path = external/SoDaFormat
+	url = https://github.com/kb1vc/SoDaFormat.git
+	branch = main
+[submodule "external/SoDaSignals"]
+	path = external/SoDaSignals
+	url = https://github.com/kb1vc/SoDaSignals.git
+	branch = main

@@ -39,6 +39,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/syscall.h>
+#include <Format.hxx>
 
 extern "C" {
 #include <signal.h>
@@ -238,6 +239,16 @@ namespace SoDa {
       reason = std::string(_reason); 
     }
 
+    /**
+     * The constructor
+     *
+     * @param _reason a SoDa::Format object with an explanation of the error
+     * @param obj  a pointer to the SoDa::Base object that triggered the exception (if any).
+     */
+    Exception(const SoDa::Format & _reason, Base * obj) {
+      thrower = obj;
+      reason = _reason.str(); 
+    }
 
     /**
      * Create a string that explains this exception.
