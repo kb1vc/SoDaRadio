@@ -44,13 +44,27 @@
 
 message("IN FindQwt.cmake  at src dir / cmake/Modules QT_INCLUDE_DIR = ${QT_INCLUDE_DIR}")
 
-find_path ( QWT_INCLUDE_DIR
-  NAMES qwt_plot.h
-  HINTS ${QT_INCLUDE_DIR} /opt/local/include
-  PATH_SUFFIXES qwt qwt-qt5 qt5/qwt qt5
-)
+if(MACOSX) 
+  file(GLOB_RECURSE QWT_INCLUDE_plotfile /opt/local/qwt-6.1.5/*qwt_plot.h)
+  get_filename_component(QWT_INCLUDE_DIR  ${QWT_INCLUDE_plotfile} DIRECTORY)
+  get_filename_component(QWT_ROOT_DIR "${QWT_INCLUDE_DIR}/../../.." ABSOLUTE)
+  message("QWT_ROOT_DIR = ${QWT_ROOT_DIR}")
+else()
+  set(QWT_PATHS
+	/usr /usr/local /usr/local/share /opt/local /opt/local/qwt*) # -6.1.5 )
+  find_path ( QWT_INCLUDE_DIR
+    NAMES qwt.h
+    PATHS ${QWT_PATHS}
+    HINTS ${QT_INCLUDE_DIR} /opt/local/include 
+    PATH_SUFFIXES qwt qwt-qt5 qt5/qwt qt5 qwt Headers
+  )
+endif()
 
-set ( QWT_INCLUDE_DIRS ${QWT_INCLUDE_DIR} )
+message("QWT_INCLUDE_DIR = ${QWT_INCLUDE_DIR}")
+
+set (QWT_INCLUDE_DIRS ${QWT_INCLUDE_DIR} )
+
+
 
 # version
 set ( _VERSION_FILE ${QWT_INCLUDE_DIR}/qwt_global.h )
@@ -79,11 +93,29 @@ if ( Qwt_FIND_VERSION AND QWT_VERSION_STRING )
   endif ()
 endif ()
 
-
-find_library ( QWT_LIBRARY
-  NAMES qwt-qt5 qwt
-  HINTS ${QT_LIBRARY_DIR} /opt/local/lib /opt/local/qwt/lib/qwt.framework/Versions/Current
+if(MACOSX)
+  message("QWT_ROOT_DIR = [${QWT_ROOT_DIR}]")
+  find_path ( QWT_LIBRARY_DIR
+    NAMES qwt qwt-qt5
+    PATHS ${QWT_PATHS}
+    NAMES qwt-qt5 qwt 
+    HINTS ${QT_LIBRARY_DIR} /opt/local/lib /opt/local/qwt/lib/qwt.framework/Versions/Current ${QWT_ROOT_DIR}/*
 )
+
+  message("QWT_LIBRARY_DIR = [${QWT_LIBRARY_DIR}]")
+ 
+  find_library (QWT_LIBRARY_DIR
+    NAMES qwt-qt5 qwt
+    HINTS ${QT_LIBRARY_DIR} /opt/local/lib ${QWT_ROOT_DIR} ${QWT_LIBRARY_DIR} ${QWT_ROOT_DIR}
+)
+  set(QWT_LIBRARY "${QWT_LIBRARY_DIR}/qwt")
+  message("HEY! QWT_LIBRARY = [${QWT_LIBRARY}]")
+else()
+  find_library ( QWT_LIBRARY
+    NAMES qwt-qt5 qwt 
+    HINTS ${QT_LIBRARY_DIR} /opt/local/lib /opt/local/qwt/lib/qwt.framework/Versions/Current ${QWT_ROOT_DIR}
+)
+endif()
 
 message("Did I find it QWT_LIBRARY=[${QWT_LIBRARY}]")
 set ( QWT_LIBRARIES ${QWT_LIBRARY} )
@@ -105,6 +137,7 @@ if ( CMAKE_VERSION LESS 2.8.3 )
 else ()
   find_package_handle_standard_args( Qwt REQUIRED_VARS QWT_LIBRARY QWT_INCLUDE_DIR _QWT_VERSION_MATCH VERSION_VAR QWT_VERSION_STRING )
 endif ()
+
 
 
 mark_as_advanced (
