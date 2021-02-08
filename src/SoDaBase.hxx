@@ -34,7 +34,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Debug.hxx"
 #include <complex>
 #include <string>
-#include <boost/thread.hpp>
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/syscall.h>

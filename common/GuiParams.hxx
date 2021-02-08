@@ -29,7 +29,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef GUIPARAMS_HDR
 #define GUIPARAMS_HDR
 
-#include <boost/format.hpp>
 #include <boost/program_options.hpp>
 
 namespace SoDa {

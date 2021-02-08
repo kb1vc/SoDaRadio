@@ -32,11 +32,10 @@
 #include <iostream>
 #include <list>
 #include <map>
-#include <boost/format.hpp>
-#include <boost/foreach.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include "../src/Debug.hxx"
+#include <SoDa::Format.hxx>
 
 class SoDaRadio_Band : public SoDa::Debug {
 public:
@@ -44,7 +43,7 @@ public:
     SoDa::Debug("SoDaRadio_Band") {
     
     band_name = banditem->get<std::string>("name");
-    debugMsg(boost::format("creating band %s") % band_name);
+    debugMsg(SoDa::Format("creating band %0").addS(band_name));
     upper_band_edge = banditem->get<double>("upper_band_edge");
     lower_band_edge = banditem->get<double>("lower_band_edge");
 
@@ -74,7 +73,8 @@ public:
     if(transverter_mode) {
       debugMsg("in transverter mode");
       transverter_local_lo = banditem->get<bool>("transverter_local_lo", false);
-      debugMsg(boost::format("Transverter mode with transverter_local_lo = %d") % transverter_local_lo);
+      debugMsg(SoDa::Format("Transverter mode with transverter_local_lo = %0")
+	       addI(transverter_local_lo));
       transverter_lo_freq = banditem->get<double>("transverter_lo_freq");
       transverter_multiplier = banditem->get<double>("transverter_multiplier");
       low_side_injection = banditem->get<bool>("low_side_injection"); 
@@ -194,9 +194,11 @@ public:
       band.put("transverter_mode", false); 
     }
 
-    debugMsg(boost::format("sodaradio band sees config_tree = %p\n") % config_tree); 
+    debugMsg(SoDa::Format("sodaradio band sees config_tree = %0\n")
+	     .addU((unsigned long) config_tree, 'x')); 
     config_tree->add_child("SoDaRadio.bands.band", band);
-    debugMsg(boost::format("sodaradio band sees config_tree = %p after add_child\n") % config_tree); 
+    debugMsg(SoDa::Format("sodaradio band sees config_tree = %0 after add_child\n") 
+	     .addU((unsigned long) config_tree, 'x')); 
   }
   
   bool inBand(double freq) {
@@ -258,7 +260,8 @@ public:
   SoDaRadio_BandSet(boost::property_tree::ptree * config_tree) :
     SoDa::Debug("SoDaRadio_BandSet")
   {
-    debugMsg(boost::format("sodaradio bandset const sees config_tree = %p\n") % config_tree); 
+    debugMsg(SoDa::Format("sodaradio bandset const sees config_tree = %0\n")
+	     .addU((unsigned long) config_tree, 'x')); 
     if(!config_tree->get_child_optional("bands")) {
       return;
     }
@@ -269,15 +272,18 @@ public:
 	add(nb);
       }
     }
-    debugMsg(boost::format("sodaradio bandset const sees config_tree = %p at end\n") % config_tree); 
+    debugMsg(SoDa::Format("sodaradio bandset const sees config_tree = %0 at end\n")
+	     .addU((unsigned long)config_tree, 'x')); 
   }
   
   void save(boost::property_tree::ptree * config_tree) {
-    debugMsg(boost::format("sodaradio bandset save const sees config_tree = %p\n") % config_tree); 
+    debugMsg(SoDa::Format("sodaradio bandset save const sees config_tree = %0\n")
+	     .addU((unsigned long)config_tree, 'x')); 
     for(BandMapEntry & b : band_map) {
       b.second->save(config_tree);
     }
-    debugMsg(boost::format("sodaradio bandset save const sees config_tree = %p at end\n") % config_tree); 
+    debugMsg(SoDa::Format("sodaradio bandset save const sees config_tree = %0 at end\n")
+	     .addU((unsigned long) config_tree, 'x')); 
   }
 
   void add(SoDaRadio_Band * band) {

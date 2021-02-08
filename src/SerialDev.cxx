@@ -28,7 +28,6 @@
 
 #include "SerialDev.hxx"
 
-#include <boost/asio.hpp>
 #include <math.h>
 #include <stdexcept>
 

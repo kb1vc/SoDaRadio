@@ -4,7 +4,8 @@
 #include <cstring>
 #include <iostream> 
 #include <mutex>
-#include <boost/format.hpp>
+#include <SoDa/Format.hxx>
+
 
 
 namespace SoDa {
@@ -147,18 +148,21 @@ namespace SoDa {
     }
 
     void dump(std::ostream & os) {
-      os << boost::format("buffer       = %p\n") % buffer;
-      os << boost::format("head_pointer = %p\n") % head_pointer; 
-      os << boost::format("tail_pointer = %p\n") % tail_pointer;
-      os << boost::format("buffer_elements    = %d\n") % buffer_elements; 
-      os << boost::format("available elements = %d\n") % numElements();
-      os << boost::format("num_written        = %d\n") % num_written; 
-      os << boost::format("num_read           = %d\n") % num_read; 
+      os << SoDa::Format("buffer       = %0\n").addU((unsigned long) buffer, 'x');
+      os << SoDa::Format("head_pointer = %0\n").addU((unsigned long) head_pointer, 'x'); 
+      os << SoDa::Format("tail_pointer = %0\n").addU((unsigned long) tail_pointer, 'x');
+      os << SoDa::Format("buffer_elements    = %d\n").addI(buffer_elements); 
+      os << SoDa::Format("available elements = %d\n").addI(numElements());
+      os << SoDa::Format("num_written        = %d\n").addI(num_written); 
+      os << SoDa::Format("num_read           = %d\n").addI(num_read); 
       for(int i = 0; i < buffer_elements; i++) {
 	char tp, hp; 
 	tp = (tail_pointer == (buffer + i)) ? 'T' : ' ';
 	hp = (head_pointer == (buffer + i)) ? 'H' : ' ';	
-	os << boost::format("%c%c %4d: ") % tp % hp % i; 
+	os << SoDa::Format("%0%1 %2: ")
+	  .addC(tp)
+	  .addC(hp)
+	  .addI(i, 4); 
 	os << buffer[i] << std::endl; 
       }
     }

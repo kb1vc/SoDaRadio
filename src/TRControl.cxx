@@ -35,7 +35,6 @@
 #include <uhd/device.hpp>
 #include <uhd/types/ranges.hpp>
 #include <uhd/property_tree.hpp>
-#include <boost/algorithm/string.hpp> //for split
 #include <uhd/usrp/dboard_id.hpp>
 #include <uhd/usrp/mboard_eeprom.hpp>
 #include <uhd/usrp/dboard_eeprom.hpp>
