@@ -32,7 +32,7 @@
 #include <string>
 #include <uhd/usrp/multi_usrp.hpp>
 #include <uhd/property_tree.hpp>
-#include <boost/format.hpp>
+#include <SoDa/Format.hxx>
 #include <iostream>
 #include <boost/property_tree/exceptions.hpp>
 
@@ -62,7 +62,7 @@ public:
     }
     catch (std::runtime_error e)
     {
-      complain((boost::format("Exception looking for motherboard %d") % mb_index).str(), e, false);
+      complain((SoDa::Format("Exception looking for motherboard %0").addI(mb_index)).str(), e, false);
     }
 
     // the object is to create a tree rooted at the first motherboard.
@@ -232,7 +232,11 @@ private:
                 std::runtime_error &e,
                 bool continue_p = true)
   {
-    std::cerr << boost::format("PropTree encountered %s\n\tRequester: %s\n\tException: [%s]\n\t%s\n") % explain_string % client_name % e.what() % (continue_p ? "Thread will continue" : "Thread will terminate");
+    std::cerr << SoDa::Format("PropTree encountered %0\n\tRequester: %1\n\tException: [%2]\n\t%3\n")
+      .addS(explain_string)
+      .addS(client_name)
+      .addS(e.what())
+      .addS((continue_p ? "Thread will continue" : "Thread will terminate"));
     if (!continue_p)
       exit(-1);
   }
@@ -242,7 +246,12 @@ private:
                 std::runtime_error &e,
                 bool continue_p = true)
   {
-    std::cerr << boost::format("PropTree encountered %s\n\twhile looking for path [%s]\n\tRequester: %s\n\tException: [%s]\n\t%s\n") % explain_string % path % client_name % e.what() % (continue_p ? "Thread will continue" : "Thread will terminate");
+    std::cerr << SoDa::Format("PropTree encountered %0\n\twhile looking for path [%1]\n\tRequester: %2\n\tException: [%3]\n\t%4\n")
+      .addS(explain_string)
+      .addS(path)
+      .addS(client_name)
+      .addS(e.what())
+      .addS((continue_p ? "Thread will continue" : "Thread will terminate"));
 
     if (!continue_p)
       exit(-1);

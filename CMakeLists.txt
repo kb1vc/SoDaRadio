@@ -1,5 +1,6 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.0.0) # this lets out really old distros like CentOS 6
+CMAKE_MINIMUM_REQUIRED(VERSION 3.11.0) # this lets out really old distros like CentOS 6
 
+include(CMakePrintHelpers)
 
 # Can't seem to fix Package Version warnings... defer.  Never put off to tomorrow what you can do at the end of time
 # see here: https://github.com/PointCloudLibrary/pcl/issues/3680
@@ -31,8 +32,8 @@ ENDIF()
 PROJECT(SoDaRadio)
 
 SET(SoDaRadio_VERSION_MAJOR 7)
-SET(SoDaRadio_VERSION_MINOR 0)
-SET(SoDaRadio_VERSION_PATCH 5)
+SET(SoDaRadio_VERSION_MINOR 1)
+SET(SoDaRadio_VERSION_PATCH 0)
 SET(SoDaRadio_VERSION "${SoDaRadio_VERSION_MAJOR}.${SoDaRadio_VERSION_MINOR}.${SoDaRadio_VERSION_PATCH}")
 
 set(SoDaRadio_PACKAGE_DESCRIPTION 
@@ -175,24 +176,35 @@ ELSE()
 ENDIF()
 
 
+if(MACOSX)
+  message("Looking for OPENGL")
+  FIND_PACKAGE(OpenGL REQUIRED)
+  message("looked for opengl")
+  FIND_PACKAGE(GLUT REQUIRED)
+  LIST(APPEND INCLUDE_DIRS ${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_DIR})
+  LIST(APPEND LIBRARIES ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
 
-message("Looking for OPENGL")
-FIND_PACKAGE(OpenGL REQUIRED)
-message("looked for opengl")
-FIND_PACKAGE(GLUT REQUIRED)
-LIST(APPEND INCLUDE_DIRS ${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_DIR})
-LIST(APPEND LIBRARIES ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
+  FIND_PACKAGE(Qt5 REQUIRED COMPONENTS core network printsupport multimedia)
 
-FIND_PACKAGE(Qt5 REQUIRED COMPONENTS core network printsupport multimedia)
-
-if(0)
-  getListOfVarsStartingWith("." ALL_VARS)
-  foreach (v IN LISTS ALL_VARS)
-    message("${v} = ${${v}}")
-  endforeach()  
+  FIND_PACKAGE(Qwt REQUIRED)
+else()
+  FIND_PACKAGE(Qt5Widgets )
+  IF(Qt5Widgets_FOUND)
+    MESSAGE("Building qt gui")
+    FIND_PACKAGE(Qt5Core REQUIRED )
+    FIND_PACKAGE(Qt5Network REQUIRED )
+    FIND_PACKAGE(Qt5PrintSupport REQUIRED )
+    FIND_PACKAGE(Qt5Multimedia REQUIRED )                    
+    FIND_PACKAGE(Qwt REQUIRED)    
+    IF(Qt5Widgets_VERSION VERSION_LESS 5.7.0)
+      MESSAGE(FATAL_ERROR "Minimum supported Qt5 version is 5.7")
+    ENDIF()
+  ELSE()
+    MESSAGE(FATAL_ERROR "The Qt5Widgets library is required to build SoDaRadio")
+  ENDIF()
 endif()
 
-FIND_PACKAGE(Qwt REQUIRED)
+
 
 ## Need hamlib for just the include files to get hamlib codes for
 ## modulation scheme and other settings.
@@ -230,7 +242,8 @@ else()
   set(RT_LIB "rt")  
 endif()
 
-
+# Find SoDaFormat and build it if we must. 
+include(${PROJECT_SOURCE_DIR}/cmake/Modules/BuildSoDaFormat.cmake)
 
 # This is the radio interface... 
 ADD_SUBDIRECTORY(src)
@@ -253,4 +266,5 @@ IF(DOXYGEN_FOUND)
 
   INSTALL(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION share/doc)
 ENDIF()
+
 

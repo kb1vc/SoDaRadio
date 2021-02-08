@@ -35,10 +35,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <complex>
 #include <string>
 #include <boost/thread.hpp>
-#include <boost/format.hpp>
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/syscall.h>
+#include <SoDa/Format.hxx>
 
 extern "C" {
 #include <signal.h>
@@ -238,6 +238,16 @@ namespace SoDa {
       reason = std::string(_reason); 
     }
 
+    /**
+     * The constructor
+     *
+     * @param _reason a SoDa::Format object with an explanation of the error
+     * @param obj  a pointer to the SoDa::Base object that triggered the exception (if any).
+     */
+    Exception(const SoDa::Format & _reason, Base * obj) {
+      thrower = obj;
+      reason = _reason.str(); 
+    }
 
     /**
      * Create a string that explains this exception.
@@ -245,10 +255,15 @@ namespace SoDa {
      */
     const std::string & toString() {
       if(thrower != NULL) {
-	message = (boost::format("SoDa Object [%s] threw exception [%s]\n") % thrower->getObjName() % reason).str();
+	message = SoDa::Format("SoDa Object [%0] threw exception [%1]\n")
+	  .addS(thrower->getObjName())
+	  .addS(reason)
+	  .str();
       }
       else {
-	message = (boost::format("Unknown SoDa Object threw exception [%s]\n") % reason).str();
+	message = SoDa::Format("Unknown SoDa Object threw exception [%0]\n")
+	  .addS(reason)
+	  .str();
       }
 
       return message;

@@ -31,12 +31,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <fstream>
 #include <complex>
 #include <fftw3.h>
+#include "SoDaBase.hxx"
 
 namespace SoDa {
   /**
    * Spectrogram generates magnitude buffers from input sample stream. 
    */
-  class Spectrogram {
+  class Spectrogram : public Base {
   public:
     /**
      * @brief Constructor

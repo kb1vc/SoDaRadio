@@ -32,7 +32,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
-#include <boost/format.hpp>
 
 static void bindump(char * fn, std::complex<float> * buf, unsigned int num_elts, int append = 0) __attribute__ ((unused));
 static void bindump(char * fn, std::complex<float> * buf, unsigned int num_elts, int append)

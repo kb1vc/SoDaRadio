@@ -30,7 +30,6 @@
 #define USRP_FRONTEND_HDR
 
 #include <string>
-#include <boost/format.hpp>
 #include <iostream>
 #include "PropTree.hxx"
 

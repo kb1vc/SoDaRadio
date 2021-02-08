@@ -27,11 +27,12 @@
 */
 
 #include "SerialDev.hxx"
-#include <boost/format.hpp>
+
 #include <boost/asio.hpp>
 #include <math.h>
 #include <stdexcept>
 
+#include <SoDa/Format.hxx>
 
 #include <stdio.h>
 #include <unistd.h>
@@ -55,7 +56,9 @@ namespace SoDa
 
     if(port == -1) {
       // failed to open the port.  Throw an exception
-      throw std::runtime_error((boost::format("Failed to open serial port [%s]\n") % devname).str());
+      throw std::runtime_error(SoDa::Format("Failed to open serial port [%0]\n")
+			       .addS(devname)
+			       .str());
     }
 
     // now set the speeds and such. 
@@ -135,8 +138,9 @@ namespace SoDa
 	itercount = 0; 
       }
       else if(len < 0) {
-	std::cerr << boost::format("read returned %d  errno = %d\n")
-	  % len % errno;
+	std::cerr << SoDa::Format("read returned %0  errno = %1\n")
+	  .addI(len)
+	  .addI(errno);
       }
       else if(len == 0) {
 	usleep(1000);
@@ -180,12 +184,12 @@ namespace SoDa
     std::string resp;
     int stlen = str.size(); 
 
-    std::string exp = (boost::format("OK [%s]") % (str.substr(0, stlen-1))).str();
+    std::string exp = SoDa::Format("OK [%0]").addS(str.substr(0, stlen-1)).str();
 
     putString(str); 
     int i; 
     for(i = 0; i < 10; i++) { // 10 retries
-      std::cerr << boost::format("loop %d start\n") % i; 
+      std::cerr << SoDa::Format("loop %0 start\n").addI(i); 
       while(!getString(resp, stlen + 5)) {
 	usleep(1000);
       }
@@ -195,22 +199,29 @@ namespace SoDa
 	return true; 
       }
       else {
-	std::cerr << boost::format("Expected [%s] got [%s]. stlen = %d compare = %d\n")
-	  % exp % resp % stlen % v; 
+	std::cerr << SoDa::Format("Expected [%0] got [%1]. stlen = %2 compare = %3\n")
+	  .addS(exp)
+	  .addS(resp)
+	  .addI(stlen)
+	  .addI(v); 
 	int j; 
 	for(j = 0; j < stlen+5; j++) {
 	  int cmp = (exp[i] == resp[i]); 
-	  std::cerr << boost::format("%c %c (%d %d) =? %d\n")
-	    % exp[j] % resp[j] % ((int) exp[j]) % ((int) resp[j]) % cmp;
+	  std::cerr << SoDa::Format("%0 %1 (%2 %3) =? %4\n")
+	    .addC(exp[j])
+	    .addC(resp[j])
+	    .addI((int) exp[j])
+	    .addI((int) resp[j])
+	    .addI(cmp);
 	}
 	flushInput();
 	if(resp.compare(0, 3, "BAD") == 0) {
 	  std::cerr << "flushing input buffer" << std::endl; 
 	  flushInput(); 
 	}
-	std::cerr << boost::format("Resend [%s]\n") % str;
+	std::cerr << SoDa::Format("Resend [%0]\n").addS(str);
 	putString(str); 	
-	std::cerr << boost::format("loop %d end\n") % i; 
+	std::cerr << SoDa::Format("loop %0 end\n").addI(i); 
       }
     }
 

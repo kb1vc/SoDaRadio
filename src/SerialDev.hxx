@@ -32,7 +32,6 @@
 #include <string>
 #include <list>
 
-#include <boost/format.hpp>
 #include <iostream>
 namespace SoDa {
   

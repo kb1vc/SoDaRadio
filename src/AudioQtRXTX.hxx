@@ -35,7 +35,7 @@
 #include <mutex>
 // Only works if we have ALSA
 #include <alsa/asoundlib.h>
-#include <boost/format.hpp>
+#include <SoDa/Format.hxx>
 #include <iostream>
 #include <stdexcept>
 // we implement the TX side of things. 
@@ -135,8 +135,13 @@ namespace SoDa {
      */
     void checkStatus(int err, const std::string & exp, bool fatal = false) {
       if (err < 0) {
-	if(fatal) throw SoDa::Exception((boost::format("%s %s") % exp % snd_strerror(err)).str(), this);
-	else std::cerr << boost::format("%s %s %s\n") % getObjName() % exp % snd_strerror(err);
+	if(fatal) throw SoDa::Exception(SoDa::Format("%0 %1")
+					.addS(exp)
+					.addS(snd_strerror(err)), this);
+	else std::cerr << SoDa::Format("%0 %1 %2\n")
+	       .addS(getObjName())
+	       .addS(exp)
+	       .addS(snd_strerror(err));
       }
     }
 

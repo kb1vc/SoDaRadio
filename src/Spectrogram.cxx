@@ -28,10 +28,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Spectrogram.hxx"
 #include <math.h>
 #include <iostream>
-#include <boost/format.hpp>
-#include <stdexcept>
+#include "SoDaBase.hxx"
+#include <SoDa/Format.hxx>
 
 SoDa::Spectrogram::Spectrogram(unsigned int fftlen)
+  : SoDa::Base("Spectrogram")
 {
   // remember how long the output will be
   fft_len = fftlen; 
@@ -83,7 +84,10 @@ void SoDa::Spectrogram::apply_common(std::complex<float> * invec,
   // zero the result accumulate buffer. 
   for(j = 0; j < fft_len; j++) result[j] = 0.0;
   if(fft_len > inveclen) {
-    throw std::runtime_error((boost::format("inveclen %d less than fftlen %d\n") % inveclen % fft_len).str()); 
+    throw SoDa::Exception(SoDa::Format("inveclen %0 less than fftlen %1\n") 
+			  .addI(inveclen)
+			  .addI(fft_len), 
+			  this);
   }
   // accumulate FFT results over the length of the buffer.
   for(i = 0; i < (inveclen + 1 - fft_len); i += (fft_len / 2)) {

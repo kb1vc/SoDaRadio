@@ -63,14 +63,16 @@ ENDIF()
 
 add_definitions(-DHAVE_UHD=${HAVE_UHD})
 
-include_directories(SYSTEM ${Boost_INCLUDE_DIRS} ${Radio_INCLUDE_DIRS} ${ALSA_INCLUDE_DIRS} ${FFTW3F_INCLUDE_DIRS})
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS} ${Radio_INCLUDE_DIRS} ${ALSA_INCLUDE_DIRS} ${FFTW3F_INCLUDE_DIRS} ${SoDaFormat_INCLUDE_DIR} )
+
 
 
 add_executable(SoDaServer ${SoDaServer_SRCS})
 
 
 target_link_libraries(SoDaServer ${RT_LIB}
-    Threads::Threads
+  Threads::Threads
+  ${SoDaFormat_LIBRARIES}
     ${Boost_LIBRARIES}  ${Radio_LIBRARIES} ${ALSA_LIBRARIES} ${FFTW3F_LIBRARIES} ${CMAKE_DL_LIBS})
 
 
@@ -107,3 +109,5 @@ set(SoDaSockets_SRCS
 
 add_library(SoDaSockets STATIC ${SoDaSockets_SRCS})
 install(TARGETS SoDaSockets DESTINATION lib)
+
+

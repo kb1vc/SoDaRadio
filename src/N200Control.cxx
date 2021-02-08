@@ -27,8 +27,6 @@
 */
 
 #include "N200Control.hxx"
-#include <boost/format.hpp>
-#include <boost/asio.hpp>
 #include <math.h>
 #include <stdexcept>
 
@@ -79,8 +77,6 @@ namespace SoDa
 	skt->putRaw((const void*) cmd, 7);
 	char buf[20]; 
 	skt->getRaw((void *) buf, 13, 100000); 
-	// std::cerr << boost::format("\n\nON sent [%s]\n\n\t got [%s]\n\n")
-	//   % cmd % buf; 
       } 
       catch (IP::ReadTimeoutExc & ex) {
 	// if we get here, then the device is not connected!  
@@ -104,8 +100,6 @@ namespace SoDa
       char buf[20]; 
       bzero(buf, 20);
       skt->getRaw((void *) buf, 13, 100000);
-      // std::cerr << boost::format("\n\nOFF sent [%s]\n\n\t got [%s]\n\n")
-      // 	% cmd % buf; 
       }
       catch (IP::ReadTimeoutExc & ex) {
 	// if we get here, then the device is not connected!

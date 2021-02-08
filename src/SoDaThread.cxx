@@ -6,7 +6,7 @@
 #include "version.h"
 
 #include <string>
-#include <boost/format.hpp>
+#include <SoDa/Format.hxx>
 
 #include <sys/types.h>
 #include <unistd.h>
@@ -43,7 +43,7 @@ void SoDa::Thread::execCommand(Command * cmd)
 
 void  SoDa::Thread::outerRun() {
   hookSigSeg();
-  debugMsg(boost::format("%s starting.\n") % getObjName());
+  debugMsg(getObjName() + " starting.\n");
   try {
     run(); 
   }
@@ -59,7 +59,7 @@ void  SoDa::Thread::outerRun() {
   catch (...) {
     std::cerr << getObjName() << " caught unknown exception" << std::endl;
   }
-  debugMsg(boost::format("%s terminating.\n") % getObjName()); 
+  debugMsg(getObjName() + " terminating.\n");
 }
 
 void  SoDa::Thread::sigsegHandler(int sig)

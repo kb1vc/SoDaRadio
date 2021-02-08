@@ -154,7 +154,9 @@ namespace SoDa {
   };
 
   template <typename T> TDRationalResampler<T>::TDRationalResampler(int _M, int _L, float * _proto_filter, int filter_len, float gain) :
-    TDFilter<T>((boost::format("RationalResampler %d to %d") % M % L).str())
+    TDFilter<T>(SoDa::Format("RationalResampler %0 to %1")
+		.addI(M)
+		.addI(L).str())
   {
     M = _M; 
     L = _L; 

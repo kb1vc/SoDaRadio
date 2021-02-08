@@ -35,7 +35,7 @@
 #include <uhd/utils/msg.hpp>
 #include <uhd/types/tune_request.hpp>
 #include <uhd/types/tune_result.hpp>
-#include <boost/format.hpp>
+#include <SoDa/Format.hxx>
 
 SoDa::USRPTuner::USRPTuner * makeTuner(uhd::usrp::multi_usrp::sptr usrp, 
 				       double min_separation, 
@@ -79,13 +79,13 @@ bool SoDa::IntNTuner::setRXFreq(double rx_freq, double avoid_freq, uhd::tune_res
 
   tune_result = usrp->set_rx_freq(rx_trequest);
 
-  debugMsg(boost::format("USRPTuner: RX Tune RF_actual %lf DDC = %lf tuned = %lf target = %lf request  rf = %lf request ddc = %lf\n")
-	     % tune_result.actual_rf_freq
-	     % tune_result.actual_dsp_freq
-	     % rx_freq
-	     % target_rx_freq
-	     % rx_trequest.rf_freq
-	     % rx_trequest.dsp_freq);
+  debugMsg(SoDa::Format("USRPTuner: RX Tune RF_actual %0 DDC = %1 tuned = %2 target = %3 request  rf = %4 request ddc = %5\n")
+	   .addF(tune_result.actual_rf_freq, 10, 6, 'e')
+	   .addF(tune_result.actual_dsp_freq, 10, 6, 'e')
+	   .addF(rx_freq, 10, 6, 'e')
+	   .addF(target_rx_freq, 10, 6, 'e')
+	   .addF(rx_trequest.rf_freq, 10, 6, 'e')
+	   .addF(rx_trequest.dsp_freq, 10, 6, 'e'));
 
   return checkLock(rx_trequest, 'r', tune_result);   
 }
@@ -103,17 +103,20 @@ bool SoDa::IntNTuner::setTXFreq(double tx_freq, double avoid_freq, uhd::tune_res
     
   tx_request.rf_freq_policy = uhd::tune_request_t::POLICY_AUTO;
 
-  debugMsg(boost::format("Tuning TX unit to new frequency %f (request = %f  (%f %f))\n")
-	   % tx_freq % tx_request.target_freq % tx_request.rf_freq % tx_request.dsp_freq);
+  debugMsg(SoDa::Format("Tuning TX unit to new frequency %0 (request = %1  (%2 %3))\n")
+	   .addF(tx_freq, 10, 6, 'e')
+	   .addF(tx_request.target_freq, 10, 6, 'e')
+	   .addF(tx_request.rf_freq, 10, 6, 'e')
+	   .addF(tx_request.dsp_freq, 10, 6, 'e'));
 
   tune_result = usrp->set_tx_freq(tx_request);
 
-  debugMsg(boost::format("Tuned TX unit to new frequency %g t.rf %g a.rf %g t.dsp %g a.dsp %g\n")
-	   % tx_freq
-	   % tune_result.target_rf_freq
-	   % tune_result.actual_rf_freq
-	   % tune_result.target_dsp_freq
-	   % tune_result.actual_dsp_freq);
+  debugMsg(SoDa::Format("Tuned TX unit to new frequency %0 t.rf %1 a.rf %2 t.dsp %3 a.dsp %4\n")
+	   .addF(tx_freq, 10, 6, 'e')
+	   .addF(tune_result.target_rf_freq, 10, 6, 'e')
+	   .addF(tune_result.actual_rf_freq, 10, 6, 'e')
+	   .addF(tune_result.target_dsp_freq, 10, 6, 'e')
+	   .addF(tune_result.actual_dsp_freq, 10, 6, 'e'));
 
   return checkLock(tx_request, 't', tune_result);
 }
@@ -133,8 +136,12 @@ bool SoDa::USRPTuner::checkLock(uhd::tune_request_t & req,
     if(lo_locked.to_bool()) break;
     else usleep(1000);
     if((lock_itercount & 0xfff) == 0) {
-      debugMsg(boost::format("Waiting for %c LO lock to freq = %f (%f:%f)  count = %d\n")
-	       % sel % req.target_freq % req.rf_freq % req.dsp_freq % lock_itercount);
+      debugMsg(SoDa::Format("Waiting for %0 LO lock to freq = %1 (%2:%3)  count = %4\n")
+	       .addC(sel)
+	       .addF(req.target_freq, 10, 6, 'e')
+	       .addF(req.rf_freq, 10, 6, 'e')
+	       .addF(req.dsp_freq, 10, 6, 'e')
+	       .addI(lock_itercount);
       if(sel == 'r') ret = usrp->set_rx_freq(req);
       else ret = usrp->set_tx_freq(req);
     }

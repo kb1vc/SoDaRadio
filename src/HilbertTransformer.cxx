@@ -31,7 +31,7 @@
 #include <iostream>
 #include <string.h>
 #include <fftw3.h>
-#include <boost/format.hpp>
+#include <SoDa/Format.hxx>
 
 int dbgctr = 0;
 
@@ -343,9 +343,16 @@ std::ostream & SoDa::HilbertTransformer::dump(std::ostream & os)
     float ang = std::arg(HTl_filter[i]); 
     float pmag = std::abs(Pass_L_filter[i]);
     float pang = std::arg(Pass_L_filter[i]); 
-    os << boost::format("%d %f %f %f %f %f %f %f %f\n")
-      % j % HTu_filter[i].real() % HTu_filter[i].imag() % mag % ang % 
-      Pass_U_filter[i].real() % Pass_U_filter[i].imag() % pmag % pang; 
+    os << SoDa::Format("%0 %1 %2 %3 %4 %5 %6 %7 %8\n")
+      .addI(j)
+      .addF(HTu_filter[i].real())
+      .addF(HTu_filter[i].imag())
+      .addF(mag)
+      .addF(ang)
+      .addF(Pass_U_filter[i].real())
+      .addF(Pass_U_filter[i].imag())
+      .addF(pmag)
+      .addF(pang);
   }
   return os; 
 }  
