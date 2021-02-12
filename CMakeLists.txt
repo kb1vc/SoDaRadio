@@ -245,6 +245,12 @@ endif()
 # Find SoDaFormat and build it if we must. 
 include(${PROJECT_SOURCE_DIR}/cmake/Modules/BuildSoDaFormat.cmake)
 
+# Find SoDaCommand and build it if we must.
+include(${PROJECT_SOURCE_DIR}/cmake/Modules/BuildSoDaCommand.cmake)
+
+# Find SoDaUtils and build it if we must.
+include(${PROJECT_SOURCE_DIR}/cmake/Modules/BuildSoDaUtils.cmake)
+
 # This is the radio interface... 
 ADD_SUBDIRECTORY(src)
 

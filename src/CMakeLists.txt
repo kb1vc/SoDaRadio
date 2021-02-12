@@ -11,7 +11,7 @@ set(SoDaServer_SRCS
     BaseBandRX.cxx
     BaseBandTX.cxx
     UI.cxx
-    Command.cxx
+    RadioCommand.cxx
     OSFilter.cxx
     HilbertTransformer.cxx
     TDResamplerTables625x48.cxx
@@ -87,7 +87,7 @@ SoDaThreadRegistry.cxx
 )
 
 add_library(accessory SHARED ${simple_acc_SRCS})
-target_link_libraries(accessory ${Boost_LIBRARIES})
+target_link_libraries(accessory ${Boost_LIBRARIES} ${SoDaFormat_LIBRARIES})
 
 
 # Export header files that are required to build loadable modules
@@ -96,7 +96,7 @@ set(Loadable_INCLS
   SoDaThread.hxx
   UDSockets.hxx
   IPSockets.hxx  
-  Command.hxx
+  RadioCommand.hxx
   MultiMBox.hxx
   Debug.hxx
   )

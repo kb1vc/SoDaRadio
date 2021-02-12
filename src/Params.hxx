@@ -29,7 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef PARAMS_HDR
 #define PARAMS_HDR
 
-#include <boost/program_options.hpp>
+#include <SoDa/Command.hxx>
 #include <string>
 #include <algorithm>
 #include <iostream>
@@ -109,8 +109,7 @@ namespace SoDa {
 
     std::string getAudioPortName() const { return audio_portname; }
     
-    bool forceFracN() { return force_frac_N_mode && !force_integer_N_mode; }
-    bool forceIntN() { return !force_frac_N_mode && force_integer_N_mode; }
+    bool forceIntN() { return force_integer_N_mode; }
 
     const std::vector<std::string> & getLibs();
     
@@ -137,8 +136,6 @@ namespace SoDa {
 
   private:
     
-    boost::program_options::variables_map pmap;
-
     std::string gps_hostname; 
     std::string gps_portname; 
     std::string radio_type; 
@@ -160,10 +157,11 @@ namespace SoDa {
     std::string audio_portname; 
 
     // synthesizer mode switches (over-rides local determination)
-    bool force_frac_N_mode;
     bool force_integer_N_mode;
 
-    unsigned int debug_level; 
+    unsigned int debug_level;
+
+    bool help_please; 
   };
 }
 #endif
