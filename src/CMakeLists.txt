@@ -11,7 +11,7 @@ set(SoDaServer_SRCS
     BaseBandRX.cxx
     BaseBandTX.cxx
     UI.cxx
-    RadioCommand.cxx
+    Command.cxx
     OSFilter.cxx
     HilbertTransformer.cxx
     TDResamplerTables625x48.cxx
@@ -63,7 +63,7 @@ ENDIF()
 
 add_definitions(-DHAVE_UHD=${HAVE_UHD})
 
-include_directories(SYSTEM ${Boost_INCLUDE_DIRS} ${Radio_INCLUDE_DIRS} ${ALSA_INCLUDE_DIRS} ${FFTW3F_INCLUDE_DIRS} ${SoDaFormat_INCLUDE_DIR} )
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS} ${Radio_INCLUDE_DIRS} ${ALSA_INCLUDE_DIRS} ${FFTW3F_INCLUDE_DIRS} ${SoDaUtils_INCLUDE_DIR} )
 
 
 
@@ -72,7 +72,7 @@ add_executable(SoDaServer ${SoDaServer_SRCS})
 
 target_link_libraries(SoDaServer ${RT_LIB}
   Threads::Threads
-  ${SoDaFormat_LIBRARIES}
+  ${SoDaUtils_LIBRARIES}
     ${Boost_LIBRARIES}  ${Radio_LIBRARIES} ${ALSA_LIBRARIES} ${FFTW3F_LIBRARIES} ${CMAKE_DL_LIBS})
 
 
@@ -87,7 +87,7 @@ SoDaThreadRegistry.cxx
 )
 
 add_library(accessory SHARED ${simple_acc_SRCS})
-target_link_libraries(accessory ${Boost_LIBRARIES} ${SoDaFormat_LIBRARIES})
+target_link_libraries(accessory ${Boost_LIBRARIES} ${SoDaUtils_LIBRARIES})
 
 
 # Export header files that are required to build loadable modules
@@ -96,7 +96,7 @@ set(Loadable_INCLS
   SoDaThread.hxx
   UDSockets.hxx
   IPSockets.hxx  
-  RadioCommand.hxx
+  Command.hxx
   MultiMBox.hxx
   Debug.hxx
   )

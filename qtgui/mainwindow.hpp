@@ -33,6 +33,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QCloseEvent>
 #include <QSettings>
 #include <QAudioDeviceInfo>
+#include <QElapsedTimer>
+
 #include "soda_listener.hpp"
 #include "../common/GuiParams.hxx"
 #include "soda_band.hpp"
@@ -115,7 +117,7 @@ protected:
   int transmit_intervals; 
   int transmit_seconds; 
   int elapsed_seconds; 
-  QTime transmit_time; 
+  QElapsedTimer transmit_time; 
   QTimer one_second_timer; 
 
   QString secondsToElapsed(int seconds); 

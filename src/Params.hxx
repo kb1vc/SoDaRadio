@@ -29,7 +29,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef PARAMS_HDR
 #define PARAMS_HDR
 
-#include <SoDa/Command.hxx>
 #include <string>
 #include <algorithm>
 #include <iostream>

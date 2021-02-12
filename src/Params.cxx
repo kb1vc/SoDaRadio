@@ -29,12 +29,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Params.hxx"
 #include <iostream>
 #include <stdlib.h>
-#include <SoDa/Command.hxx>
+#include <SoDa/Options.hxx>
 #include <SoDa/Utils.hxx>
 
 SoDa::Params::Params(int argc, char * argv[])
 {
-  SoDa::Command cmd;
+  SoDa::Options cmd;
   cmd.addP(&help_please, "help", 'h', "Show this message")
     .addV<std::string>(&load_list, "load", 'l',
 		       "one or more shared library objects, each containing a SoDa::Thread object")

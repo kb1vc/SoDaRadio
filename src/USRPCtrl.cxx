@@ -188,7 +188,7 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params) : SoDa::Thread("USRPCtrl")
   tvrt_lo_mode = false;
 
   // if we are in integer-N mode, setup the step table.
-  testIntNMode(params->forceIntN(), params->forceFracN()); 
+  testIntNMode(params->forceIntN());
   
   // we need a cmd stream
   cmd_stream = NULL; 
@@ -1012,7 +1012,7 @@ void SoDa::USRPCtrl::applyTargetFreqCorrection(double target_freq, double avoid_
 
 
 
-void SoDa::USRPCtrl::testIntNMode(bool force_int_N, bool force_frac_N)
+void SoDa::USRPCtrl::testIntNMode(bool force_int_N)
 {
   uhd::tune_result_t tunres_int, tunres_frac;  
 
@@ -1022,10 +1022,6 @@ void SoDa::USRPCtrl::testIntNMode(bool force_int_N, bool force_frac_N)
   if(force_int_N) {
     debugMsg("Forced IntN Tuning support ON.");
     supports_IntN_Mode = true; 
-  }
-  else if(force_frac_N) {
-    debugMsg("Forced IntN Tuning support OFF.");
-    supports_IntN_Mode = false; 
   }
   else if(is_B2xx) {
     supports_IntN_Mode = false; 
