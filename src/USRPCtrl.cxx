@@ -978,9 +978,13 @@ void SoDa::USRPCtrl::applyTargetFreqCorrection(double target_freq, double avoid_
 	       .addF(rf_freq, 10, 6, 'e')
 	       .addF(steps[i], 10, 6, 'e'));
       treq->rf_freq = rf_freq; 
-      treq->rf_freq_policy = uhd::tune_request_t::POLICY_MANUAL; 
-      treq->args = uhd::device_addr_t((SoDa::Format("mode_n=integer,int_n_step=%0")
-				       .addF(steps[i], 'e')).str());
+      treq->rf_freq_policy = uhd::tune_request_t::POLICY_MANUAL;
+      std::string foo; 
+      foo = SoDa::Format("mode_n=integer,int_n_step= %0")
+	.addF(steps[i], 'e').str();
+    
+      std::cerr << "***********[" << foo << "]******* steps = " << steps[i] << "\n";
+      treq->args = uhd::device_addr_t(foo);
       return;
     }
   }
@@ -1004,7 +1008,7 @@ void SoDa::USRPCtrl::applyTargetFreqCorrection(double target_freq, double avoid_
   
   treq->rf_freq = rf_freq; 
   treq->rf_freq_policy = uhd::tune_request_t::POLICY_MANUAL; 
-  treq->args = uhd::device_addr_t((SoDa::Format("mode_n=integer,int_n_step=%0")
+  treq->args = uhd::device_addr_t((SoDa::Format("mode_n=integer,int_n_step= %0")
 				   .addF(steps[0], 'e')).str());
 
 
