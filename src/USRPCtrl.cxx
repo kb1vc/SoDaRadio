@@ -980,7 +980,7 @@ void SoDa::USRPCtrl::applyTargetFreqCorrection(double target_freq, double avoid_
       treq->rf_freq = rf_freq; 
       treq->rf_freq_policy = uhd::tune_request_t::POLICY_MANUAL;
       std::string foo; 
-      foo = SoDa::Format("mode_n=integer,int_n_step= %0")
+      foo = SoDa::Format("mode_n=integer,int_n_step=%0")
 	.addF(steps[i], 'e').str();
     
       std::cerr << "***********[" << foo << "]******* steps = " << steps[i] << "\n";
