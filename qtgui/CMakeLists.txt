@@ -70,6 +70,7 @@ SET(CMAKE_AUTOUIC ON)
 SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 INCLUDE_DIRECTORIES(SYSTEM ${Boost_INCLUDE_DIRS}
+  ${SoDaUtils_INCLUDE_DIRS}}  
   ${SNDFILE_INCLUDE_DIRS}  
   ${Qt5Widgets_INCLUDE_DIRS} 
   ${CMAKE_CURRENT_SOURCE_DIR} 
@@ -90,13 +91,17 @@ ADD_LIBRARY(SoDaRadio_Lib STATIC
   ${SoDaRadio_hdr_moc} 
   ${SoDaRadio_form_moc})
 
+message("******\n\nGUI *****\nSoDaUtils_INCLUDE_DIRS = ${SoDaUtils_INCLUDE_DIRS}")
 message("QWT_LIBRARIES = ${QWT_LIBRARIES}")
-TARGET_LINK_LIBRARIES(SoDaRadio_Lib m ${RT_LIB} ${Boost_LIBRARIES} 
+TARGET_LINK_LIBRARIES(SoDaRadio_Lib m ${RT_LIB} ${Boost_LIBRARIES}
+    ${SoDaUtils_LIBRARIES}      
   Qt5::Widgets Qt5::PrintSupport
   Qt5::Core Qt5::Gui Qt5::Network Qt5::Multimedia
   Threads::Threads
   ${SNDFILE_LIBRARIES}  
   ${QWT_LIBRARIES} )
+
+TARGET_INCLUDE_DIRECTORIES(SoDaRadio_Lib PUBLIC ${SoDaUtils_INCLUDE_DIRS})
 
 ADD_EXECUTABLE(SoDaRadio ${SoDaRadio_SRCS})
 
@@ -105,6 +110,7 @@ TARGET_COMPILE_OPTIONS(SoDaRadio BEFORE PUBLIC -Wno-deprecated-declarations)
 TARGET_LINK_LIBRARIES(SoDaRadio SoDaRadio_Lib
     m ${RT_LIB}
     Threads::Threads
+    ${SoDaUtils_LIBRARIES}    
     ${SNDFILE_LIBRARIES}
     ${Boost_LIBRARIES}  )
 

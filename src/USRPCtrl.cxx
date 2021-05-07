@@ -258,10 +258,10 @@ void SoDa::USRPCtrl::run()
     }
     else {
       // process the command.
-      if((cmds_processed & 0xff) == 0) {
+      if((cmds_processed & 0xf) == 0) {
 	debugMsg(SoDa::Format("USRPCtrl processed %0 commands").addI(cmds_processed));
       }
-      cmds_processed++; 
+      cmds_processed++;
       execCommand(cmd);
       exitflag |= (cmd->target == Command::STOP); 
       cmd_stream->free(cmd); 
@@ -377,12 +377,12 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
     last_rx_tune_result = usrp->set_rx_freq(rx_trequest);
     last_rx_tune_result = checkLock(rx_trequest, 'r', last_rx_tune_result);
     debugMsg(SoDa::Format("RX Tune RF_actual %0 DDC = %1 tuned = %2 target = %3 request  rf = %4 request ddc = %5\n")
-	     .addF(last_rx_tune_result.actual_rf_freq, 10, 6, 'e')
-	     .addF(last_rx_tune_result.actual_dsp_freq, 10, 6, 'e')
-	     .addF(freq, 10, 6, 'e')
-	     .addF(target_rx_freq, 10, 6, 'e')
-	     .addF(rx_trequest.rf_freq, 10, 6, 'e')
-	     .addF(rx_trequest.dsp_freq, 10, 6, 'e'));
+	     .addF(last_rx_tune_result.actual_rf_freq, 'e', 10, 6)
+	     .addF(last_rx_tune_result.actual_dsp_freq, 'e', 10, 6)
+	     .addF(freq, 'e', 10, 6)
+	     .addF(target_rx_freq, 'e', 10, 6)
+	     .addF(rx_trequest.rf_freq, 'e', 10, 6)
+	     .addF(rx_trequest.dsp_freq, 'e', 10, 6));
   }
   else {
     // On the transmit side, we're using a minimal IF rate and
@@ -428,19 +428,19 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
     }
 
     debugMsg(SoDa::Format("Tuning TX unit to new frequency %0 (request = %1  (%2 %3))\n")
-	     .addF(freq, 10, 6, 'e')
-	     .addF(tx_request.target_freq, 10, 6, 'e')
-	     .addF(tx_request.rf_freq, 10, 6, 'e')
-	     .addF(tx_request.dsp_freq, 10, 6, 'e'));
+	     .addF(freq, 'e', 10, 6)
+	     .addF(tx_request.target_freq, 'e', 10, 6)
+	     .addF(tx_request.rf_freq, 'e', 10, 6)
+	     .addF(tx_request.dsp_freq, 'e', 10, 6));
 
     last_tx_tune_result = usrp->set_tx_freq(tx_request);
 
     debugMsg(SoDa::Format("Tuned TX unit to new frequency %0 t.rf %1 a.rf %2 t.dsp %3 a.dsp %4\n")
-	     .addF(freq, 10, 6, 'e')
-	     .addF(last_tx_tune_result.target_rf_freq, 10, 6, 'e')
-	     .addF(last_tx_tune_result.actual_rf_freq, 10, 6, 'e')
-	     .addF(last_tx_tune_result.target_dsp_freq, 10, 6, 'e')
-	     .addF(last_tx_tune_result.actual_dsp_freq, 10, 6, 'e'));
+	     .addF(freq, 'e', 10, 6)
+	     .addF(last_tx_tune_result.target_rf_freq, 'e', 10, 6)
+	     .addF(last_tx_tune_result.actual_rf_freq, 'e', 10, 6)
+	     .addF(last_tx_tune_result.target_dsp_freq, 'e', 10, 6)
+	     .addF(last_tx_tune_result.actual_dsp_freq, 'e', 10, 6));
 
     last_tx_tune_result = checkLock(tx_request, 't', last_tx_tune_result);
 
@@ -449,8 +449,8 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
     if(tvrt_lo_mode) {
       txfreqs[1] = usrp->get_tx_freq(1);
       debugMsg(SoDa::Format("TX LO = %0  TVRT LO = %1\n")
-	       .addF(txfreqs[0], 10, 6, 'e')
-	       .addF(txfreqs[1], 10, 6, 'e'));
+	       .addF(txfreqs[0], 'e', 10, 6)
+	       .addF(txfreqs[1], 'e', 10, 6));
     }
   }
 
@@ -499,10 +499,10 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
     fdiff = freq - (last_rx_tune_result.actual_rf_freq - last_rx_tune_result.actual_dsp_freq);
     
     debugMsg(SoDa::Format("Got RX RETUNE request -- frequency %0 diff = %1  last actual_rf %2  dsp %3\n")
-	     .addF(freq, 10, 6, 'e')
-	     .addF(fdiff, 10, 6, 'e')
-	     .addF(last_rx_tune_result.actual_rf_freq, 10, 6, 'e')
-	     .addF(last_rx_tune_result.actual_dsp_freq, 10, 6, 'e'));
+	     .addF(freq, 'e', 10, 6)
+	     .addF(fdiff, 'e', 10, 6)
+	     .addF(last_rx_tune_result.actual_rf_freq, 'e', 10, 6)
+	     .addF(last_rx_tune_result.actual_dsp_freq, 'e', 10, 6));
 
     if((fdiff < 200e3) && (fdiff > 100e3)) {
       cmd_stream->put(new Command(Command::SET, Command::RX_LO3_FREQ, fdiff)); 
@@ -530,7 +530,7 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
       set1stLOFreq(last_rx_req_freq, 'r', false);
     }
     else {
-      debugMsg(SoDa::Format("setting lo check freq to %0\n") .addF(cmd->dparms[0], 10, 6, 'e'));
+      debugMsg(SoDa::Format("setting lo check freq to %0\n") .addF(cmd->dparms[0], 'e', 10, 6));
       usrp->set_rx_freq(cmd->dparms[0]);
       // now send a GET lo offset command
       cmd_stream->put(new Command(Command::GET, Command::LO_OFFSET, 0));
@@ -575,11 +575,12 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
     if(tx_rf_gain > tx_rf_gain_range.stop()) tx_rf_gain = tx_rf_gain_range.stop();
     if(tx_rf_gain < tx_rf_gain_range.start()) tx_rf_gain = tx_rf_gain_range.start();
     tmp = cmd->dparms[0];
-    debugMsg(SoDa::Format("Setting TX gain to %0 from power %1 range start = %2 stop = %3\n") 
-	     .addF(tx_rf_gain, 'e')
+
+    debugMsg(SoDa::Format("Setting TX gain to %0 from power %1 range start = %2 stop = %3\n").addF(tx_rf_gain, 'e')
 	     .addF(tmp, 'e')
 	     .addF(tx_rf_gain_range.start(), 'e')
 	     .addF(tx_rf_gain_range.stop(), 'e'));
+
     if(tx_on) {
       usrp->set_tx_gain(tx_rf_gain);
       cmd_stream->put(new Command(Command::REP, Command::TX_RF_GAIN, 
@@ -740,11 +741,15 @@ void SoDa::USRPCtrl::execGetCommand(Command * cmd)
     break;
 
   case Command::HWMB_REP:
-    cmd_stream->put(new Command(Command::REP, Command::HWMB_REP,
+    {
+      double start = rx_rf_freq_range.start();
+      if(start < 0.0) start = 0.0;
+      cmd_stream->put(new Command(Command::REP, Command::HWMB_REP,
 				SoDa::Format("%0\t%1 to %2 MHz")
 				.addS(motherboard_name)
-				.addF((rx_rf_freq_range.start() * 1e-6), 10, 6, 'e')
-				.addF((rx_rf_freq_range.stop() * 1e-6), 10, 6, 'e').str()));
+				.addF((start * 1e-6), 'f', 5, 0)
+				.addF((rx_rf_freq_range.stop() * 1e-6), 'f', 5, 0).str()));
+    }
     reportAntennas(); 
     reportModes();
     reportAFFilters();
@@ -894,7 +899,7 @@ void SoDa::USRPCtrl::setTransverterLOFreqPower(double freq, double power)
   tvrt_lo_freq = freq; 
   
   debugMsg(SoDa::Format("Setting Transverter LO freq = %0 power = %1 gain = %2\n") 
-	   .addF(tvrt_lo_freq, 10, 6, 'e')
+	   .addF(tvrt_lo_freq, 'e', 10, 6)
 	   .addF(power, 'e')
 	   .addF(tvrt_lo_gain, 'e'));
   
@@ -921,13 +926,13 @@ void SoDa::USRPCtrl::enableTransverterLO()
   tvrt_lo_mode = true;
   
   debugMsg(SoDa::Format("LO frequency = %0 power %1  number of channels = %2 target_rf %3 actual rf %4 target dsp %5 actual dsp %6\n")
-	   .addF(usrp->get_tx_freq(1), 10, 6, 'e')
-	   .addF(usrp->get_tx_gain(1), 10, 6, 'e')
+	   .addF(usrp->get_tx_freq(1), 'e', 10, 6)
+	   .addF(usrp->get_tx_gain(1), 'e', 10, 6)
 	   .addI(usrp->get_tx_num_channels())
-	   .addF(tres.target_rf_freq, 10, 6, 'e')
-	   .addF(tres.actual_rf_freq, 10, 6, 'e')
-	   .addF(tres.target_dsp_freq, 10, 6, 'e')
-	   .addF(tres.actual_dsp_freq, 10, 6, 'e'));
+	   .addF(tres.target_rf_freq, 'e', 10, 6)
+	   .addF(tres.actual_rf_freq, 'e', 10, 6)
+	   .addF(tres.target_dsp_freq, 'e', 10, 6)
+	   .addF(tres.actual_dsp_freq, 'e', 10, 6));
 
   tvrt_lo_fe_freq = tres.target_rf_freq; 
 }
@@ -942,7 +947,7 @@ void SoDa::USRPCtrl::disableTransverterLO()
 
 void SoDa::USRPCtrl::applyTargetFreqCorrection(double target_freq, double avoid_freq, uhd::tune_request_t * treq)
 {
-  debugMsg(SoDa::Format("######   aTFC(%0...)") .addF(target_freq, 10, 6, 'e')); 
+  debugMsg(SoDa::Format("######   aTFC(%0...)") .addF(target_freq, 'e', 10, 6)); 
 
   // if we can't find a really good answer, at least setup a "correct" answer... 
   treq->dsp_freq_policy = uhd::tune_request_t::POLICY_AUTO; 
@@ -970,20 +975,19 @@ void SoDa::USRPCtrl::applyTargetFreqCorrection(double target_freq, double avoid_
     
     double rf_freq = N * steps[i]; 
     debugMsg(SoDa::Format("\t\tTRY rf_freq = %0 step = %1\n") 
-	     .addF(rf_freq, 10, 6, 'e')
-	     .addF(steps[i], 10, 6, 'e'));
+	     .addF(rf_freq, 'e', 10, 6)
+	     .addF(steps[i], 'e', 10, 6));
     if(fabs(rf_freq - avoid_freq) > 1.0e6) {
       // this is an OK choice. 
       debugMsg(SoDa::Format("\t\tACCEPT rf_freq = %0 step = %1\n")
-	       .addF(rf_freq, 10, 6, 'e')
-	       .addF(steps[i], 10, 6, 'e'));
+	       .addF(rf_freq, 'e', 10, 6)
+	       .addF(steps[i], 'e', 10, 6));
       treq->rf_freq = rf_freq; 
       treq->rf_freq_policy = uhd::tune_request_t::POLICY_MANUAL;
       std::string foo; 
       foo = SoDa::Format("mode_n=integer,int_n_step=%0")
 	.addF(steps[i], 'e').str();
     
-      std::cerr << "***********[" << foo << "]******* steps = " << steps[i] << "\n";
       treq->args = uhd::device_addr_t(foo);
       return;
     }
@@ -994,7 +998,7 @@ void SoDa::USRPCtrl::applyTargetFreqCorrection(double target_freq, double avoid_
   N = round(target_freq / steps[0]);
   double rf_freq = N * steps[0];
   debugMsg(SoDa::Format("\t\tTRY rf_freq = %0 step = %1\n") 
-	   .addF(rf_freq, 10, 6, 'e')
+	   .addF(rf_freq, 'e', 10, 6)
 	   .addF(steps[0], 'e'));
   if(fabs(rf_freq - avoid_freq) < 1.0e6) {
     if(rf_freq > avoid_freq) N = N - 1.0; 
@@ -1003,7 +1007,7 @@ void SoDa::USRPCtrl::applyTargetFreqCorrection(double target_freq, double avoid_
   }
   // this is an OK choice. 
   debugMsg(SoDa::Format("\t\tGRUDGINGLY ACCEPT rf_freq = %0 step = %1\n")
-	   .addF(rf_freq, 10, 6, 'e')
+	   .addF(rf_freq, 'e', 10, 6)
 	   .addF(steps[0], 'e'));
   
   treq->rf_freq = rf_freq; 
@@ -1059,7 +1063,7 @@ void SoDa::USRPCtrl::testIntNMode(bool force_int_N, bool force_frac_N)
     // Now bump it by some silly amount
     tf += 123456.789;
 
-    debugMsg(SoDa::Format("got tf = %0\n").addF(tf, 10, 6, 'e'));
+    debugMsg(SoDa::Format("got tf = %0\n").addF(tf, 'e', 10, 6));
   
     // and tune with and without intN
     uhd::tune_request_t tunreq_int(tf);
@@ -1076,9 +1080,9 @@ void SoDa::USRPCtrl::testIntNMode(bool force_int_N, bool force_frac_N)
     }
 
     debugMsg(SoDa::Format("int rf = %0 frac rf = %1  tf = %2\n")
-	     .addF(tunres_int.actual_rf_freq, 10, 6, 'e')
-	     .addF(tunres_frac.actual_rf_freq, 10, 6, 'e')
-	     .addF(tf, 10, 6, 'e'));
+	     .addF(tunres_int.actual_rf_freq, 'e', 10, 6)
+	     .addF(tunres_frac.actual_rf_freq, 'e', 10, 6)
+	     .addF(tf, 'e', 10, 6));
   }
 
 

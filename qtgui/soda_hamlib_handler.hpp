@@ -83,6 +83,7 @@ namespace GUISoDa {
 
     bool cmdDumpState(QTextStream & out, QTextStream & in, bool getval);
     bool cmdVFO(QTextStream & out, QTextStream & in, bool getval);
+    bool cmdChkVFO(QTextStream & out, QTextStream & in, bool getval);    
     bool cmdFreq(QTextStream & out, QTextStream & in, bool getval);
     bool cmdSplitFreq(QTextStream & out, QTextStream & in, bool getval);  
     bool cmdMode(QTextStream & out, QTextStream & in, bool getval);

@@ -387,7 +387,7 @@ void SoDa::UI::sendFFT(SoDa::Buf * buf)
     lo_check_mode = false;
     // send the report
     double freq = ((float) maxi) * lo_hz_per_bucket;
-    debugMsg(SoDa::Format("offset = %0\n").addF(freq, 10, 6, 'e')); 
+    debugMsg(SoDa::Format("offset = %0\n").addF(freq, 'e', 10, 6)); 
     cmd_stream->put(new SoDa::Command(Command::REP, Command::LO_OFFSET,
 				      freq)); 
     cmd_stream->put(new SoDa::Command(Command::REP, Command::SPEC_RANGE_LOW,

@@ -81,7 +81,8 @@ void GUISoDa::HamlibHandler::initCommandTables()
   // setup all the commands
   registerCommand("dump_state", "\\dump_state", &GUISoDa::HamlibHandler::cmdDumpState, true);
   registerCommand("v", "get_vfo", &GUISoDa::HamlibHandler::cmdVFO, true);
-  registerCommand("V", "set_vfo", &GUISoDa::HamlibHandler::cmdVFO, false);  
+  registerCommand("V", "set_vfo", &GUISoDa::HamlibHandler::cmdVFO, false);
+  registerCommand("chk_vfo", "\\chk_vfo", &GUISoDa::HamlibHandler::cmdChkVFO, true);    
   registerCommand("f", "get_freq", &GUISoDa::HamlibHandler::cmdFreq, true);
   registerCommand("F", "set_freq", &GUISoDa::HamlibHandler::cmdFreq, false);  
   registerCommand("i", "get_split_freq", &GUISoDa::HamlibHandler::cmdSplitFreq, true);
@@ -106,10 +107,12 @@ void GUISoDa::HamlibHandler::registerCommand(const char * shortname,
   QString sn(shortname); 
   QString ln(longname);
   if(is_get) {
+    qDebug() << QString("registering get command [%1]\n").arg(ln);    
     get_command_map[sn] = handler; 
     get_command_map[ln] = handler; 
   }
   else {
+    qDebug() << QString("registering set command [%1]\n").arg(ln);
     set_command_map[sn] = handler; 
     set_command_map[ln] = handler; 
   }
@@ -144,7 +147,7 @@ void GUISoDa::HamlibHandler::processCommand(const QString & cmd, QTcpSocket * so
 	  (this->*get_command_map[cmdchar])(out, in, true);
 	}
 	else {
-	  qDebug() << QString("HAMLIB handler can't deal with this command [%1]\n").arg(cmdchar);
+	  qDebug() << QString("HAMLIB handler can't deal with this char command [%1]").arg(cmdchar);
 	  out << "RPRT " << RIG_EINVAL << endl;
 	}
       }
@@ -156,7 +159,13 @@ void GUISoDa::HamlibHandler::processCommand(const QString & cmd, QTcpSocket * so
       (this->*get_command_map[cmdkey])(out, in, true);
     }
     else {
-      qDebug() << QString("HAMLIB handler can't deal with this command [%1]\n").arg(cmd);
+      qDebug() << QString("HAMLIB handler can't deal with this str command [%1]").arg(cmd);
+      for(auto & el : set_command_map) {
+	qDebug() << QString("setmap [%1]").arg(el.first);
+      }
+      for(auto el : get_command_map) {
+	qDebug() << QString("getmap [%1]").arg(el.first);
+      }
       out << "RPRT " << RIG_EINVAL << endl;
     }
   }
@@ -241,6 +250,12 @@ bool GUISoDa::HamlibHandler::cmdVFO(QTextStream & out, QTextStream & in, bool ge
     in >> current_VFO;
     out << "RPRT 0" << endl; 
   }
+  return true;
+}
+
+bool GUISoDa::HamlibHandler::cmdChkVFO(QTextStream & out, QTextStream & in, bool getval)
+{
+  out << "CHKVFO 0" << endl;
   return true;
 }
 

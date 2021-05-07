@@ -213,7 +213,7 @@ void SoDa::USRPRX::set3rdLOFreq(double IF_tuning)
   // oscilator in terms of radians per sample
   IF_osc.setPhaseIncr(IF_tuning * 2.0 * M_PI / rx_sample_rate);
   debugMsg(SoDa::Format("Changed 3rdLO to freq = %0\n")
-	   .addF(IF_tuning, 10, 6, 'e'));
+	   .addF(IF_tuning, 'e', 10, 6));
 }
 
 void SoDa::USRPRX::execCommand(Command * cmd)
