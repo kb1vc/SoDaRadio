@@ -32,7 +32,6 @@
 #include <string>
 #include <mutex>
 #include <boost/date_time/posix_time/posix_time.hpp>
-//#include <boost/format.hpp>
 #include <SoDa/Format.hxx>
 
 namespace SoDa {
@@ -71,10 +70,6 @@ namespace SoDa {
       }
     }
 
-    // void debugMsg(const boost::format & fmt, unsigned int threshold = 1) {
-    //   debugMsg(fmt.str(), threshold);
-    // }
-
     void debugMsg(const SoDa::Format & fmt, unsigned int threshold = 1) {
       debugMsg(fmt.str(), threshold);
     }
@@ -96,10 +91,15 @@ namespace SoDa {
     
   protected:
 
-    std::string curDateTime() { 
-      boost::posix_time::ptime t1; 
-      t1 = boost::posix_time::microsec_clock::local_time();
-      return to_simple_string(t1);
+    std::string curDateTime() {
+      namespace clk = std::chrono;
+      clk::system_clock::time_point now_time = clk::system_clock::now();
+      
+      std::time_t tt = clk::system_clock::to_time_t(now_time);
+      
+      std::string now_str(ctime(&tt));
+      now_str.pop_back(); 
+      return now_str; 
     }
 
     std::string unit_name; ///< the name of the unit reporting status

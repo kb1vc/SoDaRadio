@@ -109,7 +109,8 @@ void MainWindow::setupAudioDeviceList()
 void MainWindow::saveConfig()
 {
   settings_p->beginGroup("Radio");
-  bandMapSaveRestore(band_map, true);    
+  bandMapSaveRestore(band_map, true);
+  std::cerr << "In saveConfig()\n";
   widgetSaveRestore(this, "SoDaRadioQT.", true);
   settings_p->endGroup();
 }

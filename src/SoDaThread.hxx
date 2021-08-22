@@ -32,7 +32,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "SoDaBase.hxx"
 #include <string>
 #include "Debug.hxx"
-#include <boost/thread.hpp>
+#include <thread>
 #include "version.h"
  /**
   * @file SoDaThread.hxx
@@ -122,7 +122,7 @@ namespace SoDa {
      */
     void start() {
       if(th != NULL) return;
-      th = new boost::thread(&Thread::outerRun, this);
+      th = new std::thread(&Thread::outerRun, this);
     }
 
     /**
@@ -134,15 +134,12 @@ namespace SoDa {
     }
 
     /**
-     * wait for the thread to stop running, or the specified time to pass. 
-     *
-     * @param m timeout in milliseconds
-     * @return true if the thread has stopped, false otherwise. 
+     * @brief sleep for a little while
      * 
-     * 
+     * @param sleep_time_ms time in milliseconds that we'll be out of it 
      */
-    bool waitForJoin(unsigned int m) {
-      return th->try_join_for(boost::chrono::milliseconds(m)); 
+    void takeNap(unsigned int sleep_time_ms) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(sleep_time_ms));
     }
 
     /**
@@ -185,15 +182,22 @@ namespace SoDa {
       return; 
     }
 
+    /**
+     * report "state" of the thread
+     * @return true if the thread has exited from its run method.
+     */
+    bool isDone() { return has_terminated; }
+    
   private:
     /**
-     * This is implemented as a boost thread.  We'll transition away
-     * from the boost thread model as time proceeds. 
+     * This is implemented as a c++-11 std thread. 
      */
-    boost::thread * th;
+    std::thread * th;
+
+    bool has_terminated; 
 
     /**
-     * the run method that is called by the boost thread handler.
+     * the run method that is called when the thread is created.
      * This method wraps the thread objects run loop in an exception
      * handler so that we can do something useful with it. 
      *

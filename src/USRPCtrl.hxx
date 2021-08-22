@@ -280,7 +280,8 @@ namespace SoDa {
 
     /// @brief Test for support for integer-N synthesis
     /// @param force_int_N force LO tuning to use integer-N synthesis
-    void testIntNMode(bool force_int_N);
+    /// @param force_frac_N force LO tuning to use fractional-N synthesis
+    void testIntNMode(bool force_int_N, bool force_frac_N);
 
     bool supports_IntN_Mode;  ///< if true, this unit can tune the front-end LO 
     ///< in integer-N mode (as opposed to fractional-N)

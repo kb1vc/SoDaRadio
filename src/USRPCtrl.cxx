@@ -38,12 +38,12 @@
 #include <uhd/types/tune_request.hpp>
 #include <uhd/types/tune_result.hpp>
 #include <SoDa/Format.hxx>
-#include <boost/property_tree/exceptions.hpp>
-
 
 // Mac OSX doesn't have a clock_gettime, it has
 // the microsecond resolution gettimeofday. 
 #include <sys/time.h>
+#include <thread>
+#include <chrono>
 
 const unsigned int SoDa::USRPCtrl::TX_RELAY_CTL = 0x1000;
 const unsigned int SoDa::USRPCtrl::TX_RELAY_MON = 0x0800;
@@ -188,7 +188,7 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params) : SoDa::Thread("USRPCtrl")
   tvrt_lo_mode = false;
 
   // if we are in integer-N mode, setup the step table.
-  testIntNMode(params->forceIntN());
+  testIntNMode(params->forceIntN(), params->forceFracN()); 
   
   // we need a cmd stream
   cmd_stream = NULL; 
@@ -254,7 +254,7 @@ void SoDa::USRPCtrl::run()
     loopcount++; 
     Command * cmd = cmd_stream->get(subid);
     if(cmd == NULL) {
-      boost::this_thread::sleep(boost::posix_time::milliseconds(50));
+      takeNap(50);
     }
     else {
       // process the command.
@@ -978,9 +978,13 @@ void SoDa::USRPCtrl::applyTargetFreqCorrection(double target_freq, double avoid_
 	       .addF(rf_freq, 10, 6, 'e')
 	       .addF(steps[i], 10, 6, 'e'));
       treq->rf_freq = rf_freq; 
-      treq->rf_freq_policy = uhd::tune_request_t::POLICY_MANUAL; 
-      treq->args = uhd::device_addr_t((SoDa::Format("mode_n=integer,int_n_step=%0")
-				       .addF(steps[i], 'e')).str());
+      treq->rf_freq_policy = uhd::tune_request_t::POLICY_MANUAL;
+      std::string foo; 
+      foo = SoDa::Format("mode_n=integer,int_n_step= %0")
+	.addF(steps[i], 'e').str();
+    
+      std::cerr << "***********[" << foo << "]******* steps = " << steps[i] << "\n";
+      treq->args = uhd::device_addr_t(foo);
       return;
     }
   }
@@ -1004,7 +1008,7 @@ void SoDa::USRPCtrl::applyTargetFreqCorrection(double target_freq, double avoid_
   
   treq->rf_freq = rf_freq; 
   treq->rf_freq_policy = uhd::tune_request_t::POLICY_MANUAL; 
-  treq->args = uhd::device_addr_t((SoDa::Format("mode_n=integer,int_n_step=%0")
+  treq->args = uhd::device_addr_t((SoDa::Format("mode_n=integer,int_n_step= %0")
 				   .addF(steps[0], 'e')).str());
 
 
@@ -1012,7 +1016,7 @@ void SoDa::USRPCtrl::applyTargetFreqCorrection(double target_freq, double avoid_
 
 
 
-void SoDa::USRPCtrl::testIntNMode(bool force_int_N)
+void SoDa::USRPCtrl::testIntNMode(bool force_int_N, bool force_frac_N)
 {
   uhd::tune_result_t tunres_int, tunres_frac;  
 
@@ -1022,6 +1026,10 @@ void SoDa::USRPCtrl::testIntNMode(bool force_int_N)
   if(force_int_N) {
     debugMsg("Forced IntN Tuning support ON.");
     supports_IntN_Mode = true; 
+  }
+  else if(force_frac_N) {
+    debugMsg("Forced IntN Tuning support OFF.");
+    supports_IntN_Mode = false; 
   }
   else if(is_B2xx) {
     supports_IntN_Mode = false; 

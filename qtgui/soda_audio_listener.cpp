@@ -175,6 +175,8 @@ QAudioFormat GUISoDa::AudioRXListener::createAudioFormat(unsigned int sample_rat
 bool GUISoDa::AudioRXListener::initAudio(const QAudioDeviceInfo & dev_info)
 {
   QAudioFormat format = createAudioFormat();
+
+  qDebug() << "Got to initAudio\n";
   
   if(!dev_info.isFormatSupported(format)) {
     qDebug() << QString("Sound system will not support [%1] floating point samples/sec").arg(sample_rate); 
@@ -290,9 +292,19 @@ void GUISoDa::AudioRecorder::openSoundFile(const QString & fname)
   info.channels = 1; 
   // FLAC is lossless and a bit more compact than ulaw/wave
   // info.format = SF_FORMAT_WAV | SF_FORMAT_PCM_16 | SF_FORMAT_ULAW;
-  info.format = SF_FORMAT_FLAC | SF_FORMAT_PCM_16;
+  if(MACOSX == 0) {
+    info.format = SF_FORMAT_FLAC | SF_FORMAT_PCM_16;
+  }
+  else {
+    info.format = SF_FORMAT_CAF | SF_FORMAT_PCM_16;
+  }
   QByteArray ba = fname.toLatin1(); 
-  snd_file = sf_open(ba.data(), SFM_WRITE, &info); 
+  snd_file = sf_open(ba.data(), SFM_WRITE, &info);
+  if(snd_file == NULL) {
+    qDebug() << QString("HOLY COW!  snd_file is NULL ernum = %1 %2!").arg(sf_error(NULL)).arg(sf_strerror(NULL));
+
+  }
+
   // fail silently. 
 }
 
@@ -303,6 +315,7 @@ void GUISoDa::AudioRecorder::record(bool on)
   //// only ever called as slots.  
   // stop recording, regardless of what just happened. 
   if(snd_file != NULL) {
+    qDebug() << "Closing sound file\n";
     sf_close(snd_file); 
     snd_file = NULL; 
   }
@@ -311,8 +324,9 @@ void GUISoDa::AudioRecorder::record(bool on)
     // if we're turning the recorder on, 
     // create a new file name. 
 
-    QString fname = QString("%1/%2.%3").arg(record_directory).arg(QDateTime::currentDateTime().toString("dd-MMM-yy_HHmmss")).arg("flac");
-    
+    QString fname = QString("%1/%2.%3").arg(record_directory).arg(QDateTime::currentDateTime().toString("dd-MMM-yy_HHmmss")).arg((MACOSX == 0) ? "flac" : "caf");
+
+    qDebug() << QString("Opening sound file %1").arg(fname);
     // open the sound file.     
     openSoundFile(fname); 
   }
@@ -336,7 +350,7 @@ void GUISoDa::AudioRecorder::saveData(float * buf, qint64 len)
     // now the circular buffer is empty (and it will stay that
     // way for a while. 
     // dump the incoming buffer to the sound file.
-    int rv = sf_write_float(snd_file, buf, len); 
+    int rv = sf_write_float(snd_file, buf, len);
   }
   else {
     // we aren't recording, save the last samples. 

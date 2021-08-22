@@ -120,7 +120,7 @@ protected:
       // copy all the lines from the old image to the new image
       uchar * to_start = image.bits();
       uchar * from_start = saved_image.scanLine(1);
-      memcpy(to_start, from_start, image.byteCount() - image.bytesPerLine());
+      memcpy(to_start, from_start, image.sizeInBytes() - image.bytesPerLine());
       // scan a new line in.
       const QRect tile( 0, image.height()-1, image.width(), 1);
       renderTile( xMap, yMap, tile, &image ); 

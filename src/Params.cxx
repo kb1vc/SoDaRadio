@@ -29,43 +29,47 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Params.hxx"
 #include <iostream>
 #include <stdlib.h>
-#include <SoDa/Options.hxx>
-#include <SoDa/Utils.hxx>
+#include <boost/algorithm/string.hpp>
 
 SoDa::Params::Params(int argc, char * argv[])
 {
-  SoDa::Options cmd;
-  cmd.addP(&help_please, "help", 'h', "Show this message")
-    .addV<std::string>(&load_list, "load", 'l',
-		       "one or more shared library objects, each containing a SoDa::Thread object")
-    .add<std::string>(&radio_args, "uhdargs", 'u', "",  
-		     "extra parameters to pass to device creator (e.g. device id, address, type)")
-    .add<std::string>(&config_filename, "config",  'c',  "~/.soda/config.xml",
-		      "configuration file for initial settings")
-    .add<std::string>(&server_sock_basename, "uds_name", 's',  "/tmp/SoDa_",
-		      "unix domain socket name for server to UI client message channels")
-    .add<std::string>(&audio_portname, "audio", 'a',  "default", 
-		      "Audio device name for ALSA audio.")
-    .add<bool>(&force_integer_N_mode, "intN", 'N',  true, 
-	       "Force Integer-N synthesis for front-end local oscillators")
-    .add<unsigned int>(&debug_level, "debug", 'D',  0,
-		       "Enable debug messages for value > 0.  Higher values may produce more detail.")
-    .add<std::string>(&radio_type, "radio", 'r',  "USRP", 
-     "the radio type (USRP is the only currently supported device)")
-    .add<std::string>( &gps_hostname, "gps_host", 'G',  "localhost", 
-		      "hostname for gpsd server")
-    .add<std::string>(&gps_portname, "gps_port", 'p',  "2947",
-		      "port number for gpsd server")
-    .add<std::string>(&lock_file_name, "lockfile", 'k',  "SoDa.lock", 
-		      "lock file to signal that a sodaradio server is active")
-    .addInfo("SoDa -- The 'SoD' stands for Software Defined. The 'a' doesn't stand for anything.")
+  namespace po = boost::program_options;
+
+  po::options_description desc("Allowed options");
+  desc.add_options()
+    ("help", "help message")
+    ("load", po::value<std::vector<std::string> >(&load_list)->multitoken(), 
+     "one or more shared library objects, each containing a SoDa::Thread object")
+    ("uhdargs", po::value<std::string>(&radio_args)->default_value(""),
+     "extra parameters to pass to device creator (e.g. device id, address, type)")
+    ("config",  po::value<std::string>(&config_filename)->default_value("~/.soda/config.xml"),
+     "configuration file for initial settings")
+    ("uds_name", po::value<std::string>(&server_sock_basename)->default_value("/tmp/SoDa_"),
+     "unix domain socket name for server to UI client message channels")
+    ("audio", po::value<std::string>(&audio_portname)->default_value("default"), 
+     "Audio device name for ALSA audio.")
+    ("intN", po::value<bool>(&force_integer_N_mode)->default_value(false)->implicit_value(true),
+     "Force Integer-N synthesis for front-end local oscillators")
+    ("fracN", po::value<bool>(&force_frac_N_mode)->default_value(false)->implicit_value(true),
+     "Force Fractional-N synthesis for front-end local oscillators")
+    ("debug", po::value<unsigned int>(&debug_level)->default_value(0)->implicit_value(1),
+     "Enable debug messages for value > 0.  Higher values may produce more detail.")
+    ("radio", po::value<std::string>(&radio_type)->default_value("USRP"), 
+     "the radio type (USRP, Lime)")
+    ("gps_host", po::value<std::string>(&gps_hostname)->default_value("localhost"), 
+     "hostname for gpsd server")
+    ("gps_port", po::value<std::string>(&gps_portname)->default_value("2947"),
+     "port number for gpsd server")
+    ("lockfile", po::value<std::string>(&lock_file_name)->default_value("SoDa.lock"), 
+     "lock file to signal that a sodaradio server is active")
     ;
 
-  cmd.parse(argc, argv); 
+  po::store(po::parse_command_line(argc, argv, desc), pmap);
+  po::notify(pmap);
 
   // do we need a help message?
-  if(cmd.isPresent("help")) {
-    cmd.printHelp(std::cout);
+  if(pmap.count("help")) {
+    std::cout << "SoDa -- The 'SoD' stands for Software Defined. The 'a' doesn't stand for anything.   " << desc << std::endl;
     exit(-1); 
   }
 
@@ -100,7 +104,8 @@ const std::vector<std::string> & SoDa::Params::getLibs() {
     char * envlibs_str = getenv("SODA_LOAD_LIBS");
     if(envlibs_str != NULL) {
       std::string envlibs(envlibs_str);
-      std::list<std::string> spl = SoDa::split(envlibs_str, ", ", true);
+      std::vector<std::string> spl;
+      boost::algorithm::split(spl, envlibs, boost::is_any_of(", "));
       for(auto e : spl) {
 	load_list.push_back(e);
       }

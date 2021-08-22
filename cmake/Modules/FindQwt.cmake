@@ -44,7 +44,7 @@
 
 message("IN FindQwt.cmake  at src dir / cmake/Modules QT_INCLUDE_DIR = ${QT_INCLUDE_DIR}")
 
-if(MACOSX) 
+if(0) # && MACOSX) 
   file(GLOB_RECURSE QWT_INCLUDE_plotfile /opt/local/qwt-6.1.5/*qwt_plot.h)
   get_filename_component(QWT_INCLUDE_DIR  ${QWT_INCLUDE_plotfile} DIRECTORY)
   get_filename_component(QWT_ROOT_DIR "${QWT_INCLUDE_DIR}/../../.." ABSOLUTE)

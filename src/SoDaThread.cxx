@@ -19,7 +19,10 @@ extern "C" {
 }
 
 SoDa::Thread::Thread(const std::string & oname, const std::string & version) : SoDa::Base(oname), Debug(oname) {
-  th = NULL; 
+  th = NULL;
+  
+  has_terminated = false; 
+  
   SoDa::ThreadRegistry::getRegistrar()->addThread(this, version);
 }
 
@@ -42,6 +45,7 @@ void SoDa::Thread::execCommand(Command * cmd)
 
 
 void  SoDa::Thread::outerRun() {
+
   hookSigSeg();
   debugMsg(getObjName() + " starting.\n");
   try {
@@ -60,6 +64,8 @@ void  SoDa::Thread::outerRun() {
     std::cerr << getObjName() << " caught unknown exception" << std::endl;
   }
   debugMsg(getObjName() + " terminating.\n");
+  
+  has_terminated = true; 
 }
 
 void  SoDa::Thread::sigsegHandler(int sig)
