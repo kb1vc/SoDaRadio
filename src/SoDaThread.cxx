@@ -18,9 +18,11 @@ extern "C" {
 #include <unistd.h>
 }
 
+
 SoDa::Thread::Thread(const std::string & oname, const std::string & version) : SoDa::Base(oname), Debug(oname) {
-  th = NULL; 
+  
   SoDa::ThreadRegistry::getRegistrar()->addThread(this, version);
+  thread_ptr = nullptr;
 }
 
 void SoDa::Thread::execCommand(Command * cmd) 

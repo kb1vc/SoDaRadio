@@ -27,8 +27,18 @@
 */
 
 #include "Debug.hxx"
+#include <chrono>
+#include <ctime>
+
 
 unsigned int SoDa::Debug::default_debug_level = 0;
 unsigned int SoDa::Debug::global_debug_level = 0;
 
 std::mutex SoDa::Debug::debug_msg_mutex; 
+
+std::string SoDa::Debug::curDateTime() {
+  auto curtime = std::chrono::system_clock::now();
+  std::time_t rightnow = std::chrono::system_clock::to_time_t(curtime);
+
+  return std::string(std::ctime(&rightnow));
+}

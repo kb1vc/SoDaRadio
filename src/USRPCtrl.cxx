@@ -38,8 +38,6 @@
 #include <uhd/types/tune_request.hpp>
 #include <uhd/types/tune_result.hpp>
 #include <SoDa/Format.hxx>
-#include <boost/property_tree/exceptions.hpp>
-
 
 // Mac OSX doesn't have a clock_gettime, it has
 // the microsecond resolution gettimeofday. 
@@ -254,7 +252,7 @@ void SoDa::USRPCtrl::run()
     loopcount++; 
     Command * cmd = cmd_stream->get(subid);
     if(cmd == NULL) {
-      boost::this_thread::sleep(boost::posix_time::milliseconds(50));
+      sleep(50);
     }
     else {
       // process the command.

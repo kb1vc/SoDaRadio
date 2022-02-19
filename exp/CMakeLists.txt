@@ -4,9 +4,11 @@ find_package(FFTW3f REQUIRED QUIET)
 
 add_definitions(-DHAVE_LIBASOUND=1)
 
-include_directories(SYSTEM ${Boost_INCLUDE_DIRS} ${UHD_INCLUDE_DIRS} ${ALSA_INCLUDE_DIRS} ${FFTW3F_INCLUDE_DIRS} ../src ../common)
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS} ${UHD_INCLUDE_DIRS} ${ALSA_INCLUDE_DIRS} ${FFTW3F_INCLUDE_DIRS}
+  ${SoDaUtils_INCLUDE_DIR}
+  ../src ../common)
 
-set(TEST_LIBS ${Boost_LIBRARIES} ${UHD_LIBRARIES} ${ALSA_LIBRARIES} ${FFTW3F_LIBRARIES})
+set(TEST_LIBS ${Boost_LIBRARIES} ${UHD_LIBRARIES} ${ALSA_LIBRARIES} ${FFTW3F_LIBRARIES} ${SoDaUtils_LIBRARIES})
 
 ########### next target ###############
 
@@ -59,7 +61,7 @@ target_link_libraries(MultiMBox_Test ${TEST_LIBS})
 
 ########### next target ###############
 
-set(SoDa_ThreadTest_SRCS SoDa_ThreadTest.cxx ../src/SoDaBase.cxx ../src/Debug.cxx)
+set(SoDa_ThreadTest_SRCS SoDa_ThreadTest.cxx ../src/SoDaBase.cxx ../src/Debug.cxx ../src/SoDaThread.cxx ../src/SoDaThreadRegistry.cxx)
 
 add_executable(SoDa_ThreadTest EXCLUDE_FROM_ALL ${SoDa_ThreadTest_SRCS})
 

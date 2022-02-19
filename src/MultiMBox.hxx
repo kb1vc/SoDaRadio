@@ -32,8 +32,6 @@
 #include <queue>
 #include <vector>
 #include <map>
-#include <boost/thread.hpp>
-#include <boost/thread/thread.hpp>
 #include <mutex>
 #include <condition_variable>
 

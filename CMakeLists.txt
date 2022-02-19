@@ -152,8 +152,8 @@ CONFIGURE_FILE (
   @ONLY
   )  
 
-INSTALL(FILES ${PROJECT_BINARY_DIR}/SoDaRadioConfigVersion.cmake DESTINATION "lib/cmake/SoDaRadio")
-INSTALL(FILES ${PROJECT_SOURCE_DIR}/SoDaRadioConfig.cmake DESTINATION "lib/cmake/SoDaRadio")
+INSTALL(FILES ${PROJECT_BINARY_DIR}/SoDaRadioConfigVersion.cmake DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/SoDaRadio")
+INSTALL(FILES ${PROJECT_SOURCE_DIR}/SoDaRadioConfig.cmake DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/SoDaRadio")
 
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
 
@@ -242,8 +242,8 @@ else()
   set(RT_LIB "rt")  
 endif()
 
-# Find SoDaFormat and build it if we must. 
-include(${PROJECT_SOURCE_DIR}/cmake/Modules/BuildSoDaFormat.cmake)
+# Find SoDaUtils and build it if we must. 
+include(${PROJECT_SOURCE_DIR}/cmake/Modules/BuildSoDaUtils.cmake)
 
 # This is the radio interface... 
 ADD_SUBDIRECTORY(src)
