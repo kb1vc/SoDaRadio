@@ -252,7 +252,7 @@ void SoDa::USRPCtrl::run()
     loopcount++; 
     Command * cmd = cmd_stream->get(subid);
     if(cmd == NULL) {
-      sleep(50);
+      sleep_ms(50);
     }
     else {
       // process the command.
@@ -306,7 +306,7 @@ uhd::tune_result_t SoDa::USRPCtrl::checkLock(uhd::tune_request_t & req, char sel
   while(1) {
     uhd::sensor_value_t lo_locked = (sel == 'r') ? usrp->get_rx_sensor("lo_locked",0) : usrp->get_tx_sensor("lo_locked",0);
     if(lo_locked.to_bool()) break;
-    else usleep(1000);
+    else sleep_ms(1);
     if((lock_itercount & 0xfff) == 0) {
       debugMsg(SoDa::Format("Waiting for %0 LO lock to freq = %1 (%2:%3)  count = %4\n")
 	       .addC(sel)
@@ -827,7 +827,7 @@ void SoDa::USRPCtrl::setTXEna(bool val)
 
   // if we're enabling, set the power, freq, and other stuff
   if(val) {
-    usleep(400);    
+    sleep_us(400);    
     // set the tx antenna
     setAntenna(tx_ant, 't');
     // set the tx gain. 

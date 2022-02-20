@@ -206,7 +206,7 @@ void SoDa::USRPTX::run()
     }
 
     if(!didwork) {
-      usleep(100);
+      sleep_us(100);
     }
   }
 

@@ -132,7 +132,7 @@ void SoDa::UI::run()
   cmd_stream->put(new SoDa::Command(Command::SET, Command::TX_FE_FREQ, 144.2e6));
   cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_LO3_FREQ, 100e3));
   cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_AF_FILTER, 1));
-  usleep(100000);
+  sleep_ms(100);
   cmd_stream->put(new SoDa::Command(Command::SET, Command::TX_STATE, 0));
 
   updateSpectrumState(); 
@@ -236,7 +236,7 @@ void SoDa::UI::run()
     
     // if there is nothing to do, sleep for a little while. -- 
     // do small sleep, to speedup spectrum update.
-    if(!didwork) usleep(5000);
+    if(!didwork) sleep_us(5000);
   }
 
 

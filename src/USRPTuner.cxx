@@ -134,7 +134,7 @@ bool SoDa::USRPTuner::checkLock(uhd::tune_request_t & req,
   while(1) {
     uhd::sensor_value_t lo_locked = (sel == 'r') ? usrp->get_rx_sensor("lo_locked",0) : usrp->get_tx_sensor("lo_locked",0);
     if(lo_locked.to_bool()) break;
-    else usleep(1000);
+    else sleep_us(1000);
     if((lock_itercount & 0xfff) == 0) {
       debugMsg(SoDa::Format("Waiting for %0 LO lock to freq = %1 (%2:%3)  count = %4\n")
 	       .addC(sel)

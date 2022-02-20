@@ -189,7 +189,7 @@ void SoDa::USRPRX::run()
       // write the buffer output
     }
     else {
-      usleep(1000);
+      sleep_us(1000);
     }
   }
 

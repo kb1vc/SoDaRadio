@@ -109,7 +109,7 @@ SoDa::UD::ClientSocket::ClientSocket(const std::string & path, int startup_timeo
     if(stat >= 0) break;
     else {
       // we should wait a little while before we give up.
-      sleep(2);
+      sleep(1);
     }
   }
 
