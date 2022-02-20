@@ -63,7 +63,11 @@ ENDIF()
 
 add_definitions(-DHAVE_UHD=${HAVE_UHD})
 
-include_directories(SYSTEM ${Boost_INCLUDE_DIRS} ${Radio_INCLUDE_DIRS} ${ALSA_INCLUDE_DIRS} ${FFTW3F_INCLUDE_DIRS} ${SoDaUtils_INCLUDE_DIR} )
+include_directories(SYSTEM 
+  ${Radio_INCLUDE_DIRS} 
+  ${ALSA_INCLUDE_DIRS} 
+  ${FFTW3F_INCLUDE_DIRS} 
+  ${SoDaUtils_INCLUDE_DIR} )
 
 
 
@@ -73,7 +77,7 @@ add_executable(SoDaServer ${SoDaServer_SRCS})
 target_link_libraries(SoDaServer ${RT_LIB}
   Threads::Threads
   ${SoDaUtils_LIBRARIES}
-    ${Boost_LIBRARIES}  ${Radio_LIBRARIES} ${ALSA_LIBRARIES} ${FFTW3F_LIBRARIES} ${CMAKE_DL_LIBS})
+    ${Radio_LIBRARIES} ${ALSA_LIBRARIES} ${FFTW3F_LIBRARIES} ${CMAKE_DL_LIBS})
 
 
 install(TARGETS SoDaServer DESTINATION bin)
@@ -87,7 +91,7 @@ SoDaThreadRegistry.cxx
 )
 
 add_library(accessory SHARED ${simple_acc_SRCS})
-target_link_libraries(accessory ${Boost_LIBRARIES})
+#target_link_libraries(accessory ${SoDaUtils_LIBRARIES})
 
 
 # Export header files that are required to build loadable modules

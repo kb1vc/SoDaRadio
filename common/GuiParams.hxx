@@ -29,8 +29,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef GUIPARAMS_HDR
 #define GUIPARAMS_HDR
 
-#include <boost/format.hpp>
-#include <boost/program_options.hpp>
+#include <SoDa/Format.hxx>
+#include <SoDa/Options.hxx>
 
 namespace SoDa {
   class GuiParams {
@@ -54,7 +54,7 @@ namespace SoDa {
 
 
   private:
-    boost::program_options::variables_map pmap;
+    SoDa::Options cmd; 
 
     bool no_command_only_help;
 

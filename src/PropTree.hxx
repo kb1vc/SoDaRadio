@@ -34,7 +34,6 @@
 #include <uhd/property_tree.hpp>
 #include <SoDa/Format.hxx>
 #include <iostream>
-#include <boost/property_tree/exceptions.hpp>
 
 namespace SoDa
 {

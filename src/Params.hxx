@@ -29,7 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef PARAMS_HDR
 #define PARAMS_HDR
 
-#include <boost/program_options.hpp>
+#include <SoDa/Options.hxx>
 #include <string>
 #include <algorithm>
 #include <iostream>
@@ -74,15 +74,6 @@ namespace SoDa {
      * @return string TX
      */
     std::string getTXAnt() const { return tx_ant; }
-
-    /**
-     * @brief read a configuration file (for now, just setup the default config.)
-     */
-    void readConfigFile(std::string &cf_name );
-    /**
-     * @brief save config data to a configuration file (for now, do nothing.)
-     */
-    void saveConfigFile(std::string &cf_name ); 
 
     /**
      * Sample rates and all that other stuff are fixed.
@@ -137,7 +128,7 @@ namespace SoDa {
 
   private:
     
-    boost::program_options::variables_map pmap;
+    SoDa::Options cmd;
 
     std::string gps_hostname; 
     std::string gps_portname; 
