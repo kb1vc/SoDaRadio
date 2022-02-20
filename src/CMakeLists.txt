@@ -67,6 +67,7 @@ include_directories(SYSTEM
   ${Radio_INCLUDE_DIRS} 
   ${ALSA_INCLUDE_DIRS} 
   ${FFTW3F_INCLUDE_DIRS} 
+  ${SoDaSignals_INCLUDE_DIR} 
   ${SoDaUtils_INCLUDE_DIR} )
 
 
@@ -77,6 +78,7 @@ add_executable(SoDaServer ${SoDaServer_SRCS})
 target_link_libraries(SoDaServer ${RT_LIB}
   Threads::Threads
   ${SoDaUtils_LIBRARIES}
+  ${SoDaSignals_LIBRARIES}  
     ${Radio_LIBRARIES} ${ALSA_LIBRARIES} ${FFTW3F_LIBRARIES} ${CMAKE_DL_LIBS})
 
 

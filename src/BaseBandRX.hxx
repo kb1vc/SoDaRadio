@@ -33,7 +33,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Params.hxx"
 #include "MultiMBox.hxx"
 #include "Command.hxx"
-#include "OSFilter.hxx"
+#include <SoDa/Filter.hxx>
 #include "HilbertTransformer.hxx"
 #include "TDResamplers625x48.hxx"
 #include "AudioIfc.hxx"
@@ -245,15 +245,13 @@ namespace SoDa {
     void buildFilterMap();
     
     SoDa::Command::AudioFilterBW af_filter_selection; ///< currently audio filter selector
-    SoDa::OSFilter * cur_audio_filter; ///< currently selected audio filter
-    SoDa::OSFilter * fm_audio_filter; ///< audio filter for FM (wider passband)
-    SoDa::OSFilter * am_pre_filter; ///< Before AM demod, we do some (6KHz) prefilter
-    SoDa::OSFilter * nbfm_pre_filter; ///< Before NBFM demod, we do some (15KHz) prefilter -- rf rate
-    SoDa::OSFilter * am_audio_filter; ///< After AM demod, we do a second filter
-
+    SoDa::Filter<float> * cur_audio_filter; ///< currently selected audio filter
+    SoDa::Filter<float> * fm_audio_filter; ///< audio filter for FM (wider passband)
+    SoDa::Filter<float> * am_pre_filter; ///< Before AM demod, we do some (6KHz) prefilter
+    SoDa::Filter<float> * nbfm_pre_filter; ///< Before NBFM demod, we do some (15KHz) prefilter -- rf rate
+    SoDa::Filter<float> * am_audio_filter; ///< After AM demod, we do a second filter
     
-    
-    std::map<SoDa::Command::AudioFilterBW, SoDa::OSFilter *> filter_map; ///< map filter selectors to the filter objects
+    std::map<SoDa::Command::AudioFilterBW, SoDa::Filter<float> *> filter_map; ///< map filter selectors to the filter objects
 
     // hilbert transformer
     SoDa::HilbertTransformer * hilbert; ///< hilbert transform object for SSB/CW widgets

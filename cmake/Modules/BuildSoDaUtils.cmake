@@ -30,7 +30,7 @@ ELSE()
       #  PREFIX ${PROJECT_BINARY_DIR}/sodaformat-kit
       GIT_REPOSITORY https://github.com/kb1vc/SoDaUtils.git
       GIT_TAG main
-      SOURCE_DIR sodaformatlib
+      SOURCE_DIR sodautilslib
       CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>"
       )
 
