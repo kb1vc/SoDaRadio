@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2022 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -134,13 +134,13 @@ void SoDa::USRPRX::run()
     else if(audio_rx_stream_enabled) {
       // go get some data
       // get a free buffer.
-      SoDa::Buf * buf = rx_stream->alloc();
+      SoDa::CFBuffer * buf = rx_stream->alloc();
       if(buf == NULL) {
-	buf = new SoDa::Buf(rx_buffer_size); 
+	buf = new SoDa::CFBuffer(rx_buffer_size); 
       }
 
-      if(buf == NULL) throw SoDa::Exception("USRPRX couldn't allocate SoDa::Buf object", this); 
-      if(buf->getComplexBuf() == NULL) throw SoDa::Exception("USRPRX allocated empty SoDa::Buf object", this);
+      if(buf == NULL) throw SoDa::Exception("USRPRX couldn't allocate SoDa::CFBuffer object", this); 
+      if(buf->getComplexBuf() == NULL) throw SoDa::Exception("USRPRX allocated empty SoDa::CFBuffer object", this);
       
       unsigned int left = rx_buffer_size;
       unsigned int coll_so_far = 0;
@@ -164,16 +164,16 @@ void SoDa::USRPRX::run()
       if(enable_spectrum_report && (if_stream->getSubscriberCount() > 0)) {
 	// clone a buffer, cause we're going to modify
 	// it before the send is complete. 
-	SoDa::Buf * if_buf = if_stream->alloc();
+	SoDa::CFBuffer * if_buf = if_stream->alloc();
 	if(if_buf == NULL) {
-	  if_buf = new SoDa::Buf(rx_buffer_size); 
+	  if_buf = new SoDa::CFBuffer(rx_buffer_size); 
 	}
 
 	if(if_buf->copy(buf)) {
 	  if_stream->put(if_buf);
 	}
 	else {
-	  throw SoDa::Exception("SoDa::Buf Copy for IF stream failed", this);
+	  throw SoDa::Exception("SoDa::CFBuffer Copy for IF stream failed", this);
 	}
       }
 
@@ -196,7 +196,7 @@ void SoDa::USRPRX::run()
   stopStream(); 
 }
 
-void SoDa::USRPRX::doMixer(SoDa::Buf * inout)
+void SoDa::USRPRX::doMixer(SoDa::CFBuffer * inout)
 {
   unsigned int i;
   std::complex<float> o;
@@ -306,10 +306,10 @@ void SoDa::USRPRX::subscribeToMailBox(const std::string & mbox_name,
   if(SoDa::connectMailBox<SoDa::CmdMBox>(this, cmd_stream, "CMD", mbox_name, mbox_p)) {
     cmd_subs = cmd_stream->subscribe();
   }
-  if(SoDa::connectMailBox<SoDa::DatMBox>(this, rx_stream, "RX", mbox_name, mbox_p)) {
+  if(SoDa::connectMailBox<SoDa::CFMBox>(this, rx_stream, "RX", mbox_name, mbox_p)) {
     // we don't subscribe -- we publish
   }
-  if(SoDa::connectMailBox<SoDa::DatMBox>(this, if_stream, "IF", mbox_name, mbox_p)) {
+  if(SoDa::connectMailBox<SoDa::CFMBox>(this, if_stream, "IF", mbox_name, mbox_p)) {
     // we don't subscribe -- we publish
   }
 }

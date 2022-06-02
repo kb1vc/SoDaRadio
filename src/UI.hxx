@@ -29,6 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef UI_HDR
 #define UI_HDR
 #include "SoDaBase.hxx"
+#include "Buffer.hxx"
 #include "SoDaThread.hxx"
 #include "MultiMBox.hxx"
 #include "Command.hxx"
@@ -51,11 +52,11 @@ namespace SoDa {
   private:
     // Do an FFT on an rx buffer and send the positive
     // frequencies to any network listeners. 
-    void sendFFT(SoDa::Buf * buf);
+    void sendFFT(SoDa::CFBuffer * buf);
 
     // the internal communications paths -- between the SoDa threads. 
     CmdMBox * cwtxt_stream, * cmd_stream, * gps_stream;
-    DatMBox * if_stream; 
+    CFMBox * if_stream; 
     unsigned int if_subs, cmd_subs, gps_subs;
 
 

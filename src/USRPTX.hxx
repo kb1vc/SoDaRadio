@@ -123,8 +123,8 @@ namespace SoDa {
     unsigned int cmd_subs; ///< subscription handle for command stream
     unsigned int cw_subs;  ///< subscription handle for cw envelope stream (from CW unit)
 
-    DatMBox * tx_stream;  ///< transmit audio stream 
-    DatMBox * cw_env_stream; ///< envelope stream from text-to-CW converter (CW unit)
+    FMBox * tx_stream;  ///< transmit audio stream 
+    FMBox * cw_env_stream; ///< envelope stream from text-to-CW converter (CW unit)
     CmdMBox * cmd_stream; ///< command stream
     
     bool tx_enabled; ///< if true, we're transmitting. 

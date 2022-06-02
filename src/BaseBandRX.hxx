@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012,2013,2014 Matthew H. Reilly (kb1vc)
+Copyright (c) 2012,2013,2014,2022 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,9 +25,8 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+#pragma once
 
-#ifndef BASEBANDRX_HDR
-#define BASEBANDRX_HDR
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
 #include "Params.hxx"
@@ -148,7 +147,7 @@ namespace SoDa {
      * @param mod modulation type -- WBFM
      * @param af_gain factor to goose the audio output
      */
-    void demodulateWBFM(SoDa::Buf * rxbuf,
+    void demodulateWBFM(SoDa::CFBuffer * rxbuf,
 			SoDa::Command::ModulationType mod,
 			float af_gain);
 
@@ -159,7 +158,7 @@ namespace SoDa {
      *
      * @param rxbuf RF input buffer
      */
-    void demodulate(SoDa::Buf * rxbuf);
+    void demodulate(SoDa::CFBuffer & rxbuf);
 
     /**
      * @brief send a report of the lower and upper edges of the IF passband
@@ -178,7 +177,7 @@ namespace SoDa {
 
     SoDa::Command::ModulationType rx_modulation; ///< current receive modulation mode (USB,LSB,CW_U,CW_L,NBFM,WBFM,AM,...)
     
-    DatMBox * rx_stream; ///< mailbox producing rx sample stream from USRP
+    CFMBox * rx_stream; ///< mailbox producing rx sample stream from USRP
     CmdMBox * cmd_stream; ///< mailbox producing command stream from user
     unsigned int rx_subs; ///< mailbox subscription ID for rx data stream
     unsigned int cmd_subs; ///< mailbox subscription ID for command stream
@@ -289,4 +288,3 @@ namespace SoDa {
 }
 
 
-#endif

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+Copyright (c) 2012,2022 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -79,11 +79,11 @@ namespace SoDa {
      *
      * @param inout the input/output RF buffer
      */
-    void doMixer(SoDa::Buf * inout);
+    void doMixer(SoDa::CFBuffer * inout);
     void set3rdLOFreq(double IF_tuning);
 
-    DatMBox * rx_stream;
-    DatMBox * if_stream; 
+    CFMBox * rx_stream;
+    CFMBox * if_stream; 
     CmdMBox * cmd_stream;
     unsigned int cmd_subs; 
 

@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2022 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -140,15 +140,13 @@ SoDa::BaseBandRX::BaseBandRX(Params * params,
   // start with initial hang count of 0 (haven't broken squelch yet)
 }
 
-void SoDa::BaseBandRX::demodulateWBFM(SoDa::Buf * rxbuf, SoDa::Command::ModulationType mod, float af_gain)
+void SoDa::BaseBandRX::demodulateWBFM(SoDa::CFBuffer & rxbuf, SoDa::Command::ModulationType mod, float af_gain)
 {
   (void) mod;
   // now allocate a new audio buffer from the buffer ring
-  float * audio_buffer = bpool->getBuffer();
+  FBuffer & audio_buffer = *bpool->getBuffer();
   float demod_out[rf_buffer_size];
   unsigned int i;
-
-  std::complex<float> * dbuf = rxbuf->getComplexBuf();
 
   // Interestingly, arctan based demodulation (see Lyons p 486 for instance)
   // performs much better than the approximation that avoids the atan call.
@@ -290,19 +288,19 @@ void SoDa::BaseBandRX::demodulateAM(std::complex<float> * dbuf)
   pendAudioBuffer(audio_buffer);
 }
 
-void SoDa::BaseBandRX::demodulate(SoDa::Buf * rxbuf)
+void SoDa::BaseBandRX::demodulate(SoDa::Buf & rxbuf)
 {
   // First we downsample and apply the audio filter unless this is a WBFM signal.
-  std::complex<float> dbufi[audio_buffer_size]; 
-  std::complex<float> dbufo[audio_buffer_size]; 
+  CFBuffer dbufi(audio_buffer_size); 
+  CFBuffer dbufo(audio_buffer_size); 
   // Note that audio_buffer_size must be (sample_length / decimation rate)
   
   if((rx_modulation != SoDa::Command::WBFM) && (rx_modulation != SoDa::Command::NBFM)) {
-    rf_resampler->apply(rxbuf->getComplexBuf(), dbufi, rf_buffer_size, audio_buffer_size);
+    rf_resampler->apply(rxbuf.getVec(), dbufi.getVec(), rf_buffer_size, audio_buffer_size);
     
     // now do the low pass filter
     if(rx_modulation == SoDa::Command::AM) {
-      am_pre_filter->apply(dbufi, dbufo, *cur_af_gain); 
+      am_pre_filter->apply(dbufi.getVec(), dbufo.getVec(), *cur_af_gain); 
     }
     else {
       cur_audio_filter->apply(dbufi, dbufo, *cur_af_gain);
@@ -633,7 +631,7 @@ void SoDa::BaseBandRX::subscribeToMailBox(const std::string & mbox_name, BaseMBo
   if(SoDa::connectMailBox<SoDa::CmdMBox>(this, cmd_stream, "CMD", mbox_name, mbox_p)) {
     cmd_subs = cmd_stream->subscribe();
   }
-  if(SoDa::connectMailBox<SoDa::DatMBox>(this, rx_stream, "RX", mbox_name, mbox_p)) {
+  if(SoDa::connectMailBox<SoDa::CFMBox>(this, rx_stream, "RX", mbox_name, mbox_p)) {
     rx_subs = rx_stream->subscribe();
   }
 }
