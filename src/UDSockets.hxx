@@ -38,6 +38,7 @@
 #include <unistd.h>
 
 #include <string>
+#include <iostream>
 
 namespace SoDa {
   namespace UD {  // Unix Domain sockets. 
@@ -67,6 +68,7 @@ namespace SoDa {
 	close(conn_socket);
 	close(server_socket);
 	unlink(mailbox_pathname.c_str()); 
+	std::cerr << "Closing server socket [" << mailbox_pathname << "]\n";
       }
       bool isReady();
 
@@ -96,9 +98,12 @@ namespace SoDa {
     class ClientSocket : public NetSocket {
     public:
       ClientSocket(const std::string & path, int startup_timeout_count = 1);
-      ~ClientSocket() { close(conn_socket); }
+      ~ClientSocket() { 
+	close(conn_socket); 
+      }
     private:
       struct hostent * server; 
+      std::string mailbox_pathname; 
     };
   }
 }

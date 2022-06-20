@@ -1,5 +1,5 @@
-#ifndef ALSA_PCM_HDR
-#define ALSA_PCM_HDR
+#pragma once
+
 /*
   Copyright (c) 2012, Matthew H. Reilly (kb1vc)
   All rights reserved.
@@ -33,15 +33,14 @@
 #include "UDSockets.hxx"
 #include <string>
 #include <mutex>
-// Only works if we have ALSA
-#include <alsa/asoundlib.h>
-#include <boost/format.hpp>
 #include <iostream>
 #include <stdexcept>
 
+#include <tuple>
+
 namespace SoDa {
   /**
-   * @class AudioQt
+   * @class AudioQtRX
    *
    * @brief Qt audio interface class
    *
@@ -71,7 +70,7 @@ namespace SoDa {
    * works pretty much all the time.  
    * 
    */
-  class AudioQt : public AudioIfc, public Debug {
+  class AudioQtRX : public AudioIfc, public Debug {
   public:
     /**
      * constructor
@@ -82,12 +81,12 @@ namespace SoDa {
      *                            that carries the audio stream from the SoDaServer (radio) process
      * @param audio_port_name  which ALSA device are we connecting to?
      */
-    AudioQt(unsigned int _sample_rate,
+    AudioQtRX(unsigned int _sample_rate,
 	    unsigned int _sample_count_hint = 1024,
 	    std::string audio_sock_basename = std::string("soda_"),
 	    std::string audio_port_name = std::string("default"));
 
-    ~AudioQt() {
+    ~AudioQtRX() {
       delete audio_rx_socket;
     }
     
@@ -110,22 +109,31 @@ namespace SoDa {
     bool sendBufferReady(unsigned int len);
 
     /**
-     * recv -- get a buffer of data from the audio input
+     * recv -- get a buffer of data from the audio input -- Always returns a buffer
+     * of 0.0.  AudioQtRXTX over-rides this method. 
+     * 
      * @param buf buffer of type described by the DataFormat selected at init
      * @param len number of elements in the buffer to get
-     * @param when_ready if true, test with sendBufferReady and return 0 if not ready
+     * @param when_ready if true, test with recvBufferReady and return 0 if not ready
      * otherwise perform the recv regardless.
      * @return number of elements transferred from the audio input
      */
-    int recv(void * buf, unsigned int len, bool when_ready = false);
+    virtual int recv(void * buf, unsigned int len, bool when_ready = false) { 
+      std::ignore = buf;
+      std::ignore = when_ready;
+      float *bp = (float*) buf;
+      for(int i = 0; i < len; i++) { bp[i] = 0.0; }
+      return len; 
+    }
 
     /**
      * recvBufferReady -- are there samples waiting in the audio device?
+     * Always returns true. 
      *                    
      * @param len the number of samples that we wish to get
      * @return true if len samples are waiting in in the device buffer
      */
-    bool recvBufferReady(unsigned int len);
+    bool recvBufferReady(unsigned int len) { return true; }
 
     /**
      * stop the output stream so that we don't encounter a buffer underflow
@@ -143,139 +151,31 @@ namespace SoDa {
      * stop the input stream so that we don't encounter a buffer overflow
      * while the transmitter is inactive.
      */
-    void sleepIn() {
-      debugMsg("Sleep In");            
-      std::lock_guard<std::mutex> mt_lock(alsa_mutex);
-      snd_pcm_drop(pcm_in);
-
-      // now read the input buffers until they're empty
-      int buf[1000];      
-      int len = 1000; 
-      int stat = 1;
-      while(stat > 0) {
-	stat = snd_pcm_readi(pcm_in, buf, len);
-	std::cerr << "-@-";
-	if(stat == 0) break; 
-	else if(stat == -EAGAIN) continue; 
-	else break; 
-      }
-    }
-
+    virtual void sleepIn() { }
     /**
      * start the input stream
      */
-    void wakeIn() {
-      debugMsg("Wake In");                  
-      std::lock_guard<std::mutex> mt_lock(alsa_mutex);      
-      int err; 
-      if((err = snd_pcm_prepare(pcm_in)) < 0) {
-	throw
-	  SoDa::Exception((boost::format("AudioQt::wakeIn() Failed to wake after sleepIn() -- %s")
-			 % snd_strerror(err)).str(), this);
-      }
-      if((err = snd_pcm_start(pcm_in)) < 0) {
-	throw
-	  SoDa::Exception((boost::format("AudioQt::wakeIn() Failed to wake after sleepIn() -- %s")
-			 % snd_strerror(err)).str(), this);
-      }
-    }
+    virtual void wakeIn() { }
+
     std::string currentPlaybackState() {
       return std::string("Fabulous");
     }
 
-    std::string currentCaptureState() {
-      std::lock_guard<std::mutex> mt_lock(alsa_mutex);                  
-      debugMsg("curCaptureState");                        
-      return currentState(pcm_in);
+    virtual std::string currentCaptureState() {
+      return std::string("NOT IMPLEMENTED");
     }
+    
   protected:
-    snd_pcm_t * pcm_in;  ///< The capture (input) handle. 
-    snd_pcm_hw_params_t * hw_in_params;  ///< the input parameter list
-
-    /**
-     *
-     */
-    std::string currentState(snd_pcm_t * dev) {
-      snd_pcm_state_t st;
-      st = snd_pcm_state(dev);
-
-      switch (st) {
-      case SND_PCM_STATE_OPEN:
-	return std::string("SND_PCM_STATE_OPEN");
-	break;
-      case SND_PCM_STATE_SETUP:
-	return std::string("SND_PCM_STATE_SETUP");
-	break;
-      case SND_PCM_STATE_PREPARED:
-	return std::string("SND_PCM_STATE_PREPARED");
-	break;
-      case SND_PCM_STATE_RUNNING:
-	return std::string("SND_PCM_STATE_RUNNING");
-	break;
-      case SND_PCM_STATE_XRUN:
-	return std::string("SND_PCM_STATE_XRUN");
-	break;
-      case SND_PCM_STATE_DRAINING:
-	return std::string("SND_PCM_STATE_DRAINING");
-	break;
-      case SND_PCM_STATE_PAUSED:
-	return std::string("SND_PCM_STATE_PAUSED");
-	break;
-      case SND_PCM_STATE_SUSPENDED:
-	return std::string("SND_PCM_STATE_SUSPENDED");
-	break;
-      case SND_PCM_STATE_DISCONNECTED:
-	return std::string("SND_PCM_STATE_DISCONNECTED");
-	break;
-      default:
-	return std::string("BADSTATE-UNKNOWN");
-      }
-    }
-
-    /**
-     * setup the capture handle and features.
-     */
-    void setupCapture(std::string audio_port_name); 
-
     /**
      * setup the network sockets for the audio link to the user interface.
      */
     void setupNetwork(std::string audio_sock_basename) ;
     
-    /**
-     * setup the parameters for a PCM device
-     * @param dev the device handle
-     * @param hw_params (out parameter) a pointer to a device parameter block
-     */
-    void setupParams(snd_pcm_t * dev, snd_pcm_hw_params_t * & hw_params);
     
-    /**
-     * checkStatus check to see if the return status from an alsa call was OK
-     * @param err -- the error number
-     * @param exp -- why are we here
-     * @param fatal -- if true, throw an exception, otherwise print an error to std::cerr
-     */
-    void checkStatus(int err, const std::string & exp, bool fatal = false) {
-      if (err < 0) {
-	if(fatal) throw SoDa::Exception((boost::format("%s %s") % exp % snd_strerror(err)).str(), this);
-	else std::cerr << boost::format("%s %s %s\n") % getObjName() % exp % snd_strerror(err);
-      }
-    }
 
   private:
-    /**
-     * recvBufferReady_priv -- are there samples waiting in the audio device?
-     *                    
-     * actual implementation of ready check, but without protecting mutex. 
-     *
-     * @param len the number of samples that we wish to get
-     * @return true if len samples are waiting in in the device buffer
-     */
-    bool recvBufferReady_priv(unsigned int len);
 
   private:
-    std::mutex alsa_mutex;
-
     SoDa::UD::ServerSocket * audio_rx_socket; 
 
     // debug assistance
@@ -285,5 +185,3 @@ namespace SoDa {
 
 }
 
-
-#endif

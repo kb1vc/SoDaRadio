@@ -29,7 +29,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mainwindow.hpp"
 #include "ui_mainwindow.h"
 #include "version.h"
-#include <boost/version.hpp>
 #include <uhd/version.hpp>
 #include <iostream>
 
@@ -147,7 +146,6 @@ void MainWindow::displayAppInfo(bool dummy)
 <li>SoDaRadio Version: %1</li><li>Git ID: %2</li>\
 <li>USRP Hardware Driver Version: %3</li>\
 <li>Qt Version: %4</li> \
-<li>Boost Version: %5</li> \
 <li>Sources and Such: https://kb1vc.github.io/SoDaRadio/</li> \
 <li>Maintainer: kb1vc@kb1vc.org</li> \
 </ul>\
@@ -175,7 +173,7 @@ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY \
 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT \
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE \
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. \
-</p>").arg(SoDaRadio_VERSION).arg(SoDaRadio_GIT_ID).arg(UHD_VERSION_ABI_STRING).arg(QTCORE_VERSION_STR).arg(BOOST_LIB_VERSION));
+</p>").arg(SoDaRadio_VERSION).arg(SoDaRadio_GIT_ID).arg(UHD_VERSION_ABI_STRING).arg(QTCORE_VERSION_STR));
 }
 
 void MainWindow::widgetSaveRestore(QObject * op, const QString & par, bool save)

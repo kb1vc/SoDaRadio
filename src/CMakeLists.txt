@@ -21,7 +21,6 @@ set(SoDaServer_SRCS
     CWGenerator.cxx
     GPSmon.cxx
     UDSockets.cxx
-    AudioQt.cxx
     Debug.cxx
     SerialDev.cxx
     TRControl.cxx
@@ -30,27 +29,26 @@ set(SoDaServer_SRCS
     B200Control.cxx
     IFRecorder.cxx
     fix_gpsd_ugliness.cxx
-    )
+)
 
-find_package(ALSA REQUIRED QUIET)
+
 find_package(FFTW3f REQUIRED QUIET)
 
-add_definitions(-DHAVE_LIBASOUND=1)
-add_definitions(-DHAVE_UHD=${HAVE_UHD})
+set(SoDaServer_SRCS ${SoDaServer_SRCS} AudioQtRX.cxx)
+IF(ALSA_FOUND)
+  add_definitions(-DHAVE_LIBASOUND=1)
+  set(SoDaServer_SRCS ${SoDaServer_SRCS} AudioQtRXTX.cxx)
+  message("ALSA enabled -- TX is enabled in this configuration.")
+ELSE()
+  message("ALSA is disabled/not available -- TX is disabled in this configuration.")  
+ENDIF()
+
 
 IF(HAVE_GPSLIB)
   ADD_DEFINITIONS(-DHAVE_GPSLIB=1)
   LIST(APPEND Radio_INCLUDE_DIRS ${GPSLIB_INCLUDE_DIRS})
   LIST(APPEND Radio_LIBRARIES ${GPSLIB_LIBRARIES})
 ENDIF()
-
-IF(PORTAUDIO_FOUND)
-  ADD_DEFINITIONS(-DHAVE_LIBPORTAUDIO=1)
-  LIST(APPEND Radio_INCLUDE_DIRS ${PORTAUDIO_INCLUDE_DIRS})
-  LIST(APPEND Radio_LIBRARIES ${PORTAUDIO_LIBRARIES})
-ENDIF()
-
-ADD_DEFINITIONS(-DUSE_PORTAUDIO=1)
 
 IF(${HAVE_UHD})
   LIST(APPEND SoDaServer_SRCS
@@ -63,20 +61,38 @@ IF(${HAVE_UHD})
   LIST(APPEND Radio_LIBRARIES ${UHD_LIBRARIES})
 ENDIF()
 
+add_definitions(-DHAVE_UHD=${HAVE_UHD})
 
-include_directories(SYSTEM ${Boost_INCLUDE_DIRS} ${Radio_INCLUDE_DIRS} ${ALSA_INCLUDE_DIRS} ${FFTW3F_INCLUDE_DIRS})
+include_directories(SYSTEM 
+  ${Radio_INCLUDE_DIRS} 
+  ${ALSA_INCLUDE_DIRS} 
+  ${FFTW3F_INCLUDE_DIRS} 
+  ${SoDaUtils_INCLUDE_DIR} )
+
 
 
 add_executable(SoDaServer ${SoDaServer_SRCS})
 
-target_link_libraries(SoDaServer rt
-    Threads::Threads
-    ${Boost_LIBRARIES}  ${Radio_LIBRARIES} ${ALSA_LIBRARIES} ${FFTW3F_LIBRARIES} ${CMAKE_DL_LIBS})
+
+target_link_libraries(SoDaServer ${RT_LIB}
+  Threads::Threads
+  ${SoDaUtils_LIBRARIES}
+    ${Radio_LIBRARIES} ${ALSA_LIBRARIES} ${FFTW3F_LIBRARIES} ${CMAKE_DL_LIBS})
 
 
 install(TARGETS SoDaServer DESTINATION bin)
 
-add_library(accessory SHARED SimpleAccessory.cxx)
+set(simple_acc_SRCS
+SimpleAccessory.cxx
+SoDaThread.cxx
+SoDaBase.cxx
+Debug.cxx
+SoDaThreadRegistry.cxx
+)
+
+add_library(accessory SHARED ${simple_acc_SRCS})
+#target_link_libraries(accessory ${SoDaUtils_LIBRARIES})
+
 
 # Export header files that are required to build loadable modules
 set(Loadable_INCLS
@@ -97,3 +113,5 @@ set(SoDaSockets_SRCS
 
 add_library(SoDaSockets STATIC ${SoDaSockets_SRCS})
 install(TARGETS SoDaSockets DESTINATION lib)
+
+

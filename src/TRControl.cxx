@@ -35,7 +35,6 @@
 #include <uhd/device.hpp>
 #include <uhd/types/ranges.hpp>
 #include <uhd/property_tree.hpp>
-#include <boost/algorithm/string.hpp> //for split
 #include <uhd/usrp/dboard_id.hpp>
 #include <uhd/usrp/mboard_eeprom.hpp>
 #include <uhd/usrp/dboard_eeprom.hpp>
@@ -53,7 +52,6 @@ namespace SoDa {
       // find the IP address. 
       std::string ip_address; 
       ip_address = tree.getProperty<uhd::usrp::mboard_eeprom_t>("/eeprom")["ip-addr"];
-      // std::cerr << boost::format("Got address = %s\n") % ip_address; 
       std::string gpsdo = tree.getProperty<uhd::usrp::mboard_eeprom_t>("/eeprom")["gpsdo"];      
       if(gpsdo == std::string("none")) {
 	return new N200Control(usrp, mboard, ip_address);

@@ -73,7 +73,10 @@ namespace SoDa {
 
       for(unsigned int i = 0; i < num_buckets; i++) {
 	double mid = min + half_int + ((double) i) * bucket_interval; 
-	if(table[i] != 0) of << boost::format("%d %g %d\n") % i % mid % table[i]; 
+	if(table[i] != 0) of << SoDa::Format("%0 %1 %2\n")
+			    .addI(i)
+			    .addF(mid)
+			    .addI(table[i]); 
       }
 
       of.close();

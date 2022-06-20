@@ -115,7 +115,7 @@ protected:
   int transmit_intervals; 
   int transmit_seconds; 
   int elapsed_seconds; 
-  QTime transmit_time; 
+  QElapsedTimer transmit_time; 
   QTimer one_second_timer; 
 
   QString secondsToElapsed(int seconds); 

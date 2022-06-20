@@ -27,8 +27,6 @@
 */
 
 #include <string>
-#include <boost/format.hpp>
-#include <boost/foreach.hpp>
 #include <iostream>
 #include "USRPFrontEnd.hxx"
 #include "PropTree.hxx"

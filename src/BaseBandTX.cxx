@@ -39,6 +39,11 @@
 #include "OSFilter.hxx"
 #include "ReSamplers625x48.hxx"
 #include <cstdlib>
+#include <math.h>
+// MacOS doesn't provide "sincos" but it does provide something by another name.
+#if defined(__APPLE__)
+#define sincos(a, b, c) __sincos(a, b, c)
+#endif
 
 SoDa::BaseBandTX::BaseBandTX(Params * params, 
 		       AudioIfc * _audio_ifc
@@ -111,7 +116,7 @@ void SoDa::BaseBandTX::run()
   float audio_buf[audio_buffer_size];
 
   if((cmd_stream == NULL) || (tx_stream == NULL)) {
-      throw SoDa::Exception((boost::format("Missing a stream connection.\n")).str(), 
+    throw SoDa::Exception(std::string("Missing a stream connection.\n"),
 			  this);	
   }
   

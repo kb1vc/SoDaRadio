@@ -32,7 +32,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "SoDaBase.hxx"
 #include <string>
 #include "Debug.hxx"
-#include <boost/thread.hpp>
+#include <thread>
+#include <chrono>
+#include <mutex>
+#include <memory>
+#include <condition_variable>
+
 #include "version.h"
  /**
   * @file SoDaThread.hxx
@@ -116,13 +121,17 @@ namespace SoDa {
       }
     }
 
+    void operator() () {
+      // we woke up with a "start" or "join" call
+      outerRun();
+    }
 
     /**
      * Execute the thread's run loop. 
      */
     void start() {
-      if(th != NULL) return;
-      th = new boost::thread(&Thread::outerRun, this);
+      thread_ptr = std::unique_ptr<std::thread>(new std::thread(&SoDa::Thread::outerRun, this));
+      //      thread_ptr = std::unique_ptr<std::thread>(new std::thread(*this));
     }
 
     /**
@@ -130,19 +139,7 @@ namespace SoDa {
      * returns after the thread has received a STOP message.
      */
     void join() {
-      th->join(); 
-    }
-
-    /**
-     * wait for the thread to stop running, or the specified time to pass. 
-     *
-     * @param m timeout in milliseconds
-     * @return true if the thread has stopped, false otherwise. 
-     * 
-     * 
-     */
-    bool waitForJoin(unsigned int m) {
-      return th->try_join_for(boost::chrono::milliseconds(m)); 
+      thread_ptr->join(); 
     }
 
     /**
@@ -150,7 +147,9 @@ namespace SoDa {
      * exits only when the thread has received a STOP command on
      * one of its command mailboxes.
      */
-    virtual void run() = 0;
+    virtual void run() {
+      std::cerr << "Thread " << getObjName() << " has no run method\n";
+    }
 
     /**
      * Execute (dispatch) a message removed from the command stream to one
@@ -185,15 +184,21 @@ namespace SoDa {
       return; 
     }
 
+    void sleep_ms(unsigned int milliseconds) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
+    }
+    void sleep_us(unsigned int microseconds) {
+      std::this_thread::sleep_for(std::chrono::microseconds(microseconds));
+    }
+    
   private:
     /**
-     * This is implemented as a boost thread.  We'll transition away
-     * from the boost thread model as time proceeds. 
+     * This is the actual thread object -- 
      */
-    boost::thread * th;
-
+    std::unique_ptr<std::thread> thread_ptr;
+    
     /**
-     * the run method that is called by the boost thread handler.
+     * the run method that is called by the thread handler.
      * This method wraps the thread objects run loop in an exception
      * handler so that we can do something useful with it. 
      *
@@ -229,8 +234,8 @@ namespace SoDa {
     if(pattern == key) {
       ret = dynamic_cast<T *>(could_be_pointer);
       if(ret == NULL) {
-	throw SoDa::Exception((boost::format("Bad mailbox pointer for mailbox named = [%s]\n") 
-			     % key).str() , obj);	
+	throw SoDa::Exception(SoDa::Format("Bad mailbox pointer for mailbox named = [%0]\n") 
+			      .addS(key), obj);
       }
       else {
 	current_ptr = ret; 

@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012, Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -27,18 +27,44 @@
 */
 
 #include "Debug.hxx"
-#include <chrono>
-#include <ctime>
+#include "AudioQtRX.hxx"
+
+#define _USE_MATH_DEFINES
+#include <cmath>
 
 
-unsigned int SoDa::Debug::default_debug_level = 0;
-unsigned int SoDa::Debug::global_debug_level = 0;
+namespace SoDa {
+  AudioQtRX::AudioQtRX(unsigned int _sample_rate,
+		   unsigned int _sample_count_hint, 
+		   std::string audio_sock_basename, 
+		   std::string audio_port_name) :
+    AudioIfc(_sample_rate, _sample_count_hint, "AudioQtRX Qt Interface") {
 
-std::mutex SoDa::Debug::debug_msg_mutex; 
+    std::cerr << "Creating AudioQtRX\n";
+    
+    setupNetwork(audio_sock_basename); 
 
-std::string SoDa::Debug::curDateTime() {
-  auto curtime = std::chrono::system_clock::now();
-  std::time_t rightnow = std::chrono::system_clock::to_time_t(curtime);
+    ang = 0.0; 
+    ang_incr = 2.0 * M_PI / 48.0; 
+  }
 
-  return std::string(std::ctime(&rightnow));
+  void AudioQtRX::setupNetwork(std::string audio_sock_basename) 
+  {
+    std::string sockname = audio_sock_basename + "_rxa";
+    audio_rx_socket = new SoDa::UD::ServerSocket(sockname);
+    audio_rx_socket->setDebug(true);
+  }
+
+
+  bool AudioQtRX::sendBufferReady(unsigned int len)  {
+    return true; 
+  }
+
+
+  int AudioQtRX::send(void * buf, unsigned int len, bool when_ready) {
+    int ret;
+    ret = audio_rx_socket->put(buf, len, false);
+    return ret; 
+  }
+
 }

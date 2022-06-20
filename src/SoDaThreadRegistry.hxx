@@ -32,6 +32,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
 #include "Debug.hxx"
+#include <functional>
 
  /**
   * @file SoDaThreadRegistry.hxx

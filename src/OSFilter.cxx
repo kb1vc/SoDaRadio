@@ -32,7 +32,6 @@
 #include <string.h>
 #include <fftw3.h>
 #include <math.h>
-#include <boost/format.hpp>
 
 static unsigned int ipow(unsigned int x, unsigned int y)
 {

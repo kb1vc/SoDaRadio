@@ -30,9 +30,8 @@
 #define DEBUG_HDR
 
 #include <string>
-#include <boost/format.hpp>
 #include <mutex>
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include <SoDa/Format.hxx>
 
 namespace SoDa {
   /** 
@@ -63,14 +62,17 @@ namespace SoDa {
     void debugMsg(const std::string & msg, unsigned int threshold = 1) {
       std::lock_guard<std::mutex> lock(debug_msg_mutex);
       if((debug_level >= threshold) || (global_debug_level >= threshold)) {
-	std::cerr << boost::format("%-20s %s\t%s\n") % unit_name % curDateTime() % msg; 
+	std::cerr << SoDa::Format("%0 %1\t%2\n")
+	  .addS(unit_name, 20)
+	  .addS(curDateTime())
+	  .addS(msg); 
       }
     }
 
-    void debugMsg(const boost::format & fmt, unsigned int threshold = 1) {
+    void debugMsg(const SoDa::Format & fmt, unsigned int threshold = 1) {
       debugMsg(fmt.str(), threshold);
     }
-
+    
     void debugMsg(const char * msg, unsigned int threshold = 1) {
       debugMsg(std::string(msg), threshold); 
     }
@@ -88,11 +90,7 @@ namespace SoDa {
     
   protected:
 
-    std::string curDateTime() { 
-      boost::posix_time::ptime t1; 
-      t1 = boost::posix_time::microsec_clock::local_time();
-      return to_simple_string(t1);
-    }
+    std::string curDateTime(); 
 
     std::string unit_name; ///< the name of the unit reporting status
     unsigned int debug_level; ///< the debug level (threshold) for messages

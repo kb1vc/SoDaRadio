@@ -27,12 +27,14 @@
 */
 
 #include "Debug.hxx"
-#include "AudioALSA.hxx"
-#if HAVE_ASOUNDLIB
-#include <alsa/asoundlib.h>
-#endif
+#include "AudioQtRXTX.hxx"
 
-#include <boost/format.hpp>
+#include <alsa/asoundlib.h>
+
+#include <SoDa/Format.hxx>
+
+#define _USE_MATH_DEFINES
+#include <cmath>
 
 // Use the simple setup, as recent (March 2015) changes to the 
 // ALSA/pulseaudio interactions have made explicit selection
@@ -41,51 +43,30 @@
 #define ALSA_USE_SIMPLE_SETUP
 
 namespace SoDa {
-#if HAVE_LIBASOUND
-  AudioALSA::AudioALSA(unsigned int _sample_rate,
-		       unsigned int _sample_count_hint, 
-		       std::string audio_port_name) :
-    AudioIfc(_sample_rate, _sample_count_hint, "AudioALSA ALSA Interface") {
+  AudioQtRXTX::AudioQtRXTX(unsigned int _sample_rate,
+			   unsigned int _sample_count_hint, 
+			   std::string audio_sock_basename, 
+			   std::string audio_port_name) :
+    AudioQtRX(_sample_rate, _sample_count_hint, "AudioQtRXTX ALSA Interface") {
 
+    std::cerr << "Creating AudioQtRXTX\n";    
     // code is largely borrowed from equalarea.com/paul/alsa-audio.html
-    setupPlayback(audio_port_name);
-
     setupCapture(audio_port_name);
-  }
-
-  void AudioALSA::setupPlayback(std::string audio_port_name)
-  {
-    (void) audio_port_name; 
-    // setup the playback (output) stream
-    char pcm_name[] =  "default"; 
     
-    // const char *pcm_name = audio_port_name.c_str();
-    if(snd_pcm_open(&pcm_out, pcm_name, SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK) < 0) {
-      std::cerr << boost::format("can't open Alsa PCM device [%s] for output ... Crap.\n") % pcm_name;
-      exit(-1); 
-    }
+    setupNetwork(audio_sock_basename); 
 
-#ifdef ALSA_USE_SIMPLE_SETUP    
-    checkStatus(snd_pcm_set_params(pcm_out,
-				   SND_PCM_FORMAT_FLOAT, 
-				   SND_PCM_ACCESS_RW_INTERLEAVED, 
-				   1,
-				   sample_rate,
-				   1, 
-				   500000), // 100000),
-		"Failed to do simple set params for output.", true); 
-#else   
-    setupParams(pcm_out, hw_out_params);
-#endif
+    ang = 0.0; 
+    ang_incr = 2.0 * M_PI / 48.0; 
   }
 
-  void AudioALSA::setupCapture(std::string audio_port_name)
+  void AudioQtRXTX::setupCapture(std::string audio_port_name)
   {
     // char pcm_cap_name[] = "default"; // "hw:0,2";
     const char *pcm_cap_name = audio_port_name.c_str();    
     snd_pcm_stream_t instream  = SND_PCM_STREAM_CAPTURE; 
     if(snd_pcm_open(&pcm_in, pcm_cap_name, instream, 0) < 0) {
-      std::cerr << boost::format("can't open Alsa PCM device [%s] for  input... Crap.\n") % pcm_cap_name;
+      std::cerr << SoDa::Format("can't open Alsa PCM device [%0] for  input... Crap.\n")
+	.addS(pcm_cap_name);
       exit(-1); 
     }
 
@@ -103,7 +84,7 @@ namespace SoDa {
 #endif    
   }
 
-  void AudioALSA::setupParams(snd_pcm_t * dev, snd_pcm_hw_params_t *  & hw_params_ptr)
+  void AudioQtRXTX::setupParams(snd_pcm_t * dev, snd_pcm_hw_params_t *  & hw_params_ptr)
   {
     snd_pcm_hw_params_t * hw_paramsp;
     std::lock_guard<std::mutex> mt_lock(alsa_mutex);
@@ -140,12 +121,12 @@ namespace SoDa {
 		"ALSA failed in setupParams prepare audio interface", true);
   }
 
-  bool AudioALSA::recvBufferReady(unsigned int len) {
-      std::lock_guard<std::mutex> lock(alsa_mutex);
-      return recvBufferReady_priv(len);
+  bool AudioQtRXTX::recvBufferReady(unsigned int len) {
+    std::lock_guard<std::mutex> lock(alsa_mutex);
+    return recvBufferReady_priv(len);
   }
 
-  bool AudioALSA::recvBufferReady_priv(unsigned int len)  {
+  bool AudioQtRXTX::recvBufferReady_priv(unsigned int len)  {
     snd_pcm_sframes_t sframes_ready = snd_pcm_avail(pcm_in);
 
     if(sframes_ready == -EBADFD) {
@@ -170,79 +151,8 @@ namespace SoDa {
   }
 
 
-  bool AudioALSA::sendBufferReady(unsigned int len)  {
-    std::lock_guard<std::mutex> lock(alsa_mutex);
-    return sendBufferReady_priv(len);
-  }
 
-
-  bool AudioALSA::sendBufferReady_priv(unsigned int len)  {
-
-    snd_pcm_sframes_t sframes_ready;
-    while(1) {
-      sframes_ready= snd_pcm_avail(pcm_out);
-    
-      if(sframes_ready == -EPIPE) {
-	// we got an under-run... we can't just ignore it.
-	// if pcm_avail returns -EPIPE we need to recover and restart the pipe... sigh.
-	int err; 
-	if((err = snd_pcm_recover(pcm_out, sframes_ready, 1)) < 0) {
-	  checkStatus(err, "sendBufferReady got EPIPE, tried recovery", false);
-
-	  if((err = snd_pcm_start(pcm_out)) < 0) {
-	  throw
-	    SoDa::Exception((boost::format("AudioALSA::sendBufferReady() Failed to wake after sleepOut() -- %s")
-			   % snd_strerror(err)).str(), this);
-	  }
-	}
-      }
-      else {
-	checkStatus(sframes_ready, "sendBufferReady", false);
-	break;
-      }
-    }
-    return sframes_ready >= len; 
-  }
-
-  int AudioALSA::send(void * buf, unsigned int len, bool when_ready) {
-    int err;
-    int olen = len;
-    std::lock_guard<std::mutex> mt_lock(alsa_mutex);      
-
-    if(when_ready && !sendBufferReady_priv(len)) return 0; 
-
-    char * cbuf = (char *) buf; 
-    int cont_count = 0; 
-    while(1) {
-      err = snd_pcm_writei(pcm_out, cbuf, len);
-      
-      if(err == (int) len) return len; 
-      else if((err == -EAGAIN) || (err == 0)) {
-	cont_count++; 
-	if(cont_count >= 10) {
-	  cont_count = 0; 
-	}
-	continue;
-      }
-      else if(err == -EPIPE) {
-	// we got an under-run... just ignore it.
-	if((err = snd_pcm_recover(pcm_out, err, 1)) < 0) {
-	  checkStatus(err, "send got EPIPE, tried recovery", false);
-	}
-      }
-      else if(err < 0) {
-	checkStatus(err, "send", true);
-      }
-      else if(err != (int)len) {
-	len -= err;
-	cbuf += (err * datatype_size);
-      }
-    }
-   
-    return olen; 
-  }
-
-  int AudioALSA::recv(void * buf, unsigned int len, bool when_ready) {
+  int AudioQtRXTX::recv(void * buf, unsigned int len, bool when_ready) {
     int err;
     int olen = len;
     int loopcount = 0; 
@@ -271,14 +181,88 @@ namespace SoDa {
     }
     return olen; 
   }
-#else 
-  AudioALSA::AudioALSA(unsigned int _sample_rate,
-		       unsigned int _sample_count_hint,
-		       std::string audio_port_name) :
-    AudioIfc(_sample_rate, _sample_count_hint, "AudioALSA ALSA Interface")
-  {
-    std::cerr << "ALSA Sound Library is not enabled in this build version.";  
-    throw SoDa::Exception("ALSA Sound Library is not enabled in this build version.");  
+
+  /**
+   * stop the input stream so that we don't encounter a buffer overflow
+   * while the transmitter is inactive.
+   */
+  void AudioQtRXTX::sleepIn() {
+    debugMsg("Sleep In");            
+    std::lock_guard<std::mutex> mt_lock(alsa_mutex);
+    snd_pcm_drop(pcm_in);
+
+    // now read the input buffers until they're empty
+    int buf[1000];      
+    int len = 1000; 
+    int stat = 1;
+    while(stat > 0) {
+      stat = snd_pcm_readi(pcm_in, buf, len);
+      std::cerr << "-@-";
+      if(stat == 0) break; 
+      else if(stat == -EAGAIN) continue; 
+      else break; 
+    }
   }
-#endif // HAVE_LIBASOUND
+
+  /**
+   * start the input stream
+   */
+  void AudioQtRXTX::wakeIn() {
+    debugMsg("Wake In");                  
+    std::lock_guard<std::mutex> mt_lock(alsa_mutex);      
+    int err; 
+    if((err = snd_pcm_prepare(pcm_in)) < 0) {
+      throw
+	SoDa::Exception(SoDa::Format("AudioQtRXTX::wakeIn() Failed to wake after sleepIn() -- %0")
+			.addS(snd_strerror(err)), this);
+    }
+    if((err = snd_pcm_start(pcm_in)) < 0) {
+      throw
+	SoDa::Exception(SoDa::Format("AudioQtRXTX::wakeIn() Failed to wake after sleepIn() -- %0")
+			.addS(snd_strerror(err)), this);
+    }
+  }
+
+  std::string AudioQtRXTX::currentCaptureState() {
+    std::lock_guard<std::mutex> mt_lock(alsa_mutex);                  
+    debugMsg("curCaptureState");                        
+    return currentState(pcm_in);
+  }
+
+  std::string AudioQtRXTX::currentState(snd_pcm_t * dev) {
+    snd_pcm_state_t st;
+    st = snd_pcm_state(dev);
+
+    switch (st) {
+    case SND_PCM_STATE_OPEN:
+      return std::string("SND_PCM_STATE_OPEN");
+      break;
+    case SND_PCM_STATE_SETUP:
+      return std::string("SND_PCM_STATE_SETUP");
+      break;
+    case SND_PCM_STATE_PREPARED:
+      return std::string("SND_PCM_STATE_PREPARED");
+      break;
+    case SND_PCM_STATE_RUNNING:
+      return std::string("SND_PCM_STATE_RUNNING");
+      break;
+    case SND_PCM_STATE_XRUN:
+      return std::string("SND_PCM_STATE_XRUN");
+      break;
+    case SND_PCM_STATE_DRAINING:
+      return std::string("SND_PCM_STATE_DRAINING");
+      break;
+    case SND_PCM_STATE_PAUSED:
+      return std::string("SND_PCM_STATE_PAUSED");
+      break;
+    case SND_PCM_STATE_SUSPENDED:
+      return std::string("SND_PCM_STATE_SUSPENDED");
+      break;
+    case SND_PCM_STATE_DISCONNECTED:
+      return std::string("SND_PCM_STATE_DISCONNECTED");
+      break;
+    default:
+      return std::string("BADSTATE-UNKNOWN");
+    }
+  }
 }

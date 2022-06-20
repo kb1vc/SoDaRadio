@@ -6,7 +6,7 @@
 #include "version.h"
 
 #include <string>
-#include <boost/format.hpp>
+#include <SoDa/Format.hxx>
 
 #include <sys/types.h>
 #include <unistd.h>
@@ -18,9 +18,11 @@ extern "C" {
 #include <unistd.h>
 }
 
+
 SoDa::Thread::Thread(const std::string & oname, const std::string & version) : SoDa::Base(oname), Debug(oname) {
-  th = NULL; 
+  
   SoDa::ThreadRegistry::getRegistrar()->addThread(this, version);
+  thread_ptr = nullptr;
 }
 
 void SoDa::Thread::execCommand(Command * cmd) 
@@ -43,9 +45,7 @@ void SoDa::Thread::execCommand(Command * cmd)
 
 void  SoDa::Thread::outerRun() {
   hookSigSeg();
-  pid_t tid;
-  tid = syscall(SYS_gettid);
-  debugMsg(boost::format("%s starting as TID %x.\n") % getObjName() % tid); 
+  debugMsg(getObjName() + " starting.\n");
   try {
     run(); 
   }
@@ -61,7 +61,7 @@ void  SoDa::Thread::outerRun() {
   catch (...) {
     std::cerr << getObjName() << " caught unknown exception" << std::endl;
   }
-  debugMsg(boost::format("%s terminating.\n") % getObjName()); 
+  debugMsg(getObjName() + " terminating.\n");
 }
 
 void  SoDa::Thread::sigsegHandler(int sig)

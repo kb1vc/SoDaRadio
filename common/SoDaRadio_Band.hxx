@@ -263,7 +263,7 @@ public:
       return;
     }
 
-    BOOST_FOREACH(boost::property_tree::ptree::value_type & v, config_tree->get_child("bands") ) {
+    for(auto v :  config_tree->get_child("bands") ) {
       if(v.first == "band") {
 	SoDaRadio_Band * nb = new SoDaRadio_Band(&(v.second));
 	add(nb);
@@ -274,7 +274,7 @@ public:
   
   void save(boost::property_tree::ptree * config_tree) {
     debugMsg(boost::format("sodaradio bandset save const sees config_tree = %p\n") % config_tree); 
-    BOOST_FOREACH(BandMapEntry b, band_map) {
+    for(BandMapEntry & b : band_map) {
       b.second->save(config_tree);
     }
     debugMsg(boost::format("sodaradio bandset save const sees config_tree = %p at end\n") % config_tree); 
@@ -293,7 +293,7 @@ public:
 
   SoDaRadio_Band * getByIndex(int idx) {
     int i = 0;
-    BOOST_FOREACH(BandMapEntry b, band_map) {
+    for(BandMapEntry & b : band_map) {
       if(i == idx) return b.second;
       i++; 
     }
@@ -303,7 +303,7 @@ public:
   SoDaRadio_Band * getByFreq(double freq) {
     SoDaRadio_Band * ret = NULL;
     double smallest_range = 1e12; // find the best match.
-    BOOST_FOREACH(BandMapEntry b, band_map) {
+    for(BandMapEntry & b : band_map) {
       SoDaRadio_Band * v = b.second; 
       if((v->lower_band_edge <= freq) && (v->upper_band_edge >= freq)) {
 	double diff = v->upper_band_edge - v->lower_band_edge;

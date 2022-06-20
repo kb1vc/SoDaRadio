@@ -29,7 +29,6 @@
 #include "SoDaBase.hxx"
 #include <string>
 #include <map>
-#include <boost/format.hpp>
 
 namespace SoDa {
   std::map<std::string, SoDa::Base *> SoDa::Base::ObjectDirectory;

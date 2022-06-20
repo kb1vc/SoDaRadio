@@ -27,10 +27,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "soda_listener.hpp"
+#include <QDebug>
 
 GUISoDa::Listener::Listener(QObject * parent, const QString & _socket_basename) : QObject(parent) {
   quit = false;
-  socket_basename = _socket_basename; 
+  socket_basename = _socket_basename;
+  qInfo() << QString("Listener::Listener socket_basename = [%1]\n").arg(socket_basename);
 }
 
 bool GUISoDa::Listener::init()

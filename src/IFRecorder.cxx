@@ -33,6 +33,7 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <SoDa/Format.hxx>
 
 SoDa::IFRecorder::IFRecorder(Params * params) : SoDa::Thread("IFRecorder")
 {
@@ -80,6 +81,9 @@ void SoDa::IFRecorder::execRepCommand(SoDa::Command * cmd)
   case SoDa::Command::RX_FE_FREQ:
     current_rx_center_freq = cmd->dparms[0];
     break;
+  default:
+    // do nothing. 
+    break; 
   }
 }
 
@@ -90,7 +94,7 @@ void SoDa::IFRecorder::run()
   Command * cmd; 
 
   if((cmd_stream == NULL) || (rx_stream == NULL)) {
-      throw SoDa::Exception((boost::format("Missing a stream connection.\n")).str(), 
+    throw SoDa::Exception(std::string("Missing a stream connection.\n"), 
 			  this);	
   }
   
@@ -133,7 +137,8 @@ void SoDa::IFRecorder::run()
 
 void SoDa::IFRecorder::openOutStream(char * ofile_name)
 {
-  std::cerr << boost::format("IFRecorder: about to open file [%s] for writing\n") % ofile_name; 
+  std::cerr << SoDa::Format("IFRecorder: about to open file [%0] for writing\n")
+    .addS(ofile_name); 
   if(ostr.is_open()) {
     ostr.close();
   }

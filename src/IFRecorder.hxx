@@ -35,8 +35,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Command.hxx"
 
 #include <queue>
-#include <boost/thread.hpp>
-#include <boost/thread/thread.hpp>
 #include <mutex>
 #include <fstream>
 #include <string>

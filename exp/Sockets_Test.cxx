@@ -28,8 +28,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "IPSockets.hxx"
 #include "UDSockets.hxx"
-#include <error.h>
+//#include <error.h>
 #include <stdio.h>
+#include <iostream>
 
 void usage()
 {
@@ -116,21 +117,21 @@ int main(int argc, char * argv[])
   }
   else if(strncmp(argv[1], "us", 2) == 0) {
     // unix domain server.
-    us = new SoDa::UD::ServerSocket(argv[2]);
+    SoDa::UD::ServerSocket us(argv[2]);
     int con_count = 0; 
-    while(con_count < 20) {
-      us->put("Hey there sailor\n\n\n", 17);
-      while(!us->isReady()) {
+    while(con_count < 4) {
+      us.put("Hey there sailor\n\n\n", 17);
+      while(!us.isReady()) {
 	usleep(1000); 
       }
       std::cerr << "About to get buffer\n"; 
       con_count++; 
       char buf[1024];
       int rsize;
-      while((rsize = us->get(buf, 1024)) >= 0) {
+      while((rsize = us.get(buf, 1024)) >= 0) {
 	iter_count++; 
 	if(rsize == 0) {
-	  if(!us->isReady()) {
+	  if(!us.isReady()) {
 	    std::cerr << "socket no longer ready\n";
 	    break; 
 	  }
@@ -147,7 +148,7 @@ int main(int argc, char * argv[])
 		    << " found_count = " << found_count
 		    << " con_count = " << con_count
 		    << std::endl; 
-	  us->put(okmsg, 4);
+	  us.put(okmsg, 4);
 	  std::cout << "Hmmmm>" << std::endl; 
 	}
 	else if(rsize < 0) {
@@ -159,17 +160,16 @@ int main(int argc, char * argv[])
 	      << " empty_count = " << empty_count
 	      << " found_count = " << found_count
 	      << std::endl; 
-    
   }
   else if (strncmp(argv[1], "uc", 2) == 0) {
-    uc = new SoDa::UD::ClientSocket(argv[2]);
+    SoDa::UD::ClientSocket uc(argv[2]);
     const char * msg1 = "SET RX_IF_FREQ D 110e3\n";
     const char * msg2 = "SET STOP I 2\n";
     char buf[1024]; 
-    uc->put(msg1, strlen(msg1)+1);
-    uc->put(msg2, strlen(msg2)+1);
+    uc.put(msg1, strlen(msg1)+1);
+    uc.put(msg2, strlen(msg2)+1);
     int rs;
-    while((rs = uc->get(buf, 1024)) <= 0) {
+    while((rs = uc.get(buf, 1024)) <= 0) {
       std::cout << "waiting" << std::endl ;
       usleep(1000000); 
     }
@@ -177,7 +177,6 @@ int main(int argc, char * argv[])
     std::cout << "message: [" << buf << "] length = " << rs << std::endl;
     //    rs = c->get(buf, 1024);
     std::cout << "message: [" << buf << "] length = " << rs << std::endl;
-    delete uc; 
   }
 
 }

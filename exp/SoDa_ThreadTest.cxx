@@ -29,40 +29,44 @@
 #include "SoDaBase.hxx"
 #include <string>
 #include <iostream>
+#include <chrono>
+#include "SoDaThread.hxx"
 
 namespace SoDaTest {
-  class ThN : public SoDa::SoDaThread {
+  class ThN : public SoDa::Thread {
   public:
-    ThN() : SoDaThread("ThN") {};
+    ThN(int st) : SoDa::Thread("ThN") {
+      sleep_time = st; 
+    };
     std::string name;
-    void run() {
-      while(1) {
+    int sleep_time; 
+    void run() override  {
+      {
+	sleep_ms(sleep_time);	
 	std::cerr << name << std::endl;
-	boost::this_thread::sleep(boost::posix_time::seconds(1));
       }
+      return; 
     }
   };
 
   class Th0 : public ThN {
   public:
-    Th0() { name = "zero"; }
+    Th0(int st) : ThN(st) { name = "zero\n"; }
   }; 
   class Th1 : public ThN {
   public:
-    Th1() { name = "one"; }
+    Th1(int st) : ThN(st) { name = "one\n"; }
   }; 
 }
 
 int main()
 {
-  SoDaTest::Th0 t0;
-  SoDaTest::Th1 t1;
+  SoDaTest::Th0 t0(1000);
+  SoDaTest::Th1 t1(3000);
 
   t0.start();
   t1.start();
 
-  for(int i = 0; i < 3; i++) {
-    boost::this_thread::sleep(boost::posix_time::seconds(3));
-    std::cerr << "main" << std::endl; 
-  }
+  t1.join();
+  t0.join();
 }

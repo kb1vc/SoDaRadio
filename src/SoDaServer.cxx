@@ -126,6 +126,7 @@
 #include <sys/resource.h>
 
 #include <fstream>
+#include <SoDa/Format.hxx>
 
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
@@ -149,10 +150,19 @@
 #include "CWTX.hxx"
 #include "UI.hxx"
 #include "GPSmon.hxx"
-#include "AudioQt.hxx"
 #include "IFRecorder.hxx"
 #include "Command.hxx"
 #include "Debug.hxx"
+
+#ifdef HAVE_ASOUND
+#  include "AudioQtRXTX.hxx"
+   using AudioQt = SoDa::AudioQtRXTX;
+#else
+#  include "AudioQtRX.hxx"
+   using AudioQt = SoDa::AudioQtRX;  
+#endif
+
+
 
 void createLockFile(const std::string & lock_file_name)
 {
@@ -171,7 +181,7 @@ int loadAccessories(const std::vector<std::string> & libs, SoDa::Debug & d) {
   // are there loadable modules we want to run?
   for(auto l : libs) {
     dlopen(l.c_str(), RTLD_LAZY | RTLD_GLOBAL);
-    d.debugMsg((boost::format("Loaded shared object %s\n") % l).str());    
+    d.debugMsg(SoDa::Format("Loaded shared object %0\n").addS(l));
   }
   return 1; 
 }
@@ -219,32 +229,41 @@ int doWork(SoDa::Params & params)
     tx = new SoDa::USRPTX(&params, ((SoDa::USRPCtrl *)ctrl)->getUSRP());
   }
   else {
-    std::cerr << boost::format("Radio type [%s] is not yet supported\nHit ^C to exit.\n") % params.getRadioType(); 
+    std::cerr << SoDa::Format("Radio type [%0] is not yet supported\nHit ^C to exit.\n")
+      .addS(params.getRadioType()); 
     exit(-1);
   }
 
   /// Create the audio server on the host machine.
-  /// choices include a PortAudio interface and an ALSA interface.
+  /// Audio is either via Qt for RX and ALSA for TX.
+  /// If ALSA is not present, the server will be RX only.
   /// These are subclasses of the more generic SoDa::AudioIfc class
-  SoDa::AudioQt audio_ifc(params.getAudioSampleRate(),
+  //
+  
+  AudioQt audio_ifc(params.getAudioSampleRate(),
 			  params.getAFBufferSize(),
 			  params.getServerSocketBasename(),
 			  params.getAudioPortName());
   /// Create the audio RX and audio TX unit threads
   /// These are also responsible for implementing IF tuning and modulation. 
   /// @see SoDa::BaseBandRX @see SoDa::BaseBandTX
+  std::cerr << "About to create baseband rx\n";
   SoDa::BaseBandRX bbrx(&params, &audio_ifc);
 
+  std::cerr << "About to create baseband tx\n";  
   SoDa::BaseBandTX bbtx(&params, &audio_ifc);
 
   /// Create the morse code (CW) tx handler thread @see SoDa::CWTX
+  std::cerr << "About to create cwtx\n";  
   SoDa::CWTX cwtx(&params);
     
   /// Create the user interface (UI) thread @see SoDa::UI
+  std::cerr << "About to create UI listener\n";    
   SoDa::UI ui(&params);
 
   /// Create an IF listener process that copies the IF stream to an output file
   /// when requested.
+  std::cerr << "About to create if recorder\n";
   SoDa::IFRecorder ifrec(&params);
 
 #if HAVE_GPSLIB    

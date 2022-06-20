@@ -1,0 +1,28 @@
+port install gnuradio
+port install libuhd-devel
+port install libsnd
+
+install qt from the qt.io mac installer. to /opt/local/qt
+
+install qwt from source to /opt/local -- change QWT_INSTALL_PREFIX to
+point to /opt/local/qwt
+
+
+note that /opt is placed on /System/Volumes/Data which will fill up in short order.  Best to link it to some other volume.  Thanks Apple.
+
+
+qwt is a trainwreck, but qt might be too.
+
+After installing qwt you'll need to put the bits somewhere where cmake will
+find them.  This is the only way I found to do it:
+
+cd /opt/local/include
+ln -s /opt/local/qwt/lib/qwt.framework/Versions/6/Headers qwt
+cd /opt/local/lib
+ln -s /opt/local/qwt/lib/qwt.framework/qwt libqwt.dylib
+
+We need to find the qwt lib for some reason -- this is one way to do it,
+though I'm not sure it is the right way.
+
+install_name_tool -change qwt.framework/Versions/6/qwt /opt/local/qwt/lib/qwt.framework/Versions/6/qwt build/qtgui/SoDaRadio
+

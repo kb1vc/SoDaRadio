@@ -1,4 +1,6 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.9) # this lets out really old distros like CentOS 6
+CMAKE_MINIMUM_REQUIRED(VERSION 3.11.0) # this lets out really old distros like CentOS 6
+
+include(CMakePrintHelpers)
 
 # Can't seem to fix Package Version warnings... defer.  Never put off to tomorrow what you can do at the end of time
 # see here: https://github.com/PointCloudLibrary/pcl/issues/3680
@@ -16,11 +18,22 @@ IF(CMAKE_VERSION VERSION_GREATER 3.0.0)
   SET(CMAKE_CXX_STANDARD 11)
 ENDIF()
 
+IF(CMAKE_HOST_SYSTEM_NAME MATCHES "Darwin")
+  message("Hey!  This must be a Mac!")
+  set(MACOSX 1)
+  ADD_DEFINITIONS(-DMACOSX=1)
+ELSE()
+  set(MACOSX 0)
+  ADD_DEFINITIONS(-DMACOSX=0)  
+ENDIF()
+  
+
+  
 PROJECT(SoDaRadio)
 
-SET(SoDaRadio_VERSION_MAJOR 7)
+SET(SoDaRadio_VERSION_MAJOR 8)
 SET(SoDaRadio_VERSION_MINOR 0)
-SET(SoDaRadio_VERSION_PATCH 5)
+SET(SoDaRadio_VERSION_PATCH 0)
 SET(SoDaRadio_VERSION "${SoDaRadio_VERSION_MAJOR}.${SoDaRadio_VERSION_MINOR}.${SoDaRadio_VERSION_PATCH}")
 
 set(SoDaRadio_PACKAGE_DESCRIPTION 
@@ -47,6 +60,13 @@ EXECUTE_PROCESS(COMMAND ${LSB_RELEASE} -rs
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
+function (getListOfVarsStartingWith _prefix _varResult)
+    get_cmake_property(_vars VARIABLES)
+    string (REGEX MATCHALL "(^|;)${_prefix}[A-Za-z0-9_]*" _matchedVars "${_vars}")
+    set (${_varResult} ${_matchedVars} PARENT_SCOPE)
+endfunction()
+
+
 # Package generation for the source tarball
 SET(CPACK_PACKAGE_VERSION_MAJOR ${SoDaRadio_VERSION_MAJOR})
 SET(CPACK_PACKAGE_VERSION_MINOR ${SoDaRadio_VERSION_MINOR})
@@ -63,7 +83,8 @@ set(CPACK_RPM_PACKAGE_RELEASE "1")
 set(CPACK_RPM_PACKAGE_LICENSE "BSD-2-Clause")
 set(CPACK_RPM_PACKAGE_GROUP "Applications/Communications")
 set(CPACK_RPM_PACKAGE_DESCRIPTION  ${SoDaRadio_PACKAGE_DESCRIPTION})
-set(CPACK_RPM_PACKAGE_REQUIRES "boost >= 1.48, uhd >= 3.12.0, fftw-devel >= 3.3, qt5-qtbase >= 5.6, qwt-qt5 >= 6.1.2, gpsd >= 3.1, gpsd-libs >= 3.1, libsndfile, qt5-qtmultimedia")
+# removed , libsndfile
+set(CPACK_RPM_PACKAGE_REQUIRES "boost >= 1.48, uhd >= 3.12.0, fftw-devel >= 3.3, qt5-qtbase >= 5.6, qwt-qt5 >= 6.1.2, gpsd >= 3.1, gpsd-libs >= 3.1, qt5-qtmultimedia")
 set(CPACK_RPM_PACKAGE_RELOCATABLE TRUE)
 # RPM makes a hash out of the uhd dependency if we don't do this:
 set(CPACK_RPM_PACKAGE_AUTOREQPROV " no")
@@ -71,7 +92,8 @@ set(CPACK_RPM_PACKAGE_AUTOREQPROV " no")
 set(CPACK_DEBIAN_PACKAGE_DESCRIPTION ${SODA_PACKAGE_DESCRIPTION})
 set(CPACK_DEBIAN_PACKAGE_SECTION "hamradio")
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libuhd003 (>= 3.12), uhd-host (>= 3.12), libgps-dev (>= 3.1), gpsd (>= 3.1), libsndfile1, libqt5multimedia5-plugins")
+#libsndfile1, 
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libuhd003 (>= 3.12), uhd-host (>= 3.12), libgps-dev (>= 3.1), gpsd (>= 3.1), libqt5multimedia5-plugins")
 
 INCLUDE(CPack)
 
@@ -130,8 +152,8 @@ CONFIGURE_FILE (
   @ONLY
   )  
 
-INSTALL(FILES ${PROJECT_BINARY_DIR}/SoDaRadioConfigVersion.cmake DESTINATION "lib/cmake/SoDaRadio")
-INSTALL(FILES ${PROJECT_SOURCE_DIR}/SoDaRadioConfig.cmake DESTINATION "lib/cmake/SoDaRadio")
+INSTALL(FILES ${PROJECT_BINARY_DIR}/SoDaRadioConfigVersion.cmake DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/SoDaRadio")
+INSTALL(FILES ${PROJECT_SOURCE_DIR}/SoDaRadioConfig.cmake DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/SoDaRadio")
 
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
 
@@ -154,10 +176,18 @@ ELSE()
 ENDIF()
 
 
+if(MACOSX)
+  message("Looking for OPENGL")
+  FIND_PACKAGE(OpenGL REQUIRED)
+  message("looked for opengl")
+  FIND_PACKAGE(GLUT REQUIRED)
+  LIST(APPEND INCLUDE_DIRS ${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_DIR})
+  LIST(APPEND LIBRARIES ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
 
-IF(CMAKE_VERSION VERSION_GREATER 3.0.0)
-  ### new GUI is qt5 based -- but we don't want to fiddle with it
-  ### unless the cmake version is at 3+
+  FIND_PACKAGE(Qt5 REQUIRED COMPONENTS core network printsupport multimedia)
+
+  FIND_PACKAGE(Qwt REQUIRED)
+else()
   FIND_PACKAGE(Qt5Widgets )
   IF(Qt5Widgets_FOUND)
     MESSAGE("Building qt gui")
@@ -169,17 +199,28 @@ IF(CMAKE_VERSION VERSION_GREATER 3.0.0)
     IF(Qt5Widgets_VERSION VERSION_LESS 5.7.0)
       MESSAGE(FATAL_ERROR "Minimum supported Qt5 version is 5.7")
     ENDIF()
-    ADD_SUBDIRECTORY(qtgui)
   ELSE()
     MESSAGE(FATAL_ERROR "The Qt5Widgets library is required to build SoDaRadio")
   ENDIF()
-ENDIF()
+endif()
+
+
 
 ## Need hamlib for just the include files to get hamlib codes for
 ## modulation scheme and other settings.
 find_package(PkgConfig)
 pkg_search_module(HAMLIB REQUIRED hamlib)
 pkg_search_module(GPSLIB OPTIONAL libgps)
+
+IF(DISABLE_ALSA)
+  message("ALSA Disabled")
+ELSE()  
+  find_package(ALSA QUIET)  
+ENDIF()
+
+UNSET(ALSA_FOUND CACHE)
+UNSET(DISABLE_ALSA CACHE)
+
 
 IF(DISABLE_GPSD)
   SET(HAVE_GPSLIB 0)
@@ -193,17 +234,16 @@ ELSE()
     message("DID NOT FIND GPSLIB")  
   ENDIF()
 ENDIF()
+UNSET(DISABLE_GPSD CACHE)
 
-function (getListOfVarsStartingWith _prefix _varResult)
-    get_cmake_property(_vars VARIABLES)
-    string (REGEX MATCHALL "(^|;)${_prefix}[A-Za-z0-9_]*" _matchedVars "${_vars}")
-    set (${_varResult} ${_matchedVars} PARENT_SCOPE)
-endfunction()
+if(MACOSX)
+  set(RT_LIB "")
+else()
+  set(RT_LIB "rt")  
+endif()
 
-#getListOfVarsStartingWith("GPS" GPS_VARS)
-#foreach (v IN LISTS GPS_VARS)
-#  message("${v} = ${${v}}")
-#endforeach()  
+# Find SoDaUtils and build it if we must. 
+include(${PROJECT_SOURCE_DIR}/cmake/Modules/BuildSoDaUtils.cmake)
 
 # This is the radio interface... 
 ADD_SUBDIRECTORY(src)
@@ -211,6 +251,8 @@ ADD_SUBDIRECTORY(src)
 ADD_SUBDIRECTORY(exp)
 
 ADD_SUBDIRECTORY(examples)
+
+ADD_SUBDIRECTORY(qtgui)
 
 FIND_PACKAGE(Doxygen QUIET)
 
@@ -224,4 +266,5 @@ IF(DOXYGEN_FOUND)
 
   INSTALL(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION share/doc)
 ENDIF()
+
 
