@@ -135,7 +135,7 @@ namespace SoDa {
      */
     void checkStatus(int err, const std::string & exp, bool fatal = false) {
       if (err < 0) {
-	if(fatal) throw SoDa::Exception(SoDa::Format("%0 %1")
+	if(fatal) throw SoDa::Radio::Exception(SoDa::Format("%0 %1")
 					.addS(exp)
 					.addS(snd_strerror(err)), this);
 	else std::cerr << SoDa::Format("%0 %1 %2\n")

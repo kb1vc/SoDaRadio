@@ -104,15 +104,15 @@ static void doFFTandDump(int fd, std::complex<float> * in, int len)
 void SoDa::USRPRX::run()
 {
   if(cmd_stream == NULL) {
-    throw SoDa::Exception(std::string("Never got command stream subscription\n"), 
+    throw SoDa::Radio::Exception(std::string("Never got command stream subscription\n"), 
 			  this);	
   }
   if(rx_stream == NULL) {
-    throw SoDa::Exception(std::string("Never got rx stream subscription\n"),
+    throw SoDa::Radio::Exception(std::string("Never got rx stream subscription\n"),
 			  this);	
   }
   if(if_stream == NULL) {
-    throw SoDa::Exception(std::string("Never got if stream subscription\n"),
+    throw SoDa::Radio::Exception(std::string("Never got if stream subscription\n"),
 			  this);	
   }
   
@@ -139,8 +139,8 @@ void SoDa::USRPRX::run()
 	buf = new SoDa::Buf(rx_buffer_size); 
       }
 
-      if(buf == NULL) throw SoDa::Exception("USRPRX couldn't allocate SoDa::Buf object", this); 
-      if(buf->getComplexBuf() == NULL) throw SoDa::Exception("USRPRX allocated empty SoDa::Buf object", this);
+      if(buf == NULL) throw SoDa::Radio::Exception("USRPRX couldn't allocate SoDa::Buf object", this); 
+      if(buf->getComplexBuf() == NULL) throw SoDa::Radio::Exception("USRPRX allocated empty SoDa::Buf object", this);
       
       unsigned int left = rx_buffer_size;
       unsigned int coll_so_far = 0;
@@ -173,7 +173,7 @@ void SoDa::USRPRX::run()
 	  if_stream->put(if_buf);
 	}
 	else {
-	  throw SoDa::Exception("SoDa::Buf Copy for IF stream failed", this);
+	  throw SoDa::Radio::Exception("SoDa::Buf Copy for IF stream failed", this);
 	}
       }
 

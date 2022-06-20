@@ -336,7 +336,7 @@ void SoDa::BaseBandRX::demodulate(SoDa::Buf * rxbuf)
     break; 
   default:
     // all other modes are unsupported just for now.
-    throw SoDa::Exception("Unsupported Modulation Mode in RX", this);
+    throw SoDa::Radio::Exception("Unsupported Modulation Mode in RX", this);
     break; 
   }
 }
@@ -494,7 +494,7 @@ void SoDa::BaseBandRX::run()
   int restart_count = 0;
 
   if((cmd_stream == NULL) || (rx_stream == NULL)) {
-    throw SoDa::Exception(std::string("Missing a stream connection.\n"),
+    throw SoDa::Radio::Exception(std::string("Missing a stream connection.\n"),
 			  this);	
   }
   

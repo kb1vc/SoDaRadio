@@ -116,7 +116,7 @@ void SoDa::BaseBandTX::run()
   float audio_buf[audio_buffer_size];
 
   if((cmd_stream == NULL) || (tx_stream == NULL)) {
-    throw SoDa::Exception(std::string("Missing a stream connection.\n"),
+    throw SoDa::Radio::Exception(std::string("Missing a stream connection.\n"),
 			  this);	
   }
   
@@ -232,7 +232,7 @@ SoDa::Buf * SoDa::BaseBandTX::modulateAM(float * audio_buf,
     txbuf = new SoDa::Buf(tx_buffer_size); 
   }
   if(txbuf->getComplexLen() < tx_buffer_size) {
-    throw SoDa::Exception("Transmit signal buffer was a bad size.", this);
+    throw SoDa::Radio::Exception("Transmit signal buffer was a bad size.", this);
   }
   
   /// Upsample the IQ audio (at 48KS/s) to the RF sample rate of 625 KS/s
@@ -275,7 +275,7 @@ SoDa::Buf * SoDa::BaseBandTX::modulateFM(float *audio_buf, unsigned int len, dou
   }
 
   if(txbuf->getComplexLen() < tx_buffer_size){
-    throw  SoDa::Exception("FM: Transmit signal buffer was a bad size.",this);
+    throw  SoDa::Radio::Exception("FM: Transmit signal buffer was a bad size.",this);
   }
   // Upsample the IQ audio (at 48KS/s) to the RF sample rate of 625 KS/s
   interpolator->apply(audio_IQ_buf, txbuf->getComplexBuf());

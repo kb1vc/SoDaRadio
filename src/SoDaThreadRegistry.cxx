@@ -14,7 +14,7 @@ SoDa::ThreadRegistry * SoDa::ThreadRegistry::getRegistrar() {
 
 void SoDa::ThreadRegistry::addThread(SoDa::Thread * thread, const std::string & version) {
   if(version != std::string(SoDaRadio_VERSION)) {
-    throw SoDa::Exception(SoDa::Format("Thread %0 attempted to register.  It was built with version %1, but the registrar requires version %2\n")
+    throw SoDa::Radio::Exception(SoDa::Format("Thread %0 attempted to register.  It was built with version %1, but the registrar requires version %2\n")
 			  .addS(thread->getObjName())
 			  .addS(version)
 			  .addS(SoDaRadio_VERSION), thread);

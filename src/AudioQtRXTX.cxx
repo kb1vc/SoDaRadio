@@ -213,12 +213,12 @@ namespace SoDa {
     int err; 
     if((err = snd_pcm_prepare(pcm_in)) < 0) {
       throw
-	SoDa::Exception(SoDa::Format("AudioQtRXTX::wakeIn() Failed to wake after sleepIn() -- %0")
+	SoDa::Radio::Exception(SoDa::Format("AudioQtRXTX::wakeIn() Failed to wake after sleepIn() -- %0")
 			.addS(snd_strerror(err)), this);
     }
     if((err = snd_pcm_start(pcm_in)) < 0) {
       throw
-	SoDa::Exception(SoDa::Format("AudioQtRXTX::wakeIn() Failed to wake after sleepIn() -- %0")
+	SoDa::Radio::Exception(SoDa::Format("AudioQtRXTX::wakeIn() Failed to wake after sleepIn() -- %0")
 			.addS(snd_strerror(err)), this);
     }
   }

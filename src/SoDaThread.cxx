@@ -49,10 +49,10 @@ void  SoDa::Thread::outerRun() {
   try {
     run(); 
   }
-  catch (SoDa::Exception exc) {
+  catch (SoDa::Radio::Exception exc) {
     std::cerr << getObjName() << " caught " << exc.toString() << std::endl;
   }
-  catch (SoDa::Exception * exc) {
+  catch (SoDa::Radio::Exception * exc) {
     std::cerr << getObjName() << " caught " << exc->toString() << std::endl;
   }
   catch (const std::exception & e) {

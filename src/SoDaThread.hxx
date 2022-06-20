@@ -234,7 +234,7 @@ namespace SoDa {
     if(pattern == key) {
       ret = dynamic_cast<T *>(could_be_pointer);
       if(ret == NULL) {
-	throw SoDa::Exception(SoDa::Format("Bad mailbox pointer for mailbox named = [%0]\n") 
+	throw SoDa::Radio::Exception(SoDa::Format("Bad mailbox pointer for mailbox named = [%0]\n") 
 			      .addS(key), obj);
       }
       else {

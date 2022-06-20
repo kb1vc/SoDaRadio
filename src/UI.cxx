@@ -117,7 +117,7 @@ void SoDa::UI::run()
      (cmd_stream == NULL) || 
      (gps_stream == NULL)) {
     
-      throw SoDa::Exception(SoDa::Format("Missing a stream connection %0 %1 %2 %3.\n") 
+      throw SoDa::Radio::Exception(SoDa::Format("Missing a stream connection %0 %1 %2 %3.\n") 
 			    .addU((unsigned long) cwtxt_stream, 'x')
 			    .addU((unsigned long) if_stream, 'x')
 			    .addU((unsigned long) cmd_stream, 'x')
