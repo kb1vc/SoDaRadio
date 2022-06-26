@@ -39,7 +39,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define USRPCTRL_HDR
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
-#include "MultiMBox.hxx"
 #include "Command.hxx"
 #include "Params.hxx"
 #include "TRControl.hxx"

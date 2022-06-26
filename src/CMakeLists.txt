@@ -2,33 +2,33 @@
 ########### next target ###############
 
 set(SoDaServer_SRCS
-    Params.cxx
-    SoDaServer.cxx
-    SoDaBase.cxx
-    SoDaThread.cxx
-    SoDaThreadRegistry.cxx    
-    CWTX.cxx
+#DBG    Params.cxx
+#DBG    SoDaServer.cxx
+#DBG    SoDaBase.cxx
+#DBG    SoDaThread.cxx
+#DBG    SoDaThreadRegistry.cxx    
+#DBG    CWTX.cxx
     BaseBandRX.cxx
     BaseBandTX.cxx
-    UI.cxx
-    Command.cxx
-    OSFilter.cxx
-    HilbertTransformer.cxx
-    TDResamplerTables625x48.cxx
-    ReSampler.cxx
-    ReSamplers625x48.cxx
-    Spectrogram.cxx
-    CWGenerator.cxx
-    GPSmon.cxx
-    UDSockets.cxx
-    Debug.cxx
-    SerialDev.cxx
-    TRControl.cxx
-    N200Control.cxx
-    IPSockets.cxx
-    B200Control.cxx
-    IFRecorder.cxx
-    fix_gpsd_ugliness.cxx
+#DBG    UI.cxx
+#DBG    Command.cxx
+#DBG    OSFilter.cxx
+#DBG    HilbertTransformer.cxx
+#DBG    TDResamplerTables625x48.cxx
+#DBG    ReSampler.cxx
+#DBG    ReSamplers625x48.cxx
+#DBG    Spectrogram.cxx
+#DBG    CWGenerator.cxx
+#DBG    GPSmon.cxx
+#DBG    UDSockets.cxx
+#DBG    Debug.cxx
+#DBG    SerialDev.cxx
+#DBG    TRControl.cxx
+#DBG    N200Control.cxx
+#DBG    IPSockets.cxx
+#DBG    B200Control.cxx
+#DBG    IFRecorder.cxx
+#DBG    fix_gpsd_ugliness.cxx
 )
 
 
@@ -52,10 +52,10 @@ ENDIF()
 
 IF(${HAVE_UHD})
   LIST(APPEND SoDaServer_SRCS
-    USRPCtrl.cxx
-    USRPRX.cxx
-    USRPTX.cxx
-    USRPFrontEnd.cxx
+#DBG    USRPCtrl.cxx
+#DBG    USRPRX.cxx
+#DBG    USRPTX.cxx
+#DBG    USRPFrontEnd.cxx
     )
   LIST(APPEND Radio_INCLUDE_DIRS ${UHD_INCLUDE_DIRS})
   LIST(APPEND Radio_LIBRARIES ${UHD_LIBRARIES})
@@ -101,7 +101,7 @@ set(Loadable_INCLS
   UDSockets.hxx
   IPSockets.hxx  
   Command.hxx
-  MultiMBox.hxx
+  Buffer.hxx
   Debug.hxx
   )
 

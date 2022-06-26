@@ -1,6 +1,6 @@
 #pragma once
 /*
-Copyright (c) 2012,2013,2014,2022 Matthew H. Reilly (kb1vc)
+Copyright (c) 2022 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -27,42 +27,29 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-
-#include <memory>
-#include <vector>
-#include <complex>
+/**
+ * @file MailBoxTypes.hxx Type definitions for the mailboxes 
+ */
+#include <SoDa/MailBox.hxx>
+#include "Buffer.hxx"
+#include "Command.hxx"
 
 namespace SoDa {
-  template<typename T> 
-  std::shared_ptr<std::vector<T>> makeVectorBuffer(size_t len) {
-    auto ret = std::make_shared<std::vector<T>>(std::vector<T>(len));    
-    return ret;
-  }
+  typedef MailBoxPtr<Command> MsgMBoxPtr;
+  typedef MailBoxPtr<std::vector<std::complex<float>>> CFMBoxPtr;
+  typedef MailBoxPtr<std::vector<std::complex<double>>> CDMBoxPtr;
+  typedef MailBoxPtr<std::vector<float>> FMBoxPtr;
+  typedef MailBoxPtr<std::vector<double>> DMBoxPtr; 
 
-  template<typename T> 
-  std::shared_ptr<T> makeBuffer() {
-    return std::make_shared<T>(new T()); 
-  }
-
-  template<typename T> 
-  std::shared_ptr<T> makeBuffer(T * d) {
-    return std::make_shared<T>(d); 
-  }
+  typedef MailBox<Command> MsgMBox;
+  typedef MailBox<std::vector<std::complex<float>>> CFMBox;
+  typedef MailBox<std::vector<std::complex<double>>> CDMBox;
+  typedef MailBox<std::vector<float>> FMBox;
+  typedef MailBox<std::vector<double>> DMBox; 
   
-  typedef std::shared_ptr<std::vector<std::complex<float>>> CFBuf;
-  CFBuf makeCFBuf(size_t len) { 
-    return makeVectorBuffer<std::complex<float>>(len); 
-  }
-  typedef std::shared_ptr<std::vector<std::complex<double>>> CDBuf;
-  CDBuf makeCDBuf(size_t len) { 
-    return makeVectorBuffer<std::complex<double>>(len);
-  }  
-  typedef std::shared_ptr<std::vector<float>> FBuf;
-  FBuf makeFBuf(size_t len) { 
-    return makeVectorBuffer<float>(len);
-  }  
-  typedef std::shared_ptr<std::vector<double>> DBuf;
-  DBuf makeDBuf(size_t len) { 
-    return makeVectorBuffer<double>(len);
-  }  
+  typedef MailBox<Command>::Subscription MsgSubs;
+  typedef MailBox<std::vector<std::complex<float>>>::Subscription CFSubs;
+  typedef MailBox<std::vector<std::complex<double>>>::Subscription CDSubs;
+  typedef MailBox<std::vector<float>>::Subscription FSubs;
+  typedef MailBox<std::vector<float>>::Subscription DSubs; 
 }

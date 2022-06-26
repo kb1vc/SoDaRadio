@@ -318,7 +318,7 @@ int main(int argc, char * argv[])
   try {
     doWork(params); 
   }
-  catch (SoDa::Exception exc) {
+  catch (SoDa::Radio::Exception exc) {
     std::cerr << "Exception caught at SoDa main: " << std::endl;
     std::cerr << "\t" << exc.toString() << std::endl; 
   }

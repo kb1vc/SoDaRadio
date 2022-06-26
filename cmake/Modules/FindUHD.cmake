@@ -49,7 +49,9 @@ find_package(
 set(CMAKE_MODULE_PATH ${SAVED_CMAKE_MODULE_PATH})
 
 # check if UHDConfig was used above
-if(NOT "$ENV{UHD_CONFIG_VERSION_USED}" STREQUAL "TRUE")
+if((NOT "$ENV{UHD_CONFIG_VERSION_USED}" STREQUAL "TRUE") OR
+    (UHD_LIBRARIES STREQUAL "UHD_LIBRARIES-NOTFOUND") OR
+    (UHD_INCLUDE_DIRS STREQUAL "UHD_INCLUDE_DIRS-NOTFOUND"))
 
   # Not used; try the "old" method (not as robust)
 
@@ -69,9 +71,12 @@ if(NOT "$ENV{UHD_CONFIG_VERSION_USED}" STREQUAL "TRUE")
     UHD_LIBRARIES
     NAMES uhd
     HINTS $ENV{UHD_DIR}/lib
+          $ENV{UHD_DIR}/lib64
           ${PC_UHD_LIBDIR}
     PATHS /usr/local/lib
-          /usr/lib
+    /usr/local/lib64
+    /usr/lib    
+    /usr/lib64
   )
 endif(NOT "$ENV{UHD_CONFIG_VERSION_USED}" STREQUAL "TRUE")
 

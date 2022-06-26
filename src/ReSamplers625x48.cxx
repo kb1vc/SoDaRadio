@@ -44,7 +44,7 @@ SoDa::ReSample48to625::ReSample48to625(unsigned int inbufsize, float _gain) : So
 
   // N must be a multiple of 48, otherwise this doesn't work.
   if ((N % 48) != 0) {
-    throw SoDa::Exception("48 to 625 resampler got an input buffer size that is not a multiple of 48", this); 
+    throw SoDa::Radio::Exception("48 to 625 resampler got an input buffer size that is not a multiple of 48", this); 
   }
 
   // MN is the size of the output buffer. 
@@ -108,7 +108,7 @@ SoDa::ReSample625to48::ReSample625to48(unsigned int inbufsize, float _gain) : So
 
   // N must be a multiple of 625, otherwise this doesn't work.
   if ((N % 625) != 0) {
-    throw SoDa::Exception("625 to 48 resampler got an input buffer size that is not a multiple of 48", this); 
+    throw SoDa::Radio::Exception("625 to 48 resampler got an input buffer size that is not a multiple of 48", this); 
   }
 
   // MN is the size of the output buffer. 

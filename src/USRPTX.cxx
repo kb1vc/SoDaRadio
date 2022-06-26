@@ -111,7 +111,7 @@ SoDa::USRPTX::USRPTX(Params * params, uhd::usrp::multi_usrp::sptr _usrp) : SoDa:
 void SoDa::USRPTX::run()
 {
   if((cmd_stream == NULL) || (tx_stream == NULL) || (cw_env_stream == NULL)) {
-    throw SoDa::Exception(std::string("Missing a stream connection.\n"), 
+    throw SoDa::Radio::Exception(std::string("Missing a stream connection.\n"), 
 			  this);	
   }
 

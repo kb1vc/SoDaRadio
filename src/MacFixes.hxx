@@ -1,6 +1,6 @@
 #pragma once
 /*
-Copyright (c) 2012,2013,2014,2022 Matthew H. Reilly (kb1vc)
+Copyright (c) 2022 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -27,42 +27,11 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+/**
+ * @file MacFixes.hxx Fixes for compiler/os differences between MacOS and Linux
+ */
 
-#include <memory>
-#include <vector>
-#include <complex>
-
-namespace SoDa {
-  template<typename T> 
-  std::shared_ptr<std::vector<T>> makeVectorBuffer(size_t len) {
-    auto ret = std::make_shared<std::vector<T>>(std::vector<T>(len));    
-    return ret;
-  }
-
-  template<typename T> 
-  std::shared_ptr<T> makeBuffer() {
-    return std::make_shared<T>(new T()); 
-  }
-
-  template<typename T> 
-  std::shared_ptr<T> makeBuffer(T * d) {
-    return std::make_shared<T>(d); 
-  }
-  
-  typedef std::shared_ptr<std::vector<std::complex<float>>> CFBuf;
-  CFBuf makeCFBuf(size_t len) { 
-    return makeVectorBuffer<std::complex<float>>(len); 
-  }
-  typedef std::shared_ptr<std::vector<std::complex<double>>> CDBuf;
-  CDBuf makeCDBuf(size_t len) { 
-    return makeVectorBuffer<std::complex<double>>(len);
-  }  
-  typedef std::shared_ptr<std::vector<float>> FBuf;
-  FBuf makeFBuf(size_t len) { 
-    return makeVectorBuffer<float>(len);
-  }  
-  typedef std::shared_ptr<std::vector<double>> DBuf;
-  DBuf makeDBuf(size_t len) { 
-    return makeVectorBuffer<double>(len);
-  }  
-}
+// MacOS doesn't provide "sincos" but it does provide something by another name.
+#if defined(__APPLE__)
+#define sincos(a, b, c) __sincos(a, b, c)
+#endif

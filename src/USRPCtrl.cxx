@@ -82,7 +82,7 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params) : SoDa::Thread("USRPCtrl")
   usrp = uhd::usrp::multi_usrp::make(params->getRadioArgs());
 
   if(usrp == NULL) {
-    throw SoDa::Exception(SoDa::Format("Unable to allocate USRP unit with arguments = [%0]\n").addS(params->getRadioArgs()), this);
+    throw SoDa::Radio::Exception(SoDa::Format("Unable to allocate USRP unit with arguments = [%0]\n").addS(params->getRadioArgs()), this);
   }
 
   // We need to find out if this is a B2xx or something like it -- they don't
@@ -204,7 +204,7 @@ void SoDa::USRPCtrl::subscribeToMailBox(const std::string & mbox_name,
       subid = cmd_stream->subscribe();
     }
     else {
-      throw SoDa::Exception(SoDa::Format("Bad mailbox pointer for mailbox named = [%0]\n") 
+      throw SoDa::Radio::Exception(SoDa::Format("Bad mailbox pointer for mailbox named = [%0]\n") 
 			     .addS(mbox_name) , this);	
     }
   }
@@ -214,7 +214,7 @@ void SoDa::USRPCtrl::subscribeToMailBox(const std::string & mbox_name,
 void SoDa::USRPCtrl::run()
 {
   if(cmd_stream == NULL) {
-      throw SoDa::Exception(SoDa::Format("Never got command stream subscription\n"), 
+      throw SoDa::Radio::Exception(SoDa::Format("Never got command stream subscription\n"), 
 			  this);	
   }
   

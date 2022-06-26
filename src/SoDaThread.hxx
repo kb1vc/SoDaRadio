@@ -29,7 +29,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #pragma once
 
 #include "SoDaBase.hxx"
-#include "Exception.hxx"
 #include <string>
 #include "Debug.hxx"
 #include <thread>
@@ -92,35 +91,11 @@ namespace SoDa {
     Thread(const std::string & oname, const std::string & version = std::string(SoDaRadio_VERSION));
 
     /**
-     * @brief the creator of this thread may offer one or more mailboxes
-     * to this object.  The thread may "subscribe" to the mailboxes as it
-     * chooses.  
-     * 
-     * @param mbox_name The name of the mailbox.  This identifies the purpose
-     * of the mailbox, and the thread should be able to infer the the "T" in 
-     * the actual MultiMBox<T> type from this identifying string. 
-     * @param mbox_p a pointer to a multimbox.  This should be cast to the 
+     * @brief subscribe to whatever mailbox streams we need
+     * This will be called by the Thread base constructor. 
      */
-    virtual void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p) {
-    }
-
-    /**
-     * @brief the creator of this thread may offer one or more mailboxes
-     * to this object.  The thread may "subscribe" to the mailboxes as it
-     * chooses.  offerSubscriptionList is a convenience function that allows
-     * a thread creator to present a list of mailboxes to which the thread
-     * may subscribe. 
-     * 
-     * @param subscription_map The name/mailbox pairs. The name identifies the purpose
-     * of the mailbox, and the thread should be able to infer the the "T" in 
-     * the actual MultiMBox<T> type from this identifying string. 
-     */
-    void subscribeToMailBoxList(const MailBoxMap & subscription_map) {
-      for(auto p : subscription_map) {
-	subscribeToMailBox(p.first, p.second);
-      }
-    }
-
+    virtual void subscribe() = 0;
+    
     void operator() () {
       // we woke up with a "start" or "join" call
       outerRun();
@@ -160,22 +135,22 @@ namespace SoDa {
      * 
      * @param cmd the command message to be handled
      */
-    void execCommand(Command * cmd);
+    void execCommand(std::shared_ptr<Command>  cmd);
     
     /**
      * optional method to handle "GET" commands -- commands that request a response
      */
-    virtual void execGetCommand(Command * cmd) { (void) cmd; }
+    virtual void execGetCommand(std::shared_ptr<Command>  cmd) { (void) cmd; }
 
     /**
      * optional method to handle "SET" commands -- commands that set internal state in the object.
      */
-    virtual void execSetCommand(Command * cmd) { (void) cmd; }
+    virtual void execSetCommand(std::shared_ptr<Command>  cmd) { (void) cmd; }
 
     /**
      * optional method that reports status or the result of some action. 
      */
-    virtual void execRepCommand(Command * cmd) { (void) cmd; } 
+    virtual void execRepCommand(std::shared_ptr<Command>  cmd) { (void) cmd; } 
 
     /**
      * optional method that performs cleanup -- may not delete. 
@@ -187,6 +162,7 @@ namespace SoDa {
     void sleep_ms(unsigned int milliseconds) {
       std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
     }
+
     void sleep_us(unsigned int microseconds) {
       std::this_thread::sleep_for(std::chrono::microseconds(microseconds));
     }
@@ -234,7 +210,7 @@ namespace SoDa {
     if(pattern == key) {
       ret = dynamic_cast<T *>(could_be_pointer);
       if(ret == NULL) {
-	throw SoDa::Exception(SoDa::Format("Bad mailbox pointer for mailbox named = [%0]\n") 
+	throw SoDa::Radio::Exception(SoDa::Format("Bad mailbox pointer for mailbox named = [%0]\n") 
 			      .addS(key), obj);
       }
       else {

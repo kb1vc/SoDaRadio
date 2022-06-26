@@ -1,7 +1,6 @@
 #include "SoDaThread.hxx"
 #include "SoDaThreadRegistry.hxx"
 #include "Command.hxx"
-#include "MultiMBox.hxx"
 #include "Debug.hxx"
 #include "version.h"
 
@@ -23,9 +22,12 @@ SoDa::Thread::Thread(const std::string & oname, const std::string & version) : S
   
   SoDa::ThreadRegistry::getRegistrar()->addThread(this, version);
   thread_ptr = nullptr;
+  
+  // subscribe to whatever mailbox streams we need
+  subscribe();
 }
 
-void SoDa::Thread::execCommand(Command * cmd) 
+void SoDa::Thread::execCommand(std::shared_ptr<Command>  cmd) 
 {
   switch (cmd->cmd) {
   case Command::GET:
@@ -49,10 +51,10 @@ void  SoDa::Thread::outerRun() {
   try {
     run(); 
   }
-  catch (SoDa::Exception exc) {
+  catch (SoDa::Radio::Exception exc) {
     std::cerr << getObjName() << " caught " << exc.toString() << std::endl;
   }
-  catch (SoDa::Exception * exc) {
+  catch (SoDa::Radio::Exception * exc) {
     std::cerr << getObjName() << " caught " << exc->toString() << std::endl;
   }
   catch (const std::exception & e) {
