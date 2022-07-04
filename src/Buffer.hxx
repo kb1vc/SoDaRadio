@@ -50,19 +50,14 @@ namespace SoDa {
   }
   
   typedef std::shared_ptr<std::vector<std::complex<float>>> CFBuf;
-  CFBuf makeCFBuf(size_t len) { 
-    return makeVectorBuffer<std::complex<float>>(len); 
-  }
+  CFBuf makeCFBuf(size_t len);
+  
   typedef std::shared_ptr<std::vector<std::complex<double>>> CDBuf;
-  CDBuf makeCDBuf(size_t len) { 
-    return makeVectorBuffer<std::complex<double>>(len);
-  }  
+  CDBuf makeCDBuf(size_t len);
+  
   typedef std::shared_ptr<std::vector<float>> FBuf;
-  FBuf makeFBuf(size_t len) { 
-    return makeVectorBuffer<float>(len);
-  }  
+  FBuf makeFBuf(size_t len);
+  
   typedef std::shared_ptr<std::vector<double>> DBuf;
-  DBuf makeDBuf(size_t len) { 
-    return makeVectorBuffer<double>(len);
-  }  
+  DBuf makeDBuf(size_t len);
 }

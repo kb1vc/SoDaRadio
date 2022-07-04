@@ -357,7 +357,7 @@ namespace SoDa {
     }
   }
 
-  void BaseBandRX::execSetCommand(std::shared_ptr<Command>  cmd)
+  void BaseBandRX::execSetCommand(CmdMsg  cmd)
   {
     Command::AudioFilterBW fbw;
     Command::ModulationType txmod; 
@@ -438,7 +438,7 @@ namespace SoDa {
     }
   }
 
-  void BaseBandRX::execGetCommand(std::shared_ptr<Command>  cmd)
+  void BaseBandRX::execGetCommand(CmdMsg  cmd)
   {
     switch (cmd->target) {
     case Command::RX_AF_FILTER: // set af filter bw.
@@ -464,7 +464,7 @@ namespace SoDa {
 
   }
 
-  void BaseBandRX::execRepCommand(std::shared_ptr<Command>  cmd)
+  void BaseBandRX::execRepCommand(CmdMsg  cmd)
   {
     (void) cmd; 
   }
@@ -473,7 +473,7 @@ namespace SoDa {
   {
     bool exitflag = false;
     CFBuf rxbuf;
-    std::shared_ptr<Command> cmd; 
+    CmdMsg cmd; 
 
     int trim_count = 0; 
     int add_count = 0;     
@@ -617,7 +617,7 @@ namespace SoDa {
     cmd_stream = MailBoxBase::convert<MsgMBox>(reg->get("CMD"));
     cmd_subs = cmd_stream->subscribe();
 
-    rx_stream = MailBoxBase::convert<CFMBox>(reg->get("TX"));
+    rx_stream = MailBoxBase::convert<CFMBox>(reg->get("RX"));
     rx_subs = rx_stream->subscribe();
   }
 }

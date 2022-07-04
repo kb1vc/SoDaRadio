@@ -135,22 +135,22 @@ namespace SoDa {
      * 
      * @param cmd the command message to be handled
      */
-    void execCommand(std::shared_ptr<Command>  cmd);
+    void execCommand(CmdMsg  cmd);
     
     /**
      * optional method to handle "GET" commands -- commands that request a response
      */
-    virtual void execGetCommand(std::shared_ptr<Command>  cmd) { (void) cmd; }
+    virtual void execGetCommand(CmdMsg  cmd) { (void) cmd; }
 
     /**
      * optional method to handle "SET" commands -- commands that set internal state in the object.
      */
-    virtual void execSetCommand(std::shared_ptr<Command>  cmd) { (void) cmd; }
+    virtual void execSetCommand(CmdMsg  cmd) { (void) cmd; }
 
     /**
      * optional method that reports status or the result of some action. 
      */
-    virtual void execRepCommand(std::shared_ptr<Command>  cmd) { (void) cmd; } 
+    virtual void execRepCommand(CmdMsg  cmd) { (void) cmd; } 
 
     /**
      * optional method that performs cleanup -- may not delete. 
@@ -187,39 +187,6 @@ namespace SoDa {
     
     void hookSigSeg();
   };
-
-  /**
-   * @brief if the pattern and key match, return true and set "mbox_ptr" to point
-   * to the mailbox pointed to by "could_be_pointer".  Otherwise, just return false;
-   * 
-   * @param obj A SoDa object so we have someone to blame for an exception.
-   * @param current_ptr if the mailbox has already been connected, then this is it, otherwise, we'll update the mailbox on a match.
-
-   * @param pattern this is the mailbox name we're looking for
-   * @param key this is the name of the  mailbox we're being offered
-   * @param could_be_pointer this is the mailbox we're being offered. 
-   * @return true if we find a match
-   *
-   */
-  template<class T> bool connectMailBox(SoDa::Base * obj, 
-					T * & current_ptr, 
-					const std::string & pattern,
-					const std::string & key, 
-					SoDa::BaseMBox * could_be_pointer) {
-    T * ret;
-    if(pattern == key) {
-      ret = dynamic_cast<T *>(could_be_pointer);
-      if(ret == NULL) {
-	throw SoDa::Radio::Exception(SoDa::Format("Bad mailbox pointer for mailbox named = [%0]\n") 
-			      .addS(key), obj);
-      }
-      else {
-	current_ptr = ret; 
-	return true;
-      }
-    }
-    return false;
-  }
 }
 
 

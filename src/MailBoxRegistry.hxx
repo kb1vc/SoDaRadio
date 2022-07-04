@@ -91,5 +91,24 @@ namespace SoDa {
     
     static MailBoxRegistry * registrar; 
   };
+
+  /**
+   * @brief create and register a new mailbox of type T
+   * 
+   * @tparam the Type of the mailbox (f'rinstance MsgMBox)
+   * 
+   * @param name the name of the mailbox
+   * @return a shared pointer to the mailbox
+   * 
+   * side effect: the newly created mailbox is registered with the mailbox registry. 
+   */
+  template<typename T> 
+  std::shared_ptr<T> registerMailBox(const std::string & name) {
+    std::cerr << "Registering mailbox " << name << "\n";
+    auto ret = std::shared_ptr<T>(new T(name));
+    MailBoxRegistry::getRegistrar()->add(name, ret); 
+    return ret; 
+  }
+  
 }
 

@@ -30,7 +30,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define USRPRX_HDR
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
-#include "MultiMBox.hxx"
 #include "Command.hxx"
 #include "Params.hxx"
 #include "UI.hxx"
@@ -56,7 +55,7 @@ namespace SoDa {
     USRPRX(Params * params, uhd::usrp::multi_usrp::sptr usrp);
 
     /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
+    void subscribe();
     
     /**
      * USRPRX is a thread -- this is its run loop. 
@@ -64,10 +63,10 @@ namespace SoDa {
     void run();
     
   private:   
-    void execCommand(Command * cmd); 
-    void execGetCommand(Command * cmd); 
-    void execSetCommand(Command * cmd); 
-    void execRepCommand(Command * cmd);
+    void execCommand(CmdMsg cmd); 
+    void execGetCommand(CmdMsg cmd); 
+    void execSetCommand(CmdMsg cmd); 
+    void execRepCommand(CmdMsg cmd);
 
     void startStream();
     void stopStream(); 
@@ -79,13 +78,13 @@ namespace SoDa {
      *
      * @param inout the input/output RF buffer
      */
-    void doMixer(SoDa::CFBuffer * inout);
+    void doMixer(CFBuf inout);
     void set3rdLOFreq(double IF_tuning);
 
-    CFMBox * rx_stream;
-    CFMBox * if_stream; 
-    CmdMBox * cmd_stream;
-    unsigned int cmd_subs; 
+    CFMBoxPtr rx_stream;
+    CFMBoxPtr if_stream; 
+    MsgMBoxPtr cmd_stream;
+    MsgSubs cmd_subs; 
 
     // state for the USRP widget
     uhd::rx_streamer::sptr rx_bits;

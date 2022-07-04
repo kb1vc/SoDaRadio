@@ -798,6 +798,10 @@ namespace SoDa
 
     }
     
+    static std::shared_ptr<Command> make() {
+      return std::shared_ptr<Command>(new Command);
+    }
+    
   };
   
   typedef std::shared_ptr<Command> CmdMsg;

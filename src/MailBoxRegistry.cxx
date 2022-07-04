@@ -13,6 +13,7 @@ namespace SoDa {
   
   void MailBoxRegistry::add(const std::string & name, 
 				 std::shared_ptr<MailBoxBase> mailbox_ptr) {
+    std::cerr << "MailBoxRegistry " << this << " registering " << name << "\n";    
     if(exists(name)) {
       throw MailBoxExists(name); 
     }
@@ -21,6 +22,7 @@ namespace SoDa {
   }
 
   std::shared_ptr<MailBoxBase> MailBoxRegistry::get(const std::string & name) {
+    std::cerr << "MailBoxRegistry " << this << " looking up " << name << "\n";
     if(!exists(name)) {
       throw MailBoxMissing(name);
     }

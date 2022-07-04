@@ -1,5 +1,6 @@
+#pragma once
 /*
-Copyright (c) 2012,2013,2014 Matthew H. Reilly (kb1vc)
+Copyright (c) 2012,2013,2014,2022 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,19 +27,19 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef CWTX_HDR
-#define CWTX_HDR
-#include "SoDaBase.hxx"
-#include "SoDaThread.hxx"
-#include "MultiMBox.hxx"
-#include "Command.hxx"
-#include "Params.hxx"
-#include "UI.hxx"
-#include "CWGenerator.hxx"
-
+#include <memory>
 #include <time.h>
 #include <sys/time.h>
 #include <mutex>
+
+#include "SoDaBase.hxx"
+#include "SoDaThread.hxx"
+#include "MailBoxTypes.hxx"
+#include "MailBoxRegistry.hxx"
+#include "Command.hxx"
+#include "Params.hxx"
+#include "CWGenerator.hxx"
+
 
 namespace SoDa {
   /**
@@ -56,7 +57,7 @@ namespace SoDa {
     CWTX(Params * params);
 
     /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
+    void subscribe();
 
     /**
      * @brief CWTX run loop: translate text to CW envelopes, handle incoming commands
@@ -67,17 +68,17 @@ namespace SoDa {
      * @brief execute GET commands from the command channel
      * @param cmd the incoming command
      */
-    void execGetCommand(Command * cmd); 
+    void execGetCommand(CmdMsg & cmd); 
     /**
      * @brief handle SET commands from the command channel
      * @param cmd the incoming command
      */
-    void execSetCommand(Command * cmd); 
+    void execSetCommand(CmdMsg & cmd); 
     /**
      * @brief handle Report commands from the command channel
      * @param cmd the incoming command
      */
-    void execRepCommand(Command * cmd);
+    void execRepCommand(CmdMsg & cmd);
 
     /**
      * @brief add text to the outbound text queue
@@ -99,11 +100,11 @@ namespace SoDa {
 
     CWGenerator * cwgen; ///< Pointer to a text-to-morse translator
     
-    CmdMBox * cwtxt_stream; ///< stream of characters to be encoded (from UI or elsewhere)
-    CmdMBox * cmd_stream; ///< stream of commands to modify radio state
-    DatMBox * cw_env_stream; ///< stream carrying cw envelope buffers to USRPTX
-    unsigned int cwtxt_subs; ///< subscription for text stream
-    unsigned int cmd_subs; ///< subscription for command stream
+    MsgMBoxPtr cwtxt_stream; ///< stream of characters to be encoded (from UI or elsewhere)
+    MsgMBoxPtr cmd_stream; ///< stream of commands to modify radio state
+    FMBoxPtr cw_env_stream; ///< stream carrying cw envelope buffers to USRPTX
+    MsgSubs cwtxt_subs; ///< subscription for text stream
+    MsgSubs cmd_subs; ///< subscription for command stream
 
     bool txmode_is_cw; ///< if true, we're transmitting a CW stream
     bool old_txmode_is_cw; ///< remember the mode we were in
@@ -120,5 +121,3 @@ namespace SoDa {
   }; 
 }
 
-
-#endif

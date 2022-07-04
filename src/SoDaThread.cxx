@@ -22,12 +22,9 @@ SoDa::Thread::Thread(const std::string & oname, const std::string & version) : S
   
   SoDa::ThreadRegistry::getRegistrar()->addThread(this, version);
   thread_ptr = nullptr;
-  
-  // subscribe to whatever mailbox streams we need
-  subscribe();
 }
 
-void SoDa::Thread::execCommand(std::shared_ptr<Command>  cmd) 
+void SoDa::Thread::execCommand(CmdMsg  cmd) 
 {
   switch (cmd->cmd) {
   case Command::GET:

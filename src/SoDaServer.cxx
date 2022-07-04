@@ -131,7 +131,9 @@
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
 #include "SoDaThreadRegistry.hxx"
-#include "MultiMBox.hxx"
+#include "Buffer.hxx"
+#include "MailBoxRegistry.hxx"
+#include "MailBoxTypes.hxx"
 
 // Include functions to dynamically link any user supplied plugins
 #include <dlfcn.h>
@@ -201,25 +203,18 @@ int doWork(SoDa::Params & params)
   // the rx and tx streams are vectors of complex floats.
   // we don't declare the extent here, as it will be set
   // by a negotiation.  
-  SoDa::DatMBox rx_stream, tx_stream, if_stream, cw_env_stream;
-  SoDa::CmdMBox cmd_stream(false);
+  SoDa::CFMBoxPtr rx_stream = SoDa::registerMailBox<SoDa::CFMBox>("RX");
+  SoDa::CFMBoxPtr tx_stream = SoDa::registerMailBox<SoDa::CFMBox>("TX");
+  SoDa::CFMBoxPtr if_stream = SoDa::registerMailBox<SoDa::CFMBox>("IF");
+  SoDa::FMBoxPtr cw_env_stream = SoDa::registerMailBox<SoDa::FMBox>("CW_ENV");
+  SoDa::MsgMBoxPtr cmd_stream = SoDa::registerMailBox<SoDa::MsgMBox>("CMD");
   // create a separate gps stream to avoid "leaks" and latency problems... 
-  SoDa::CmdMBox gps_stream(false);
-  SoDa::CmdMBox cwtxt_stream(false);
+  SoDa::MsgMBoxPtr gps_stream = SoDa::registerMailBox<SoDa::MsgMBox>("GPS");
+  SoDa::MsgMBoxPtr cwtxt_stream = SoDa::registerMailBox<SoDa::MsgMBox>("CW_TXT");
 
   SoDa::Thread * ctrl;
   SoDa::Thread * rx;
   SoDa::Thread * tx;
-
-  SoDa::MailBoxMap mailbox_map;
-
-  mailbox_map["RX"] = &rx_stream;
-  mailbox_map["TX"] = &tx_stream;
-  mailbox_map["CMD"] = &cmd_stream;
-  mailbox_map["CW_TXT"] = &cwtxt_stream;
-  mailbox_map["CW_ENV"] = &cw_env_stream;  
-  mailbox_map["GPS"] = &gps_stream;
-  mailbox_map["IF"] = &if_stream;
   
   if(params.isRadioType("USRP")) {
     /// create the USRP Control, RX Streamer, and TX Streamer threads
@@ -241,9 +236,9 @@ int doWork(SoDa::Params & params)
   //
   
   AudioQt audio_ifc(params.getAudioSampleRate(),
-			  params.getAFBufferSize(),
-			  params.getServerSocketBasename(),
-			  params.getAudioPortName());
+		    params.getAFBufferSize(),
+		    params.getServerSocketBasename(),
+		    params.getAudioPortName());
   /// Create the audio RX and audio TX unit threads
   /// These are also responsible for implementing IF tuning and modulation. 
   /// @see SoDa::BaseBandRX @see SoDa::BaseBandTX
@@ -277,7 +272,7 @@ int doWork(SoDa::Params & params)
   auto registrar = SoDa::ThreadRegistry::getRegistrar();  
 
   // hook everyone up to the mailboxes. 
-  registrar->subscribeThreads(mailbox_map);
+  registrar->subscribeThreads();
   
   // Now start each of the activities -- they may or may not
   // implement the "start" method -- not all objects need to be threads.

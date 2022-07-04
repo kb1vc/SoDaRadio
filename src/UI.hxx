@@ -1,5 +1,6 @@
+#pragma once
 /*
-Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+Copyright (c) 2012,2022 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,17 +27,15 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef UI_HDR
-#define UI_HDR
 #include "SoDaBase.hxx"
 #include "Buffer.hxx"
 #include "SoDaThread.hxx"
-#include "MultiMBox.hxx"
 #include "Command.hxx"
 #include "Params.hxx"
-#include "UI.hxx"
 #include "UDSockets.hxx"
 #include "Spectrogram.hxx"
+#include "MailBoxTypes.hxx"
+#include "MailBoxRegistry.hxx"
 
 namespace SoDa {
   class UI : public SoDa::Thread {
@@ -45,20 +44,20 @@ namespace SoDa {
     ~UI();
 
     /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
+    void subscribe();
     
     void run();
 
   private:
     // Do an FFT on an rx buffer and send the positive
     // frequencies to any network listeners. 
-    void sendFFT(SoDa::CFBuffer * buf);
+    void sendFFT(SoDa::CFBuf & buf);
 
     // the internal communications paths -- between the SoDa threads. 
-    CmdMBox * cwtxt_stream, * cmd_stream, * gps_stream;
-    CFMBox * if_stream; 
-    unsigned int if_subs, cmd_subs, gps_subs;
-
+    MsgMBoxPtr cwtxt_stream, cmd_stream, gps_stream;
+    CFMBoxPtr if_stream; 
+    MsgSubs cmd_subs, gps_subs; 
+    CFSubs if_subs;
 
     // these are the pieces of the posix message queue interface to the GUI or whatever.
     SoDa::UD::ServerSocket * server_socket, * wfall_socket; 
@@ -100,5 +99,3 @@ namespace SoDa {
   }; 
 }
 
-
-#endif

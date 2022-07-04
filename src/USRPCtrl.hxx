@@ -1,5 +1,6 @@
+#pragma once
 /*
-Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+Copyright (c) 2012,2022 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -35,14 +36,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ///  @date   July 2013
  ///
 
-#ifndef USRPCTRL_HDR
-#define USRPCTRL_HDR
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
 #include "Command.hxx"
 #include "Params.hxx"
 #include "TRControl.hxx"
 #include "PropTree.hxx"
+#include "MailBoxTypes.hxx"
+
 #include <uhd/version.hpp>
 #if UHD_VERSION < 3110000
 #  include <uhd/utils/msg.hpp>
@@ -87,7 +88,7 @@ namespace SoDa {
     uhd::usrp::multi_usrp::sptr getUSRP() { return usrp; }
 
     /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
+    void subscribe();
 
 #if UHD_VERSION < 3110000
     /// This is the more permanent message handler used before the elimination of the msg class    
@@ -110,16 +111,16 @@ namespace SoDa {
 
     /// Parse an incoming command and dispatch.
     /// @param cmd a command record
-    void execCommand(Command * cmd);
+    void execCommand(CmdMsg cmd);
     /// Dispatch an incoming GET command
     /// @param cmd a command record
-    void execGetCommand(Command * cmd); 
+    void execGetCommand(CmdMsg cmd); 
     /// Dispatch an incoming SET command
     /// @param cmd a command record
-    void execSetCommand(Command * cmd); 
+    void execSetCommand(CmdMsg cmd); 
     /// Dispatch an incoming REPort command
     /// @param cmd a command record
-    void execRepCommand(Command * cmd); 
+    void execRepCommand(CmdMsg  cmd); 
 
     /// get the number of seconds since the "Epoch"
     /// @return relative time in seconds
@@ -167,8 +168,8 @@ namespace SoDa {
     void set1stLOFreq(double freq, char sel, bool set_if_freq = false);
 
     
-    CmdMBox * cmd_stream; ///< command stream channel
-    unsigned int subid;   ///< subscriber ID for this thread's connection to the command channel
+    MsgMBoxPtr cmd_stream; ///< command stream channel
+    MsgSubs cmd_subs;   ///< subscriber ID for this thread's connection to the command channel
 
     // USRP stuff.
     uhd::usrp::multi_usrp::sptr usrp; ///< to which USRP unit is this connected?
@@ -292,5 +293,3 @@ namespace SoDa {
   };
 }
 
-
-#endif

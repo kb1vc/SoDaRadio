@@ -30,7 +30,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define GPS_MON_HDR
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
-#include "MultiMBox.hxx"
 #include "Command.hxx"
 #include "Params.hxx"
 #include "UI.hxx"
@@ -45,7 +44,7 @@ namespace SoDa {
     GPSmon(Params * params);
 
     /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
+    void subscribe();
     
     void run();
   private:
@@ -53,8 +52,8 @@ namespace SoDa {
     void execSetCommand(Command * cmd); 
     void execRepCommand(Command * cmd); 
 
-    CmdMBox *cmd_stream;
-    unsigned int cmd_subs;
+    MsgMBoxPtr cmd_stream;
+    MsgSubs    cmd_subs;
 
     GPSDShim * gps_shim; 
   }; 

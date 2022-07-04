@@ -96,17 +96,17 @@ namespace SoDa {
      * @brief execute GET commands from the command channel
      * @param cmd the incoming command
      */
-    void execGetCommand(std::shared_ptr<Command>  cmd); 
+    void execGetCommand(CmdMsg  cmd); 
     /**
      * @brief handle SET commands from the command channel
      * @param cmd the incoming command
      */
-    void execSetCommand(std::shared_ptr<Command>  cmd); 
+    void execSetCommand(CmdMsg  cmd); 
     /**
      * @brief handle Report commands from the command channel
      * @param cmd the incoming command
      */
-    void execRepCommand(std::shared_ptr<Command>  cmd); 
+    void execRepCommand(CmdMsg  cmd); 
 
     /**
      * @brief demodulate the input stream as an SSB signal
