@@ -181,7 +181,8 @@ void GUISoDa::Listener::processCmd() {
  
   while(((unsigned int) cmd_socket->bytesAvailable()) > sizeof(SoDa::Command)) {
     get(incmd);    
-    
+    qDebug().noquote() << QString("Listener::processCmd [%1] [%2]").arg(incmd.toString().c_str())
+      .arg(incmd.cmd);
     if(incmd.cmd == SoDa::Command::REP) handleREP(incmd);
     else if(incmd.cmd == SoDa::Command::GET) handleGET(incmd);
     else if(incmd.cmd == SoDa::Command::SET) handleSET(incmd);    
