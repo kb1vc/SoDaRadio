@@ -41,6 +41,7 @@
 
 #include <QMouseEvent>
 #include <QPointF>
+#include <QDebug>
 
 #include "soda_plot_picker.hpp"
 #include "soda_freq_scale_draw.hpp"
