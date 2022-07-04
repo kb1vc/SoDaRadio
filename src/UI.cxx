@@ -260,7 +260,7 @@ namespace SoDa {
 				   spectrum_span, 
 				   ((double) required_spect_buckets)), 
 		       sizeof(Command));
-    
+    cmd_stream->put(Command::make(Command::REP, Command::COMMENT, SoDa::Format("UI::rSCF %0").addF(spectrum_center_freq).str(), 0));
   }
 
 
@@ -385,7 +385,7 @@ namespace SoDa {
       lo_check_mode = false;
       // send the report
       double freq = ((float) maxi) * lo_hz_per_bucket;
-      debugMsg(SoDa::Format("offset = %0\n").addF(freq, 10, 6, 'e')); 
+      debugMsg(SoDa::Format("offset = %0\n").addF(freq, 'e', 10, 6)); 
       cmd_stream->put(Command::make(Command::REP, Command::LO_OFFSET,
 				  freq)); 
       cmd_stream->put(Command::make(Command::REP, Command::SPEC_RANGE_LOW,
@@ -401,9 +401,9 @@ namespace SoDa {
 				  0.0)); 
     }
     else if((fft_send_counter >= fft_update_interval) && (slice != nullptr )) {
-      // send the buffer over to the XY plotter.
+      // send the buffer over to the GUI
       for(int i = 0; i < required_spect_buckets; i++) {
-	log_spectrum[i] = 10.0 * log10(slice[i] * 0.05); 
+	log_spectrum[i] = 10.0 * log10(slice[i] * 0.05);  // what's with the 0.05 ?  and the 10.0 vs. 20 .. is slice mag^2
       }
       wfall_socket->put(log_spectrum, sizeof(float) * required_spect_buckets);
       fft_send_counter = 0;

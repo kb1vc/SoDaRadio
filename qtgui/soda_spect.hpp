@@ -81,6 +81,7 @@ namespace GUISoDa {
       setFreqCenter(center_freq_disp - freq_span_disp * 0.25, true); 
     }
   
+    void setRXFreq(double cfreq);
     void configureSpectrum(double cfreq, double span, long buckets);
     
     void setMarkerOffset(double lo, double hi);

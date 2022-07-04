@@ -33,9 +33,11 @@
 #include "Buffer.hxx"
 #include "MailBoxTypes.hxx"
 #include "Command.hxx"
+#include <iostream>
+#include <fstream>
 
 /**
- * @file SimpleAccessory.hxx
+ * @file LogMsgPlugin.hxx
  *
  * an example of a simple bolt-on accessory for SoDaRadio.  It counts
  * the number of commands that go by and reports the count at the end
@@ -46,9 +48,9 @@
  */
 
 // namespace doesn't matter here... let's do without. 
-class SimpleAccessory : public SoDa::Thread {
+class LogMsgPlugin : public SoDa::Thread {
 public:
-  SimpleAccessory(const std::string & name);
+  LogMsgPlugin(const std::string & name);
 
   /**
    * @brief connect to useful mailboxes. 
@@ -63,32 +65,33 @@ public:
    * @param cmd the incoming command
    */
   void execGetCommand(SoDa::CmdMsg cmd) {
-    get_count++; 
+    logCommand(cmd);
   }
   /**
    * @brief handle SET commands from the command channel
    * @param cmd the incoming command
    */
   void execSetCommand(SoDa::CmdMsg cmd) {
-    set_count++;
+    logCommand(cmd);
   }
   /**
    * @brief handle Report commands from the command channel
    * @param cmd the incoming command
    */
   void execRepCommand(SoDa::CmdMsg cmd) {
-    rep_count++;
+    logCommand(cmd);
   }
+
+  void logCommand(SoDa::CmdMsg cmd); 
 
   void shutDown() {
-    printReport();
+    log.close();
   }
 
-  void printReport();
 
   SoDa::MsgSubs cmd_subs; ///< mailbox subscription ID for command stream
   SoDa::MsgMBoxPtr cmd_stream; ///< mailbox producing command stream from user
     
-  unsigned int get_count, set_count, rep_count; 
+  std::ofstream log; 
 };
 

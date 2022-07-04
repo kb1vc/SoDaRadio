@@ -113,6 +113,8 @@ void SoDa::Command::initTables()
   initTableEntry(std::string("NBFM_SQUELCH"), NBFM_SQUELCH);
 
   initTableEntry(std::string("RX_CENTER_FREQ"), RX_CENTER_FREQ);
+
+  initTableEntry(std::string("COMMENT"), COMMENT);  
 }
 
 SoDa::Command * SoDa::Command::parseCommandString(std::string str)

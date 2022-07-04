@@ -25,49 +25,48 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#include "SimpleAccessory.hxx"
+#include "LogMsgPlugin.hxx"
 #include <SoDa/Format.hxx>
 #include <iostream>
 #include <string>
 #include "MailBoxRegistry.hxx"
 
-// namespace doesn't matter here... let's do without.
-
 /**
- * To make an accessory thread that gets loaded and connected automagically, 
- * just create a normal thread object.  Like this: 
+ * Logs all command SET, REP, GET messages on the cmd message stream. 
+ * 
  */
-SimpleAccessory my_accessory(std::string("Accessory1"));
-
-
-SimpleAccessory::SimpleAccessory(const std::string & name) : SoDa::Thread(name) {
-  get_count = set_count = rep_count = 0;
+extern "C" {
+  LogMsgPlugin * initLib() {
+    return new LogMsgPlugin("LogMessages");
+  }
 }
 
-void SimpleAccessory::printReport() {
-  std::cerr << SoDa::Format("Accessory named %s reports: Get: %8d  Set: %8d  Rep: %8d\n")
-    .addS(getObjName())
-    .addI(get_count, 8)
-    .addI(set_count, 8)
-    .addI(rep_count, 8); 
+LogMsgPlugin::LogMsgPlugin(const std::string & name) : SoDa::Thread(name) {
+  std::cerr << "LogMsgPlugin Opening log file.\n";
+  log.open("messages.log");
 }
 
-void SimpleAccessory::run() {
+void LogMsgPlugin::logCommand(SoDa::CmdMsg cmd) {
+  log << cmd->toString() << "\n";
+}
+
+void LogMsgPlugin::run() {
   bool exitflag = false; 
 
   while(!exitflag) {
     auto cmd = cmd_stream->get(cmd_subs); 
     while (cmd != NULL) {
-      execCommand(cmd);
+      logCommand(cmd); 
       exitflag |= (cmd->target == SoDa::Command::STOP);      
       cmd = cmd_stream->get(cmd_subs); 
     }
 
-    sleep_us(10000);
+    sleep_us(1000);
   }
 }
 
-void SimpleAccessory::subscribe() {
+void LogMsgPlugin::subscribe() {
+  std::cerr << "LogMsgPlugin subscribing to streams\n";
   auto reg = SoDa::MailBoxRegistry::getRegistrar();
   cmd_stream = SoDa::MailBoxBase::convert<SoDa::MsgMBox>(reg->get("CMD"));
   cmd_subs = cmd_stream->subscribe();

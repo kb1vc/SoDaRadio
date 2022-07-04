@@ -181,9 +181,21 @@ void deleteLockFile(const std::string & lock_file_name)
 
 int loadAccessories(const std::vector<std::string> & libs, SoDa::Debug & d) {
   // are there loadable modules we want to run?
+  typedef void (*makeit_t)();
   for(auto l : libs) {
-    dlopen(l.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+    auto lib = dlopen(l.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+    if(!lib) {
+      std::cerr << SoDa::Format("Could not open library %0: error [%1]\n")
+	.addS(l).addS(dlerror());
+    }
     d.debugMsg(SoDa::Format("Loaded shared object %0\n").addS(l));
+    makeit_t makeit = (makeit_t) dlsym(lib, "initLib");
+    const char * dle = dlerror();
+    if(dle != nullptr) {
+      std::cerr << "Could not run initLib function for library " << l << " got error [" << dle << "]\n";
+    }
+    
+    makeit();
   }
   return 1; 
 }

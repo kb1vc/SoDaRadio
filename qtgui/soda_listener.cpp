@@ -263,6 +263,10 @@ bool GUISoDa::Listener::handleREP(const SoDa::Command & cmd)
   case SoDa::Command::TX_ANT_NAME:
     emit(addTXAntName(QString(cmd.sparm)));
     break; 
+  case SoDa::Command::RX_TUNE_FREQ:
+    qDebug().noquote() << QString("***Listener got RX_TUNE_FREQ %1").arg(cmd.dparms[0]);
+    emit(newRXFreq(cmd.dparms[0]));
+    break; 
   case SoDa::Command::SPEC_DIMS:
     emit(configureSpectrum(cmd.dparms[0], cmd.dparms[1], ((long) cmd.dparms[2])));
     setupSpectrumBuffer(cmd.dparms[0], cmd.dparms[1], (long) cmd.dparms[2]);

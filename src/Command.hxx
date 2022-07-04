@@ -503,6 +503,11 @@ namespace SoDa
 	NBFM_SQUELCH,
 
 	/**
+	 * Commend -- takes a string param
+	 */
+	COMMENT,
+	
+	/**
 	 * No comment
 	 */
 	NULL_CMD

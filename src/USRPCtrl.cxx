@@ -367,12 +367,12 @@ namespace SoDa {
       last_rx_tune_result = usrp->set_rx_freq(rx_trequest);
       last_rx_tune_result = checkLock(rx_trequest, 'r', last_rx_tune_result);
       debugMsg(SoDa::Format("RX Tune RF_actual %0 DDC = %1 tuned = %2 target = %3 request  rf = %4 request ddc = %5\n")
-	       .addF(last_rx_tune_result.actual_rf_freq, 10, 6, 'e')
-	       .addF(last_rx_tune_result.actual_dsp_freq, 10, 6, 'e')
-	       .addF(freq, 10, 6, 'e')
-	       .addF(target_rx_freq, 10, 6, 'e')
-	       .addF(rx_trequest.rf_freq, 10, 6, 'e')
-	       .addF(rx_trequest.dsp_freq, 10, 6, 'e'));
+	       .addF(last_rx_tune_result.actual_rf_freq, 'e', 10, 6)
+	       .addF(last_rx_tune_result.actual_dsp_freq, 'e', 10, 6)
+	       .addF(freq, 'e', 10, 6)
+	       .addF(target_rx_freq, 'e', 10, 6)
+	       .addF(rx_trequest.rf_freq, 'e', 10, 6)
+	       .addF(rx_trequest.dsp_freq, 'e', 10, 6));
     }
     else {
       // On the transmit side, we're using a minimal IF rate and
@@ -418,19 +418,19 @@ namespace SoDa {
       }
 
       debugMsg(SoDa::Format("Tuning TX unit to new frequency %0 (request = %1  (%2 %3))\n")
-	       .addF(freq, 10, 6, 'e')
-	       .addF(tx_request.target_freq, 10, 6, 'e')
-	       .addF(tx_request.rf_freq, 10, 6, 'e')
-	       .addF(tx_request.dsp_freq, 10, 6, 'e'));
+	       .addF(freq, 'e', 10, 6)
+	       .addF(tx_request.target_freq, 'e', 10, 6)
+	       .addF(tx_request.rf_freq, 'e', 10, 6)
+	       .addF(tx_request.dsp_freq, 'e', 10, 6));
 
       last_tx_tune_result = usrp->set_tx_freq(tx_request);
 
       debugMsg(SoDa::Format("Tuned TX unit to new frequency %0 t.rf %1 a.rf %2 t.dsp %3 a.dsp %4\n")
-	       .addF(freq, 10, 6, 'e')
-	       .addF(last_tx_tune_result.target_rf_freq, 10, 6, 'e')
-	       .addF(last_tx_tune_result.actual_rf_freq, 10, 6, 'e')
-	       .addF(last_tx_tune_result.target_dsp_freq, 10, 6, 'e')
-	       .addF(last_tx_tune_result.actual_dsp_freq, 10, 6, 'e'));
+	       .addF(freq, 'e', 10, 6)
+	       .addF(last_tx_tune_result.target_rf_freq, 'e', 10, 6)
+	       .addF(last_tx_tune_result.actual_rf_freq, 'e', 10, 6)
+	       .addF(last_tx_tune_result.target_dsp_freq, 'e', 10, 6)
+	       .addF(last_tx_tune_result.actual_dsp_freq, 'e', 10, 6));
 
       last_tx_tune_result = checkLock(tx_request, 't', last_tx_tune_result);
 
@@ -439,8 +439,8 @@ namespace SoDa {
       if(tvrt_lo_mode) {
 	txfreqs[1] = usrp->get_tx_freq(1);
 	debugMsg(SoDa::Format("TX LO = %0  TVRT LO = %1\n")
-		 .addF(txfreqs[0], 10, 6, 'e')
-		 .addF(txfreqs[1], 10, 6, 'e'));
+		 .addF(txfreqs[0], 'e', 10, 6)
+		 .addF(txfreqs[1], 'e', 10, 6));
       }
     }
 
@@ -731,11 +731,12 @@ namespace SoDa {
       break;
 
     case Command::HWMB_REP:
+      
       cmd_stream->put(Command::make(Command::REP, Command::HWMB_REP,
 				    SoDa::Format("%0\t%1 to %2 MHz")
 				    .addS(motherboard_name)
-				    .addF((rx_rf_freq_range.start() * 1e-6), 'e', 10, 6)
-				    .addF((rx_rf_freq_range.stop() * 1e-6), 'e', 10, 6).str()));
+				    .addF((rx_rf_freq_range.start() * 1e-6), 'f', 7, 2)
+				    .addF((rx_rf_freq_range.stop() * 1e-6), 'f', 7, 2).str()));
       reportAntennas(); 
       reportModes();
       reportAFFilters();

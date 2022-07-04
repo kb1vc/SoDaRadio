@@ -138,7 +138,10 @@ void GUISoDa::Spect::replotXAxis()
 
   
   setAxisScale(QwtPlot::xBottom, min, max, freq_span_disp / 5.0); // step);
-
+  
+  qDebug().noquote() << QString("***replotXAxis min/max %1/%2 center_freq_disp %3")
+    .arg(min).arg(max).arg(center_freq_disp);
+  
   QwtLinearScaleEngine se;
   setAxisScaleDiv(QwtPlot::xBottom, se.divideScale(min, max, 5, 5));
   freq_draw_p->setFreqStep(center_freq_disp, freq_span_disp / 5.0);
@@ -147,6 +150,7 @@ void GUISoDa::Spect::replotXAxis()
 
 void GUISoDa::Spect::setFreqCenter(double cf, bool check_boundary) 
 {
+  qDebug() << QString("***spect got setFreqCenter %1\n").arg(cf);
   (void) check_boundary;
   center_freq_disp = cf; 
   replotXAxis();
@@ -213,6 +217,10 @@ void GUISoDa::Spect::resetFreqAxis(double cfreq) {
     freqs[i] = fr; 
     fr += fincr; 
   }
+}
+
+void GUISoDa::Spect::setRXFreq(double cfreq) {
+  configureSpectrum(cfreq, freq_span_in, num_buckets);
 }
 
 void GUISoDa::Spect::configureSpectrum(double cfreq, double span, long buckets) {
