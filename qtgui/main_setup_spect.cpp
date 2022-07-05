@@ -115,8 +115,8 @@ void MainWindow::setupSpectrum()
 	  ui->spectrum_plt, SLOT(configureSpectrum(double, double, long)));
   connect(listener, SIGNAL(updateData(double, float*)), 
 	  ui->spectrum_plt, SLOT(updateData(double, float*)));
-  connect(listener, SIGNAL(newRXFreq(double)), 
-  	  ui->spectrum_plt, SLOT(setFreqCenter(double)));
+  // connect(listener, SIGNAL(newRXFreq(double)), 
+  // 	  ui->spectrum_plt, SLOT(setFreqCenter(double)));
 			   
 
   connect(ui->sp_RX2Center_btn, &QPushButton::clicked, 

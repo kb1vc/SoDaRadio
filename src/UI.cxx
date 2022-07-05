@@ -264,7 +264,7 @@ namespace SoDa {
   }
 
 
-  void UI::execSetCommand(Command * cmd)
+  void UI::execSetCommand(CmdMsg  cmd)
   {
     // when we get a SET SPEC_CENTER_FREQ
     switch(cmd->target) {
@@ -291,7 +291,7 @@ namespace SoDa {
     }
   }
 
-  void UI::execGetCommand(Command * cmd)
+  void UI::execGetCommand(CmdMsg  cmd)
   {
     switch(cmd->target) {
     case Command::LO_OFFSET: // remember that we want to report
@@ -304,7 +304,7 @@ namespace SoDa {
     }
   }
 
-  void UI::execRepCommand(Command * cmd)
+  void UI::execRepCommand(CmdMsg  cmd)
   {
     switch(cmd->target) {
     case Command::RX_FE_FREQ:
