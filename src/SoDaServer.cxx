@@ -254,23 +254,18 @@ int doWork(SoDa::Params & params)
   /// Create the audio RX and audio TX unit threads
   /// These are also responsible for implementing IF tuning and modulation. 
   /// @see SoDa::BaseBandRX @see SoDa::BaseBandTX
-  std::cerr << "About to create baseband rx\n";
   SoDa::BaseBandRX bbrx(&params, &audio_ifc);
 
-  std::cerr << "About to create baseband tx\n";  
   SoDa::BaseBandTX bbtx(&params, &audio_ifc);
 
   /// Create the morse code (CW) tx handler thread @see SoDa::CWTX
-  std::cerr << "About to create cwtx\n";  
   SoDa::CWTX cwtx(&params);
     
   /// Create the user interface (UI) thread @see SoDa::UI
-  std::cerr << "About to create UI listener\n";    
   SoDa::UI ui(&params);
 
   /// Create an IF listener process that copies the IF stream to an output file
   /// when requested.
-  std::cerr << "About to create if recorder\n";
   SoDa::IFRecorder ifrec(&params);
 
 #if HAVE_GPSLIB    
