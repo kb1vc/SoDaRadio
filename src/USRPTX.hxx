@@ -1,5 +1,6 @@
+#pragma once
 /*
-Copyright (c) 2012,2013,2014 Matthew H. Reilly (kb1vc)
+Copyright (c) 2012,2013,2014,2022 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,13 +27,11 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef USRPTX_HDR
-#define USRPTX_HDR
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
-#include "MultiMBox.hxx"
 #include "Command.hxx"
 #include "Params.hxx"
+#include "MailBoxTypes.hxx"
 #include "QuadratureOscillator.hxx"
 #include <uhd/usrp/multi_usrp.hpp>
 #include <uhd/stream.hpp>
@@ -61,7 +60,7 @@ namespace SoDa {
     USRPTX(Params * params, uhd::usrp::multi_usrp::sptr _usrp);
 
     /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
+    void subscribe();
     
     /**
      * @brief USRPTX run loop: handle commands, and modulate the tx carrier
@@ -87,17 +86,17 @@ namespace SoDa {
      * @brief execute GET commands from the command channel
      * @param cmd the incoming command
      */
-    void execGetCommand(Command * cmd); 
+    void execGetCommand(CmdMsg  cmd); 
     /**
      * @brief handle SET commands from the command channel
      * @param cmd the incoming command
      */
-    void execSetCommand(Command * cmd); 
+    void execSetCommand(CmdMsg  cmd); 
     /**
      * @brief handle Report commands from the command channel
      * @param cmd the incoming command
      */
-    void execRepCommand(Command * cmd);
+    void execRepCommand(CmdMsg  cmd);
 
     /**
      * @brief set the CW tone frequency to generate an IQ stream
@@ -114,18 +113,17 @@ namespace SoDa {
      * @param out the output IQ buffer, CW_osc amplitude modulated by
      *        the envelope parameter
      * @param envelope float array of keyed waveform amplitudes
-     * @param env_len length of envelope array
      *
      */
-    void doCW(std::complex<float> * out, float * envelope, unsigned int env_len);
+    void doCW(CFBuf out, FBuf envelope);
     
-    unsigned int tx_subs;  ///< subscription handle for transmit audio stream (from BaseBandTX)
-    unsigned int cmd_subs; ///< subscription handle for command stream
-    unsigned int cw_subs;  ///< subscription handle for cw envelope stream (from CW unit)
+    CFSubs tx_subs;  ///< subscription handle for transmit audio stream (from BaseBandTX)
+    MsgSubs cmd_subs; ///< subscription handle for command stream
+    FSubs cw_subs;  ///< subscription handle for cw envelope stream (from CW unit)
 
-    DatMBox * tx_stream;  ///< transmit audio stream 
-    DatMBox * cw_env_stream; ///< envelope stream from text-to-CW converter (CW unit)
-    CmdMBox * cmd_stream; ///< command stream
+    CFMBoxPtr tx_stream;  ///< transmit audio stream 
+    FMBoxPtr cw_env_stream; ///< envelope stream from text-to-CW converter (CW unit)
+    MsgMBoxPtr cmd_stream; ///< command stream
     
     bool tx_enabled; ///< if true, we're transmitting. 
     SoDa::Command::ModulationType tx_modulation; ///< type of transmit modulation (CW_U,CW_L,USB,LSB...)
@@ -133,13 +131,13 @@ namespace SoDa {
     double CW_tone_freq;
     QuadratureOscillator CW_osc; ///< CW tone IQ oscillator
 
-    float * beacon_env; ///< steady constant amplitude envelope
+    FBuf beacon_env; ///< steady constant amplitude envelope
     bool beacon_mode;   ///< if true, we're transmitting a steady carrier
 
-    float * zero_env; ///< envelope for dead silence
+    FBuf zero_env; ///< envelope for dead silence
 
-    std::complex<float> * cw_buf; ///< CW modulated envelope to send to USRP
-    std::complex<float> * zero_buf; ///< zero signal envelope to fill in end of transmit stream
+    CFBuf cw_buf; ///< CW modulated envelope to send to USRP
+    CFBuf zero_buf; ///< zero signal envelope to fill in end of transmit stream
 
     double tx_sample_rate; ///< sample rate for buffer going to USRP (UHD)
     unsigned int tx_buffer_size; ///< size of buffer going to USRP
@@ -156,10 +154,8 @@ namespace SoDa {
     bool LO_configured; ///< if true, the LO has had its gain/freq set.
     bool LO_capable; ///< if true, this hardware model supports LO config
 
-    std::complex<float> * const_buf; ///< envelope for dead silence
+    CFBuf const_buf; ///< envelope for dead silence
   }; 
 
 }
 
-
-#endif

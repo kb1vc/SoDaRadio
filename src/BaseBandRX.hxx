@@ -1,5 +1,6 @@
+#pragma once
 /*
-Copyright (c) 2012,2013,2014 Matthew H. Reilly (kb1vc)
+Copyright (c) 2012,2013,2014,2022 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,19 +27,19 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef BASEBANDRX_HDR
-#define BASEBANDRX_HDR
+
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
 #include "Params.hxx"
-#include "MultiMBox.hxx"
+#include "Buffer.hxx"
+#include "MailBoxRegistry.hxx"
+#include "MailBoxTypes.hxx"
 #include "Command.hxx"
 #include "OSFilter.hxx"
 #include "HilbertTransformer.hxx"
 #include "TDResamplers625x48.hxx"
 #include "AudioIfc.hxx"
 #include "MedianFilter.hxx"
-#include "BufferPool.hxx"
 
 #include <queue>
 #include <mutex>
@@ -71,7 +72,7 @@ namespace SoDa {
    * USB, and LSB modulation via the phasing method, since both I and Q
    * channels are available. AM is performed with a simple magnitude detector.
    */
-  class BaseBandRX : public SoDa::Thread {
+  class BaseBandRX : public Thread {
   public:
     /**
      * @brief the constructor
@@ -83,7 +84,7 @@ namespace SoDa {
 	       AudioIfc * audio_ifc);
 
     /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
+    void subscribe();
     
     /**
      * @brief the run method -- does the work of the audio receiver process
@@ -95,17 +96,17 @@ namespace SoDa {
      * @brief execute GET commands from the command channel
      * @param cmd the incoming command
      */
-    void execGetCommand(Command * cmd); 
+    void execGetCommand(CmdMsg  cmd); 
     /**
      * @brief handle SET commands from the command channel
      * @param cmd the incoming command
      */
-    void execSetCommand(Command * cmd); 
+    void execSetCommand(CmdMsg  cmd); 
     /**
      * @brief handle Report commands from the command channel
      * @param cmd the incoming command
      */
-    void execRepCommand(Command * cmd); 
+    void execRepCommand(CmdMsg  cmd); 
 
     /**
      * @brief demodulate the input stream as an SSB signal
@@ -114,8 +115,8 @@ namespace SoDa {
      * @param drxbuf downsampled  RF input buffer
      * @param mod modulation type -- LSB, USB, CW_U, or CW_R
      */
-    void demodulateSSB(std::complex<float> * drxbuf,
-		       SoDa::Command::ModulationType mod); 
+    void demodulateSSB(CFBuf & drxbuf,
+		       Command::ModulationType mod); 
 
     /**
      * @brief demodulate the input stream as an amplitude modulated signal
@@ -123,7 +124,7 @@ namespace SoDa {
      *
      * @param drxbuf downsampled  RF input buffer
      */
-    void demodulateAM(std::complex<float> * drxbuf);
+    void demodulateAM(CFBuf & drxbuf);
 
     /**
      * @brief demodulate the input stream as a narrowband frequency modulated signal
@@ -133,8 +134,8 @@ namespace SoDa {
      * @param mod modulation type -- NBFM
      * @param af_gain factor to goose the audio output
      */
-    void demodulateNBFM(std::complex<float> * drxbuf,
-			SoDa::Command::ModulationType mod,
+    void demodulateNBFM(CFBuf &  drxbuf,
+			Command::ModulationType mod,
 			float af_gain); 
 
     /**
@@ -148,8 +149,8 @@ namespace SoDa {
      * @param mod modulation type -- WBFM
      * @param af_gain factor to goose the audio output
      */
-    void demodulateWBFM(SoDa::Buf * rxbuf,
-			SoDa::Command::ModulationType mod,
+    void demodulateWBFM(CFBuf & rxbuf,
+			Command::ModulationType mod,
 			float af_gain);
 
     
@@ -159,7 +160,7 @@ namespace SoDa {
      *
      * @param rxbuf RF input buffer
      */
-    void demodulate(SoDa::Buf * rxbuf);
+    void demodulate(CFBuf & rxbuf);
 
     /**
      * @brief send a report of the lower and upper edges of the IF passband
@@ -176,16 +177,14 @@ namespace SoDa {
     bool audio_rx_stream_needs_start; ///< if true, the audio output device needs a wakeup
     bool sidetone_stream_enabled;  ///< if true, send CW sidetone to audio output
 
-    SoDa::Command::ModulationType rx_modulation; ///< current receive modulation mode (USB,LSB,CW_U,CW_L,NBFM,WBFM,AM,...)
+    Command::ModulationType rx_modulation; ///< current receive modulation mode (USB,LSB,CW_U,CW_L,NBFM,WBFM,AM,...)
     
-    DatMBox * rx_stream; ///< mailbox producing rx sample stream from USRP
-    CmdMBox * cmd_stream; ///< mailbox producing command stream from user
-    unsigned int rx_subs; ///< mailbox subscription ID for rx data stream
-    unsigned int cmd_subs; ///< mailbox subscription ID for command stream
+    CFMBoxPtr rx_stream; ///< mailbox producing rx sample stream from USRP
+    MsgMBoxPtr cmd_stream; ///< mailbox producing command stream from user
+    CFSubs rx_subs; ///< mailbox subscription ID for rx data stream
+    MsgSubs cmd_subs; ///< mailbox subscription ID for command stream
 
     AudioIfc * audio_ifc; ///< pointer to the audio interface (output) object
-    
-    // buffer pool management
 
     /**
      * @brief put an audio buffer on the "pending for output" list
@@ -193,7 +192,7 @@ namespace SoDa {
      * @param b pointer to an audio buffer
      *
      */
-    void pendAudioBuffer(float * b); 
+    void pendAudioBuffer(FBuf b); 
     
     /**
      * @brief put an empty (zero signal) audio buffer on the pending for output list
@@ -207,7 +206,7 @@ namespace SoDa {
      *
      * @return a pointer to the next buffer in sequence
      */
-    float * getNextAudioBuffer();
+    FBuf getNextAudioBuffer();
     /**
      * @brief empty the queue of pending audio buffers, we're going into TX mode.
      */
@@ -224,39 +223,35 @@ namespace SoDa {
     bool in_fallback;  ///< when true, the audio server has gotten ahead...
     unsigned int catchup_rand_mask; ///< a mask to use for fast selection of a random index into an audio buffer. 
 
-    BufferPool<float> * bpool;
-    
-    std::queue<float *> free_buffers; ///< a pool of free audio buffers
-    std::queue<float *> ready_buffers; ///< a list of audio buffers ready to send to the output
+    std::queue<FBuf> ready_buffers; ///< a list of audio buffers ready to send to the output
 
-    std::mutex free_mutex; ///< lock for the free_buffers pool
     std::mutex ready_mutex; ///< lock for the ready_buffers_pool
 
-    float * sidetone_silence;  ///< a sequence of zero samples to stuff silence into the audio
+    FBuf sidetone_silence;  ///< a sequence of zero samples to stuff silence into the audio
 
     // resampler -- downsample from 625K samples / sec to 48K samples/sec
-    SoDa::TDResampler625x48<std::complex<float> > * rf_resampler; ///< downsample the RF input to 48KS/s
+    TDResampler625x48<std::complex<float>> * rf_resampler; ///< downsample the RF input to 48KS/s
     // a second resampler for wideband fm
-    SoDa::TDResampler625x48<float>  * wbfm_resampler; ///< downsample the RF input to 48KS/s for WBFM unit
+    TDResampler625x48<float>  * wbfm_resampler; ///< downsample the RF input to 48KS/s for WBFM unit
 
     /**
      * @brief build the audio filter map for selected bandwidths
      */
     void buildFilterMap();
     
-    SoDa::Command::AudioFilterBW af_filter_selection; ///< currently audio filter selector
-    SoDa::OSFilter * cur_audio_filter; ///< currently selected audio filter
-    SoDa::OSFilter * fm_audio_filter; ///< audio filter for FM (wider passband)
-    SoDa::OSFilter * am_pre_filter; ///< Before AM demod, we do some (6KHz) prefilter
-    SoDa::OSFilter * nbfm_pre_filter; ///< Before NBFM demod, we do some (15KHz) prefilter -- rf rate
-    SoDa::OSFilter * am_audio_filter; ///< After AM demod, we do a second filter
+    Command::AudioFilterBW af_filter_selection; ///< currently audio filter selector
+    OSFilter * cur_audio_filter; ///< currently selected audio filter
+    OSFilter * fm_audio_filter; ///< audio filter for FM (wider passband)
+    OSFilter * am_pre_filter; ///< Before AM demod, we do some (6KHz) prefilter
+    OSFilter * nbfm_pre_filter; ///< Before NBFM demod, we do some (15KHz) prefilter -- rf rate
+    OSFilter * am_audio_filter; ///< After AM demod, we do a second filter
 
     
     
-    std::map<SoDa::Command::AudioFilterBW, SoDa::OSFilter *> filter_map; ///< map filter selectors to the filter objects
+    std::map<Command::AudioFilterBW, OSFilter *> filter_map; ///< map filter selectors to the filter objects
 
     // hilbert transformer
-    SoDa::HilbertTransformer * hilbert; ///< hilbert transform object for SSB/CW widgets
+    HilbertTransformer * hilbert; ///< hilbert transform object for SSB/CW widgets
     
     // audio gain
     float af_gain;   ///< audio gain setting for RX mode
@@ -289,4 +284,3 @@ namespace SoDa {
 }
 
 
-#endif

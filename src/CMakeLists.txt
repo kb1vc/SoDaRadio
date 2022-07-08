@@ -1,12 +1,18 @@
 
 ########### next target ###############
+include(GNUInstallDirs)
 
 set(SoDaServer_SRCS
+  SoDaServer.cxx
+  )
+
+set(SoDaLib_SRCS  
     Params.cxx
-    SoDaServer.cxx
+    Buffer.cxx
     SoDaBase.cxx
     SoDaThread.cxx
     SoDaThreadRegistry.cxx    
+    MailBoxRegistry.cxx
     CWTX.cxx
     BaseBandRX.cxx
     BaseBandTX.cxx
@@ -34,10 +40,10 @@ set(SoDaServer_SRCS
 
 find_package(FFTW3f REQUIRED QUIET)
 
-set(SoDaServer_SRCS ${SoDaServer_SRCS} AudioQtRX.cxx)
+LIST(APPEND SoDaLib_SRCS AudioQtRX.cxx)
 IF(ALSA_FOUND)
   add_definitions(-DHAVE_LIBASOUND=1)
-  set(SoDaServer_SRCS ${SoDaServer_SRCS} AudioQtRXTX.cxx)
+  LIST(APPEND SoDaLib_SRCS AudioQtRXTX.cxx)
   message("ALSA enabled -- TX is enabled in this configuration.")
 ELSE()
   message("ALSA is disabled/not available -- TX is disabled in this configuration.")  
@@ -51,7 +57,7 @@ IF(HAVE_GPSLIB)
 ENDIF()
 
 IF(${HAVE_UHD})
-  LIST(APPEND SoDaServer_SRCS
+  LIST(APPEND SoDaLib_SRCS
     USRPCtrl.cxx
     USRPRX.cxx
     USRPTX.cxx
@@ -70,27 +76,35 @@ include_directories(SYSTEM
   ${SoDaUtils_INCLUDE_DIR} )
 
 
+add_library(SoDaLib ${SoDaLib_SRCS})
 
 add_executable(SoDaServer ${SoDaServer_SRCS})
+# Do this to allow plugins to see things like the thread and
+# mailbox registrars.  (Otherwise they create their own and
+# nothing good comes of it.)
+set_property(TARGET SoDaServer PROPERTY ENABLE_EXPORTS 1)
 
 
 target_link_libraries(SoDaServer ${RT_LIB}
   Threads::Threads
+  SoDaLib
   ${SoDaUtils_LIBRARIES}
-    ${Radio_LIBRARIES} ${ALSA_LIBRARIES} ${FFTW3F_LIBRARIES} ${CMAKE_DL_LIBS})
+  ${Radio_LIBRARIES} ${ALSA_LIBRARIES} ${FFTW3F_LIBRARIES} ${CMAKE_DL_LIBS})
 
 
 install(TARGETS SoDaServer DESTINATION bin)
-
+install(TARGETS SoDaLib DESTINATION ${LIBDIR})
 set(simple_acc_SRCS
 SimpleAccessory.cxx
-SoDaThread.cxx
-SoDaBase.cxx
-Debug.cxx
-SoDaThreadRegistry.cxx
 )
 
-add_library(accessory SHARED ${simple_acc_SRCS})
+set(logmsg_SRCS
+LogMsgPlugin.cxx  
+)
+
+add_library(logmsgplugin SHARED ${logmsg_SRCS})
+
+#add_library(accessory SHARED ${simple_acc_SRCS})
 #target_link_libraries(accessory ${SoDaUtils_LIBRARIES})
 
 
@@ -98,10 +112,11 @@ add_library(accessory SHARED ${simple_acc_SRCS})
 set(Loadable_INCLS
   SoDaBase.hxx
   SoDaThread.hxx
+  MailBoxRegistry.cxx  
   UDSockets.hxx
   IPSockets.hxx  
   Command.hxx
-  MultiMBox.hxx
+  Buffer.hxx
   Debug.hxx
   )
 

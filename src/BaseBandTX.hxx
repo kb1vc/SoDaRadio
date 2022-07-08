@@ -1,9 +1,7 @@
+#pragma once
 /*
-Copyright (c) 2012,2013,2014 Matthew H. Reilly (kb1vc)
+Copyright (c) 2012,2013,2014,2022 Matthew H. Reilly (kb1vc)
 All rights reserved.
-
-  FM modulator features based on code contributed by and 
-  Copyright (c) 2014, Aaron Yankey Antwi (aaronyan2001@gmail.com)
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -29,11 +27,9 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef BASEBANDTX_HDR
-#define BASEBANDTX_HDR
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
-#include "MultiMBox.hxx"
+#include "MailBoxTypes.hxx"
 #include "Params.hxx"
 #include "Command.hxx"
 #include "ReSamplers625x48.hxx"
@@ -64,8 +60,7 @@ namespace SoDa {
 	       );
 
     /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
-    
+    void subscribe();    
 
     /**
      * @brief the run method -- does the work of the audio transmitter process
@@ -76,17 +71,17 @@ namespace SoDa {
      * @brief execute GET commands from the command channel
      * @param cmd the incoming command
      */
-    void execGetCommand(Command * cmd); 
+    void execGetCommand(std::shared_ptr<Command> cmd); 
     /**
      * @brief handle SET commands from the command channel
      * @param cmd the incoming command
      */
-    void execSetCommand(Command * cmd); 
+    void execSetCommand(std::shared_ptr<Command> cmd); 
     /**
      * @brief handle Report commands from the command channel
      * @param cmd the incoming command
      */
-    void execRepCommand(Command * cmd); 
+    void execRepCommand(std::shared_ptr<Command> cmd); 
 
     /**
      * @brief create an AM/SSB modulation envelope
@@ -98,7 +93,7 @@ namespace SoDa {
      * if both is_usb and is_lsb are false, the modulator
      * creates an IQ stream that is amplitude modulated
      */
-    SoDa::Buf * modulateAM(float * audio_buf, unsigned int len, bool is_usb, bool is_lsb); 
+    SoDa::CFBuf  modulateAM(float * audio_buf, unsigned int len, bool is_usb, bool is_lsb); 
 
     /**
      * @brief create a narrowband/wideband FM modulation envelope
@@ -109,16 +104,16 @@ namespace SoDa {
      *
      * Note that this modulator varies the mic gain to prevent over-deviation. 
      */
-    SoDa::Buf * modulateFM(float * audio_buf, unsigned int len, double deviation);
+    SoDa::CFBuf  modulateFM(float * audio_buf, unsigned int len, double deviation);
     double fm_phase;
     double nbfm_deviation; ///< phase advance for 2.5kHz deviation.
     double wbfm_deviation; ///< phase advance for 75kHz deviation
     double fm_mic_gain; ///< separate gain control for FM deviation....
 
     
-    DatMBox * tx_stream; ///< outbound RF stream to USRPTX transmit chain
-    CmdMBox * cmd_stream; ///< command stream from UI and other units
-    unsigned int cmd_subs; ///< subscription ID for command stream
+    CFMBoxPtr tx_stream; ///< outbound RF stream to USRPTX transmit chain
+    MsgMBoxPtr cmd_stream; ///< command stream from UI and other units
+    MsgSubs cmd_subs; ///< subscription ID for command stream
     
     // The interpolator
     SoDa::ReSample48to625 * interpolator;  ///< Upsample from 48KHz to 625KHz
@@ -186,6 +181,3 @@ namespace SoDa {
     int debug_ctr; 
   }; 
 }
-
-
-#endif

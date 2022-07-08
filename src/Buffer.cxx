@@ -1,6 +1,6 @@
-#pragma once
+
 /*
-Copyright (c) 2019,2022 Matthew H. Reilly (kb1vc)
+Copyright (c) 2022 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -27,54 +27,21 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include "Buffer.hxx"
+namespace SoDa {
+  CFBuf makeCFBuf(size_t len) { 
+    return makeVectorBuffer<std::complex<float>>(len); 
+  }
 
-#include "SoDaBase.hxx"
-#include "SoDaThread.hxx"
-#include "Debug.hxx"
-#include <functional>
+  CDBuf makeCDBuf(size_t len) { 
+    return makeVectorBuffer<std::complex<double>>(len);
+  }  
 
- /**
-  * @file SoDaThreadRegistry.hxx
-  * 
-  * A singleton object that records instances of SoDa Thread objects. 
-  * 
-  * This allows control objects to iterate through threads for things
-  * like subscriptions, start/stop, join, etc. 
-  *
-  * @author Matt Reilly (kb1vc)
-  *
-  */
+  FBuf makeFBuf(size_t len) { 
+    return makeVectorBuffer<float>(len);
+  }  
 
-#include <list>
-
-namespace SoDa { 
-  
-  class ThreadRegistry { 
-  public:
-
-    static ThreadRegistry * getRegistrar();
-
-    /**
-     * @brief register a thread so that it can be connected and started
-     * 
-     * @param thread a thread object
-     * @param version the SoDaRadio version the thread object was built with
-     * (This must match the version the registry was built with.)
-     *
-     */
-    void addThread(SoDa::Thread * thread, const std::string & version);
-
-    void subscribeThreads();
-    void startThreads();
-    void joinThreads();
-    void shutDownThreads();
-
-  private:
-    ThreadRegistry() { }    
-    
-    std::list<Thread *> thread_list; 
-
-    static ThreadRegistry * registrar; 
-  };
+  DBuf makeDBuf(size_t len) { 
+    return makeVectorBuffer<double>(len);
+  }  
 }
-

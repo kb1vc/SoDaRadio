@@ -1,4 +1,3 @@
-#pragma once
 /*
 Copyright (c) 2019,2022 Matthew H. Reilly (kb1vc)
 All rights reserved.
@@ -26,55 +25,51 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+#include "LogMsgPlugin.hxx"
+#include <SoDa/Format.hxx>
+#include <iostream>
+#include <string>
+#include "MailBoxRegistry.hxx"
 
-
-#include "SoDaBase.hxx"
-#include "SoDaThread.hxx"
-#include "Debug.hxx"
-#include <functional>
-
- /**
-  * @file SoDaThreadRegistry.hxx
-  * 
-  * A singleton object that records instances of SoDa Thread objects. 
-  * 
-  * This allows control objects to iterate through threads for things
-  * like subscriptions, start/stop, join, etc. 
-  *
-  * @author Matt Reilly (kb1vc)
-  *
-  */
-
-#include <list>
-
-namespace SoDa { 
-  
-  class ThreadRegistry { 
-  public:
-
-    static ThreadRegistry * getRegistrar();
-
-    /**
-     * @brief register a thread so that it can be connected and started
-     * 
-     * @param thread a thread object
-     * @param version the SoDaRadio version the thread object was built with
-     * (This must match the version the registry was built with.)
-     *
-     */
-    void addThread(SoDa::Thread * thread, const std::string & version);
-
-    void subscribeThreads();
-    void startThreads();
-    void joinThreads();
-    void shutDownThreads();
-
-  private:
-    ThreadRegistry() { }    
-    
-    std::list<Thread *> thread_list; 
-
-    static ThreadRegistry * registrar; 
-  };
+/**
+ * Logs all command SET, REP, GET messages on the cmd message stream. 
+ * 
+ */
+extern "C" {
+  LogMsgPlugin * initLib() {
+    return new LogMsgPlugin("LogMessages");
+  }
 }
+
+LogMsgPlugin::LogMsgPlugin(const std::string & name) : SoDa::Thread(name) {
+  std::cerr << "LogMsgPlugin Opening log file.\n";
+  log.open("messages.log");
+}
+
+void LogMsgPlugin::logCommand(SoDa::CmdMsg cmd) {
+  log << cmd->toString() << "\n";
+}
+
+void LogMsgPlugin::run() {
+  bool exitflag = false; 
+
+  while(!exitflag) {
+    auto cmd = cmd_stream->get(cmd_subs); 
+    while (cmd != NULL) {
+      logCommand(cmd); 
+      exitflag |= (cmd->target == SoDa::Command::STOP);      
+      cmd = cmd_stream->get(cmd_subs); 
+    }
+
+    sleep_us(1000);
+  }
+}
+
+void LogMsgPlugin::subscribe() {
+  std::cerr << "LogMsgPlugin subscribing to streams\n";
+  auto reg = SoDa::MailBoxRegistry::getRegistrar();
+  cmd_stream = SoDa::MailBoxBase::convert<SoDa::MsgMBox>(reg->get("CMD"));
+  cmd_subs = cmd_stream->subscribe();
+}
+
 

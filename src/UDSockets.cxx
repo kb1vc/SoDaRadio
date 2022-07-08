@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2022 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -67,8 +67,7 @@ SoDa::UD::ServerSocket::ServerSocket(const std::string & path)
 
   mailbox_pathname = path; 
 
-  std::cerr << "Creating server socket [" << mailbox_pathname << "]\n";
-  
+ 
   // now bind it
   if (bind(server_socket, (struct sockaddr *) &server_address, len) < 0) {
     std::cerr << "Couldn't bind Unix domain socket at path " << path << " I quit." << std::endl;
@@ -82,7 +81,6 @@ SoDa::UD::ServerSocket::ServerSocket(const std::string & path)
     exit(-1); 
   }
 
-  std::cerr << "Created server socket [" << mailbox_pathname << "]\n";
   // mark the socket as "not ready" for input -- it needs to accept first. 
   ready = false; 
 }
@@ -122,7 +120,6 @@ SoDa::UD::ClientSocket::ClientSocket(const std::string & path, int startup_timeo
   int x = fcntl(conn_socket, F_GETFL, 0);
   fcntl(conn_socket, F_SETFL, x | O_NONBLOCK);
 
-  std::cerr << "Created client socket [" << mailbox_pathname << "]\n";  
 }
 
 bool SoDa::UD::ServerSocket::isReady()
@@ -148,7 +145,6 @@ bool SoDa::UD::ServerSocket::isReady()
       ready = false; 
     }
     else {
-      std::cerr << SoDa::Format("%0 got client connection!\n").addS(mailbox_pathname);
       conn_socket = ns;
       int x = fcntl(conn_socket, F_GETFL, 0);
       int stat = fcntl(conn_socket, F_SETFL, x | O_NONBLOCK);

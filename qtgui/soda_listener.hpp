@@ -64,7 +64,8 @@ namespace GUISoDa {
     void updateData(double cfreq, float * y);
 
     void configureSpectrum(double cfreq, double span, long buckets);
-  
+    void newRXFreq(double cfreq);
+    
     void addModulation(QString modtype, int mod_id);
     void addFilterWidth(double lo, double hi);
     void addFilterName(QString filter_name, int filt_id);

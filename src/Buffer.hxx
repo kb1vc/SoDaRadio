@@ -1,6 +1,6 @@
 #pragma once
 /*
-Copyright (c) 2019,2022 Matthew H. Reilly (kb1vc)
+Copyright (c) 2012,2013,2014,2022 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -28,53 +28,36 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 
-#include "SoDaBase.hxx"
-#include "SoDaThread.hxx"
-#include "Debug.hxx"
-#include <functional>
+#include <memory>
+#include <vector>
+#include <complex>
 
- /**
-  * @file SoDaThreadRegistry.hxx
-  * 
-  * A singleton object that records instances of SoDa Thread objects. 
-  * 
-  * This allows control objects to iterate through threads for things
-  * like subscriptions, start/stop, join, etc. 
-  *
-  * @author Matt Reilly (kb1vc)
-  *
-  */
+namespace SoDa {
+  template<typename T> 
+  std::shared_ptr<std::vector<T>> makeVectorBuffer(size_t len) {
+    auto ret = std::make_shared<std::vector<T>>(std::vector<T>(len));    
+    return ret;
+  }
 
-#include <list>
+  template<typename T> 
+  std::shared_ptr<T> makeBuffer() {
+    return std::make_shared<T>(new T()); 
+  }
 
-namespace SoDa { 
+  template<typename T> 
+  std::shared_ptr<T> makeBuffer(T * d) {
+    return std::make_shared<T>(d); 
+  }
   
-  class ThreadRegistry { 
-  public:
-
-    static ThreadRegistry * getRegistrar();
-
-    /**
-     * @brief register a thread so that it can be connected and started
-     * 
-     * @param thread a thread object
-     * @param version the SoDaRadio version the thread object was built with
-     * (This must match the version the registry was built with.)
-     *
-     */
-    void addThread(SoDa::Thread * thread, const std::string & version);
-
-    void subscribeThreads();
-    void startThreads();
-    void joinThreads();
-    void shutDownThreads();
-
-  private:
-    ThreadRegistry() { }    
-    
-    std::list<Thread *> thread_list; 
-
-    static ThreadRegistry * registrar; 
-  };
+  typedef std::shared_ptr<std::vector<std::complex<float>>> CFBuf;
+  CFBuf makeCFBuf(size_t len);
+  
+  typedef std::shared_ptr<std::vector<std::complex<double>>> CDBuf;
+  CDBuf makeCDBuf(size_t len);
+  
+  typedef std::shared_ptr<std::vector<float>> FBuf;
+  FBuf makeFBuf(size_t len);
+  
+  typedef std::shared_ptr<std::vector<double>> DBuf;
+  DBuf makeDBuf(size_t len);
 }
-

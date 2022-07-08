@@ -29,7 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CW_GENERATOR_HDR
 
 #include "SoDaBase.hxx"
-#include "MultiMBox.hxx"
+#include "MailBoxTypes.hxx"
 #include "Command.hxx"
 #include "Params.hxx"
 #include <map>
@@ -49,7 +49,7 @@ namespace SoDa {
      * @param _samp_rate sample rate for outbound envelope
      * @param _env_buf_len length of outbound buffer
      */
-    CWGenerator(DatMBox * cw_env_stream, double _samp_rate, unsigned int _env_buf_len);
+    CWGenerator(FMBoxPtr & cw_env_stream, double _samp_rate, unsigned int _env_buf_len);
 
     /**
      * @brief set the speed of the cw stream in words per minute
@@ -96,27 +96,12 @@ namespace SoDa {
     void clearBuffer();
 
     /**
-     * @brief get an envelope that we can fill in
-     * @return a pointer to a floating point envelope buffer
-     */
-    SoDa::Buf * getFreeSoDaBuf() {
-      SoDa::Buf * sb = NULL;
-      if(env_stream != NULL) {
-	sb = env_stream->alloc();
-      }
-      if(sb == NULL) {
-	sb = new SoDa::Buf(env_buf_len); 
-      }
-      return sb; 
-    }
-
-    /**
      * @brief setup the mapping from ascii character to morse sequence
      */
     void initMorseMap();
     
     // configuration params. 
-    DatMBox * env_stream;  ///< this is the stream we send envelope buffers into. 
+    FMBoxPtr env_stream;  ///< this is the stream we send envelope buffers into. 
     double sample_rate;  ///< we need to know how long a sample is (in time)
     unsigned int env_buf_len; ///< the length of an envelope buffer 
 
@@ -144,7 +129,7 @@ namespace SoDa {
     static std::map<char, std::string> morse_map; ///< map from ascii character to dits-and-dahs
 
     // current output buffer
-    SoDa::Buf * cur_buf; ///< the current envelope to be filled in
+    FBuf cur_buf; ///< the current envelope to be filled in
     unsigned int cur_buf_idx; ///< where are we in the buffer? 
     unsigned int cur_buf_len; ///< how much of the buffer is unfilled? 
     

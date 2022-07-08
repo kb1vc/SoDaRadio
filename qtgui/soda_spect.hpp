@@ -41,6 +41,7 @@
 
 #include <QMouseEvent>
 #include <QPointF>
+#include <QDebug>
 
 #include "soda_plot_picker.hpp"
 #include "soda_freq_scale_draw.hpp"
@@ -81,6 +82,7 @@ namespace GUISoDa {
       setFreqCenter(center_freq_disp - freq_span_disp * 0.25, true); 
     }
   
+    void setRXFreq(double cfreq);
     void configureSpectrum(double cfreq, double span, long buckets);
     
     void setMarkerOffset(double lo, double hi);

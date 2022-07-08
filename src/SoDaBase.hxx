@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012,2013,2014 Matthew H. Reilly (kb1vc)
+Copyright (c) 2012,2013,2014,2022 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,24 +26,23 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef SODA_BASE_HDR
-#define SODA_BASE_HDR
+#pragma once
 
 #include "Command.hxx"
-#include "MultiMBox.hxx"
+#include "Buffer.hxx"
 #include "Debug.hxx"
 #include <complex>
 #include <string>
-#include <sys/types.h>
-#include <unistd.h>
-#include <sys/syscall.h>
+//#include <sys/types.h>
+//#include <unistd.h>
+//#include <sys/syscall.h>
 #include <SoDa/Format.hxx>
 
-extern "C" {
-#include <signal.h>
-#include <stdio.h>
-#include <unistd.h>
-}
+//extern "C" {
+//#include <signal.h>
+//#include <stdio.h>
+//#include <unistd.h>
+//}
 
  /**
   * @file SoDaBase.hxx
@@ -56,104 +55,6 @@ extern "C" {
   */
 
 namespace SoDa {
-
-  /**
-   * The Buffer Class
-   *
-   * @class SoDa::Buf
-   *
-   * This is used to carry blocks of complex or real single precision
-   * floating point samples on the message ring. A SoDa::Buf can carry
-   * either complex or real values so that buffers for either use
-   * can be allocated from the same storage pool.  
-   *
-   */
-  class Buf : public MBoxMessage {
-  public:
-    /**
-     * constructor: Allocate a complex/real buffer of complex data values
-     *
-     * @param _size the maximum number of single presion complex values the buffer can hold. 
-     */
-    Buf(unsigned int _size) {
-      maxlen = _size;
-      len = maxlen;
-      dat = new std::complex<float>[_size];
-      // we also overlay a floating point buffer in the same space.
-      fdat = (float *) dat; 
-      maxflen = maxlen * 2;
-      flen = len * 2; 
-    }
-
-    bool copy(Buf * src) {
-      if(maxlen >= src->maxlen) {
-	flen = src->flen;
-	memcpy(fdat, src->fdat, sizeof(float) * flen);
-	return true; 
-      }
-      else {
-	return false; 
-      }
-    }
-    
-    //! Return the number of complex float values in this buffer
-    unsigned int getComplexLen() { return len; }
-    //! Return the maximum number of complex float values that this buffer can hold
-    unsigned int getComplexMaxLen() { return maxlen; }
-    
-    //! Return the number of float values in this buffer
-    unsigned int getFloatLen() { return flen; }
-    //! Return the maximum number of float values that this buffer can hold
-    unsigned int getFloatMaxLen() { return maxflen; }
-
-    /**
-     * set the length of the buffer (in number of complex floats.)
-     * @param nl new length
-     */
-    bool setComplexLen(unsigned int nl) {
-      if(nl > maxlen) return false; 
-      len = nl;
-      return true; 
-    }
-    
-    /**
-     * set the length of the buffer (in number of floats.)
-     * @param nl new length
-     */
-    bool setFloatLen(unsigned int nl) {
-      if(nl > maxflen) return false; 
-      flen = nl;
-      return true; 
-    }
-
-    /**
-     * Return a pointer to the storage buffer of complex floats
-     */
-    std::complex<float> * getComplexBuf() { return dat; }
-    /**
-     * Return a pointer to the storage buffer of floats
-     */
-    float * getFloatBuf() { return fdat; }
-    
-  private:
-    std::complex<float> * dat; ///< the storage array (complex version) Storage is common to both types
-    float * fdat;              ///< the storage array (REAL version)  Storage is common to both types
-    unsigned int maxflen;      ///< the maximum length in terms of real floats
-    unsigned int flen;         ///< the current length of the buffer in REAL fp values
-    unsigned int maxlen;       ///< the maximum length in terms of complex floats
-    unsigned int len;          ///< the current length of the buffer in complex fp values
-  };
-
-  /**
-   * Mailboxes that carry commands only are of type CmdMBox
-   */
-  typedef MultiMBox<Command> CmdMBox;
-  /**
-   * Mailboxes that carry float or complex data are of type DatMBox
-   */ 
-  typedef MultiMBox<Buf> DatMBox;
-
-
   /**
    * The SoDa Base class
    *
@@ -206,4 +107,3 @@ namespace SoDa {
   };
 }
 
-#endif

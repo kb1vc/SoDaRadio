@@ -1,5 +1,6 @@
+#pragma once
 /*
-Copyright (c) 2018 Matthew H. Reilly (kb1vc)
+Copyright (c) 2018,2022 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,13 +27,11 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef IFRECORDER_HDR
-#define IFRECORDER_HDR
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
 #include "Params.hxx"
-#include "MultiMBox.hxx"
 #include "Command.hxx"
+#include "MailBoxTypes.hxx"
 
 #include <queue>
 #include <mutex>
@@ -77,7 +76,7 @@ namespace SoDa {
     IFRecorder(Params * params);
 
     /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
+    void subscribe();
     
     /**
      * @brief the run method -- does the work of the audio receiver process
@@ -118,10 +117,10 @@ namespace SoDa {
 
     double current_rx_center_freq; 
 
-    DatMBox * rx_stream; ///< mailbox producing rx sample stream from USRP
-    CmdMBox * cmd_stream; ///< mailbox producing command stream from user
-    unsigned int rx_subs; ///< mailbox subscription ID for rx data stream
-    unsigned int cmd_subs; ///< mailbox subscription ID for command stream
+    CFMBoxPtr rx_stream; ///< mailbox producing rx sample stream from USRP
+    MsgMBoxPtr cmd_stream; ///< mailbox producing command stream from user
+    CFSubs rx_subs; ///< mailbox subscription ID for rx data stream
+    MsgSubs cmd_subs; ///< mailbox subscription ID for command stream
 
     std::ofstream ostr; ///< raw (binary) output stream.
     bool write_stream_on; ///< when true, write each incoming buffer to the output stream. 
@@ -129,4 +128,3 @@ namespace SoDa {
 }
 
 
-#endif

@@ -34,11 +34,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <fcntl.h>
 #include <stdio.h>
 
-using namespace SoDa;
+namespace SoDa {
 
 std::map<char, std::string> CWGenerator::morse_map; 
 
-CWGenerator::CWGenerator(DatMBox * cw_env_stream, double _samp_rate, unsigned int _env_buf_len)
+CWGenerator::CWGenerator(FMBoxPtr & cw_env_stream, double _samp_rate, unsigned int _env_buf_len)
 {
   env_stream = cw_env_stream;
   sample_rate = _samp_rate;
@@ -75,13 +75,13 @@ CWGenerator::CWGenerator(DatMBox * cw_env_stream, double _samp_rate, unsigned in
   setCWSpeed(10);
 
   // allocate our first outbound buffer
-  cur_buf = getFreeSoDaBuf();
+  cur_buf = makeFBuf(env_buf_len);
   cur_buf_idx = 0; 
   // we really want a buffer that is the complex length. 
-  cur_buf_len = cur_buf->getComplexMaxLen(); 
+  cur_buf_len = cur_buf->size();
 
   // how big is this buffer, and how many of them do I need for 1 second of TX time.
-  unsigned int blen = cur_buf->getComplexMaxLen();
+  unsigned int blen = cur_buf->size();
   bufs_per_sec = (unsigned int) (sample_rate / ((double) blen));
 
   // we aren't in the middle of a digraph right now. 
@@ -93,7 +93,7 @@ bool CWGenerator::readyForMore()
 {
   // if we've got less than 1 second's worth of
   // elements buffered up, then return true;
-  unsigned int ifc = env_stream->inFlightCount();
+  unsigned int ifc = env_stream->minReadyCount();
 
   return (ifc < bufs_per_sec); 
 }
@@ -197,7 +197,7 @@ void CWGenerator::appendToOut(const float * v, unsigned int vlen)
   int svlen = vlen; 
   while(svlen != 0) {
     int left = cur_buf_len - (cur_buf_idx + 1);
-    float *dbuf = cur_buf->getFloatBuf();
+    float *dbuf = cur_buf->data();
 
     if(svlen <= left) {
       memcpy(&(dbuf[cur_buf_idx]), v, svlen * sizeof(float));
@@ -216,9 +216,9 @@ void CWGenerator::appendToOut(const float * v, unsigned int vlen)
     if(cur_buf_idx >= cur_buf_len) {
       // post the buffer.
       env_stream->put(cur_buf);
-      cur_buf = getFreeSoDaBuf(); 
+      cur_buf = makeFBuf(env_buf_len);
       cur_buf_idx = 0;
-      cur_buf_len = cur_buf->getComplexMaxLen(); 
+      cur_buf_len = cur_buf->size();
     }
   }
 }
@@ -226,16 +226,16 @@ void CWGenerator::appendToOut(const float * v, unsigned int vlen)
 void CWGenerator::flushBuffer()
 {
   if(cur_buf_idx > 0) {
-    float *dbuf = cur_buf->getFloatBuf();
+    float *dbuf = cur_buf->data();
     for(; cur_buf_idx < cur_buf_len; cur_buf_idx++) {
       // fill the rest with zeros
       dbuf[cur_buf_idx] = 0.0; 
     }
     // post the buffer.
     env_stream->put(cur_buf);
-    cur_buf = getFreeSoDaBuf();
+    cur_buf = makeFBuf(env_buf_len);
     cur_buf_idx = 0;
-    cur_buf_len = cur_buf->getComplexMaxLen(); 
+    cur_buf_len = cur_buf->size();
   }
 }
 
@@ -243,8 +243,7 @@ void CWGenerator::clearBuffer()
 {
   if(cur_buf != NULL) {
     cur_buf_idx = 0;
-    cur_buf_len = cur_buf->getComplexMaxLen();
-    cur_buf->setFloatLen(cur_buf_len); 
+    cur_buf_len = cur_buf->size();
   }
 }
 
@@ -292,5 +291,5 @@ bool CWGenerator::sendChar(char c)
   return true; 
 }
 
-
+}
 

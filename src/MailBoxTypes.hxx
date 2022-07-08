@@ -1,6 +1,6 @@
 #pragma once
 /*
-Copyright (c) 2019,2022 Matthew H. Reilly (kb1vc)
+Copyright (c) 2022 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -27,54 +27,30 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+/**
+ * @file MailBoxTypes.hxx Type definitions for the mailboxes 
+ */
+#include <SoDa/MailBox.hxx>
+#include "Buffer.hxx"
+#include "Command.hxx"
 
-#include "SoDaBase.hxx"
-#include "SoDaThread.hxx"
-#include "Debug.hxx"
-#include <functional>
+namespace SoDa {
+  typedef MailBoxPtr<Command> MsgMBoxPtr;
+  typedef MailBoxPtr<std::vector<std::complex<float>>> CFMBoxPtr;
+  typedef MailBoxPtr<std::vector<std::complex<double>>> CDMBoxPtr;
+  typedef MailBoxPtr<std::vector<float>> FMBoxPtr;
+  typedef MailBoxPtr<std::vector<double>> DMBoxPtr; 
 
- /**
-  * @file SoDaThreadRegistry.hxx
-  * 
-  * A singleton object that records instances of SoDa Thread objects. 
-  * 
-  * This allows control objects to iterate through threads for things
-  * like subscriptions, start/stop, join, etc. 
-  *
-  * @author Matt Reilly (kb1vc)
-  *
-  */
-
-#include <list>
-
-namespace SoDa { 
+  typedef MailBox<Command> MsgMBox;
+  typedef MailBox<std::vector<std::complex<float>>> CFMBox;
+  typedef MailBox<std::vector<std::complex<double>>> CDMBox;
+  typedef MailBox<std::vector<float>> FMBox;
+  typedef MailBox<std::vector<double>> DMBox; 
   
-  class ThreadRegistry { 
-  public:
-
-    static ThreadRegistry * getRegistrar();
-
-    /**
-     * @brief register a thread so that it can be connected and started
-     * 
-     * @param thread a thread object
-     * @param version the SoDaRadio version the thread object was built with
-     * (This must match the version the registry was built with.)
-     *
-     */
-    void addThread(SoDa::Thread * thread, const std::string & version);
-
-    void subscribeThreads();
-    void startThreads();
-    void joinThreads();
-    void shutDownThreads();
-
-  private:
-    ThreadRegistry() { }    
-    
-    std::list<Thread *> thread_list; 
-
-    static ThreadRegistry * registrar; 
-  };
+  typedef MailBox<Command>::Subscription MsgSubs;
+  typedef MailBox<std::vector<std::complex<float>>>::Subscription CFSubs;
+  typedef MailBox<std::vector<std::complex<double>>>::Subscription CDSubs;
+  typedef MailBox<std::vector<float>>::Subscription FSubs;
+  typedef MailBox<std::vector<float>>::Subscription DSubs; 
+  
 }
-

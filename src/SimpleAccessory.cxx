@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019 Matthew H. Reilly (kb1vc)
+Copyright (c) 2019,2022 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <SoDa/Format.hxx>
 #include <iostream>
 #include <string>
+#include "MailBoxRegistry.hxx"
 
 // namespace doesn't matter here... let's do without.
 
@@ -59,19 +60,17 @@ void SimpleAccessory::run() {
     while (cmd != NULL) {
       execCommand(cmd);
       exitflag |= (cmd->target == SoDa::Command::STOP);      
-      cmd_stream->free(cmd);
       cmd = cmd_stream->get(cmd_subs); 
     }
 
-    usleep(10000);
+    sleep_us(10000);
   }
 }
 
-void SimpleAccessory::subscribeToMailBox(const std::string & mbox_name, SoDa::BaseMBox * mbox_p)
-{
-  if(SoDa::connectMailBox<SoDa::CmdMBox>(this, cmd_stream, "CMD", mbox_name, mbox_p)) {
-    cmd_subs = cmd_stream->subscribe();
-  }
+void SimpleAccessory::subscribe() {
+  auto reg = SoDa::MailBoxRegistry::getRegistrar();
+  cmd_stream = SoDa::MailBoxBase::convert<SoDa::MsgMBox>(reg->get("CMD"));
+  cmd_subs = cmd_stream->subscribe();
 }
 
 
