@@ -32,7 +32,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 GUISoDa::Listener::Listener(QObject * parent, const QString & _socket_basename) : QObject(parent) {
   quit = false;
   socket_basename = _socket_basename;
-  qInfo() << QString("Listener::Listener socket_basename = [%1]\n").arg(socket_basename);
 }
 
 bool GUISoDa::Listener::init()
@@ -181,8 +180,6 @@ void GUISoDa::Listener::processCmd() {
  
   while(((unsigned int) cmd_socket->bytesAvailable()) > sizeof(SoDa::Command)) {
     get(incmd);    
-    qDebug().noquote() << QString("Listener::processCmd [%1] [%2]").arg(incmd.toString().c_str())
-      .arg(incmd.cmd);
     if(incmd.cmd == SoDa::Command::REP) handleREP(incmd);
     else if(incmd.cmd == SoDa::Command::GET) handleGET(incmd);
     else if(incmd.cmd == SoDa::Command::SET) handleSET(incmd);    
@@ -265,7 +262,6 @@ bool GUISoDa::Listener::handleREP(const SoDa::Command & cmd)
     emit(addTXAntName(QString(cmd.sparm)));
     break; 
   case SoDa::Command::RX_TUNE_FREQ:
-    qDebug().noquote() << QString("***Listener got RX_TUNE_FREQ %1").arg(cmd.dparms[0]);
     emit(newRXFreq(cmd.dparms[0]));
     break; 
   case SoDa::Command::SPEC_DIMS:

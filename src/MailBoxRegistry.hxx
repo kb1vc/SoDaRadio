@@ -30,6 +30,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <memory>
 #include <map>
 #include "Debug.hxx"
+#include <mutex>
 
  /**
   * @file MailBoxRegistry.hxx
@@ -51,7 +52,7 @@ namespace SoDa {
   public:
 
     static MailBoxRegistry * getRegistrar();
-
+    static std::mutex reg_mutex; 
     /**
      * @brief register a mailbox
      * 
@@ -104,7 +105,6 @@ namespace SoDa {
    */
   template<typename T> 
   std::shared_ptr<T> registerMailBox(const std::string & name) {
-    std::cerr << "Registering mailbox " << name << "\n";
     auto ret = std::shared_ptr<T>(new T(name));
     MailBoxRegistry::getRegistrar()->add(name, ret); 
     return ret; 

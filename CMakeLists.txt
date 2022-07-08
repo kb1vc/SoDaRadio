@@ -31,7 +31,8 @@ ENDIF()
   
 PROJECT(SoDaRadio)
 
-SET(SoDaRadio_VERSION_MAJOR 8)
+# Version 9 has the complete rewrite of the mailbox code.
+SET(SoDaRadio_VERSION_MAJOR 9)
 SET(SoDaRadio_VERSION_MINOR 0)
 SET(SoDaRadio_VERSION_PATCH 0)
 SET(SoDaRadio_VERSION "${SoDaRadio_VERSION_MAJOR}.${SoDaRadio_VERSION_MINOR}.${SoDaRadio_VERSION_PATCH}")

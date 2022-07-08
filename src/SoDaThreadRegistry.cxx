@@ -21,14 +21,12 @@ namespace SoDa {
 			     .addS(version)
 			     .addS(SoDaRadio_VERSION), thread);
     }
-    std::cerr << "Registering thread [" << thread->getObjName() << "] from " << (std::hex) << this << (std::dec) << "\n";
     thread_list.push_back(thread);
   }
 
 
   void ThreadRegistry::subscribeThreads() {
     for(auto el : thread_list) {
-      std::cerr << "Subscribing for " << el->getObjName() << "\n";
       el->subscribe();
     }
   }

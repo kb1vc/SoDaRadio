@@ -3,8 +3,10 @@
 
 namespace SoDa {
   MailBoxRegistry * MailBoxRegistry::registrar = nullptr; 
+  std::mutex MailBoxRegistry::reg_mutex; 
 
   MailBoxRegistry * MailBoxRegistry::getRegistrar() {
+    std::lock_guard<std::mutex> lock(reg_mutex);
     if(registrar == NULL) {
       registrar = new MailBoxRegistry;
     }
@@ -13,7 +15,7 @@ namespace SoDa {
   
   void MailBoxRegistry::add(const std::string & name, 
 				 std::shared_ptr<MailBoxBase> mailbox_ptr) {
-    std::cerr << "MailBoxRegistry " << this << " registering " << name << "\n";    
+    std::lock_guard<std::mutex> lock(reg_mutex);    
     if(exists(name)) {
       throw MailBoxExists(name); 
     }
@@ -22,7 +24,7 @@ namespace SoDa {
   }
 
   std::shared_ptr<MailBoxBase> MailBoxRegistry::get(const std::string & name) {
-    std::cerr << "MailBoxRegistry " << this << " looking up " << name << "\n";
+    std::lock_guard<std::mutex> lock(reg_mutex);    
     if(!exists(name)) {
       throw MailBoxMissing(name);
     }

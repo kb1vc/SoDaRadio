@@ -51,7 +51,6 @@ GUISoDa::Spect::~Spect()
 
 void GUISoDa::Spect::initPlot()
 {
-  qDebug().noquote() << QString("Spect::initPlot");
   center_on_next_setting = false; 
 
   freq_span_disp = 10e3;
@@ -103,7 +102,6 @@ void GUISoDa::Spect::initPlot()
 void GUISoDa::Spect::updateData(double cfreq, float * y)
 {
   if(cfreq != center_freq_in) {
-    qDebug().noquote() << QString("Spect::updateData cf %1 old %2").arg(cfreq).arg(center_freq_in);      
     resetFreqAxis(cfreq); 
   }
   for(int i = 0; i < num_buckets; i++) vals[i] = y[i]; 
@@ -137,15 +135,11 @@ void GUISoDa::Spect::replotYAxis()
 
 void GUISoDa::Spect::replotXAxis()
 {
-  qDebug().noquote() << QString("Spect::replotXAxis");
   double min = center_freq_disp - freq_span_disp * 0.5;
   double max = center_freq_disp + freq_span_disp * 0.5;
 
   
   setAxisScale(QwtPlot::xBottom, min, max, freq_span_disp / 5.0); // step);
-  
-  qDebug().noquote() << QString("***replotXAxis min/max %1/%2 center_freq_disp %3")
-    .arg(min).arg(max).arg(center_freq_disp);
   
   QwtLinearScaleEngine se;
   setAxisScaleDiv(QwtPlot::xBottom, se.divideScale(min, max, 5, 5));
@@ -155,7 +149,6 @@ void GUISoDa::Spect::replotXAxis()
 
 void GUISoDa::Spect::setFreqCenter(double cf, bool check_boundary) 
 {
-  qDebug().noquote() << QString("Spect::setFreqCenter %1").arg(cf);
   (void) check_boundary;
   center_freq_disp = cf; 
   replotXAxis();
@@ -170,7 +163,6 @@ double GUISoDa::Spect::correctCenterFreq(double cfreq)
   if((cfreq - 0.5 * freq_span_disp) < (center_freq_in - 0.5 * freq_span_in)) {
     cfreq = (center_freq_in - 0.5 * (freq_span_in - freq_span_disp));
   }
-  qDebug().noquote() << QString("Spect::correctCenterFreq %1").arg(cfreq);  
   return cfreq; 
 }
 
@@ -216,7 +208,6 @@ void GUISoDa::Spect::setFreqMarker(double freq)
 }
 
 void GUISoDa::Spect::resetFreqAxis(double cfreq) {
-  qDebug().noquote() << QString("Spect::resetFreqAxis %1").arg(cfreq);  
   // load up the X axis values. (frequency)
   double fincr = freq_span_in / ((double) (num_buckets-1));
   double fr = cfreq - 0.5 * freq_span_in; 
@@ -231,7 +222,6 @@ void GUISoDa::Spect::setRXFreq(double cfreq) {
 }
 
 void GUISoDa::Spect::configureSpectrum(double cfreq, double span, long buckets) {
-  qDebug().noquote() << QString("Spect::configureSpectrum %1").arg(cfreq);  
   marker_freq = cfreq; 
   center_freq_in = cfreq; 
   freq_span_in = span; 
