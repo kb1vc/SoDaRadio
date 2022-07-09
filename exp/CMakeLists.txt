@@ -61,7 +61,7 @@ target_link_libraries(MultiMBox_Test ${TEST_LIBS})
 
 ########### next target ###############
 
-set(SoDa_ThreadTest_SRCS SoDa_ThreadTest.cxx ../src/SoDaBase.cxx ../src/Debug.cxx ../src/SoDaThread.cxx ../src/SoDaThreadRegistry.cxx)
+set(SoDa_ThreadTest_SRCS SoDa_ThreadTest.cxx ../src/SoDaBase.cxx ../src/Debug.cxx ../src/Thread.cxx ../src/ThreadRegistry.cxx)
 
 add_executable(SoDa_ThreadTest EXCLUDE_FROM_ALL ${SoDa_ThreadTest_SRCS})
 

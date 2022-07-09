@@ -1,5 +1,5 @@
-#include "SoDaThread.hxx"
-#include "SoDaThreadRegistry.hxx"
+#include "Thread.hxx"
+#include "ThreadRegistry.hxx"
 #include "version.h"
 #include <SoDa/Format.hxx>
 

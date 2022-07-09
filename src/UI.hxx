@@ -29,7 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "SoDaBase.hxx"
 #include "Buffer.hxx"
-#include "SoDaThread.hxx"
+#include "Thread.hxx"
 #include "Command.hxx"
 #include "Params.hxx"
 #include "UDSockets.hxx"

@@ -10,8 +10,8 @@ set(SoDaLib_SRCS
     Params.cxx
     Buffer.cxx
     SoDaBase.cxx
-    SoDaThread.cxx
-    SoDaThreadRegistry.cxx    
+    Thread.cxx
+    ThreadRegistry.cxx    
     MailBoxRegistry.cxx
     CWTX.cxx
     BaseBandRX.cxx

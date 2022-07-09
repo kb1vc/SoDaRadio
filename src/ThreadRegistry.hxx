@@ -29,12 +29,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #include "SoDaBase.hxx"
-#include "SoDaThread.hxx"
+#include "Thread.hxx"
 #include "Debug.hxx"
 #include <functional>
 
  /**
-  * @file SoDaThreadRegistry.hxx
+  * @file ThreadRegistry.hxx
   * 
   * A singleton object that records instances of SoDa Thread objects. 
   * 

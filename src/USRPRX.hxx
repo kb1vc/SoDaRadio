@@ -29,7 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef USRPRX_HDR
 #define USRPRX_HDR
 #include "SoDaBase.hxx"
-#include "SoDaThread.hxx"
+#include "Thread.hxx"
 #include "Command.hxx"
 #include "Params.hxx"
 #include "UI.hxx"

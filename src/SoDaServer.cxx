@@ -129,8 +129,8 @@
 #include <SoDa/Format.hxx>
 
 #include "SoDaBase.hxx"
-#include "SoDaThread.hxx"
-#include "SoDaThreadRegistry.hxx"
+#include "Thread.hxx"
+#include "ThreadRegistry.hxx"
 #include "Buffer.hxx"
 #include "MailBoxRegistry.hxx"
 #include "MailBoxTypes.hxx"
