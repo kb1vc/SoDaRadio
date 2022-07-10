@@ -35,10 +35,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *   @date   June 2022
  */
 
-#include "CtrlBase.hxx"
-#include "RXBase.hxx"
-#include "TXBase.hxx"
-#include "RadioRegistry.hxx"
+#include <string>
+#include <stdexcept>
+#include <SoDa/Format.hxx>
+#include "SoDaBase.hxx"
 
 namespace SoDa {
   /**
@@ -58,19 +58,22 @@ namespace SoDa {
      * @brief We often need to specify whether we're coming or going. 
      */
     enum TXRX { RX, TX }; 
-    
+
     /**
      * @brief the constructor -- builds each widget
      *  
      * @param params a parameter object that supplies any unit with initial 
      * settings. 
      */
-    Radio(const std::string & RadioModel, SoDa::Params & params) {
-      auto model_p = RadioRegistry::getRegistry()->getModel(RadioModel); 
-      
-      model_p->makeRadio(params, ctrl, rx, tx);
-    }
+    Radio(const std::string & name) : name(name) { }
 
+    virtual void cleanUp() {}; 
+    
+    const std::string & getName() const { return name; }
+  private:
+    std::string name; 
+
+  public:
     /**
      * The SoDa Exception class
      *
@@ -83,80 +86,19 @@ namespace SoDa {
      * Wherever possible, objects reporting exceptions should signal a subclass of the
      * SoDa::Exception class. 
      */
-    class Exception { 
+    class Exception : public std::runtime_error { 
     public:
       /**
        * The constructor
        *
-       * @param _reason an informative string reporting the cause of the error
+       * @param reason an informative string reporting the cause of the error
        * @param obj  a pointer to the SoDaBase object that triggered the exception (if any).
        */
-      Exception(const std::string & _reason, Base * obj = NULL) 
-      {
-	thrower = obj;
-	reason = _reason; 
-      }
-      /**
-       * The constructor
-       *
-       * @param _reason an informative string reporting the cause of the error
-       * @param obj  a pointer to the SoDa::Base object that triggered the exception (if any).
-       */
-      Exception(const char * _reason, Base * obj) {
-	thrower = obj;
-	reason = std::string(_reason); 
-      }
-
-      /**
-       * The constructor
-       *
-       * @param _reason a SoDa::Format object with an explanation of the error
-       * @param obj  a pointer to the SoDa::Base object that triggered the exception (if any).
-       */
-      Exception(const SoDa::Format & _reason, Base * obj) {
-	thrower = obj;
-	reason = _reason.str(); 
-      }
-
-      /**
-       * Create a string that explains this exception.
-       * @return the exception string
-       */
-      const std::string & toString() {
-	if(thrower != NULL) {
-	  message = SoDa::Format("SoDa Object [%0] threw exception [%1]\n")
-	    .addS(thrower->getObjName())
-	    .addS(reason)
-	    .str();
-	}
-	else {
-	  message = SoDa::Format("Unknown SoDa Object threw exception [%0]\n")
-	    .addS(reason)
-	    .str();
-	}
-
-	return message;
-      }
-
-      /**
-       * Create a string that explains this exception.
-       * @return a pointer to a c_str buffer (suitable for generic exception handling.)
-       */
-      const char * what() {
-	toString();
-	return message.c_str();
-      }
-    private:
-      Base * thrower; ///< who caused the exception, if anyone? 
-      std::string reason; ///< what was the cause of the exception?
-
-      std::string message; ///< the reason together with the owner. 
+      Exception(const std::string & reason, Base * obj = nullptr) :
+	std::runtime_error(SoDa::Format("SoDaRadio %0 exception: %1")
+			   .addS((obj == nullptr) ? std::string("") : obj->getObjName())
+			   .addS(reason)
+			   .str()) {}
     };
-
-    
-  protected:
-    std::shared_ptr<CtrlImp> ctrl; 
-    std::shared_ptr<RXImp> rx; 
-    std::shared_ptr<TXImp> tx; 
   };
 }

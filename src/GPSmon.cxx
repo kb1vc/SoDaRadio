@@ -27,6 +27,7 @@
 */
 
 #include "GPSmon.hxx"
+#include "Radio.hxx"
 #include <list>
 
 namespace SoDa {

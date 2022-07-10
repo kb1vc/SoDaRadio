@@ -28,6 +28,8 @@
 
 #include "CWTX.hxx"
 #include "CWGenerator.hxx"
+#include "Radio.hxx"
+
 namespace SoDa {
   
   CWTX::CWTX(Params * params) : Thread("CWTX")

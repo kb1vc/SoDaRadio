@@ -1,3 +1,4 @@
+#include "Radio.hxx"
 #include "Thread.hxx"
 #include "ThreadRegistry.hxx"
 #include "Command.hxx"
@@ -47,12 +48,6 @@ void  SoDa::Thread::outerRun() {
   debugMsg(getObjName() + " starting.\n");
   try {
     run(); 
-  }
-  catch (SoDa::Radio::Exception exc) {
-    std::cerr << getObjName() << " caught " << exc.toString() << std::endl;
-  }
-  catch (SoDa::Radio::Exception * exc) {
-    std::cerr << getObjName() << " caught " << exc->toString() << std::endl;
   }
   catch (const std::exception & e) {
     std::cerr << getObjName() << " caught exception here: " << e.what() << std::endl; 

@@ -29,6 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef USRPRX_HDR
 #define USRPRX_HDR
 #include "SoDaBase.hxx"
+#include "RXBase.hxx"
 #include "Thread.hxx"
 #include "Command.hxx"
 #include "Params.hxx"
@@ -43,7 +44,7 @@ namespace SoDa {
    *
    * @image html SoDa_Radio_RX_Signal_Path.svg
    */
-  class USRPRX : public SoDa::Thread {
+  class USRPRX : public RXBase {
   public:
     /**
      * The constructor
@@ -54,16 +55,23 @@ namespace SoDa {
      */
     USRPRX(Params * params, uhd::usrp::multi_usrp::sptr usrp);
 
-    /// implement the subscription method
-    void subscribe();
-    
     /**
-     * USRPRX is a thread -- this is its run loop. 
+     * @brief report the RX stream sample rate.  This is the sample rate
+     * for both the IF and RX streams. The run method will use this value
+     * to notify the Ctrl, BaseBandRX, UI, and spectrogram widgets. 
      */
-    void run();
+    virtual double sampleRate();
+
+    /**
+     * USRPRX is RXBase -- this is the thing it will run on each tick. 
+     */
+    bool runTick();
+
+    void init();
+
+    void cleanUp();
     
-  private:   
-    void execCommand(CmdMsg cmd); 
+  protected:
     void execGetCommand(CmdMsg cmd); 
     void execSetCommand(CmdMsg cmd); 
     void execRepCommand(CmdMsg cmd);
@@ -80,11 +88,6 @@ namespace SoDa {
      */
     void doMixer(CFBuf inout);
     void set3rdLOFreq(double IF_tuning);
-
-    CFMBoxPtr rx_stream;
-    CFMBoxPtr if_stream; 
-    MsgMBoxPtr cmd_stream;
-    MsgSubs cmd_subs; 
 
     // state for the USRP widget
     uhd::rx_streamer::sptr rx_bits;

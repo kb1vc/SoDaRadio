@@ -27,6 +27,7 @@
 */
 
 #include "USRPRX.hxx"
+#include "Radio.hxx"
 #include "QuadratureOscillator.hxx"
 
 #include <uhd/version.hpp>
@@ -48,7 +49,7 @@
 namespace SoDa {
 
   USRPRX::USRPRX(Params * params, uhd::usrp::multi_usrp::sptr _usrp) : 
-    Thread("USRPRX")
+    RXBase("USRPRX")
   {
 
     usrp = _usrp; 
@@ -66,7 +67,7 @@ namespace SoDa {
     // no UI listening for spectrum dumps yet.
     ui = NULL; 
 
-    rx_sample_rate = params->getRXRate();
+    rx_sample_rate = 625e3;
     rx_buffer_size = params->getRFBufferSize(); 
 
     // we aren't receiving yet. 
@@ -103,89 +104,74 @@ namespace SoDa {
     fftwf_destroy_plan(tplan); 
   }
 
-  void USRPRX::run()
-  {
-    if(cmd_stream == NULL) {
-      throw Radio::Exception(std::string("Never got command stream subscription\n"), 
-			     this);	
-    }
-    if(rx_stream == NULL) {
-      throw Radio::Exception(std::string("Never got rx stream subscription\n"),
-			     this);	
-    }
-    if(if_stream == NULL) {
-      throw Radio::Exception(std::string("Never got if stream subscription\n"),
-			     this);	
-    }
-  
+  void USRPRX::init() {
     uhd::set_thread_priority_safe(); 
-    // now do the event loop.  we watch
-    // for commands and responses on the command stream.
-    // and we watch for data in the input buffer. 
+  }
 
-    bool exitflag = false;
+  void USRPRX::cleanUp() {
+    stopStream();     
+  }
 
-    while(!exitflag) {
-      CmdMsg cmd = cmd_stream->get(cmd_subs);
-      if(cmd != NULL) {
-	// process the command.
-	execCommand(cmd);
-	exitflag |= (cmd->target == Command::STOP); 
+  double USRPRX::sampleRate() {
+    return rx_sample_rate;
+  }
+  
+  bool USRPRX::runTick()
+  {
+    // we watch for data in the input buffer. 
+    if(audio_rx_stream_enabled) {
+      // go get some data
+      // get a free buffer.
+      CFBuf buf = makeCFBuf(rx_buffer_size); 
+
+      if(buf == nullptr) {
+	throw Radio::Exception("USRPRX couldn't allocate Buf object", this); 
       }
-      else if(audio_rx_stream_enabled) {
-	// go get some data
-	// get a free buffer.
-	CFBuf buf = makeCFBuf(rx_buffer_size); 
-
-	if(buf == nullptr) {
-	  throw Radio::Exception("USRPRX couldn't allocate Buf object", this); 
-	}
       
-	unsigned int left = rx_buffer_size;
-	unsigned int coll_so_far = 0;
-	uhd::rx_metadata_t md;
-	std::complex<float> *dbuf = buf->data();
-	while(left != 0) {
-	  unsigned int got = rx_bits->recv(&(dbuf[coll_so_far]), left, md);
-	  if(got == 0) {
-	    debugMsg("****************************************");
-	    debugMsg(Format("RECV got error -- md = [%0]\n").addS(md.to_pp_string()));
-	    debugMsg("****************************************");	  
-	  }
-	  coll_so_far += got;
-	  left -= got;
+      unsigned int left = rx_buffer_size;
+      unsigned int coll_so_far = 0;
+      uhd::rx_metadata_t md;
+      std::complex<float> *dbuf = buf->data();
+      while(left != 0) {
+	unsigned int got = rx_bits->recv(&(dbuf[coll_so_far]), left, md);
+	if(got == 0) {
+	  debugMsg("****************************************");
+	  debugMsg(Format("RECV got error -- md = [%0]\n").addS(md.to_pp_string()));
+	  debugMsg("****************************************");	  
 	}
-
-	// If the anybody cares, send the IF buffer out.
-	// If the UI is listening, it will do an FFT on the buffer
-	// and send the positive spectrum via the UI to any listener.
-	// the UI does the FFT then puts it on its own ring.
-	if(enable_spectrum_report) {
-	  // clone a buffer, cause we're going to modify
-	  // it before the send is complete. 
-	  CFBuf if_buf = makeCFBuf(rx_buffer_size); 
-
-	  *if_buf = *buf;
-	  if_stream->put(if_buf);
-	}
-
-
-	// support debug... 
-	scount++;
-
-	// tune it down with the IF oscillator
-	doMixer(buf); 
-	// now put the baseband signal on the ring.
-	rx_stream->put(buf);
-
-	// write the buffer output
+	coll_so_far += got;
+	left -= got;
       }
-      else {
-	sleep_us(1000);
+
+      // If the anybody cares, send the IF buffer out.
+      // If the UI is listening, it will do an FFT on the buffer
+      // and send the positive spectrum via the UI to any listener.
+      // the UI does the FFT then puts it on its own ring.
+      if(enable_spectrum_report) {
+	// clone a buffer, cause we're going to modify
+	// it before the send is complete. 
+	CFBuf if_buf = makeCFBuf(rx_buffer_size); 
+
+	*if_buf = *buf;
+	if_stream->put(if_buf);
       }
+
+
+      // support debug... 
+      scount++;
+
+      // tune it down with the IF oscillator
+      doMixer(buf); 
+      // now put the baseband signal on the ring.
+      rx_stream->put(buf);
+
+      // we may have more work to do. 
+      return false; 
     }
-
-    stopStream(); 
+    else {
+      return true; 
+    }
+    
   }
 
   void USRPRX::doMixer(CFBuf inout)
@@ -207,22 +193,6 @@ namespace SoDa {
 	     .addF(IF_tuning, 'e', 12, 6));
   }
 
-  void USRPRX::execCommand(CmdMsg cmd)
-  {
-    switch (cmd->cmd) {
-    case Command::GET:
-      execGetCommand(cmd); 
-      break;
-    case Command::SET:
-      execSetCommand(cmd); 
-      break; 
-    case Command::REP:
-      execRepCommand(cmd); 
-      break;
-    default:
-      break; 
-    }
-  }
 
   void USRPRX::startStream()
   {
@@ -289,20 +259,5 @@ namespace SoDa {
   void USRPRX::execRepCommand(CmdMsg cmd)
   {
     (void) cmd; 
-  }
-
-  /// implement the subscription method
-  void USRPRX::subscribe() {
-
-    auto reg = MailBoxRegistry::getRegistrar();
-  
-    cmd_stream = MailBoxBase::convert<MsgMBox>(reg->get("CMD"));
-    cmd_subs = cmd_stream->subscribe();
-
-    rx_stream = MailBoxBase::convert<CFMBox>(reg->get("RX"));
-    // we don't subscribe -- we publish
-
-    if_stream = MailBoxBase::convert<CFMBox>(reg->get("IF"));
-    // we don't subscribe -- we publish
   }
 }

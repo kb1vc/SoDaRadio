@@ -29,7 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #include "SoDaBase.hxx"
-#include "SoDaThread.hxx"
+#include "Thread.hxx"
 #include "Params.hxx"
 #include "Buffer.hxx"
 #include "MailBoxRegistry.hxx"

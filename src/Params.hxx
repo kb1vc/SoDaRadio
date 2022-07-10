@@ -86,11 +86,17 @@ namespace SoDa {
      * size of 30000 samples 30,000 * 48 / 625 = 2304 --
      * the size of the RX buffer
      */
-    double getRXRate() const { return 625000; }
+    double getRXRate() const { 
+#warning this is obsolete getRXRate should be a command from the RX unit
+      return 625000;
+    }
     /**
      * @brief TX rate will always be 625K
      */
-    double getTXRate() const { return 625000; }
+    double getTXRate() const {
+#warning this is obsolete getTXRate should be a command from the TX unit      
+      return 625000;
+    }
 
     double getAudioSampleRate() const { return 48000.0 ; }
     unsigned int getRFBufferSize() const { return (unsigned int) 30000; }

@@ -33,7 +33,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <mutex>
 
 #include "SoDaBase.hxx"
-#include "SoDaThread.hxx"
+#include "Thread.hxx"
 #include "MailBoxTypes.hxx"
 #include "MailBoxRegistry.hxx"
 #include "Command.hxx"

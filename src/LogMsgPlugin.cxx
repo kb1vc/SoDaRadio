@@ -36,7 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
  */
 extern "C" {
-  LogMsgPlugin * initLib() {
+  LogMsgPlugin * initLib(const std::string & v) {
     return new LogMsgPlugin("LogMessages");
   }
 }

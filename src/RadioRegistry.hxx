@@ -1,5 +1,6 @@
+#pragma once
 /*
-Copyright (c) 2012,2017 Matthew H. Reilly (kb1vc)
+Copyright (c) 2022, Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,38 +27,52 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef GPS_MON_HDR
-#define GPS_MON_HDR
-#include "SoDaBase.hxx"
-#include "Thread.hxx"
-#include "Command.hxx"
-#include "Params.hxx"
-#include "UI.hxx"
-#include "fix_gpsd_ugliness.hxx"
+/** 
+ *   @file RadioRegistry.hxx
+ *   @brief key-value table that holds functions that produce radios.
+ * 
+ * 
+ *   @author M. H. Reilly (kb1vc)
+ *   @date   July 2022
+ */
 
-#include <time.h>
-#include <sys/time.h>
+
+#include <map>
+#include <functional>
+#include <string>
+#include "Radio.hxx"
+#include "Params.hxx"
 
 namespace SoDa {
-  class GPSmon : public SoDa::Thread {
-  public:
-    GPSmon(Params * params);
 
-    /// implement the subscription method
-    void subscribe();
-    
-    void run();
-  private:
-    void execGetCommand(Command * cmd); 
-    void execSetCommand(Command * cmd); 
-    void execRepCommand(Command * cmd); 
+  /**
+   *   @class RadioRegistry
+   *  
+   * This registry contains functions that produce SoDa::Radio objects. 
+   * 
+   */
+   class RadioRegistry {
+   public:
+     RadioRegistry(); 
 
-    MsgMBoxPtr cmd_stream;
-    MsgSubs    cmd_subs;
+     typedef std::function<Radio*(Params &)> RadioBuilderFunc;
+     
+     void add(const std::string & name, RadioBuilderFunc builder);
 
-    GPSDShim * gps_shim; 
-  }; 
+     RadioBuilderFunc & get(const std::string & name);
+
+     Radio * make(const std::string & name, Params & parms);
+     
+     std::string supportedRadios(); 
+
+     class ModelNotFound : public Radio::Exception {
+     public:
+       ModelNotFound(const std::string & model_name, const std::string & should_be) : 
+	 Radio::Exception(SoDa::Format("Radio model name %0 not found. Supported radios are\n\t%1\n")
+			  .addS(model_name).addS(should_be).str()) {}
+     };
+     
+   protected:
+     std::map<std::string, RadioBuilderFunc> builders; 
+   };
 }
-
-
-#endif

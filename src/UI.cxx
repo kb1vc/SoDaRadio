@@ -27,6 +27,7 @@
 */
 
 #include "UI.hxx"
+#include "Radio.hxx"
 #include "version.h"
 
 namespace SoDa {

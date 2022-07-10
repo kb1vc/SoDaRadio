@@ -1,3 +1,4 @@
+#include "Radio.hxx"
 #include "Thread.hxx"
 #include "ThreadRegistry.hxx"
 #include "version.h"
@@ -19,7 +20,7 @@ namespace SoDa {
       throw Radio::Exception(Format("Thread %0 attempted to register.  It was built with version %1, but the registrar requires version %2\n")
 			     .addS(thread->getObjName())
 			     .addS(version)
-			     .addS(SoDaRadio_VERSION), thread);
+			     .addS(SoDaRadio_VERSION).str(), thread);
     }
     thread_list.push_back(thread);
   }

@@ -31,6 +31,7 @@
 #include <sstream>
 #include <map>
 #include <iostream>
+#include <SoDa/Format.hxx>
 
 int SoDa::Command::command_sequence_number = 0;
 bool SoDa::Command::table_needs_init = true; 
@@ -202,19 +203,19 @@ std::string SoDa::Command::toString() const
   }
 
 
-  
+  SoDa::Format parmstr("%0 %1");
+  parmstr.addC(parm_type);
   switch(parm_type) {
   case 'I':
-    oss << " I " << iparms[0]; 
+    sp += parmstr.addI(iparms[0]).str();
     break; 
   case 'D':
-    oss << " D " << dparms[0]; 
+    sp += parmstr.addF(dparms[0], 'e', 10, 6).str();    
     break; 
   case 'S':
-    oss << " S \"" << sparm << "\"";
+    sp += parmstr.addS(sparm).str();
     break; 
   }
-  sp += oss.str();
-  
+
   return sp; 
 }

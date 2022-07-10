@@ -28,6 +28,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "SoDaBase.hxx"
+#include "TXBase.hxx"
 #include "Thread.hxx"
 #include "Command.hxx"
 #include "Params.hxx"
@@ -48,7 +49,7 @@ namespace SoDa {
    * from the CW unit) onto a carrier and passes this to the USRP. 
    *
    */
-  class USRPTX : public SoDa::Thread {
+  class USRPTX : public TXBase {
   public:
     /**
      * @brief Constructor for RF Transmit/modulator process
@@ -58,15 +59,35 @@ namespace SoDa {
      *
      */
     USRPTX(Params * params, uhd::usrp::multi_usrp::sptr _usrp);
-
-    /// implement the subscription method
-    void subscribe();
     
     /**
-     * @brief USRPTX run loop: handle commands, and modulate the tx carrier
+     * @brief USRPTX run step: modulate the tx carrier
      */
-    void run(); 
+    bool runTick(); 
 
+    /**
+     * @brief report the RX stream sample rate.  This is the sample rate
+     * for both the IF and RX streams. The run method will use this value
+     * to notify the Ctrl, BaseBandRX, UI, and spectrogram widgets. 
+     */
+    double sampleRate();
+        
+    /**
+     * @brief perform any actions that need to occur before the first
+     * call to runTick(). This is called *after* all mailboxes are subscribed. 
+     * The init method should NOT loop and should not attempt to *read* a mailbox. 
+     */
+    void init();
+    
+    /**
+     * @brief perform any actions that need to occur *after* the final 
+     * call to runTick. (This isn't really a destructor, as it probably 
+     * makes sense to do this before any wrap up.  We might need to do
+     * things in a particular order?  Idunno.)
+     */
+    void cleanUp();
+    
+    
   private:
 
     uhd::usrp::multi_usrp::sptr usrp; ///< the radio.
@@ -117,13 +138,6 @@ namespace SoDa {
      */
     void doCW(CFBuf out, FBuf envelope);
     
-    CFSubs tx_subs;  ///< subscription handle for transmit audio stream (from BaseBandTX)
-    MsgSubs cmd_subs; ///< subscription handle for command stream
-    FSubs cw_subs;  ///< subscription handle for cw envelope stream (from CW unit)
-
-    CFMBoxPtr tx_stream;  ///< transmit audio stream 
-    FMBoxPtr cw_env_stream; ///< envelope stream from text-to-CW converter (CW unit)
-    MsgMBoxPtr cmd_stream; ///< command stream
     
     bool tx_enabled; ///< if true, we're transmitting. 
     SoDa::Command::ModulationType tx_modulation; ///< type of transmit modulation (CW_U,CW_L,USB,LSB...)

@@ -39,8 +39,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #include "SoDaBase.hxx"
-#include "SoDaThread.hxx"
-#include "MultiMBox.hxx"
+#include "Thread.hxx"
+#include "MailBoxTypes.hxx"
 #include "Command.hxx"
 #include "Params.hxx"
 
@@ -104,7 +104,7 @@ namespace SoDa {
      * will ignore the command. (So if the derived class processes the particular
      * command code, and returns TRUE, the base class will ignore the command.)
      */
-    virtual bool execGetCommand(Command * cmd) { return false; }
+    virtual bool execGetCommand(CmdMsg cmd) { return false; }
 
     /**
      * @brief dispatch and incoming GET request that is special for
@@ -120,7 +120,7 @@ namespace SoDa {
      * will ignore the command. (So if the derived class processes the particular
      * command code, and returns TRUE, the base class will ignore the command.)
      */
-    virtual bool execSetCommand(Command * cmd) { return false; }
+    virtual bool execSetCommand(CmdMsg cmd) { return false; }
 
     /**
      * @brief process an incoming Report response (response from GET
@@ -137,14 +137,15 @@ namespace SoDa {
      * will ignore the command. (So if the derived class processes the particular
      * command code, and returns TRUE, the base class will ignore the command.)
      */
-    virtual bool execRepCommand(Command * cmd) { return false; }
+    virtual bool execRepCommand(CmdMsg cmd) { return false; }
 
 
     /**
     *  get the number of microseconds since the Ctrl widget was created
     *  @return relative time in seconds
     *
-    virtual unsigned long  getTime();
+    */
+    virtual double  getTime();
 
     /**
      * report the antennas that are available, send the report on cmd_stream
@@ -203,33 +204,9 @@ namespace SoDa {
   protected:
     Params * params;
 
-    CmdMBox * cmd_stream; ///< command stream channel
-    unsigned int subid;   ///< subscriber ID for this thread's
-			  ///connection to the command channel
-    
-  private:
-    /** 
-     *  Parse an incoming command and dispatch.
-    *  @param cmd a command record
-    */
-    void execCommand(Command * cmd);
-    /**
-    *  Dispatch an incoming GET command
-    *  @param cmd a command record
-    */
-    void execGetCommandBase(Command * cmd); 
-    /**
-    *  Dispatch an incoming SET command
-    *  @param cmd a command record
-    */
-
-    void execSetCommandBase(Command * cmd);
-    
-    /**
-    *  Dispatch an incoming REPort command
-    *  @param cmd a command record
-    */
-    void execRepCommandBase(Command * cmd); 
+    MsgMBoxPtr cmd_stream; ///< command stream channel
+    MsgSubs cmd_subs;   ///< subscriber ID for this thread's
+                        ///connection to the command channel
 
   };
 }

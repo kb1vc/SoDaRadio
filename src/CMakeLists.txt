@@ -11,8 +11,13 @@ set(SoDaLib_SRCS
     Buffer.cxx
     SoDaBase.cxx
     Thread.cxx
+    RXBase.cxx
+    TXBase.cxx    
     ThreadRegistry.cxx    
     MailBoxRegistry.cxx
+    RadioRegistry.cxx
+    Radio.cxx
+    USRP.cxx
     CWTX.cxx
     BaseBandRX.cxx
     BaseBandTX.cxx

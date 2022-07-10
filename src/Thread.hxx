@@ -39,7 +39,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "version.h"
  /**
-  * @file SoDaThread.hxx
+  * @file Thread.hxx
   * The Baseclass for all SoDa thread objects.  These are used for
   * blocks that wait on messages from the message rings, and act on
   * them.  A SoDaThread subscribes to message rings, and exports 

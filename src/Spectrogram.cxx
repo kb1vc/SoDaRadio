@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+Copyright (c) 2012,2022 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,6 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+#include "Radio.hxx"
 #include "Spectrogram.hxx"
 #include <math.h>
 #include <iostream>
@@ -85,8 +86,9 @@ void SoDa::Spectrogram::apply_common(std::complex<float> * invec,
   for(j = 0; j < fft_len; j++) result[j] = 0.0;
   if(fft_len > inveclen) {
     throw SoDa::Radio::Exception(SoDa::Format("inveclen %0 less than fftlen %1\n") 
-			  .addI(inveclen)
-			  .addI(fft_len), 
+				 .addI(inveclen)
+				 .addI(fft_len)
+				 .str(), 
 			  this);
   }
   // accumulate FFT results over the length of the buffer.

@@ -27,6 +27,7 @@
 */
 
 #include "USRPCtrl.hxx"
+#include "Radio.hxx"
 #include "SoDaBase.hxx"
 #include "USRPFrontEnd.hxx"
 #include "MailBoxRegistry.hxx"
@@ -85,7 +86,9 @@ namespace SoDa {
     usrp = uhd::usrp::multi_usrp::make(params->getRadioArgs());
 
     if(usrp == NULL) {
-      throw Radio::Exception(SoDa::Format("Unable to allocate USRP unit with arguments = [%0]\n").addS(params->getRadioArgs()), this);
+      throw Radio::Exception(SoDa::Format("Unable to allocate USRP unit with arguments = [%0]\n")
+			     .addS(params->getRadioArgs()).str(), 
+			     this);
     }
 
     // We need to find out if this is a B2xx or something like it -- they don't
@@ -207,7 +210,7 @@ namespace SoDa {
   void USRPCtrl::run()
   {
     if(cmd_stream == NULL) {
-      throw Radio::Exception(SoDa::Format("Never got command stream subscription\n"), 
+      throw Radio::Exception(SoDa::Format("Never got command stream subscription\n").str(), 
 			     this);	
     }
   

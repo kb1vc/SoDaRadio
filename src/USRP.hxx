@@ -1,5 +1,6 @@
+#pragma once
 /*
-Copyright (c) 2012,2017 Matthew H. Reilly (kb1vc)
+Copyright (c) 2022, Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,38 +27,45 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef GPS_MON_HDR
-#define GPS_MON_HDR
-#include "SoDaBase.hxx"
-#include "Thread.hxx"
-#include "Command.hxx"
-#include "Params.hxx"
-#include "UI.hxx"
-#include "fix_gpsd_ugliness.hxx"
+/** 
+ *   @file USRP.hxx @brief Base class describing a radio. 
+ * 
+ * 
+ *   @author M. H. Reilly (kb1vc)
+ *   @date   June 2022
+ */
 
-#include <time.h>
-#include <sys/time.h>
+#include "Radio.hxx"
 
 namespace SoDa {
-  class GPSmon : public SoDa::Thread {
+
+  class Params; 
+  class USRPCtrl;
+  class USRPRX;
+  class USRPTX;
+  
+  /**
+   * @class USRP
+   * @brief This is the USRP builder that creates a USRP control, rx, and tx. 
+   * 
+   */
+  class USRP : public Radio {
   public:
-    GPSmon(Params * params);
+    /**
+     * @brief the constructor -- builds each widget
+     *  
+     * @param params a parameter object that supplies any unit with initial 
+     * settings. 
+     */
+    USRP(Params & parms); 
 
-    /// implement the subscription method
-    void subscribe();
+    static Radio * makeUSRP(Params & parms) { return new USRP(parms); }
+
+    void cleanUp();
     
-    void run();
   private:
-    void execGetCommand(Command * cmd); 
-    void execSetCommand(Command * cmd); 
-    void execRepCommand(Command * cmd); 
-
-    MsgMBoxPtr cmd_stream;
-    MsgSubs    cmd_subs;
-
-    GPSDShim * gps_shim; 
-  }; 
+    USRPCtrl * ctrl;
+    USRPRX * rx;
+    USRPTX * tx;
+  };
 }
-
-
-#endif

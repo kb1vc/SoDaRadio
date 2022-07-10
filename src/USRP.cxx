@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012,2017 Matthew H. Reilly (kb1vc)
+Copyright (c) 2022, Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,39 +25,22 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-
-#ifndef GPS_MON_HDR
-#define GPS_MON_HDR
-#include "SoDaBase.hxx"
-#include "Thread.hxx"
-#include "Command.hxx"
+#include "USRP.hxx"
 #include "Params.hxx"
-#include "UI.hxx"
-#include "fix_gpsd_ugliness.hxx"
-
-#include <time.h>
-#include <sys/time.h>
+#include "USRPCtrl.hxx"
+#include "USRPRX.hxx"
+#include "USRPTX.hxx"
 
 namespace SoDa {
-  class GPSmon : public SoDa::Thread {
-  public:
-    GPSmon(Params * params);
+  USRP::USRP(Params & params) : Radio("USRP") {
+    /// create the USRP Control, RX Streamer, and TX Streamer threads
+    /// @see SoDa::USRPCtrl @see SoDa::USRPRX @see SoDa::USRPTX
+    ctrl = new SoDa::USRPCtrl(&params);
+    rx = new SoDa::USRPRX(&params, ctrl->getUSRP());
+    tx = new SoDa::USRPTX(&params, ctrl->getUSRP());
+  }
 
-    /// implement the subscription method
-    void subscribe();
-    
-    void run();
-  private:
-    void execGetCommand(Command * cmd); 
-    void execSetCommand(Command * cmd); 
-    void execRepCommand(Command * cmd); 
-
-    MsgMBoxPtr cmd_stream;
-    MsgSubs    cmd_subs;
-
-    GPSDShim * gps_shim; 
-  }; 
+  void USRP::cleanUp() {
+    // not much here. 
+  }
 }
-
-
-#endif

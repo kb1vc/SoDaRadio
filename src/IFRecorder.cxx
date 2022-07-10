@@ -29,6 +29,7 @@
 #include "IFRecorder.hxx"
 #include "OSFilter.hxx"
 #include "MailBoxRegistry.hxx"
+#include "Radio.hxx"
 
 #include <fstream>
 #include <stdio.h>

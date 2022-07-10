@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-  Copyright (c) 2020, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2020,2022 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,7 @@
 */
 
 #include "SoDaBase.hxx"
+#include "Radio.hxx"
 #include "AudioIfc.hxx"
 #include "UDSockets.hxx"
 #include <string>
@@ -136,8 +137,10 @@ namespace SoDa {
     void checkStatus(int err, const std::string & exp, bool fatal = false) {
       if (err < 0) {
 	if(fatal) throw SoDa::Radio::Exception(SoDa::Format("%0 %1")
-					.addS(exp)
-					.addS(snd_strerror(err)), this);
+					       .addS(exp)
+					       .addS(snd_strerror(err))
+					       .str(), 
+					       this);
 	else std::cerr << SoDa::Format("%0 %1 %2\n")
 	       .addS(getObjName())
 	       .addS(exp)

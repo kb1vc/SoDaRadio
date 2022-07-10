@@ -30,6 +30,7 @@
 #include "Buffer.hxx"
 #include "MailBoxTypes.hxx"
 #include "MailBoxRegistry.hxx"
+#include "Radio.hxx"
 
 #include <unistd.h>
 #include <sys/types.h>

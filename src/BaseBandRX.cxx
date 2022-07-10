@@ -28,6 +28,7 @@
 
 #include "BaseBandRX.hxx"
 #include "OSFilter.hxx"
+#include "Radio.hxx"
 #include <fstream>
 #include <stdio.h>
 #include <fcntl.h>

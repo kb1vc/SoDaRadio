@@ -29,7 +29,7 @@
 
 
 #include "SoDaBase.hxx"
-#include "SoDaThread.hxx"
+#include "Thread.hxx"
 #include "Buffer.hxx"
 #include "MailBoxTypes.hxx"
 #include "Command.hxx"

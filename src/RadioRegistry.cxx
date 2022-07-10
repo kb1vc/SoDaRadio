@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012,2017 Matthew H. Reilly (kb1vc)
+Copyright (c) 2022, Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,38 +26,36 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef GPS_MON_HDR
-#define GPS_MON_HDR
-#include "SoDaBase.hxx"
-#include "Thread.hxx"
-#include "Command.hxx"
-#include "Params.hxx"
-#include "UI.hxx"
-#include "fix_gpsd_ugliness.hxx"
-
-#include <time.h>
-#include <sys/time.h>
+#include "RadioRegistry.hxx"
+#include <iostream>
 
 namespace SoDa {
-  class GPSmon : public SoDa::Thread {
-  public:
-    GPSmon(Params * params);
+  RadioRegistry::RadioRegistry() { }
 
-    /// implement the subscription method
-    void subscribe();
-    
-    void run();
-  private:
-    void execGetCommand(Command * cmd); 
-    void execSetCommand(Command * cmd); 
-    void execRepCommand(Command * cmd); 
+  void RadioRegistry::add(const std::string & name, RadioBuilderFunc builder) {
+    builders[name] = builder; 
+  }
 
-    MsgMBoxPtr cmd_stream;
-    MsgSubs    cmd_subs;
+  RadioRegistry::RadioBuilderFunc & RadioRegistry::get(const std::string & name) {
+    if(builders.find(name) == builders.end()) {
+      throw ModelNotFound(name, supportedRadios());
+    }
+    return builders[name];
+  }
 
-    GPSDShim * gps_shim; 
-  }; 
+  Radio * RadioRegistry::make(const std::string & name, 
+			      Params & parms) {
+    auto mkr = get(name); 
+    return mkr(parms);
+  }
+
+  std::string RadioRegistry::supportedRadios() {
+    std::string ret; 
+    std::string sep("");
+    for(auto e : builders) {
+      ret = ret + sep + e.first; 
+      sep = ", "; 
+    }
+    return ret; 
+  }
 }
-
-
-#endif

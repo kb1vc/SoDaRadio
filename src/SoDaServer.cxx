@@ -131,9 +131,11 @@
 #include "SoDaBase.hxx"
 #include "Thread.hxx"
 #include "ThreadRegistry.hxx"
+#include "Radio.hxx"
 #include "Buffer.hxx"
 #include "MailBoxRegistry.hxx"
 #include "MailBoxTypes.hxx"
+#include "RadioRegistry.hxx"
 
 // Include functions to dynamically link any user supplied plugins
 #include <dlfcn.h>
@@ -142,9 +144,7 @@
 #include "Params.hxx" 
 // For USRP devices
 #if HAVE_UHD
-#  include "USRPCtrl.hxx"
-#  include "USRPRX.hxx"
-#  include "USRPTX.hxx"
+# include "USRP.hxx"
 #endif
 
 #include "BaseBandRX.hxx"
@@ -155,6 +155,7 @@
 #include "IFRecorder.hxx"
 #include "Command.hxx"
 #include "Debug.hxx"
+
 
 #ifdef HAVE_ASOUND
 #  include "AudioQtRXTX.hxx"
@@ -181,7 +182,7 @@ void deleteLockFile(const std::string & lock_file_name)
 
 int loadAccessories(const std::vector<std::string> & libs, SoDa::Debug & d) {
   // are there loadable modules we want to run?
-  typedef void (*makeit_t)();
+  typedef void (*makeit_t)(const std::string &);
   for(auto l : libs) {
     auto lib = dlopen(l.c_str(), RTLD_LAZY | RTLD_GLOBAL);
     if(!lib) {
@@ -195,7 +196,7 @@ int loadAccessories(const std::vector<std::string> & libs, SoDa::Debug & d) {
       std::cerr << "Could not run initLib function for library " << l << " got error [" << dle << "]\n";
     }
     
-    makeit();
+    makeit("Hey there, from SoDaServer!\n");
   }
   return 1; 
 }
@@ -207,6 +208,10 @@ int doWork(SoDa::Params & params)
   /// create the components of the radio
   SoDa::Debug d(params.getDebugLevel(), "SoDaServer");
   d.setDefaultLevel(params.getDebugLevel());
+
+  // register all our "built-in" radio models
+  SoDa::RadioRegistry radios;
+  radios.add("USRP", SoDa::USRP::makeUSRP);
   
   loadAccessories(params.getLibs(), d);
   
@@ -224,22 +229,8 @@ int doWork(SoDa::Params & params)
   SoDa::MsgMBoxPtr gps_stream = SoDa::registerMailBox<SoDa::MsgMBox>("GPS");
   SoDa::MsgMBoxPtr cwtxt_stream = SoDa::registerMailBox<SoDa::MsgMBox>("CW_TXT");
 
-  SoDa::Thread * ctrl;
-  SoDa::Thread * rx;
-  SoDa::Thread * tx;
-  
-  if(params.isRadioType("USRP")) {
-    /// create the USRP Control, RX Streamer, and TX Streamer threads
-    /// @see SoDa::USRPCtrl @see SoDa::USRPRX @see SoDa::USRPTX
-    ctrl = new SoDa::USRPCtrl(&params);
-    rx = new SoDa::USRPRX(&params, ((SoDa::USRPCtrl *)ctrl)->getUSRP());
-    tx = new SoDa::USRPTX(&params, ((SoDa::USRPCtrl *)ctrl)->getUSRP());
-  }
-  else {
-    std::cerr << SoDa::Format("Radio type [%0] is not yet supported\nHit ^C to exit.\n")
-      .addS(params.getRadioType()); 
-    exit(-1);
-  }
+  SoDa::Radio * radio; 
+  radio = radios.make("USRP", params);
 
   /// Create the audio server on the host machine.
   /// Audio is either via Qt for RX and ALSA for TX.
@@ -295,6 +286,8 @@ int doWork(SoDa::Params & params)
   registrar->shutDownThreads();  
   
   // when we get here, we are done... (UI should not return until it gets an "exit/quit" command.)
+  radio->cleanUp();
+  
   d.debugMsg("Exit");
   
   return 0; 
@@ -322,7 +315,7 @@ int main(int argc, char * argv[])
   }
   catch (SoDa::Radio::Exception exc) {
     std::cerr << "Exception caught at SoDa main: " << std::endl;
-    std::cerr << "\t" << exc.toString() << std::endl; 
+    std::cerr << "\t" << exc.what() << std::endl; 
   }
 
   deleteLockFile(params.getLockFileName());   

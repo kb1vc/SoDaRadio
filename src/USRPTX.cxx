@@ -27,6 +27,7 @@
 */
 
 #include "USRPTX.hxx"
+#include "Radio.hxx"
 #include "MailBoxRegistry.hxx"
 
 #include <uhd/version.hpp>
@@ -44,14 +45,9 @@
 #include <stdio.h>
 
 namespace SoDa { 
-  USRPTX::USRPTX(Params * params, uhd::usrp::multi_usrp::sptr _usrp) : Thread("USRPTX")
+  USRPTX::USRPTX(Params * params, uhd::usrp::multi_usrp::sptr _usrp) : TXBase("USRPTX")
   {
-    cmd_stream = NULL;
-    tx_stream = NULL;
-    cw_env_stream = NULL;
-  
     usrp = _usrp; 
-
 
     LO_enabled = false;
     LO_configured = false;
@@ -111,8 +107,7 @@ namespace SoDa {
     tx_enabled = false;
   }
 
-  void USRPTX::run()
-  {
+  void USRPTX::init() {
     if((cmd_stream == NULL) || (tx_stream == NULL) || (cw_env_stream == NULL)) {
       throw Radio::Exception(std::string("Missing a stream connection.\n"), 
 			     this);	
@@ -127,90 +122,88 @@ namespace SoDa {
     debugMsg("Creating tx streamer.\n");
     getTXStreamer();  
     debugMsg("Created tx streamer.\n");
+  }
 
-    bool exitflag = false;
+  double USRPTX::sampleRate() {
+    return 625e3;
+  }
+
+  void USRPTX::cleanUp() {
+  }
+
+  bool USRPTX::runTick()
+  {
+
     CFBuf txbuf;
     FBuf cwenv;
-    CmdMsg cmd; 
     std::vector<std::complex<float> *> buffers(LO_capable ? 2 : 1);
 
-    while(!exitflag) {
-      bool didwork = false; 
-      if(LO_capable && LO_enabled && LO_configured) buffers[1] = const_buf->data();
-      else if(LO_capable) buffers[1] = zero_buf->data();
+    bool didwork = false; 
+    if(LO_capable && LO_enabled && LO_configured) buffers[1] = const_buf->data();
+    else if(LO_capable) buffers[1] = zero_buf->data();
     
-      if((cmd = cmd_stream->get(cmd_subs)) != NULL) {
-	// process the command.
-	execCommand(cmd);
-	didwork = true; 
-	exitflag |= (cmd->target == Command::STOP); 
-      }
-      else if(tx_enabled &&
-	      tx_bits &&
-	      (tx_modulation != Command::CW_L) &&
-	      (tx_modulation != Command::CW_U) &&
-	      (txbuf = tx_stream->get(tx_subs)) != NULL) {
-	// get a buffer and 
-	buffers[0] = txbuf->data();
-	tx_bits->send(buffers, txbuf->size(), md);
-	md.start_of_burst = false; 
-	didwork = true; 
-      }
-      else if(tx_enabled &&
-	      tx_bits &&
-	      !beacon_mode &&
-	      ((tx_modulation == Command::CW_L) ||
-	       (tx_modulation == Command::CW_U))) {
-	cwenv = cw_env_stream->get(cw_subs);
-	if(cwenv != NULL) {
-	  // modulate a carrier with a cw message
-	  doCW(cw_buf, cwenv);
-	  // now send it to the USRP
-	  buffers[0] = cw_buf->data();
-	  tx_bits->send(buffers, cwenv->size(), md);
-	  md.start_of_burst = false; 
-	  didwork = true; 
-	}
-	else {
-	  // we have an empty CW buffer -- we've run out of text.
-	  doCW(cw_buf, zero_env);
-	  buffers[0] = cw_buf->data();
-	  tx_bits->send(buffers, tx_buffer_size, md); 
-	  // are we supposed to tell anybody about this? 
-	  if(waiting_to_run_dry) {
-	    cmd_stream->put(Command::make(Command::REP, Command::TX_CW_EMPTY, 0));
-	    waiting_to_run_dry = false; 
-	  }
-	}
-      }
-      else if(tx_enabled &&
-	      tx_bits &&
-	      beacon_mode &&
-	      ((tx_modulation == Command::CW_L) ||
-	       (tx_modulation == Command::CW_U))) {
-	// modulate a carrier with a constant envelope
-	doCW(cw_buf, beacon_env);
+    else if(tx_enabled &&
+	    tx_bits &&
+	    (tx_modulation != Command::CW_L) &&
+	    (tx_modulation != Command::CW_U) &&
+	    (txbuf = tx_stream->get(tx_subs)) != NULL) {
+      // get a buffer and 
+      buffers[0] = txbuf->data();
+      tx_bits->send(buffers, txbuf->size(), md);
+      md.start_of_burst = false; 
+      didwork = true; 
+    }
+    else if(tx_enabled &&
+	    tx_bits &&
+	    !beacon_mode &&
+	    ((tx_modulation == Command::CW_L) ||
+	     (tx_modulation == Command::CW_U))) {
+      cwenv = cw_env_stream->get(cw_subs);
+      if(cwenv != NULL) {
+	// modulate a carrier with a cw message
+	doCW(cw_buf, cwenv);
 	// now send it to the USRP
 	buffers[0] = cw_buf->data();
-	tx_bits->send(buffers, tx_buffer_size, md);
+	tx_bits->send(buffers, cwenv->size(), md);
 	md.start_of_burst = false; 
 	didwork = true; 
       }
-      else if(tx_enabled && 
-	      tx_bits) {
-	// all other cases -- we still want to send the LO buffer
-	buffers[0] = zero_buf->data();
-	tx_bits->send(buffers, tx_buffer_size, md);
-	didwork = true; 
-      }
-
-      if(!didwork) {
-	sleep_us(100);
+      else {
+	// we have an empty CW buffer -- we've run out of text.
+	doCW(cw_buf, zero_env);
+	buffers[0] = cw_buf->data();
+	tx_bits->send(buffers, tx_buffer_size, md); 
+	// are we supposed to tell anybody about this? 
+	if(waiting_to_run_dry) {
+	  cmd_stream->put(Command::make(Command::REP, Command::TX_CW_EMPTY, 0));
+	  waiting_to_run_dry = false; 
+	}
       }
     }
+    else if(tx_enabled &&
+	    tx_bits &&
+	    beacon_mode &&
+	    ((tx_modulation == Command::CW_L) ||
+	     (tx_modulation == Command::CW_U))) {
+      // modulate a carrier with a constant envelope
+      doCW(cw_buf, beacon_env);
+      // now send it to the USRP
+      buffers[0] = cw_buf->data();
+      tx_bits->send(buffers, tx_buffer_size, md);
+      md.start_of_burst = false; 
+      didwork = true; 
+    }
+    else if(tx_enabled && 
+	    tx_bits) {
+      // all other cases -- we still want to send the LO buffer
+      buffers[0] = zero_buf->data();
+      tx_bits->send(buffers, tx_buffer_size, md);
+      didwork = true; 
+    }
 
-    debugMsg("Leaving\n");
+    return !didwork;
   }
+
 
 
   void USRPTX::doCW(CFBuf out, FBuf envelope)
@@ -323,18 +316,4 @@ namespace SoDa {
     }
   }
 
-  /// implement the subscription method
-  void USRPTX::subscribe() {
-
-    auto reg = MailBoxRegistry::getRegistrar();
-  
-    cmd_stream = MailBoxBase::convert<MsgMBox>(reg->get("CMD"));
-    cmd_subs = cmd_stream->subscribe();
-
-    tx_stream = MailBoxBase::convert<CFMBox>(reg->get("TX"));
-    tx_subs = tx_stream->subscribe();
-
-    cw_env_stream = MailBoxBase::convert<FMBox>(reg->get("CW_ENV"));
-    cw_subs = cw_env_stream->subscribe();
-  }
 }
