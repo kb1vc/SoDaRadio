@@ -1,5 +1,6 @@
+#pragma once
 /*
-  Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2022 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -25,8 +26,6 @@
   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef OS_FILTER_HDR
-#define OS_FILTER_HDR
 
 
  ///
@@ -40,6 +39,7 @@
 
 #include <fstream>
 #include <complex>
+#include <vector>
 #include <stdio.h>
 #include <fcntl.h>
 #include <sys/types.h>
@@ -49,23 +49,6 @@ namespace SoDa {
   /// Overlap-and-save filter class.  
   class OSFilter {
   public:
-    
-
-    /// constructor
-    /// Build the filter from the time domain FIR filter sequence CASCADED with the filter
-    /// specified by the [cascade] parameter
-    /// @param filter_impulse_response time domain FIR filter coefficient array -- real
-    /// @param filter_length number of filter taps
-    /// @param filter_gain desired gain in passband
-    /// @param inout_buffer_length used to set aside storage for overlap and save buffer
-    /// @param cascade use this filter as a "prefilter" if the inout_buffer_lengths are equal
-    /// @param suggested_transform_length a hint for optimizing FFT operations
-    OSFilter(float * filter_impulse_response,
-	     unsigned int filter_length,
-	     float filter_gain, 
-	     unsigned int inout_buffer_length,
-	     OSFilter * cascade = NULL,
-	     unsigned int suggested_transform_length = 0);
     
     /// constructor
     /// Build the filter from a filter spec for a bandpass filter
@@ -120,6 +103,8 @@ namespace SoDa {
     /// parameters that we keep to support display masks on the spectrogram
     double low_edge, high_edge; 
 
+    void hammingWindow(std::vector<float> & w);
+    
     /// pick a likely N - FFT length.
     int guessN();
     void setupFFT();
@@ -149,4 +134,3 @@ namespace SoDa {
   };
 }
 
-#endif

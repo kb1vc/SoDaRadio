@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2022 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,8 @@
 #include <string.h>
 #include <fftw3.h>
 #include <math.h>
+#include <vector>
+
 
 static unsigned int ipow(unsigned int x, unsigned int y)
 {
@@ -46,6 +48,7 @@ static unsigned int ipow(unsigned int x, unsigned int y)
   return ret; 
 }
 
+#if 0
 SoDa::OSFilter::OSFilter(float * filter_impulse_response,
 			 unsigned int filter_length,
 			 float filter_gain, 
@@ -116,6 +119,7 @@ SoDa::OSFilter::OSFilter(float * filter_impulse_response,
   // setup the fft buffers
   setupFFT();
 }
+#endif
 
 SoDa::OSFilter::OSFilter(float low_cutoff,
 			 float low_pass_edge,
@@ -202,17 +206,19 @@ SoDa::OSFilter::OSFilter(float low_cutoff,
   fftwf_execute(ifplan);
 
   // now we've got a FIR filter, but it needs to be windowed before we can trust it.
-  for(i = 0; i < Q/2; i++) {
-    int ii = (Q/2) - i;
-    float ang = 2.0 * M_PI * ((float) ii) / ((float) Q); 
-    std::complex<float> wf(0.5 + 0.5 * cos(ang), 0.0);
-    filter_in[i] = filter_in[i] * wf; 
-    filter_in[Q - i] = filter_in[Q - i] * wf; 
+  // create a HammingWindow of length Q
+  std::vector<float> window(Q);
+  hammingWindow(window);
+
+
+  for(i = 0; i < Q; i++) {
+    filter_in[i] = filter_in[i] * window[i];
+    filter_in[i].imag(0.0);
   }
   for(i = Q; i < N; i++) {
     filter_in[i] = std::complex<float>(0.0, 0.0); 
   }
-
+  
   // now create the filter image
   fftwf_execute(fplan);
 
@@ -366,5 +372,17 @@ void SoDa::OSFilter::dump(std::ostream & os)
     float mag = abs(filter_fft[i]);
     float phase = arg(filter_fft[i]); 
     os << i << " " << filter_fft[i].real() << " " << filter_fft[i].imag() << " " << mag << " " << phase << std::endl;
+  }
+}
+
+void SoDa::OSFilter::hammingWindow(std::vector<float> & w) {
+  float a0 = 25.0 / 46.0;
+  float a1 = 1.0 - a0; 
+  unsigned int N = w.size();
+  float anginc = 2.0 * M_PI / ((float) (N-1));
+  
+  for(int n = 0; n < N; n++) {
+    float ang = ((float) n) * anginc;
+    w[n] = a0 - a1 * cos(ang);
   }
 }
