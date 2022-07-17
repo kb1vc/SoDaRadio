@@ -122,10 +122,6 @@ namespace SoDa {
     /// @param cmd a command record
     void execRepCommand(CmdMsg  cmd); 
 
-    /// get the number of seconds since the "Epoch"
-    /// @return relative time in seconds
-    double getTime();
-
     /// is the identified (rx or tx) front-end LO locked?
     /// If not, set the tuning frequency to "the right thing"
     /// @param req the requested frequency (and tuning discipline)

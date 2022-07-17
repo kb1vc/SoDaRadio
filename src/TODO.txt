@@ -1,1 +1,10 @@
 ToDo list
+
+1. Need to rework resampling scheme.
+
+   a) Audio buffer size should be dependent on sample rate from radio
+   and audio sample rate.
+   b) Baseband units do nothing until they see a command reporting
+   the audio buffer size, rf buffer size, rx sample rate, and tx sample rate.
+
+   d) Resamplers are done with polyphase time domain resampler. The good one allows us to accumulate up to the output buffer size, and then squirrel the input vector away in the "overflow" buffer. 

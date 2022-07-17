@@ -62,7 +62,7 @@ namespace SoDa {
     /**
      * @brief the constructor -- builds each widget
      *  
-     * @param params a parameter object that supplies any unit with initial 
+     * @param name a descriptive name for this radio
      * settings. 
      */
     Radio(const std::string & name) : name(name) { }

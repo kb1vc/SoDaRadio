@@ -33,16 +33,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Debug.hxx"
 #include <complex>
 #include <string>
-//#include <sys/types.h>
-//#include <unistd.h>
-//#include <sys/syscall.h>
 #include <SoDa/Format.hxx>
-
-//extern "C" {
-//#include <signal.h>
-//#include <stdio.h>
-//#include <unistd.h>
-//}
 
  /**
   * @file SoDaBase.hxx
@@ -90,10 +81,15 @@ namespace SoDa {
     Base * findSoDaObject(const std::string & oname); 
 
     /**
-     * Get a time stamp in nS resolution that monotonically increases
-     * and that is very inexpensive (typically < 100nS). 
+     * Get a time stamp in uS resolution is very inexpensive
+     * (typically < 100nS).
      * 
-     * @return a monotonically increasing timestamp in nS since an arbitrary time in the past.
+     * @return a monotonically increasing timestamp in uS since the
+     * start of the Unix Epoch. This will fit in a double for another
+     * 50 years or so.  If anybody is still using this code in 50
+     * years, please send $1 to each of my descendants. You'll be able
+     * to find them by visiting the GoogleAmazonWalmartExxon.earth
+     * website.
      */
     double getTime(); 
 

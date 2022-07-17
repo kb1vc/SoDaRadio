@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017 Matthew H. Reilly (kb1vc)
+Copyright (c) 2017,2022 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -96,6 +96,7 @@ void GUISoDa::HamlibHandler::initCommandTables()
   registerCommand("S", "set_split_vfo", &GUISoDa::HamlibHandler::cmdSplitVFO, false);  
   registerCommand("q", "exit", &GUISoDa::HamlibHandler::cmdQuit, true);
   registerCommand("Q", "quit", &GUISoDa::HamlibHandler::cmdQuit, true);    
+  registerCommand("", "chk_vfo", &GUISoDa::HamlibHandler::chkVFO, true);
 }
 
 void GUISoDa::HamlibHandler::registerCommand(const char * shortname, 
@@ -106,7 +107,9 @@ void GUISoDa::HamlibHandler::registerCommand(const char * shortname,
   QString sn(shortname); 
   QString ln(longname);
   if(is_get) {
-    get_command_map[sn] = handler; 
+    if(sn.size() != 0) {
+      get_command_map[sn] = handler; 
+    }
     get_command_map[ln] = handler; 
   }
   else {
@@ -244,6 +247,15 @@ bool GUISoDa::HamlibHandler::cmdVFO(QTextStream & out, QTextStream & in, bool ge
   return true;
 }
 
+bool GUISoDa::HamlibHandler::chkVFO(QTextStream & out, QTextStream & in, bool getval) {
+  if(getval) {
+    out << "1" << Qt::endl;
+  }
+  else {
+    // do nothing
+  }
+  return true;
+}
 bool GUISoDa::HamlibHandler::cmdFreq(QTextStream & out, QTextStream & in, bool getval)
 {
   if(getval) {

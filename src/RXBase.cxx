@@ -32,10 +32,6 @@
 #include "Radio.hxx"
 #include <SoDa/Format.hxx>
 
-// Mac OSX doesn't have a clock_gettime, it has
-// the microsecond resolution gettimeofday. 
-#include <sys/time.h>
-
 namespace SoDa {
 
   RXBase::RXBase(const std::string & name) : Thread(name)

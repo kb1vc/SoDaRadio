@@ -54,7 +54,7 @@ namespace SoDa {
     /**
      * @brief the constructor -- builds each widget
      *  
-     * @param params a parameter object that supplies any unit with initial 
+     * @param parms a parameter object that supplies any unit with initial 
      * settings. 
      */
     USRP(Params & parms); 

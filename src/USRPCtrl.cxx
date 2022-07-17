@@ -42,9 +42,6 @@
 #include <uhd/types/tune_result.hpp>
 #include <SoDa/Format.hxx>
 
-// Mac OSX doesn't have a clock_gettime, it has
-// the microsecond resolution gettimeofday. 
-#include <sys/time.h>
 
 namespace SoDa { 
   const unsigned int USRPCtrl::TX_RELAY_CTL = 0x1000;
@@ -260,15 +257,6 @@ namespace SoDa {
 	exitflag |= (cmd->target == Command::STOP); 
       }
     }
-  }
-
-  double USRPCtrl::getTime()
-  {
-    double ret; 
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    ret = (((double) tv.tv_sec) - first_gettime) + 1.0e-6*((double) tv.tv_usec);
-    return ret; 
   }
 
   void USRPCtrl::execCommand(CmdMsg  cmd)

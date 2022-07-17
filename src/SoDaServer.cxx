@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012,2013,2014,2015,2016,2017 Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2013,2014,2015,2016,2017,2022 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -119,10 +119,8 @@
  *
  * @image html SoDa_Radio_TX_Signal_Path.svg
  */
-// #include <uhd/usrp/multi_usrp.hpp>
 #include <unistd.h>
 #include <stdio.h>
-#include <sys/time.h>
 #include <sys/resource.h>
 
 #include <fstream>

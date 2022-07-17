@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2014,2022 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,7 @@
 #include "SoDaBase.hxx"
 #include <string>
 #include <map>
+#include <chrono>
 
 namespace SoDa {
   std::map<std::string, SoDa::Base *> SoDa::Base::ObjectDirectory;
@@ -53,9 +54,10 @@ namespace SoDa {
   }
 
   double SoDa::Base::getTime() {
-    struct timespec tp; 
-    clock_gettime(CLOCK_MONOTONIC, &tp); // 60nS average in tight loops, 160nS cold.
-    double ret = ((double) tp.tv_sec) + (1.0e-9 * ((double) tp.tv_nsec)); 
+    auto st = std::chrono::system_clock::now().time_since_epoch();
+    auto nsec = std::chrono::duration_cast<std::chrono::nanoseconds>(st).count();
+    double ret = (double) nsec;
+    
     if(first_time) {
       base_first_time = ret; 
       first_time = false; 

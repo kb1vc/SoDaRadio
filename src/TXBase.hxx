@@ -62,9 +62,7 @@ namespace SoDa {
   class TXBase : public SoDa::Thread {
   public:
     /**
-     *  Constructor Build a TXBase thread @param params Pointer to a
-     *  parameter object with all the initial settings and
-     *  identification for the attached radio
+     *  Constructor Build a TXBase thread
      */
     TXBase(const std::string & name); 
 

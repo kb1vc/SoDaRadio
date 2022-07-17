@@ -141,13 +141,6 @@ namespace SoDa {
 
 
     /**
-    *  get the number of microseconds since the Ctrl widget was created
-    *  @return relative time in seconds
-    *
-    */
-    virtual double  getTime();
-
-    /**
      * report the antennas that are available, send the report on cmd_stream
      */
     virtual std::list<std::string> reportAntennas() = 0;
@@ -161,7 +154,7 @@ namespace SoDa {
      * Set the antenna choice.  Use "ant" if it is in the list
      * of alternatives. Otherwise, choose the first alternative.
      * @param ant the requested antenna
-     * @param sel 'r' for RX, 't' for TX
+     * @param dir TX or RX 
      */
     void setAntenna(const std::string & ant, Radio::TXRX dir) = 0;
 

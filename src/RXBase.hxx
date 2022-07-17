@@ -62,9 +62,7 @@ namespace SoDa {
   class RXBase : public SoDa::Thread {
   public:
     /**
-     *  Constructor Build a RXBase thread @param params Pointer to a
-     *  parameter object with all the initial settings and
-     *  identification for the attached radio
+     *  Constructor Build a RXBase object 
      * 
      * @param name The name of this unit -- typically the radio name + "RX"
      */

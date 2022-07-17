@@ -89,6 +89,7 @@ namespace GUISoDa {
     bool cmdPTT(QTextStream & out, QTextStream & in, bool getval);
     bool cmdSplitVFO(QTextStream & out, QTextStream & in, bool getval);  
     bool cmdQuit(QTextStream & out, QTextStream & in, bool getval);  
+    bool chkVFO(QTextStream & out, QTextStream & in, bool getval);
 
     // state of the radio
     QString current_VFO, tx_VFO;

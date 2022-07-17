@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+Copyright (c) 2022 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,121 +25,143 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#define SAMPLE_RATE 48000
+
 #include <complex>
+#include <vector>
 #include <iostream>
-#include <stdlib.h>
-#include <time.h>
 #include <fftw3.h>
-#include <math.h>
-#include <string.h>
-#include <stdio.h>
-#include <fcntl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-
-using namespace std;
-#include <sys/time.h>
+#include <SoDa/Format.hxx>
+#include <SoDa/Options.hxx>
+#include <random>
+#include <chrono>
+#include <string>
+#include <cstring>
 
 
-// test program to compare the cost of various FFT vector sizes. 
+class FFT {
+public:
+  FFT(int size, unsigned int flags) : size(size) {
+    fft_in = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * size);
+    fft_out = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * size);
 
-using namespace std; 
-
-double curtime()
-{
-  double ret;
-  struct timeval tp; 
-  gettimeofday(&tp, NULL); 
-  ret = ((double) tp.tv_sec) + 1e-6*((double)tp.tv_usec);
-  return ret; 
-}
-
-complex<float> doWork(complex<float> * in, complex<float> * out, unsigned int vsize)
-{
-  complex<float> ret(0.0,0.0);
-  // create a plan.
-  fftwf_plan plan = fftwf_plan_dft_1d(vsize,  (fftwf_complex*) in, (fftwf_complex*) out,
-				      FFTW_FORWARD, FFTW_ESTIMATE);
-
-  // timestamp
-  double startt = curtime(); 
-    
-  // do 100 FFTs
-  for(int i = 0; i < 100; i++) {
-    fftwf_execute(plan);
-    ret += out[3]; 
+    f_plan = fftwf_plan_dft_1d(size, fft_in, fft_out, FFTW_FORWARD, flags);
+    i_plan = fftwf_plan_dft_1d(size, fft_in, fft_out, FFTW_BACKWARD, flags);    
   }
-  // timestamp
-  double endt = curtime();
+
+  void forward(const std::vector<std::complex<float>> & in, 
+	       std::vector<std::complex<float>> & out) {
+    doit(f_plan, in, out);
+  }
+
+  void inverse(const std::vector<std::complex<float>> & in, 
+	       std::vector<std::complex<float>> & out) {
+    doit(i_plan, in, out);
+  }
   
-  //report
-  double ttime = (endt - startt)/100;
-  double time_per_point = ttime / ((double) vsize); 
-  printf("%d %g %g\n", vsize, ttime, time_per_point);
+private:
+  
+  void doit(fftwf_plan plan, const std::vector<std::complex<float>> & in, std::vector<std::complex<float>> & out) {
+    std::memcpy((void*)fft_in, (void*)in.data(), size * sizeof(std::complex<float>));
+    fftwf_execute(plan);
+    std::memcpy((void*)out.data(), (void*) fft_out, size * sizeof(std::complex<float>));
+  }
+  
+  fftwf_complex * fft_in, * fft_out; 
+  fftwf_plan f_plan, i_plan;
+  int size; 
+}; 
 
-  // destroy plan
-  fftwf_destroy_plan(plan);
+std::random_device dev;
+std::mt19937 rng(dev());
+std::uniform_real_distribution<float> distr(-1.0, 1.0);
 
-  return ret; 
+void doTest(int size, int iters, unsigned int flags) {
+  // build the test input vector.
+  std::vector<std::complex<float>> test_in(size);
+  std::vector<std::complex<float>> test_out(size);
+  // write to the sink to avoid disappearing values/convergence problems.
+  std::vector<std::complex<float>> test_sink(size);
+
+  for(int i = 0; i < size; i++) {
+    test_in[i] = std::complex<float>(distr(rng), distr(rng));
+  }
+  
+  // create the FFT widget
+  FFT fft(size, flags);
+
+  // get the start time
+  auto start = std::chrono::steady_clock::now();
+  
+  for(int i = 0; i < iters; i++) {
+    fft.forward(test_in, test_out);
+    fft.inverse(test_out, test_sink);
+  }
+
+  // get the end time
+  auto end = std::chrono::steady_clock::now();
+
+  auto idur = std::chrono::duration_cast<std::chrono::nanoseconds>(end-start).count();
+
+  double dur = (double) idur; 
+  
+  // duration in ns dur
+
+  // ns per point
+  double ns_p_p = dur / ((double) (2 * iters * size));
+
+  std::cout << SoDa::Format("%0 %1 %2\n")
+    .addI(size)
+    .addF(dur * 1e-9, 'e', 4, 4)
+    .addF(ns_p_p * 1e-9, 'e', 4, 4);
 }
+
 
 int main(int argc, char * argv[])
 {
-  (void) argc; (void) argv; 
-  // try various sizes of FFT inputs from powers of two between 8 and 32K
-  // and for multiples of 2^N * 3 from 48 through 49152  (48 * 1024)
-
-  static int maxbuf = 1000000;
-  complex<float> * invec; // really big buffers
-  complex<float> * outvec;
-
-  invec = (complex<float>*) fftwf_malloc(maxbuf * sizeof(complex<float>));
-  outvec = (complex<float>*) fftwf_malloc(maxbuf * sizeof(complex<float>));
-
-  // fill in the input vector;
-  float anginc = M_PI * 20.0;
-  float ang = 0.0; 
-  int i;
-  for(i = 0; i < maxbuf; i++) {
-    invec[i] = complex<float>(cos(ang), sin(ang));
-    ang += anginc;
-    if(ang > M_PI) ang -= (2.0 * M_PI); 
-  }
-
-  // now create and destroy plans.  Start with powers of two.
-  unsigned int vecsize;
-  complex<float> rsum(0.0,0.0);
-  for(vecsize = 32; vecsize <= 50000; vecsize *= 2) {
-    rsum += doWork(invec, outvec, vecsize);
-  }
-  for(vecsize = 48; vecsize <= 50000; vecsize *= 2) {
-    rsum += doWork(invec, outvec, vecsize);
-  }
-  unsigned int ivs[] = { 625, 1250, 2500, 3125, 5000, 15625, 78125, 390625, 0 };
-  for(i = 0; ivs[i] > 0; i++) {
-    rsum += doWork(invec, outvec, ivs[i]);
-  }
-  rsum += doWork(invec, outvec, 30000 + 1250);
-  rsum += doWork(invec, outvec, 30000);
-  rsum += doWork(invec, outvec, 32768);
-  rsum += doWork(invec, outvec, 48 * 48);
-
-  // now for buffer copy cost...
-  double startt = curtime();
-  for(i = 0; i < 100; i++) {
-    memcpy(invec, outvec, 30000 * sizeof(complex<float>));
-    rsum += invec[i];
-    invec[i*2] *= rsum; 
-    memcpy(outvec, invec, 30000 * sizeof(complex<float>));    
-    rsum += outvec[i+3];
-    outvec[i*2+3] *= rsum; 
-  }
-  double endt = curtime();
-  double timet = endt - startt;
+  unsigned int fftw_flag = FFTW_ESTIMATE;
   
-  printf("memcpy bandwidth %g sec for a 30K long vector, %g sec per sample.\n",
-	 timet / 200.0, timet / (200.0 * 30000.0));
-	 
-  printf("dummy print = %f %f\n", rsum.real(), rsum.imag()); 
+  if(argc >= 2) {
+    switch(argv[1][0]) {
+    case 'E':
+      fftw_flag = FFTW_ESTIMATE;
+      std::cout << "# testing FFTW_ESTIMATE\n";
+      break; 
+    case 'M':
+      fftw_flag = FFTW_MEASURE;
+      std::cout << "# testing FFTW_MEASURE\n";
+      break; 
+    case 'P':
+      fftw_flag = FFTW_PATIENT;
+      std::cout << "# testing FFTW_PATIENT\n";
+      break; 
+    case 'X':
+      fftw_flag = FFTW_EXHAUSTIVE;
+      std::cout << "# testing FFTW_EXHAUSTIVE\n";
+      break; 
+    }
+  }
+  // do powers of 2 from 8 to 18
+  // and powers of 3 from 0 to 3
+  // and powers of 5 from 0 to 3
+
+  // to calculate the iterations, lets assume that the FFTW operation
+  // costs about 10ns per pt. We want each iteration to take about
+  // 1 second, so time per iteration is tp = size * 10e-9
+  // and iterations would be 1 / tp.  But that doesn't quite work out
+  // so we're going to do some other stuff -- this estimate tends to
+  // be off by a huge factor (like 10 or more for odd lengths) so
+  // we'll try a figure closer to 0.5
+  for(int p2 = 4; p2 <= (1 << 18); p2 = p2 * 2) {
+    for(int p3 = 1 ; p3 <= 27; p3 = p3 * 3) {
+      for(int p5 = 1; p5 <= 625; p5 = p5 * 5) {
+	int s = p2 * p3 * p5;
+	if(s > (1 << 18)) continue; 
+	if(s < 1000) continue;
+	int iter = (int) (0.5 / (((double) s) * 1e-9));
+	std::cerr << "Doing " << iter << " iterations at size " << s << "\n";
+	std::cout << "2:" << p2 << " 3:" << p3 << " 5:" << p5 << " ";
+	doTest(s, iter, fftw_flag);
+      }
+    }
+  }
 }

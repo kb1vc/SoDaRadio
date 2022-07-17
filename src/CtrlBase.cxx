@@ -33,6 +33,7 @@
 /** 
  * These are the commands that the Ctrl unit must handle 
  * 
+
 SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_RETUNE_FREQ, freq
 SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_RETUNE_FREQ, freq
 SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_STATE, tx_state, full_duplex
@@ -75,3 +76,4 @@ SoDa::Command(SoDa::Command::SET, SoDa::Command::SPEC_UPDATE_RATE, rate
 * Everybody
 SoDa::Command(SoDa::Command::SET, SoDa::Command::STOP, 0
 
+*/

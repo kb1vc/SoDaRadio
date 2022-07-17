@@ -34,7 +34,6 @@
 
 // Mac OSX doesn't have a clock_gettime, it has
 // the microsecond resolution gettimeofday. 
-#include <sys/time.h>
 
 namespace SoDa {
 
