@@ -48,6 +48,13 @@ public:
     i_plan = fftwf_plan_dft_1d(size, fft_in, fft_out, FFTW_BACKWARD, flags);    
   }
 
+  ~FFT() {
+    fftwf_destroy_plan(f_plan);
+    fftwf_destroy_plan(i_plan);
+    fftwf_free(fft_in);
+    fftwf_free(fft_out);
+  }
+
   void forward(const std::vector<std::complex<float>> & in, 
 	       std::vector<std::complex<float>> & out) {
     doit(f_plan, in, out);
@@ -75,7 +82,7 @@ std::random_device dev;
 std::mt19937 rng(dev());
 std::uniform_real_distribution<float> distr(-1.0, 1.0);
 
-void doTest(int size, int iters, unsigned int flags) {
+void doTest(int size, unsigned int flags) {
   // build the test input vector.
   std::vector<std::complex<float>> test_in(size);
   std::vector<std::complex<float>> test_out(size);
@@ -86,15 +93,38 @@ void doTest(int size, int iters, unsigned int flags) {
     test_in[i] = std::complex<float>(distr(rng), distr(rng));
   }
   
-  // create the FFT widget
-  FFT fft(size, flags);
+  // how long does it take to create the FFT widget
+  auto cr_st = std::chrono::steady_clock::now();
+  auto fft = new FFT(size, flags);
+  auto cr_end = std::chrono::steady_clock::now();
+  
+  double create_time = 1e-9 * (double)(std::chrono::duration_cast<std::chrono::nanoseconds>(cr_end - cr_st).count());
+  
+  // First, find a good number of iterations to get us to about
+  // one second. The way we'll do that is to measure 8 iterations and
+  // get a good guess
+  auto st_t1 = std::chrono::steady_clock::now();
+  for(int i = 0; i < 8; i++) {
+    fft->forward(test_in, test_out);
+    fft->inverse(test_out, test_sink);
+  }
+  auto en_t1 = std::chrono::steady_clock::now();
 
+  auto itdur = std::chrono::duration_cast<std::chrono::nanoseconds>(en_t1 - st_t1).count();
+  // 8 iterations in tdur ns.
+  // how many in 10^9 ns?
+  double tdur = ((double) itdur);
+  double dit = (8e9 / tdur);
+  unsigned int iters = (unsigned int) floor(dit);
+
+  std::cerr << "Doing " << iters << " at size " << size << "\n";
+  
   // get the start time
   auto start = std::chrono::steady_clock::now();
   
   for(int i = 0; i < iters; i++) {
-    fft.forward(test_in, test_out);
-    fft.inverse(test_out, test_sink);
+    fft->forward(test_in, test_out);
+    fft->inverse(test_out, test_sink);
   }
 
   // get the end time
@@ -109,10 +139,13 @@ void doTest(int size, int iters, unsigned int flags) {
   // ns per point
   double ns_p_p = dur / ((double) (2 * iters * size));
 
-  std::cout << SoDa::Format("%0 %1 %2\n")
+  std::cout << SoDa::Format("%0 %1 %2 %3\n")
     .addI(size)
     .addF(dur * 1e-9, 'e', 4, 4)
-    .addF(ns_p_p * 1e-9, 'e', 4, 4);
+    .addF(ns_p_p * 1e-9, 'e', 4, 4)
+    .addF(create_time, 'e', 4, 4);
+				       
+  std::cout.flush();
 }
 
 
@@ -144,24 +177,16 @@ int main(int argc, char * argv[])
   // and powers of 3 from 0 to 3
   // and powers of 5 from 0 to 3
 
-  // to calculate the iterations, lets assume that the FFTW operation
-  // costs about 10ns per pt. We want each iteration to take about
-  // 1 second, so time per iteration is tp = size * 10e-9
-  // and iterations would be 1 / tp.  But that doesn't quite work out
-  // so we're going to do some other stuff -- this estimate tends to
-  // be off by a huge factor (like 10 or more for odd lengths) so
-  // we'll try a figure closer to 0.5
   for(int p2 = 4; p2 <= (1 << 18); p2 = p2 * 2) {
     for(int p3 = 1 ; p3 <= 27; p3 = p3 * 3) {
       for(int p5 = 1; p5 <= 625; p5 = p5 * 5) {
 	int s = p2 * p3 * p5;
 	if(s > (1 << 18)) continue; 
 	if(s < 1000) continue;
-	int iter = (int) (0.5 / (((double) s) * 1e-9));
-	std::cerr << "Doing " << iter << " iterations at size " << s << "\n";
 	std::cout << "2:" << p2 << " 3:" << p3 << " 5:" << p5 << " ";
-	doTest(s, iter, fftw_flag);
+	doTest(s, fftw_flag);
       }
     }
   }
 }
+
