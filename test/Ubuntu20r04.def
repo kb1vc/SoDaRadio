@@ -1,0 +1,32 @@
+Bootstrap: docker
+From: ubuntu:20.04
+%post
+  apt -qy update
+  apt -qy install cmake
+
+  apt-get install -y libhamlib-dev
+  apt-get install -y libqwt-qt5-dev
+  apt-get install -y libqt5widgets5
+  apt-get install -y libqt5core5a
+  apt-get install -y qtbase5-dev qt5-qmake qtbase5-dev-tools
+  apt-get install -y libqt5multimedia5 libqt5multimedia5-plugins
+  apt-get install -y libsndfile1-dev
+  apt-get install -y qtmultimedia5-dev
+  apt install -y cmake
+  apt install -y  libasound2-dev libfftw3-dev
+  apt install -y pkg-config
+  apt install -y gpsd gpsd-clients libgps-dev
+  apt install -y git
+  apt install -y uhd-host libuhd-dev
+  apt install -y g++   #(! really?)
+  apt install -y libboost-all-dev   #(why?)
+  apt -qy clean
+  
+  git clone https://github.com/kb1vc/SoDaRadio.git
+  cd SoDaRadio
+  mkdir build
+  cd build
+  cmake ../
+  make
+  
+  
