@@ -1,7 +1,13 @@
 Bootstrap: docker
-From: ubuntu:20.04
+From: ubuntu:latest
+%environment
+  export DEBIAN_FRONTEND=noninteractive
+  export TZ=US/Eastern
 %post
+  export DEBIAN_FRONTEND=noninteractive
+  export TZ=US/Eastern
   apt -qy update
+  apt -qy install file
   apt -qy install cmake
   apt -qy install libboost-program-options-dev
   apt -qy install libboost-filesystem-dev

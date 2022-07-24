@@ -21,7 +21,16 @@ From: fedora:37
  cd SoDaRadio
  mkdir build
  cd build
- cmake ../
+ cmake -DBUILD_RPM=1 ../
  make
-  
+
+ make package
+ cp *.rpm /mnt
+ 
+ %help
+  This builds SoDaRadio and creates an .rpm kit. The resulting kit
+  will be written to the current directory with the following command:
+
+  sudo apptainer build  --bind `pwd`:/mnt Fedora37.sif Fedora37.def
+
   
