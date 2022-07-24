@@ -1,0 +1,10 @@
+Bootstrap: docker
+From: fedora:37
+%files
+  SoDaRadio-8.0.1-1.x86_64.Fedora-37.rpm
+  
+%post
+  dnf install --assumeyes  SoDaRadio-8.0.1-1.x86_64.Fedora-37.rpm
+ 
+  
+ 

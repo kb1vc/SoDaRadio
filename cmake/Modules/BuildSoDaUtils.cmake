@@ -1,4 +1,5 @@
 message("In build sodautils cmake")
+include(GNUInstallDirs)
 
 # SoDaUtils is a library containing:
 #   SoDa::Format intelligent formatting of text from
@@ -38,7 +39,7 @@ ELSE()
     message("About to set SoDaUtils stuff... to ${INSTALL_DIR}")
     set(SoDaUtils_ROOT ${INSTALL_DIR})
     set(SoDaUtils_INCLUDE_DIR ${SoDaUtils_ROOT}/include)
-    set(SoDaUtils_LIBRARIES ${SoDaUtils_ROOT}/lib64/libsodautils.a)
+    set(SoDaUtils_LIBRARIES ${SoDaUtils_ROOT}/${CMAKE_INSTALL_LIBDIR}/libsodautils.a)
     set_property(TARGET SoDaUtilsLib PROPERTY IMPORTED_LOCATION ${SoDaUtils_LIB_DIR}/libsodautils)
   ENDIF()
 ENDIF()

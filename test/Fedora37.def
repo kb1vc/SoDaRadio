@@ -1,0 +1,36 @@
+Bootstrap: docker
+From: fedora:37
+%post
+ dnf group install --assumeyes "C Development Tools and Libraries"
+ dnf install --assumeyes libusb1-devel doxygen boost-devel
+ dnf install --assumeyes fftw-devel alsa-lib-devel
+ dnf install --assumeyes qt5-qtbase-devel
+ dnf install --assumeyes qwt-qt5-devel
+ dnf install --assumeyes python-mako
+ dnf install --assumeyes qt5-qtmultimedia-devel 
+ dnf install --assumeyes hamlib-devel
+ dnf install --assumeyes gpsd-devel gpsd-clients gpsd-libs gpsd
+ dnf install --assumeyes libsndfile-devel
+ dnf install --assumeyes rpm-build
+ dnf install --assumeyes git
+ dnf install --assumeyes redhat-lsb
+ # Leave this one out if you really need to use some other version of libuhd
+ dnf install --assumeyes uhd-devel uhd-firmware
+ 
+ git clone https://github.com/kb1vc/SoDaRadio.git
+ cd SoDaRadio
+ mkdir build
+ cd build
+ cmake -DBUILD_RPM=1 ../
+ make
+
+ make package
+ cp *.rpm /mnt
+ 
+ %help
+  This builds SoDaRadio and creates an .rpm kit. The resulting kit
+  will be written to the current directory with the following command:
+
+  sudo apptainer build  --bind `pwd`:/mnt Fedora37.sif Fedora37.def
+
+  

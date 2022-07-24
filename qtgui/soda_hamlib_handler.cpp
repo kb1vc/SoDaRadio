@@ -122,7 +122,9 @@ void GUISoDa::HamlibHandler::registerCommand(const char * shortname,
 void GUISoDa::HamlibHandler::processCommand(const QString & cmd, QTcpSocket * socket_p)
 {
   // first chop the current command up into tokens
-  QStringList cmd_list = cmd.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
+  // This is eventually going to break, as Qt has deprecated it
+  // in favor of Qt::SkipEmptyParts. 
+  QStringList cmd_list = cmd.split(QRegularExpression("\\s+"), QString::SkipEmptyParts);
 
   if (cmd_list.size() == 0) return;
 
@@ -148,7 +150,7 @@ void GUISoDa::HamlibHandler::processCommand(const QString & cmd, QTcpSocket * so
 	}
 	else {
 	  qDebug() << QString("HAMLIB handler can't deal with this command [%1]\n").arg(cmdchar);
-	  out << "RPRT " << RIG_EINVAL << Qt::endl;
+	  out << "RPRT " << RIG_EINVAL << "\n";
 	}
       }
     }
@@ -160,7 +162,7 @@ void GUISoDa::HamlibHandler::processCommand(const QString & cmd, QTcpSocket * so
     }
     else {
       qDebug() << QString("HAMLIB handler can't deal with this command [%1]\n").arg(cmd);
-      out << "RPRT " << RIG_EINVAL << Qt::endl;
+      out << "RPRT " << RIG_EINVAL << "\n";
     }
   }
 }
@@ -238,11 +240,11 @@ bool GUISoDa::HamlibHandler::cmdDumpState(QTextStream & out, QTextStream & in, b
 bool GUISoDa::HamlibHandler::cmdVFO(QTextStream & out, QTextStream & in, bool getval)
 {
   if(getval) {
-    out << current_VFO << Qt::endl;
+    out << current_VFO << "\n";
   }
   else {
     in >> current_VFO;
-    out << "RPRT 0" << Qt::endl; 
+    out << "RPRT 0" << "\n"; 
   }
   return true;
 }
@@ -260,7 +262,7 @@ bool GUISoDa::HamlibHandler::cmdFreq(QTextStream & out, QTextStream & in, bool g
 {
   if(getval) {
     QString resp = QString("%1").arg(rx_freq, 15, 'f');
-    out << resp << Qt::endl; 
+    out << resp << "\n"; 
   }
   else {
     double setfreq; 
@@ -273,7 +275,7 @@ bool GUISoDa::HamlibHandler::cmdFreq(QTextStream & out, QTextStream & in, bool g
       tx_freq = setfreq;
       emit setTXFreq(setfreq);       
     }
-    out << "RPRT 0" << Qt::endl; 
+    out << "RPRT 0" << "\n"; 
 
   }
   return true;  
@@ -283,14 +285,14 @@ bool GUISoDa::HamlibHandler::cmdSplitFreq(QTextStream & out, QTextStream & in, b
 {
   if(getval) {
     QString resp = QString("%1").arg(tx_freq, 15, 'f');
-    out << resp << Qt::endl; 
+    out << resp << "\n"; 
   }
   else {
     double setfreq; 
     in >> setfreq; 
     tx_freq = setfreq;
     emit setTXFreq(setfreq);       
-    out << "RPRT 0" << Qt::endl; 
+    out << "RPRT 0" << "\n"; 
   }
   return true;  
 }
@@ -299,7 +301,7 @@ bool GUISoDa::HamlibHandler::cmdSplitFreq(QTextStream & out, QTextStream & in, b
 bool GUISoDa::HamlibHandler::cmdMode(QTextStream & out, QTextStream & in, bool getval)
 {
   if(getval) {
-    out << soda2hl_modmap[modulation] << Qt::endl << 6000 << Qt::endl;
+    out << soda2hl_modmap[modulation] << "\n" << 6000 << "\n";
   }
   else {
     QString req_mod; 
@@ -313,17 +315,17 @@ bool GUISoDa::HamlibHandler::cmdMode(QTextStream & out, QTextStream & in, bool g
         out << delim << mp.first;
         delim = " ";
       }
-      out << Qt::endl;
-      out << "RPRT 0" << Qt::endl;
+      out << "\n";
+      out << "RPRT 0" << "\n";
     }
     else {
       in >> passband;
       if (hl2soda_modmap.count(req_mod) != 0) {
 	emit setModulation(hl2soda_modmap[req_mod]);
-	out << "RPRT 0" << Qt::endl;
+	out << "RPRT 0" << "\n";
       }
       else {
-	out << "RPRT " << RIG_EINVAL << Qt::endl; 
+	out << "RPRT " << RIG_EINVAL << "\n"; 
       }
     }
   }
@@ -334,14 +336,14 @@ bool GUISoDa::HamlibHandler::cmdPTT(QTextStream & out, QTextStream & in, bool ge
 {
   if(getval) {
     QString tx_state = tx_on ? "1" : "0";
-    out << tx_state << Qt::endl; 
-    out << "RPRT 0" << Qt::endl;
+    out << tx_state << "\n"; 
+    out << "RPRT 0" << "\n";
   }
   else {
     int tx_sel; 
     in >> tx_sel; 
     tx_on = (tx_sel != 0); 
-    out << "RPRT 0" << Qt::endl;  
+    out << "RPRT 0" << "\n";  
     emit setTXOn(tx_on); 
   }
   return true;  
@@ -351,14 +353,14 @@ bool GUISoDa::HamlibHandler::cmdSplitVFO(QTextStream & out, QTextStream & in, bo
 {
   if(getval) {
     QString se = split_enabled ? "1" : "0"; 
-    out << se << Qt::endl << tx_VFO << Qt::endl; 
-    out << "RPRT 0" << Qt::endl; 
+    out << se << "\n" << tx_VFO << "\n"; 
+    out << "RPRT 0" << "\n"; 
   }
   else {
     QString split_ena; 
     in >> split_ena >> tx_VFO; 
     split_enabled = (split_ena == "1");
-    out << "RPRT 0" << Qt::endl; 
+    out << "RPRT 0" << "\n"; 
   }
   return true; 
 }
@@ -369,7 +371,7 @@ bool GUISoDa::HamlibHandler::cmdQuit(QTextStream & out, QTextStream & in, bool g
 {
   (void) in;
   (void) getval; 
-  out << "q" << Qt::endl;
+  out << "q" << "\n";
   return false; 
 }
 
