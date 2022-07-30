@@ -1,5 +1,6 @@
+#pragma once
 /*
-  Copyright (c) 2012,2013,2014 Matthew H. Reilly (kb1vc)
+  Copyright (c) 2022 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -25,11 +26,10 @@
   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef RESAMPLER_HDR
-#define RESAMPLER_HDR
+
 #include <complex>
+#include <vector>
 #include <fftw3.h>
-#include "OSFilter.hxx"
 
 namespace SoDa {
   /**
@@ -38,66 +38,55 @@ namespace SoDa {
    * Create a resampler that upsamples by an interpolation rate and
    * downsamples by a decimation rate. 
    */
-  class ReSampler {
+  class ReSampler : public BlockOp {
   public:
     /**
      * @brief Constructor
      *
-     * @param interp_ratio upsample rate
-     * @param decim_ratio downsample rate
-     * @param _inlen the input buffer length (output buffer will be _inlin * interp_ratio / decimation_ratio)
-     * @param filter_len the minimum length of the antialiasing filter
+     * @param input_sample_rate
+     * @param output_sample_rate
+     * @param time_span_min how many samples (in time) should a buffer hold? 
+     * @param time_span_max upper bound on samples per buffer
      */
-    ReSampler(unsigned int interp_ratio,
-	      unsigned int decim_ratio,
-	      unsigned int _inlen, 
-	      unsigned int filter_len);
+    ReSampler(float input_sample_rate,
+	      float output_sample_rate,
+	      float time_span_min, 
+	      float time_span_max); 
 
+
+    unsigned int getInputBufferSize();
+
+    unsigned int getOutputBufferSize();
+      
+    
     /**
      * @brief apply the resampler to a buffer of IQ samples.
      *
      * @param in input buffer
      * @param out output buffer
      * @param gain -- multiply output by gain
+     * @param in_out_mode -- always ignored, assumed to be TIME in TIME out
      */
-    unsigned int apply(std::complex<float> * in,
-		       std::complex<float> * out, float gain = 1.0);
+    unsigned int apply(std::vector<std::complex<float>> & in,
+		       std::vector<std::complex<float>> & out, 
+		       float gain = 1.0, 
+		       INOUT_MODE in_out_mode
+		       );
     /**
      * @brief apply the resampler to a buffer of scalar samples.
      *
      * @param in input buffer
      * @param out output buffer
      * @param gain -- multiply output by gain
+     * @param in_out_mode -- always ignored, assumed to be TIME in TIME out
      */
     unsigned int apply(float * in,
-		       float * out, float gain = 1.0);
+		       float * out, 
+		       float gain = 1.0, 
+		       INOUT_MODE in_out_mode);
 
-  private:
-    /**
-     * @brief create a filter bank for a polyphase resampler. (Though we do it in
-     * the frequency domain.)
-     * @param filter_len the minimum length of the anti-alias filter
-     */
-    void CreateFilter(unsigned int filter_len);
-
-    int filter_len; ///< the length of the polyphase filter that we're using.
-    
-    unsigned int iM, dN, Q, tail_index;
-    unsigned int inlen, M, N; 
-    std::complex<float> ** c_filt; ///< filter bank for interp/deci filter
-    std::complex<float> * filt_fft; ///< the filtered image of the input stream
-    std::complex<float> * interp_res; ///< the interpolation result
-    std::complex<float> * in_fft; ///< the result of the first fft stage
-    std::complex<float> * inbuf; ///< the fft input buffer
-
-    // gain corrections and other stuff
-    float transform_gain;
-    float gain_correction; 
-    
-    // we'll create plans
-    fftwf_plan in_fft_plan;
-    fftwf_plan mid_ifft_plan;
+  protected:
+    std::unique_ptr<Filter> lpf; /// the anti-aliasing low pass filter. 
   }; 
 }
 
-#endif // RESAMPLER_HDR
