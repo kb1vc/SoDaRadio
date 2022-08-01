@@ -26,16 +26,22 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include "FFT.hxx"
+
 namespace SoDa {
   FFT::FFT(unsigned int len) : len(len) {
-    f_dummy_in = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * dim);
-    f_dummy_out = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * dim);  
+    fftwf_set_timelimit(1.0);
+    
+    auto f_dummy_in = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * len);
+    auto f_dummy_out = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * len);  
   
-    forward_plan = fftwf_plan_dft_1d(len, f_dummy_in, f_dummy_out, FFTW_FORWARD);
-    backward_plan = fftwf_plan_dft_1d(len, f_dummy_in, f_dummy_out, FFTW_BACKWARD);
+    forward_plan = fftwf_plan_dft_1d(len, f_dummy_in, f_dummy_out, 
+				     FFTW_FORWARD, FFTW_ESTIMATE);
+    backward_plan = fftwf_plan_dft_1d(len, f_dummy_in, f_dummy_out, 
+				      FFTW_BACKWARD, FFTW_ESTIMATE);
 
-    fftw_free(f_dummy_in);
-    fftw_free(f_dummy_out);
+    fftwf_free(f_dummy_in);
+    fftwf_free(f_dummy_out);
   }
     
   void FFT::fft(std::vector<std::complex<float>> & in, 
@@ -46,7 +52,35 @@ namespace SoDa {
     if(in.size() != len) {
       throw BadSize("fft", in.size(), len);
     }
-    fftw_execute_dft(forward_plan, in.data(), out.data());
+    
+    auto in_p = (fftwf_complex*) in.data();
+    auto out_p = (fftwf_complex*) out.data();    
+    bool do_fixup = false;
+    
+    if(fftwf_alignment_of((float*)in_p) != fftwf_alignment_of((float*)out_p)) {
+      // buffers are misaligned.  sigh. make a copy
+      in_p = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * in.size());
+      out_p = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * out.size());
+      for(int i = 0; i < in.size(); i++) {
+	in_p[i][0] = in[i].real();
+	in_p[i][1] = in[i].imag();
+      }
+      do_fixup = true; 
+    }
+    else {
+      in_p = (fftwf_complex*) in.data();
+      out_p = (fftwf_complex*) out.data();      
+    }
+    
+    fftwf_execute_dft(forward_plan, in_p, out_p);
+
+    if(do_fixup) {
+      for(int i = 0; i < out.size(); i++) {
+	out[i] = std::complex<float>(out_p[i][0], out_p[i][1]);
+      }
+      fftwf_free(in_p);
+      fftwf_free(out_p);
+    }
   }
 
   void FFT::ifft(std::vector<std::complex<float>> & in, 
@@ -57,7 +91,30 @@ namespace SoDa {
     if(in.size() != len) {
       throw BadSize("fft", in.size(), len);
     }
-    fftw_execute_dft(backward_plan, in.data(), out.data());
+
+    auto in_p = (fftwf_complex*) in.data();
+    auto out_p = (fftwf_complex*) out.data();    
+    bool do_fixup = false;
+    if(fftwf_alignment_of((float*)in_p) != fftwf_alignment_of((float*)out_p)) {
+      // buffers are misaligned.  sigh. make a copy
+      in_p = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * in.size());
+      out_p = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * out.size());
+      for(int i = 0; i < in.size(); i++) {
+	in_p[i][0] = in[i].real();
+	in_p[i][1] = in[i].imag();
+      }
+      do_fixup = true; 
+    }
+    
+    fftwf_execute_dft(backward_plan, in_p, out_p);
+
+    if(do_fixup) {
+      for(int i = 0; i < out.size(); i++) {
+	out[i] = std::complex<float>(out_p[i][0], out_p[i][1]);
+      }
+      fftwf_free(in_p);
+      fftwf_free(out_p);
+    }
   }
   
   void FFT::shift(std::vector<std::complex<float>> & in, 
@@ -66,12 +123,19 @@ namespace SoDa {
     if(in.size() != out.size()) {
       throw UnmatchedSizes("shift", in.size(), out.size());
     }
+    if((in.size() % 2) == 0) {
+      // for the even case, ishift and shift are the
+      // same. ishift gets it right....
+      return ishift(in, out);
+    }
     // take the middle and shift it down
-    // the two vectors must be distinct.
+    // since in and out may be the same vectors, we
+    // make a copy. (Not a big deal.)
+    auto temp = in; 
     unsigned int mid = (in.size() - 1) / 2;
     unsigned int mod = in.size();
     for(int i = 0; i < in.size(); i++) {
-      out[(mid + i) % mod] = in[i]; 
+      out[(mid + i) % mod] = temp[i];
     }
   }
   
@@ -83,12 +147,12 @@ namespace SoDa {
     }
     // take the middle and shift it down
     // the two vectors must be distinct.
+    auto temp = in;
     unsigned int mid = (in.size() + 1) / 2;
     unsigned int mod = in.size();
     for(int i = 0; i < in.size(); i++) {
-      out[(mid + i) % mod] = in[i]; 
+      out[(mid + i) % mod] = temp[i]; 
     }
   }
-
 }
 

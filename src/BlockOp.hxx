@@ -55,7 +55,11 @@ namespace SoDa {
 
   // all "apply" functions can bypass one or more of the input and output conversions
   // into the frequency domain. 
-  enum INOUT_MODE { TIME_TIME, TIME_FFT, FFT_TIME, FFT_FFT };
+  struct InOutMode {
+    InOutMode(bool ti, bool to) : time_in(ti), time_out(to) { }
+    bool time_in;
+    bool time_out; 
+  };
   
   class BlockOp {
   public:
@@ -65,7 +69,15 @@ namespace SoDa {
     BlockOp() {}
 
     /** 
+     * @brief how long is the required output buffer, given 
+     * an input buffer of size in_size?  This is useful for 
+     * resamplers.  Filters and such should just return "in_size"
+     * 
+     * @param in_size input buffer size
+     * @return required size of the output buffer
      */
+    virtual unsigned int outLenRequired(unsigned int in_size) = 0;
+    
     /** run the filter on a complex input stream
      * @param in_buf the input buffer I/Q samples (complex)
      * @param out_buf the output buffer I/Q samples (complex)
@@ -73,24 +85,24 @@ namespace SoDa {
      * @param in_out_mode input or output can be time samples or frequency (FFT format) samples
      * @return the length of the input buffer
      */
-    unsigned int apply(std::vector<std::complex<float>> & in_buf, 
-		       std::vector<std::complex<float>> & out_buf, 
-		       float outgain = 1.0,
-		       INOUT_MODE in_out_mode = TIME_TIME) = 0;
+    virtual unsigned int apply(std::vector<std::complex<float>> & in_buf, 
+			       std::vector<std::complex<float>> & out_buf, 
+			       float outgain = 1.0,
+			       InOutMode in_out_mode = InOutMode(true,true)) = 0;
 
     /** run the filter on a real input stream
      * @param in_buf the input buffer samples
      * @param out_buf the output buffer samples (this can overlap the in_buf vector)
      * @param outgain normalized output gain
-     * @param in_out_mode input or output can be time samples or frequency (FFT format) samples
+     * @param in_out_mode input ignored
      * @return the length of the input buffer
      *
      * @throws Filter::BadRealFilter if the original filter spec was not "real"
      */
-    unsigned int apply(std::vector<float> & in_buf, 
-		       std::vector<float> & out_buf, 
-		       float out_gain = 1.0,
-		       INOUT_MODE in_out_mode = TIME_TIME) = 0;
+    virtual unsigned int apply(std::vector<float> & in_buf, 
+			       std::vector<float> & out_buf, 
+			       float out_gain = 1.0,
+			       InOutMode in_out_mode = InOutMode(true,true)) = 0;
   };
 }
 

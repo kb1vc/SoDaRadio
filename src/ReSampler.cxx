@@ -34,6 +34,32 @@
 #include <iostream>
 
 namespace SoDa {
+  /**
+   * @class ReSampler
+   * 
+   * This is a rational resampler class providing arbitrary conversions
+   * though certainly not optimal. However, all the conversion is done 
+   * in the frequency domain, so the cost is more-or-less NlogN in the 
+   * size of the *larger* buffer. 
+   *
+   * The resampler is specified in terms of the input sampling rate (Fsi) and
+   * the output sampling rate (Fso). The interpolation (U) and decimation (D) factors
+   * are determined by:
+   * 
+   * U = Fso / gcd(Fsi,Fso)  D = Fsi / gcd(Fsi,Fso)
+   *  
+   * There are some restrictions on the input and output buffers, however. 
+   * The input buffer size must always be a multiple of the decimation rate D. This
+   * follows from the output buffer size : 
+   * 
+   * out_len = in_len * U / D
+   * 
+   * which must be an integer. As long as in_len is a multiple of D, we're home free. 
+   * 
+   * 
+   * This is a block-application filter. To adapt it to continuous use, 
+   */
+  
   ReSampler::ReSampler(float input_sample_rate,
 		       float output_sample_rate,
 		       float time_span_min, 

@@ -48,6 +48,9 @@
 #include <vector>
 #include <fftw3.h>
 #include "BlockOp.hxx"
+#include "Radio.hxx"
+#include "FilterSpec.hxx"
+#include "FFT.hxx"
 
 namespace SoDa {
 
@@ -58,78 +61,10 @@ namespace SoDa {
     public:
       BadBufferSize(const std::string & st, unsigned int in, unsigned int out, unsigned int req) :
 	Radio::Exception(SoDa::Format("Filter::%3 input and output buffer sizes (%0 and %1) must be equal to %2\n")
-			 .addI(in).addI(out).addI(req).addS(st)) { }
+			 .addI(in).addI(out).addI(req).addS(st).str()) { }
     };
 
-    class BadRealSpec : public Radio::Exception {
-    public:
-      BadRealSpec(const std::string & st, float freq)
-	Radio::Exception(SoDa::Format("FilterSpec::%1 specification for REAL valued filter contains a negative frequency %0. Not good.\n")
-			 .addF(freq).addS(st)) { }
-    };
 
-    
-    class FilterSpec {
-    public:
-      enum FType { REAL, COMPLEX };
-      typedef std::pair<float, float> Corner;
-      /**
-       * @brief construct a filter specification
-       *
-       * @param sample_rate 
-       * @param taps number of taps required
-       * @param length 
-       * @param filter_type if REAL, then the filter shape (specified
-       * by the added corners) must contain only positive
-       * frequencies. The constructor will throw Filter::BadRealSpec
-       * otherwise.
-       */
-      FilterSpec(float sample_rate, unsigned int taps, FType filter_type = REAL);
-
-      /**
-       * Set the starting amplitude for this filter. (Defaults to zero.)
-       * @param amp the ideal amplitude at the lowest filter frequency (- sample_freq / 2)
-       * @return reference to this FilterSpec
-       */
-      FilterSpec & start(float amp); 
-
-      /**
-       * Add a point in the transfer function. This specifies
-       * a "corner" in the frequency response. 
-       * 
-       * @param freq the corner frequency
-       * @param amp the ideal amplitude at the corner frequency
-       * @return reference to this FilterSpec
-       */
-      FilterSpec & add(float freq, float amp); 
-      
-      std::list<Corner> getSpec();
-
-      float getSampleRate() { return sample_rate; }
-
-      unsigned int indexHproto(float freq); 
-      
-      /**
-       * @brief How many taps do we need to provide the requested 
-       * shortest transition edge? 
-       * 
-       * Estimate and set the taps as appropriate. But the 
-       * number of taps must be in the range min...max
-       * 
-       * @param min imum number of taps provided
-       * @param max imum number of taps provided
-       * @return number of taps chosen
-       */
-      unsigned int estimateTaps(unsigned int min, unsigned int max); 
-
-      unsigned int setTaps(unsigned int new_tapcount) { taps = new_tapcount; }
-    protected:
-      bool sorted; 
-      void sortSpec();
-
-      float sample_rate;
-      std::list<Corner> spec; 
-    };
     
     /// constructor
     /// Build the filter from a filter spec for a bandpass filter
@@ -149,21 +84,21 @@ namespace SoDa {
     /// @return the length of the input buffer
     unsigned int apply(std::vector<std::complex<float>> & in_buf, 
 		       std::vector<std::complex<float>> & out_buf, 
-		       float outgain = 1.0
-		       INOUT_MODE in_out_mode, TIME_TIME);
+		       float outgain = 1.0,
+		       InOutMode in_out_mode = InOutMode(true,true));
 
     /// run the filter on a real input stream
     /// @param in_buf the input buffer samples
     /// @param out_buf the output buffer samples (this can overlap the in_buf vector)
     /// @param outgain normalized output gain
-    /// @param in_out_mode input or output can be time samples or frequency (FFT format) samples
+    /// @param in_out_mode ignored -- input and output must be time-domain samples.
     /// @return the length of the input buffer
     ///
     /// Throws Filter::BadRealFilter if the original filter spec was not "real"
     unsigned int apply(std::vector<float> & in_buf, 
 		       std::vector<float> & out_buf, 
 		       float out_gain = 1.0,
-		       INOUT_MODE in_out_mode = TIME_TIME);
+		       InOutMode in_out_mode = InOutMode(true,true));
 
     /// dump the filter FFT to the output stream
     /// @param os an output stream. 
@@ -173,6 +108,14 @@ namespace SoDa {
      * @brief Return the lowest and highest corner frequency for this filter. 
      */
     std::pair<float, float> getFilterEdges();
+
+    /**
+     * @brief how long must an output buffer be?
+     * 
+     * @param in_size the size of an input buffer to this filter
+     * @return the same as in_size
+     */
+    unsigned int outLenRequired(unsigned int in_size) { return in_size; }
 
   protected:
     /// parameters that we keep to support display masks on the spectrogram
@@ -194,6 +137,8 @@ namespace SoDa {
     // and a two more vectors if we're doing a real valued filter
     std::vector<std::complex<float>> temp_in_buf;
     std::vector<std::complex<float>> temp_out_buf;        
+    
+    unsigned int image_size; 
   };
 }
 

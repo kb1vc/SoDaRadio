@@ -48,13 +48,13 @@ namespace SoDa {
     public:
       UnmatchedSizes(const std::string & st, unsigned int ins, unsigned int outs) :
 	Radio::Exception(SoDa::Format("Vector arguments to function FFT::%0 must be the same size. In.size = %1  Out.size = %2\n")
-			 .addS(st).addI(inst).addI(outs)) { }
+			 .addS(st).addI(ins).addI(outs).str()) { }
     };
     class BadSize : public Radio::Exception {
     public:
       BadSize(const std::string & st, unsigned int was, unsigned int should_be) :
 	Radio::Exception(SoDa::Format("Vector arguments to function FFT::%0 must %2 but were %1 instead\n")
-			 .addS(st).addI(was).addI(should_be)) { }
+			 .addS(st).addI(was).addI(should_be).str()) { }
     };
     
     FFT(unsigned int len); 
@@ -74,6 +74,6 @@ namespace SoDa {
   protected:
     fftwf_plan forward_plan, backward_plan;
     unsigned int len; 
-  }
+  };
 }
 

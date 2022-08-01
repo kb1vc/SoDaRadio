@@ -29,118 +29,55 @@
 #include "Filter.hxx"
 
 namespace SoDa {
-  FilterSpec::FilterSpec(float sample_rate, unsigned int taps, FType filter_type) :
-    sorted(false), filter_type(filter_type), taps(taps), sample_rate(sample_rate)
-  {
-  }
-
-  unsigned int FilterSpec::estimateTaps(unsigned int min, unsigned int max) {
-    // find the narrowest transition region
-    if(!sorted) sortSpec();
-
-    // now crawl...
-    bool looking = true;
-    float min_interval = 10e9;
-    float last_amp;
-    float last_corner;
-    last_amp = spec.front().second;
-    last_corner = spec.front().first;
-    for(const auto & v : spec) {
-      if(v.second != last_amp) {
-	float inter = v.second - last_amp;
-	if(inter < min_interval) min_interval = inter;
-	last_amp = v.second;
-	last_coener = v.first;
-      }
-    }
-    
-    // now use fred harris's rule for the number of filter taps?
-    // assume 40 dB stop band attenuation
-    float ftaps = sample_rate * 40 / (min_interval * 22);
-    float comp_taps = 2 * int(ftaps / 2) + 1; // make sure it is odd
-
-    return comp_taps;
-  }
-
-  FilterSpec & FilterSpec::start(float amp) {
-    sorted = false;
-    float start_freq = (filter_type == REAL) ? 0.0 : - (sample_rate / 2);
-    spec.push_back(Corner(start_freq, amp));
-  }
-
-  FilterSpec & FilterSpec::add(float freq, float amp) {
-    sorted = false;
-    if((filter_type == REAL) && (freq < 0)) {
-      throw BadRealSpec("add", freq);
-    }
-    spec.push_back(Corner(start_freq, amp));    
-  }
-      
-  const std::list<Corner> FilterSpec::getSpec() {
-    if(!sorted) sortSpec();
-    return spec; 
-  }
-
-  std::pair<float, float> FilterSpec::getFilterEdges() {
-    std::pair<float, float> ret;
-    ret.first = (filter_type == REAL) ? 0.0 : -(sample_rate / 2);
-    ret.second = sample_rate / 2;
-    bool looking_low;
-    float last_freq; 
-    for(const auto v : spec) {
-      if(looking_low) {
-	if(v.second > (1 - 0.01)) {
-	  ret.first = v.first;
-	  looking_low = false; 
-	}
-      }
-      else {
-	if(v.second < 0.1) {
-	  ret.second = last_freq;
-	  break; 
-	}
-      }
-      last_freq = v.first; 
-    }
-    return ret; 
-  }
-
-  void FilterSpec::sortSpec() {
-    spec.sort([](const Corner & a, const Corner & b) { return a.first > b.first; });
-    sorted = true; 
-  }
-
-  unsigned int FilterSpec::indexHproto(float freq) {
-    unsigned int ret;
-    float hsamprate = sample_rate / 2;
-    ret = int(((freq + hsamprate) / sample_rate) * taps + 0.50001);
-    return ret;
-  }
 
   Filter::Filter(FilterSpec & filter_spec, 
-		 unsigned int image_size) {
+		 unsigned int image_size) : image_size(image_size) {
     auto num_taps = filter_spec.getTaps();    
     // first create a frequency domain ideal filter:
     std::vector<std::complex<float>> Hproto(num_taps);
+    std::vector<std::complex<float>> hproto(num_taps);    
 
     // crawl through the filter corners
-    float cur_value;
+    float cur_value = 0.0;
 
     auto spec = filter_spec.getSpec();
+
+    auto sr = filter_spec.getSampleRate();
+    for(float fr = -0.5 * sr; fr < 0.5 * sr; fr += 0.01 * sr) {
+      std::cout << SoDa::Format("IDX %0 %1\n")
+	.addF(fr,'e')
+	.addI(filter_spec.indexHproto(fr));
+    }
     
     int cur_idx = 0; 
     for(auto v : spec) {
       auto nidx = filter_spec.indexHproto(v.first);
       float incr = (v.second - cur_value) / ((float) (nidx - cur_idx));
+      std::cout << SoDa::Format("HFILL %0 %1 %2\n").addI(nidx).addF(incr).addF(v.second);
       for(int i = cur_idx; i < nidx; i++) {
-	Hproto[i] = cur_value + ((float) (i + 1 - cur_idx)) * incr;
+	Hproto[i].real(cur_value + ((float) (i - cur_idx)) * incr);
+	Hproto[i].imag(0.0);
+	std::cout << SoDa::Format("HLOOP %0 %1 %2 0.5\n")
+	  .addI(i)
+	  .addF(Hproto[i].real())
+	  .addF(Hproto[i].imag());
       }
       Hproto[nidx] = cur_value; 
-      cur_idx = nidx; 
+      std::cout << SoDa::Format("HLOOP %0 %1 %2 0.6\n")
+	.addI(nidx)
+	.addF(Hproto[nidx].real())
+	.addF(Hproto[nidx].imag());
+      cur_idx = nidx + 1; 
       cur_value = v.second; 
     }
     for(int i = cur_idx; i < num_taps; i++) {
-      Hproto[i] = cur_value; 
+
+      Hproto[i].real(cur_value);
+      Hproto[i].imag(0.0);
+      std::cout << SoDa::Format("HLOOP %0 %1 %2 0.7\n")
+	.addI(i)
+	.addF(Hproto[i].real())
+	.addF(Hproto[i].imag());      
     }
 
     // now we've got a frequency domain prototype.
@@ -154,6 +91,15 @@ namespace SoDa {
     // shift that back to 0 in the middle
     pfft.ishift(hproto, hproto);
 
+    for(int i = 0; i < num_taps; i++) {
+      std::cout << SoDa::Format("Hproto %0 %1 %2 %3 %4\n")
+	.addI(i)
+	.addF(Hproto[i].real())
+	.addF(Hproto[i].imag())
+	.addF(hproto[i].real())
+	.addF(hproto[i].imag());
+    }
+    
     // now apply a window
     std::vector<float> window(num_taps);
     hammingWindow(window);
@@ -166,7 +112,7 @@ namespace SoDa {
     // embed it in the impulse response of the appropriate length
     h.resize(image_size);
     for(int i = 0; i < num_taps; i++) {
-      h[i] = hproto[i]; 
+      h[i] = hproto[i] / ((float) num_taps); 
     }
     // zero the rest
     for(int i = num_taps; i < image_size; i++) {
@@ -191,14 +137,15 @@ namespace SoDa {
     int M = w.size();
     
     float anginc = 2 * M_PI / ((float) (M - 1));
-    for(i = 0; i < M; i++) {
+    for(int i = 0; i < M; i++) {
       w[i] = 0.54 - 0.46 * cos(anginc * (float(i)));
     }
   }
 
   unsigned int Filter::apply(std::vector<std::complex<float>> & in_buf, 
 			     std::vector<std::complex<float>> & out_buf, 
-			     float outgain) {
+			     float outgain,
+			     InOutMode in_out_mode) {
     if((in_buf.size() != image_size) || (out_buf.size() != image_size)) {
       throw BadBufferSize("apply", in_buf.size(), out_buf.size(), image_size); 
     }
@@ -206,21 +153,40 @@ namespace SoDa {
       temp_buf.resize(image_size); 
     }
 
-    // first do the transform
-    fft->fft(in_buf, temp_buf);
-    
-    // now multiply
-    for(int i = 0; i < temp_buf.size(); i++) {
-      temp_buf[i] = temp_buf[i] * H[i] * outgain; 
+    std::vector<std::complex<float>> * tbuf_ptr;
+    if(in_out_mode.time_in) {
+      // first do the transform
+      fft->fft(in_buf, temp_buf);
+      tbuf_ptr = & temp_buf; 
+    }
+    else {
+      // we're already taking a transform as input. 
+      tbuf_ptr = & in_buf; 
     }
     
-    // and invert
-    fft->ifft(temp_buf, out_buf); 
+    
+    if(in_out_mode.time_out) {
+      // now multiply 
+      for(int i = 0; i < tbuf_ptr->size(); i++) {
+	(*tbuf_ptr)[i] = (*tbuf_ptr)[i] * H[i] * outgain; 
+      }
+      // invert
+      fft->ifft(*tbuf_ptr, out_buf); 
+    }
+    else {
+      // they want frequency output
+      // multiply directly into output buffer
+      for(int i = 0; i < out_buf.size(); i++) {
+	out_buf[i] = (*tbuf_ptr)[i] * H[i] * outgain; 
+      }
+    }
+    return in_buf.size();
   }
 
   unsigned int Filter::apply(std::vector<float> & in_buf, 
 			     std::vector<float> & out_buf, 
-			     float out_gain) { 
+			     float out_gain,
+			     InOutMode in_out_mode) {
     if((in_buf.size() != image_size) || (out_buf.size() != image_size)) {
       throw BadBufferSize("apply", in_buf.size(), out_buf.size(), image_size); 
     }
@@ -238,8 +204,20 @@ namespace SoDa {
     // now apply 
     apply(temp_in_buf, temp_out_buf, out_gain);
 
-    for(int i = 0; i < out_buf_size(); i++) {
+    for(int i = 0; i < out_buf.size(); i++) {
       out_buf[i] = temp_out_buf[i].real();
+    }
+    return in_buf.size();    
+  }
+  
+  void Filter::dump(std::ostream & os) {
+    for(int i = 0; i < H.size(); i++) {
+      os << SoDa::Format("FILTER %0 %1 %2 %3 %4\n")
+	.addI(i)
+	.addF(H[i].real())
+	.addF(H[i].imag())
+	.addF(h[i].real())
+	.addF(h[i].imag());
     }
   }
 }

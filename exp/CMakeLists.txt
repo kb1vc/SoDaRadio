@@ -9,6 +9,7 @@ include_directories(SYSTEM ${Boost_INCLUDE_DIRS} ${UHD_INCLUDE_DIRS} ${ALSA_INCL
   ../src ../common)
 
 set(TEST_LIBS ${Boost_LIBRARIES} ${UHD_LIBRARIES} ${ALSA_LIBRARIES} ${FFTW3F_LIBRARIES} ${SoDaUtils_LIBRARIES})
+set(SIMPLE_TEST_LIBS ${FFTW3F_LIBRARIES} ${SoDaUtils_LIBRARIES})
 
 ########### next target ###############
 
@@ -69,7 +70,8 @@ target_link_libraries(SoDa_ThreadTest ${TEST_LIBS})
 
 #install(TARGETS SoDa_ThreadTest DESTINATION tests)
 
-
+add_executable(FilterTest EXCLUDE_FROM_ALL FilterTest.cxx ../src/Filter.cxx ../src/FilterSpec.cxx  ../src/FFT.cxx)
+target_link_libraries(FilterTest ${SIMPLE_TEST_LIBS})
 ########### next target ###############
 
 set(OSFilter_Test_SRCS OSFilter_Test.cxx ../src/OSFilter.cxx)
@@ -219,39 +221,9 @@ ENDIF()
 #install(TARGETS USRPFrontEnd_test DESTINATION tests)
 
 
-set(OneFilterTest_SRCS OneFilterTest.cxx ../src/OSFilter.cxx)
-
-set(OSFILTER_LIBS ${Boost_LIBRARIES}  ${FFTW3F_LIBRARIES})
-
-add_executable(OneFilterTest EXCLUDE_FROM_ALL ${OneFilterTest_SRCS})
-
-target_link_libraries(OneFilterTest ${OSFILTER_LIBS})
-
-
-
 add_executable(NCOexp EXCLUDE_FROM_ALL NCOexp.cxx)
 
 target_link_libraries(NCOexp ${Boost_LIBRARIES})
-
-set(TDResampler_Test_SRCS
-    TDResampler_Test.cxx
-    ../src/TDResamplerTables625x48.cxx
-    ../src/SoDaBase.cxx)
-
-add_executable(TDResampler_Test EXCLUDE_FROM_ALL ${TDResampler_Test_SRCS})
-
-target_link_libraries(TDResampler_Test ${TEST_LIBS})
-
-set(ResamplerSpeed_SRCS
-  ResamplerSpeed.cxx
-  ../src/ReSampler.cxx
-  ../src/ReSamplers625x48.cxx
-  ../src/TDResamplerTables625x48.cxx
-  ../src/SoDaBase.cxx)
-
-add_executable(ResamplerSpeed EXCLUDE_FROM_ALL ${ResamplerSpeed_SRCS})
-target_link_libraries(ResamplerSpeed ${TEST_LIBS})
-
 
 
 set(CircularBuffer_test_SRCS CircularBuffer_test.cxx ../common/CircularBuffer.hxx)

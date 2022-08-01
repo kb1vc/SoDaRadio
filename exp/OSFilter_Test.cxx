@@ -63,7 +63,7 @@ int main(int argc, char * argv[])
   SoDa::OSFilter osf(std::unique_ptr<BlocOp>(new SoDa::Filter(fs)), 
 		     taps - 1, 0);
 
-  asdf
+
   srandom(0x13255);
   
   const int samp_len = 65536;
