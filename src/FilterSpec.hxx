@@ -50,7 +50,11 @@ namespace SoDa {
   public:
     enum FType { REAL, COMPLEX };
     
-    typedef std::pair<float, float> Corner;
+    struct Corner {
+      Corner(float freq, float gain) : freq(freq), gain(gain) { }
+      float freq;
+      float gain;
+    };
 
     class BadRealSpec : public Radio::Exception {
     public:
@@ -73,26 +77,28 @@ namespace SoDa {
     FilterSpec(float sample_rate, unsigned int taps, FType filter_type = COMPLEX);
 
     /**
-     * Set the starting amplitude for this filter. (Defaults to zero.)
-     * @param amp the ideal amplitude at the lowest filter frequency (- sample_freq / 2)
+     * Set the starting gain for this filter. (Defaults to -200dB)
+     * @param gain the ideal amplitude at the lowest filter frequency (- sample_freq / 2)
      * @return reference to this FilterSpec
      */
-    FilterSpec & start(float amp); 
+    FilterSpec & start(float gain); 
 
     /**
      * Add a point in the transfer function. This specifies
      * a "corner" in the frequency response. 
      * 
      * @param freq the corner frequency
-     * @param amp the ideal amplitude at the corner frequency
+     * @param gain the ideal gain at the corner frequency (in dB)
      * @return reference to this FilterSpec
      */
-    FilterSpec & add(float freq, float amp); 
+    FilterSpec & add(float freq, float gain); 
       
     const std::list<Corner> getSpec();
 
     float getSampleRate() { return sample_rate; }
 
+    void fillHproto(std::vector<std::complex<float>> & Hproto);
+    
     unsigned int indexHproto(float freq); 
       
     /**

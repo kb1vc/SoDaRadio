@@ -2,6 +2,8 @@
 #include <SoDa/Format.hxx>
 #include <iostream>
 #include <fstream>
+#include <chrono>
+
 
 void testShift() {
   std::vector<std::complex<float>> in_e(8), sout_e(8), isout_e(8);
@@ -44,9 +46,11 @@ void testShift() {
   even.close();
 }
 
-float testFreq(SoDa::Filter & filt, double freq, double sample_rate, int l) {
-  std::vector<std::complex<float>> in(l), out(l);
+float testFreq(SoDa::Filter & filt, double freq, double sample_rate, 
+	       std::vector<std::complex<float>> in,
+	       std::vector<std::complex<float>> out) {	       
 
+  int l = in.size();
   double incr = 2.0 * M_PI * freq / sample_rate;
   double angle = -M_PI;
 
@@ -66,15 +70,22 @@ float testFreq(SoDa::Filter & filt, double freq, double sample_rate, int l) {
 
 int main() {
   const float sample_rate = 1000.0;
-  const int taps = 73; // 53;
-  const int image_size = 2048;
+  const int taps = 133; // 53;
+  const int image_size = 4096;
   SoDa::FilterSpec spec(sample_rate, taps);
-  spec.add(-60.0, 0)
-    .add(-59, 1)
-    .add(80, 1)
-    .add(81,0);
+  spec.add(-100.0, -50)
+    .add(-60, 0)
+    .add(-40, 0)
+    .add(-10, -3)
+    .add(20, -3)
+    .add(60, 0)
+    .add(80, 0)
+    .add(100, -30)
+    .add(320, -30)
+    ;
 
-  testShift();
+
+  // testShift();
   auto edge = spec.getFilterEdges();
   
   std::cout << SoDa::Format("### spec taps = %0 edges %1 %2\n")
@@ -86,19 +97,33 @@ int main() {
 
   for(auto c : shape) {
     std::cout << SoDa::Format("SHAPE %0 %1\n")
-      .addF(c.first)
-      .addF(c.second);
+      .addF(c.freq)
+      .addF(c.gain);
   }
   
   // now create the filter.
   SoDa::Filter filt(spec, image_size);
-  filt.dump(std::cout);
 
   // and sweep
-  double bump = 0.1 * sample_rate / image_size;
+  unsigned int itercount = 0; 
+  double bump = 1.0 * sample_rate / image_size;
+  std::vector<std::complex<float>> in(image_size), out(image_size); 
+  auto cr_st = std::chrono::steady_clock::now();
+  
   for(double fr = -0.5 * sample_rate; fr < 0.5 * sample_rate; fr += bump) {
-    float v = testFreq(filt, fr, sample_rate, image_size);
+    float v = testFreq(filt, fr, sample_rate, in, out);
     std::cout << SoDa::Format("RESP %0 %1\n").addF(fr).addF(v,'e');
+    itercount++; 
   }
+
+  auto cr_end = std::chrono::steady_clock::now();
+
+  double tdur = double(std::chrono::duration_cast<std::chrono::nanoseconds>(cr_end - cr_st).count());
+  double diter = double(itercount);
+  double pts = diter * double(image_size);
+
+  std::cerr << SoDa::Format("Time per iteration (ns) %0 per point %1\n")
+    .addF(tdur / diter, 'e')
+    .addF(tdur / pts, 'e');
 }
 

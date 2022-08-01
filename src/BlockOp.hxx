@@ -81,19 +81,16 @@ namespace SoDa {
     /** run the filter on a complex input stream
      * @param in_buf the input buffer I/Q samples (complex)
      * @param out_buf the output buffer I/Q samples (complex)
-     * @param outgain normalized output gain
      * @param in_out_mode input or output can be time samples or frequency (FFT format) samples
      * @return the length of the input buffer
      */
     virtual unsigned int apply(std::vector<std::complex<float>> & in_buf, 
 			       std::vector<std::complex<float>> & out_buf, 
-			       float outgain = 1.0,
 			       InOutMode in_out_mode = InOutMode(true,true)) = 0;
 
     /** run the filter on a real input stream
      * @param in_buf the input buffer samples
      * @param out_buf the output buffer samples (this can overlap the in_buf vector)
-     * @param outgain normalized output gain
      * @param in_out_mode input ignored
      * @return the length of the input buffer
      *
@@ -101,7 +98,6 @@ namespace SoDa {
      */
     virtual unsigned int apply(std::vector<float> & in_buf, 
 			       std::vector<float> & out_buf, 
-			       float out_gain = 1.0,
 			       InOutMode in_out_mode = InOutMode(true,true)) = 0;
   };
 }

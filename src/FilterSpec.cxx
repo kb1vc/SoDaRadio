@@ -41,16 +41,16 @@ namespace SoDa {
     // now crawl...
     bool looking = true;
     float min_interval = 10e9;
-    float last_amp;
+    float last_gain;
     float last_corner;
-    last_amp = spec.front().second;
-    last_corner = spec.front().first;
+    last_gain = spec.front().gain;
+    last_corner = spec.front().freq;
     for(const auto & v : spec) {
-      if(v.second != last_amp) {
-	float inter = v.second - last_amp;
+      if(v.gain != last_gain) {
+	float inter = v.gain - last_gain;
 	if(inter < min_interval) min_interval = inter;
-	last_amp = v.second;
-	last_corner = v.first;
+	last_gain = v.gain;
+	last_corner = v.freq;
       }
     }
     
@@ -62,9 +62,51 @@ namespace SoDa {
     return comp_taps;
   }
 
+  void FilterSpec::fillHproto(std::vector<std::complex<float>> & Hproto) {
+    if(!sorted) sortSpec();
+    
+    std::list<std::pair<Corner,Corner>> edges;
+    float start_freq = (filter_type == REAL) ? 0.0 : - (sample_rate / 2);
+    float end_freq = sample_rate/2;
+    Corner last(start_freq, -200.0);
+
+    for(auto c : spec) {
+      edges.push_back(std::pair<Corner,Corner>(last, c));
+      last = c; 
+    }
+    edges.push_back(std::pair<Corner,Corner>(last, Corner(end_freq, -200.0)));
+
+    // now go through the edges.
+    for(auto e : edges) {
+	
+      auto start_idx = indexHproto(e.first.freq);
+      auto end_idx = indexHproto(e.second.freq);
+      // note the 0.05 multiplier -- we're dealing in filter amplitudes.... ;(
+      auto start_amp = std::pow(10.0, 0.05 * e.first.gain);
+      auto end_amp = std::pow(10.0, 0.05 * e.second.gain);
+      if(start_idx == end_idx) {
+	auto max_amp = (start_amp > end_amp) ? start_amp : end_amp; 
+	Hproto[start_idx] = std::complex<float>(max_amp);
+      }
+      else {
+	auto rise = end_amp / start_amp;
+	auto run =  float(end_idx - start_idx);
+	auto mult = pow(rise, 1.0 / run);
+	float amp = start_amp; 
+	for(int i = start_idx; i <= end_idx; i++) {
+	  Hproto[i] = std::complex<float>(amp, 0.0);
+	  amp *= mult;
+	}
+      }
+    }
+  }
+
   FilterSpec & FilterSpec::start(float amp) {
     sorted = false;
     float start_freq = (filter_type == REAL) ? 0.0 : - (sample_rate / 2);
+
+    if(amp < -200) amp = -200;
+    
     spec.push_back(Corner(start_freq, amp));
     
     return *this;
@@ -75,6 +117,9 @@ namespace SoDa {
     if((filter_type == REAL) && (freq < 0)) {
       throw BadRealSpec("add", freq);
     }
+    // no zero amplitude buckets. (We need to be able to divide and take logs.)
+    if(amp < -200) amp = -200;
+    
     spec.push_back(Corner(freq, amp));    
     
     return *this;
@@ -93,24 +138,24 @@ namespace SoDa {
     float last_freq; 
     for(const auto v : spec) {
       if(looking_low) {
-	if(v.second > (1 - 0.01)) {
-	  ret.first = v.first;
+	if(v.gain > (1 - 0.01)) {
+	  ret.first = v.freq;
 	  looking_low = false; 
 	}
       }
       else {
-	if(v.second < 0.1) {
+	if(v.gain < 0.1) {
 	  ret.second = last_freq;
 	  break; 
 	}
       }
-      last_freq = v.first; 
+      last_freq = v.freq; 
     }
     return ret; 
   }
   
   void FilterSpec::sortSpec() {
-    spec.sort([](const Corner & a, const Corner & b) { return a.first < b.first; });
+    spec.sort([](const Corner & a, const Corner & b) { return a.freq < b.freq; });
     sorted = true; 
   }
 
@@ -118,6 +163,8 @@ namespace SoDa {
     unsigned int ret;
     float hsamprate = sample_rate / 2;
     ret = int(((freq + hsamprate) / sample_rate) * taps + 0.50001);
+    if(ret >= taps) ret = taps - 1;
+    
     return ret;
   }
 }
