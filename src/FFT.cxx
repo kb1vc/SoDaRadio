@@ -36,9 +36,9 @@ namespace SoDa {
     auto f_dummy_out = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * len);  
   
     forward_plan = fftwf_plan_dft_1d(len, f_dummy_in, f_dummy_out, 
-				     FFTW_FORWARD, FFTW_ESTIMATE);
+				     FFTW_FORWARD, FFTW_MEASURE); // ESTIMATE);
     backward_plan = fftwf_plan_dft_1d(len, f_dummy_in, f_dummy_out, 
-				      FFTW_BACKWARD, FFTW_ESTIMATE);
+				      FFTW_BACKWARD, FFTW_MEASURE); // ESTIMATE);
 
     fftwf_free(f_dummy_in);
     fftwf_free(f_dummy_out);

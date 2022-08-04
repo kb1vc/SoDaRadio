@@ -46,9 +46,16 @@ void testShift() {
   even.close();
 }
 
-float testFreq(SoDa::Filter & filt, double freq, double sample_rate, 
+struct Response {
+  Response(float m, float p) : mag(m), phase(p) {}
+  float mag;
+  float phase;
+}; 
+
+Response testFreq(SoDa::Filter & filt, double freq, double sample_rate, 
 	       std::vector<std::complex<float>> in,
-	       std::vector<std::complex<float>> out) {	       
+	       std::vector<std::complex<float>> out, 
+	       double & tdur) {	       
 
   int l = in.size();
   double incr = 2.0 * M_PI * freq / sample_rate;
@@ -58,14 +65,24 @@ float testFreq(SoDa::Filter & filt, double freq, double sample_rate,
     in[i] = std::complex<float>(cos(angle), sin(angle));
     angle = angle + incr; 
   }
-  
+
+  auto cr_st = std::chrono::high_resolution_clock::now();
   // apply the filter
   filt.apply(in, out); 
+  auto cr_end = std::chrono::high_resolution_clock::now();
 
+  tdur = tdur + double(std::chrono::duration_cast<std::chrono::nanoseconds>(cr_end - cr_st).count());
   // calculate the magnitude at some point
   float mag = std::norm(out[l/2]);
 
-  return mag; 
+  float phase = std::arg(out[l/2]) - std::arg(in[l/2]);
+  while(phase > M_PI) {
+    phase -= 2.0 * M_PI; 
+  }
+  while(phase < -M_PI) {
+    phase += 2.0 * M_PI; 
+  }
+  return Response(mag, phase); 
 }
 
 int main() {
@@ -108,17 +125,15 @@ int main() {
   unsigned int itercount = 0; 
   double bump = 1.0 * sample_rate / image_size;
   std::vector<std::complex<float>> in(image_size), out(image_size); 
-  auto cr_st = std::chrono::steady_clock::now();
+
+  double tdur; 
   
   for(double fr = -0.5 * sample_rate; fr < 0.5 * sample_rate; fr += bump) {
-    float v = testFreq(filt, fr, sample_rate, in, out);
-    std::cout << SoDa::Format("RESP %0 %1\n").addF(fr).addF(v,'e');
+    Response v = testFreq(filt, fr, sample_rate, in, out, tdur);
+    std::cout << SoDa::Format("RESP %0 %1 %2\n").addF(fr).addF(v.mag,'e').addF(v.phase,'e');
     itercount++; 
   }
 
-  auto cr_end = std::chrono::steady_clock::now();
-
-  double tdur = double(std::chrono::duration_cast<std::chrono::nanoseconds>(cr_end - cr_st).count());
   double diter = double(itercount);
   double pts = diter * double(image_size);
 

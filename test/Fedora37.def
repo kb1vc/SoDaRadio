@@ -16,6 +16,8 @@ From: fedora:37
  dnf install --assumeyes redhat-lsb
  # Leave this one out if you really need to use some other version of libuhd
  dnf install --assumeyes uhd-devel uhd-firmware
+ dnf install --assumeyes cmake
+ 
  
  git clone https://github.com/kb1vc/SoDaRadio.git
  cd SoDaRadio

@@ -30,6 +30,7 @@
 #include <complex>
 #include <vector>
 #include <fftw3.h>
+#include "Filter.hxx"
 
 namespace SoDa {
   /**
@@ -64,26 +65,22 @@ namespace SoDa {
      *
      * @param in input buffer
      * @param out output buffer
-     * @param gain -- multiply output by gain
      * @param in_out_mode -- always ignored, assumed to be TIME in TIME out
      */
     unsigned int apply(std::vector<std::complex<float>> & in,
 		       std::vector<std::complex<float>> & out, 
-		       float gain = 1.0, 
-		       INOUT_MODE in_out_mode
+		       InOutMode in_out_mode = InOutMode(true, true)
 		       );
     /**
      * @brief apply the resampler to a buffer of scalar samples.
      *
      * @param in input buffer
      * @param out output buffer
-     * @param gain -- multiply output by gain
      * @param in_out_mode -- always ignored, assumed to be TIME in TIME out
      */
     unsigned int apply(float * in,
 		       float * out, 
-		       float gain = 1.0, 
-		       INOUT_MODE in_out_mode);
+		       InOutMode in_out_mode = InOutMode(true, true));
 
   protected:
     std::unique_ptr<Filter> lpf; /// the anti-aliasing low pass filter. 
