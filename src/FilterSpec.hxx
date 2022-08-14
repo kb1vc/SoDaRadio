@@ -68,14 +68,31 @@ namespace SoDa {
      *
      * @param sample_rate 
      * @param taps number of taps required
-     * @param length 
      * @param filter_type if REAL, then the filter shape (specified
      * by the added corners) must contain only positive
      * frequencies. The constructor will throw Filter::BadRealSpec
      * otherwise.
      */
-    FilterSpec(float sample_rate, unsigned int taps, FType filter_type = COMPLEX);
+    FilterSpec(float sample_rate, unsigned int taps,
+	       FType filter_type = COMPLEX);
 
+
+    /**
+     * @brief Alternate constructor, for very simple band-pass filters
+     * 
+     * @param sample_rate in Hz -- as are all specified frequencies
+     * @param low_cutoff lower 3dB point
+     * @param high_cutoff upper 3dB point
+     * @param skirt_width width of transition band
+     * @param taps number of taps required
+     * @param filter_type if REAL, then the filter shape (specified
+     * by the added corners) must contain only positive
+     * frequencies. The constructor will throw Filter::BadRealSpec
+     * otherwise.
+     */
+    Filter(float sample_rate, float low_cutoff, float high_cutoff, float skirt_width, 
+	   unsigned int taps, FType filter_type = COMPLEX);
+    
     /**
      * Set the starting gain for this filter. (Defaults to -200dB)
      * @param gain the ideal amplitude at the lowest filter frequency (- sample_freq / 2)

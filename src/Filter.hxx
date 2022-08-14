@@ -74,7 +74,9 @@ namespace SoDa {
 
     Filter(FilterSpec & filter_spec, 
 	   unsigned int image_size); 
-    
+
+    /// Alternate constructor, for very simple filters
+    Filter(float low_cutoff, float high_cutoff, float skirt, float sample_rate);
     
     /// run the filter on a complex input stream
     /// @param in_buf the input buffer I/Q samples (complex)
