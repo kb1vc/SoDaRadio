@@ -25,9 +25,7 @@ set(SoDaLib_SRCS
     Command.cxx
     OSFilter.cxx
     HilbertTransformer.cxx
-    TDResamplerTables625x48.cxx
     ReSampler.cxx
-    ReSamplers625x48.cxx
     Spectrogram.cxx
     CWGenerator.cxx
     GPSmon.cxx

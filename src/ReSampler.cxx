@@ -34,102 +34,139 @@
 #include <iostream>
 
 namespace SoDa {
+  static uint32_t getGCD(uint32_t a, uint32_t b) {
+    if(b == 0) return a;
+    else if(a < b) {
+      return getGCD(b, a);
+    }
+    else {
+      return getGCD(b, a % b);
+    }
+  }
   
-  ReSampler::ReSampler(float input_sample_rate,
-		       float output_sample_rate,
-		       float time_span_min, 
-		       float time_span_max) {
-    // first figure out the input corner frequencies.
-    // We want to trim 10% of the top and bottom of the
-    // lower frequency component to get a suppresion of
-    // about 40dB. 
-    float dB_atten = 40.0; 
+  ReSampler::ReSampler(float FS_in,
+		       float FS_out,
+		       float time_span_min) {
+    uint32_t i_fs_in = ((uint32_t) FS_in);
+    uint32_t i_fs_out = ((uint32_t) FS_out);
+    auto gcd = getGCD(i_fs_in, i_fs_out);
 
-    // We're going to build a low-pass anti-aliasing filter.
-    float fs_smaller = (input_sample_rate < output_sample_rate) ? 
-      input_sample_rate : output_sample_rate;
-    float fs_bigger = (input_sample_rate > output_sample_rate) ? 
-      input_sample_rate : output_sample_rate;
-    float fs_transition = 0.1 * fs_smaller;
+    U = uint32_t(i_fs_out / gcd);
+    D = uint32_t(i_fs_in / gcd);
 
-    // we apply the filter to the input buffer. We'll use
-    // fred harriss's approximation
-    float fN = (input_sample_rate / fs_transition) * dB_atten / 22.0;
+    // now find the input buffer size -- make it long enough to span time_span_min
+    uint32_t min_in_samples = uint32_t(FS_in * time_span_min);
+    uint32_t min_out_samples = (U * min_in_samples) / D;
 
-    // This needs to be odd.
-    int N = (2 * (int(fN / 2))) + 1;
-
-    // So that is the minimum N. we need to calculate the minimum input buffer
-    // size, and then "round up" so that the output buffer is a multiple of the
-    // decimation rate. 
-    //
-    // This is a little dicey, so watch my hands carefully.
-    // First find the GCD of the two rates. We're going to assume the
-    // not-so-special case that both rates are INTEGERs
-    uint32_t in_sr = ((uint32_t) input_sample_rate);
-    uint32_t out_sr = ((uint32_t) output_sample_rate);
-    auto gcd = getGCD(in_sr, out_sr);
-
-    // Now what are the upsample (U) and downsample (D) rates?    
-    auto D = in_sr / gcd;
-    auto U = out_sr / gcd;
-
-    // The output buffer *must* be a multiple of the interpolation rate
-    // and the input buffer *must* be a multiple of the decimation rate
-    // what is the minimum output buffer size?
-    uint32_t min_obuf_len = (uint32_t) (output_sample_rate * time_span_min);
-
-    // now find an output buffer size that is a multiple of D.
-    uint32_t obuf_len = (1 + min_obuf_len / D) * D;
-
-    // I hope that's a good FFT size. 
-
-    trim_out = in_sr - 1;
-    // so we're going to interpolate by out_sr and decimate by in_sr...
-    // regardless of whether the net is upsampling or downsampling. 
+    std::cerr << SoDa::Format("ReSampler:: min_in_samples = %0 min_out_samples = %1\n").addI(min_in_samples).addI(min_out_samples); 
+    while((min_in_samples < 1000) || (min_out_samples < 1000)) {
+      // need to goose min_in_samples until it is big enough
+      min_in_samples += 1000;
+      min_out_samples = (U * min_in_samples) / D;
+      std::cerr << SoDa::Format("ReSampler:: adj: min_in_samples = %0 min_out_samples = %1\n").addI(min_in_samples).addI(min_out_samples);       
+    }
     
-    // now the large buffer must be at least
-    auto large_buf_len = in_sr * out_sr;
-    while(large_buf_len < min_buf_len) {
-      large_buf_len += in_sr * out_sr; 
+    scale_factor = float(D) / float(U);
+    
+    auto k = (min_in_samples + D - 1) / D;
+    Lx = k * D;
+    Ly = k * U;
+
+    std::cerr << SoDa::Format("ReSampler:: Lx = %0 Ly = %1 k = %2\n")
+      .addI(Lx)
+      .addI(Ly)
+      .addI(k);
+    // setup the save buffer
+    save_count = D;
+
+    // remember our discard
+    discard_count = U;
+
+
+    // now the bucket-copy boundary
+    auto extract_buckets = (Lx < Ly) ? Lx : Ly;
+    extract_count = (extract_buckets + 1) / 2;
+
+    // now create the low pass filter.
+    double cutoff = std::min(FS_in, FS_out) * 0.4;
+    // make this fit with a unique ptr
+    uint32_t num_taps = uint32_t((FS_in / (0.05 * cutoff)) * (80.0 / 22));
+    if((num_taps % 2) == 0) num_taps++;
+    if(num_taps < 31) num_taps = 31;
+    
+    lpf_p = std::unique_ptr<SoDa::Filter>(new SoDa::Filter(-cutoff, cutoff, 0.015 * cutoff, FS_in, 
+							   num_taps, Lx));
+
+    // create the input and output buffers
+    x.resize(Lx);
+    y.resize(Ly);
+    X.resize(Lx);
+    Y.resize(Ly);
+    // zero the input buffer since we use the
+    // end of it for the save buffer. 
+    for(auto & s : x) {
+      s = std::complex<float>(0.0,0.0);
     }
 
-    // Here's the strange part: We're doing this as a continuous frequency
-    // domain resampler. So we're *really* doing the resampling on an overlap
-    // and save buffer
-
-    /// There's no magic here.  for U > D input -> FFT ->filter -> sel Buf * D / U -> IFFT
-    /// U < D input --> FFT ---> stuff --> select Buf * D / U -->IFFT
-    /// But buf must be a multiple of U in length.
-    /// We also need to make sure Buf * D / U is larger than the number of filter taps. - 1
-    /// as we'll be throwing out the first M * D / U samples
-      
-    // Now create the input filter -- two corners at +/- fs_transition
-    filter = std::unique_ptr<OSFilter>(new OSFilter(Filter::FilterSpec(input_sample_rate, N, COMPLEX)
-						    .add(-input_sample_rate / 2, -100)
-						    .add(-(1.1 * fs_smaller), -100)
-						    .add(-(0.9 * fs_smaller), 0)
-						    .add(+(0.9 * fs_smaller), 0)
-						    .add(+(1.1 * fs_smaller), -100)), 
-				       save_length,
-				       discard_length);
+    // create the input and output FFTs.
+    in_fft_p = std::unique_ptr<SoDa::FFT>(new SoDa::FFT(Lx));
+    out_fft_p = std::unique_ptr<SoDa::FFT>(new SoDa::FFT(Ly));    
+    
+    // and that's it. 
   }
 
 
 
   uint32_t ReSampler::getInputBufferSize() {
-    return 0; 
+    return Lx - D;
   }
 
   
   uint32_t ReSampler::getOutputBufferSize() {
-    return 0; 
+    return Ly - U;
   }
   
   
   uint32_t ReSampler::apply(std::vector<std::complex<float>> & in,
 			    std::vector<std::complex<float>> & out) {
-    return 0; 
+    if(in.size() != getInputBufferSize()) {
+      throw BadBufferSize("Input", in.size(), getInputBufferSize());
+    }
+
+    if(out.size() != getOutputBufferSize()) {
+      throw BadBufferSize("Output", out.size(), getOutputBufferSize());
+    }
+
+    // first do the overlap-and-save thing.
+    for(int i = 0; i < save_count; i++) {
+      x[i] = x[Lx - save_count + i];
+    }
+    for(int i = save_count; i < Lx; i++) {
+      x[i] = in[i - save_count]; 
+    }
+
+    // now do the FFT
+    in_fft_p->fft(x, X);
+
+    // apply the filter
+    lpf_p->apply(X, X, InOutMode(false,false));
+
+    // now load the output Y vector
+    for(int i = 0; i < extract_count; i++) {
+      Y[i] = X[i];
+      Y[extract_count + i] = X[Lx + i - extract_count];
+    }
+    
+    // do the inverse FFT
+    out_fft_p->ifft(Y, y);
+
+    // and copy to the output
+    for(int i = 0; i < getOutputBufferSize(); i++) {
+      out[i] = y[i + discard_count] * scale_factor;
+    }
+    
+    // and that's it!
+    return 0;
   }
 
   uint32_t ReSampler::apply(float * in,

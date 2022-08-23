@@ -30,8 +30,28 @@
 
 namespace SoDa {
 
+  Filter::Filter(float low_cutoff, float high_cutoff, float skirt, 
+		 float sample_rate, unsigned int taps,
+		 unsigned int image_size) {
+    
+    FilterSpec fspec(sample_rate, taps);
+    
+    fspec.add(low_cutoff - skirt, 0)
+      .add(low_cutoff, 1)
+      .add(high_cutoff, 1)                        
+      .add(high_cutoff + skirt, 0);
+    
+    makeFilter(fspec, image_size);
+  }
+
   Filter::Filter(FilterSpec & filter_spec, 
-		 unsigned int image_size) : image_size(image_size) {
+		 unsigned int image_size) {
+    makeFilter(filter_spec, image_size);
+  }
+  
+  void Filter::makeFilter(FilterSpec & filter_spec, 
+			  unsigned int _image_size) {
+    image_size = _image_size;
     auto num_taps = filter_spec.getTaps();    
     // first create a frequency domain ideal filter:
     std::vector<std::complex<float>> Hproto(num_taps);

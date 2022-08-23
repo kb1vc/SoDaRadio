@@ -76,7 +76,9 @@ namespace SoDa {
 	   unsigned int image_size); 
 
     /// Alternate constructor, for very simple filters
-    Filter(float low_cutoff, float high_cutoff, float skirt, float sample_rate);
+    Filter(float low_cutoff, float high_cutoff, float skirt,
+	   float sample_rate, unsigned int taps, unsigned int image_size);
+
     
     /// run the filter on a complex input stream
     /// @param in_buf the input buffer I/Q samples (complex)
@@ -116,6 +118,15 @@ namespace SoDa {
     unsigned int outLenRequired(unsigned int in_size) { return in_size; }
 
   protected:
+    /// @brief  Build the filter from a filter spec for a bandpass filter -- common method
+    /// for all forms of Filter constructors. 
+    /// 
+    /// @param filter_spec object of class FilterSpec identifying corner frequencies and amplitudes
+    /// @param image_size the impulse response and frequency image will be this long
+
+    void makeFilter(FilterSpec & filter_spec, 
+		    unsigned int image_size); 
+    
     /// parameters that we keep to support display masks on the spectrogram
     double low_edge, high_edge; 
 

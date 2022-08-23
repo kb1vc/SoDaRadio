@@ -109,14 +109,22 @@ target_link_libraries(TestServer  rt ${TEST_LIBS})
 set(ReSampler_Test_SRCS
     ReSampler_Test.cxx
     ../src/ReSampler.cxx
-    ../src/ReSamplers625x48.cxx
-    ../src/SoDaBase.cxx)
+    ../src/Filter.cxx
+    ../src/FilterSpec.cxx
+    ../src/FFT.cxx)
 
 add_executable(ReSampler_Test EXCLUDE_FROM_ALL ${ReSampler_Test_SRCS})
-
 target_link_libraries(ReSampler_Test ${TEST_LIBS})
 
-#install(TARGETS ReSampler_Test DESTINATION tests)
+set(PeriodogramTest_SRCS
+    PeriodogramTest.cxx
+    ../src/Periodogram.cxx
+    ../src/FFT.cxx)
+
+add_executable(PeriodogramTest EXCLUDE_FROM_ALL ${PeriodogramTest_SRCS})
+target_link_libraries(PeriodogramTest ${TEST_LIBS})
+
+#install(TARGETS PeriodogramTest DESTINATION tests)
 
 
 ########### next target ###############

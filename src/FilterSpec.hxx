@@ -90,8 +90,8 @@ namespace SoDa {
      * frequencies. The constructor will throw Filter::BadRealSpec
      * otherwise.
      */
-    Filter(float sample_rate, float low_cutoff, float high_cutoff, float skirt_width, 
-	   unsigned int taps, FType filter_type = COMPLEX);
+    FilterSpec(float sample_rate, float low_cutoff, float high_cutoff, float skirt_width, 
+	       unsigned int taps, FType filter_type = COMPLEX);
     
     /**
      * Set the starting gain for this filter. (Defaults to -200dB)

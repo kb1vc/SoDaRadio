@@ -31,6 +31,7 @@
 #include <vector>
 #include <cstdint>
 #include <fftw3.h>
+#include "Radio.hxx"
 #include "Filter.hxx"
 
 namespace SoDa {
@@ -88,14 +89,19 @@ namespace SoDa {
      * 
      * And now for the continous case: 
      * 
-     * It takes U samples of the input stream to produce the first D samples of the output stream. 
-     * If U and D are relatively prime (we did that by removing all common factors) then we can't trust 
-     * the first D samples for a stand-alone resample operation, because we don't have input samples 
-     * x[-U..0].  But for the continous case, we do. We can use the last U samples from the previous 
-     * round to create the first D samples of this round. But those last U samples already gave us 
-     * the last D samples of the previous round. So we'll discard the first D samples of output
-     * from each round, and save the last U samples of input from each round. This is exactly like 
-     * overlap-and-save, but with a slightly different criteria for choosing the overlap size. 
+     * It takes D samples of the input stream to produce the first U
+     * samples of the output stream.  If U and D are relatively prime
+     * (we did that by removing all common factors) then we can't
+     * trust the first U output samples for a stand-alone resample
+     * operation, because we don't have input samples x[-D..0].  But
+     * for the continous case, we do. We can use the last D samples
+     * from the previous round to create the first U samples of this
+     * round. But those last D samples already gave us the last D
+     * samples of the previous round. So we'll discard the first U
+     * samples of output from each round, and save the last D samples
+     * of input from each round. This is exactly like
+     * overlap-and-save, but with a slightly different criteria for
+     * choosing the overlap size.
      */
     ReSampler(float input_sample_rate,
 	      float output_sample_rate,
@@ -112,8 +118,7 @@ namespace SoDa {
      * @param out output buffer
      */
     uint32_t apply(std::vector<std::complex<float>> & in,
-		       std::vector<std::complex<float>> & out, 
-		       );
+		       std::vector<std::complex<float>> & out);
     /**
      * @brief apply the resampler to a buffer of scalar samples.
      *
@@ -124,19 +129,34 @@ namespace SoDa {
 		       float * out);
 
 
+    class BadBufferSize : public Radio::Exception {
+    public:
+      BadBufferSize(const std::string & st, uint32_t got_size, uint32_t should_be_size) :
+	Radio::Exception(SoDa::Format("ReSampler::BadBufferSize:: %0 buffer was length %1 should have been %2\n")
+			 .addS(st).addI(got_size).addI(should_be_size).str()) { }
+    };
+
+    uint32_t getU() { return U; }
+    uint32_t getD() { return D; }
+    
   protected:
-    std::unique_ptr<Filter> lpf; /// the anti-aliasing low pass filter. 
+    std::unique_ptr<SoDa::Filter> lpf_p; /// the anti-aliasing low pass filter. 
+    std::unique_ptr<SoDa::FFT> in_fft_p;
+    std::unique_ptr<SoDa::FFT> out_fft_p;    
     
     uint32_t U; /// upsample rate
     uint32_t D; /// decimation rate
 
-    uint32_t input_buffer_size;
-    uint32_t output_buffer_size; 
+    float scale_factor;
     
-    uint32_t output_lower_half, output_upper_half; /// selectors for output from input image
+    uint32_t Lx; /// input full buffer length
+    uint32_t Ly; /// output full buffer length
 
-    uint32_t save_buf_size;   /// we do an overlap-and-save approach here
-    std::vector<std::complex<float>> save_buf; /// here are the saved samples
+    std::vector<std::complex<float>> x, X, y, Y; /// the working buffers
+    
+    uint32_t extract_count; /// how many samples to stuff in the output vector
+
+    uint32_t save_count;   /// we do an overlap-and-save approach here
     uint32_t discard_count;  /// and we throw out samples at the end. 
   }; 
 }
