@@ -34,7 +34,7 @@ namespace SoDa {
   
   const double UI::spectrum_span = 200e3;
 
-  UI::UI(Params * params) : Thread("UI")
+  UI::UI(Params_p params) : Thread("UI")
   {
     // connect to our message streams.
     cwtxt_stream = nullptr;

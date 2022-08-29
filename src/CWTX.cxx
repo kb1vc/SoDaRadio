@@ -32,7 +32,7 @@
 
 namespace SoDa {
   
-  CWTX::CWTX(Params * params) : Thread("CWTX")
+  CWTX::CWTX(Params_p params) : Thread("CWTX")
   {
     cwtxt_stream = nullptr;
     cw_env_stream = nullptr;

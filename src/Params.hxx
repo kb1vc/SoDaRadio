@@ -34,6 +34,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <algorithm>
 #include <iostream>
 #include <vector>
+#include <memory>
 
 namespace SoDa {
   /**
@@ -183,5 +184,7 @@ namespace SoDa {
 
     unsigned int debug_level; 
   };
+  
+  typedef std::shared_ptr<Params> Params_p; 
 }
 #endif

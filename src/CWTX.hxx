@@ -54,7 +54,7 @@ namespace SoDa {
      * @brief Constructor
      * @param params block describing intial setup of the radio
      */
-    CWTX(Params * params);
+    CWTX(Params_p params);
 
     /// implement the subscription method
     void subscribe();

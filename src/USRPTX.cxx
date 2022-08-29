@@ -45,7 +45,7 @@
 #include <stdio.h>
 
 namespace SoDa { 
-  USRPTX::USRPTX(Params * params, uhd::usrp::multi_usrp::sptr _usrp) : TXBase("USRPTX")
+  USRPTX::USRPTX(Params_p params, uhd::usrp::multi_usrp::sptr _usrp) : TXBase("USRPTX")
   {
     usrp = _usrp; 
 

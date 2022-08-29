@@ -44,7 +44,7 @@ namespace SoDa {
   }
 
   Radio * RadioRegistry::make(const std::string & name, 
-			      Params & parms) {
+			      Params_p parms) {
     auto mkr = get(name); 
     return mkr(parms);
   }

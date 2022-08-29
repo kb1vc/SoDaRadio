@@ -40,7 +40,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace SoDa {
   class UI : public SoDa::Thread {
   public:
-    UI(Params * params);
+    UI(Params_p params);
     ~UI();
 
     /// implement the subscription method

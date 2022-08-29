@@ -53,7 +53,8 @@ namespace SoDa {
   USRPCtrl * USRPCtrl::singleton_ctrl_obj = NULL; 
 
 
-  USRPCtrl::USRPCtrl(Params * _params) : Thread("USRPCtrl")
+  USRPCtrl::USRPCtrl(Params_p params) :
+    Thread("USRPCtrl"), params(params)
   {
     // point to myself.... 
     USRPCtrl::singleton_ctrl_obj = this;
@@ -75,9 +76,6 @@ namespace SoDa {
     tx_samp_rate = 625000;
     tx_ant = std::string("TX");
     motherboard_name = std::string("UNKNOWN_MB");
-  
-    params = _params;
-
   
     // make the device.
     usrp = uhd::usrp::multi_usrp::make(params->getRadioArgs());
@@ -172,8 +170,13 @@ namespace SoDa {
     tx_rf_freq_range = usrp->get_tx_freq_range();
 
     // set the sample rates
-    usrp->set_rx_rate(params->getRXRate());
-    usrp->set_tx_rate(params->getTXRate());
+    auto rxrate = params->getRXRate();
+    auto txrate = params->getTXRate();
+    std::cerr << SoDa::Format("TX rate %0  RX rate %1\n")
+      .addF(txrate, 'e').addF(rxrate, 'e'); 
+
+    usrp->set_rx_rate(rxrate);
+    usrp->set_tx_rate(txrate);
   
     // setup the control IO pins (for TX/RX external relay)
     // Note that there are no GPIOs available for the B2xx right now.

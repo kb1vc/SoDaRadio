@@ -58,7 +58,7 @@ namespace SoDa {
      * @param _usrp libuhd handle for the USRP radio
      *
      */
-    USRPTX(Params * params, uhd::usrp::multi_usrp::sptr _usrp);
+    USRPTX(Params_p params, uhd::usrp::multi_usrp::sptr _usrp);
     
     /**
      * @brief USRPTX run step: modulate the tx carrier

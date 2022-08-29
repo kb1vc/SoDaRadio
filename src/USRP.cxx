@@ -32,14 +32,21 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "USRPTX.hxx"
 
 namespace SoDa {
-  USRP::USRP(Params & params) : Radio("USRP") {
+  USRP::USRP(Params_p params) : params(params), Radio("USRP") {
     /// create the USRP Control, RX Streamer, and TX Streamer threads
     /// @see SoDa::USRPCtrl @see SoDa::USRPRX @see SoDa::USRPTX
-    ctrl = new SoDa::USRPCtrl(&params);
-    rx = new SoDa::USRPRX(&params, ctrl->getUSRP());
-    tx = new SoDa::USRPTX(&params, ctrl->getUSRP());
+    // but first, set the parameters for this radio
+    params->setRXRate(getRXSampleRate());
+    params->setTXRate(getTXSampleRate());
   }
 
+  void USRP::init() {
+    ctrl = new SoDa::USRPCtrl(params);
+    rx = new SoDa::USRPRX(params, ctrl->getUSRP());
+    tx = new SoDa::USRPTX(params, ctrl->getUSRP());
+  }
+
+  
   float USRP::getRXSampleRate() { return 625e3; }
   float USRP::getTXSampleRate() { return 625e3; }
   

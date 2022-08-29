@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2022 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -43,14 +43,14 @@
 #define ALSA_USE_SIMPLE_SETUP
 
 namespace SoDa {
-  AudioQtRXTX::AudioQtRXTX(Params & params, const std::string & name) : 
+  AudioQtRXTX::AudioQtRXTX(Params_p params, const std::string & name) : 
     AudioQtRX(params, "AudioQtRXTX ALSA Interface") {
 
     std::cerr << "Creating AudioQtRXTX\n";    
     // code is largely borrowed from equalarea.com/paul/alsa-audio.html
-    setupCapture(params.getAudioPortName());
+    setupCapture(params->getAudioPortName());
     
-    setupNetwork(params.getServerSocketBasename());
+    setupNetwork(params->getServerSocketBasename());
 
     ang = 0.0; 
     ang_incr = 2.0 * M_PI / 48.0; 

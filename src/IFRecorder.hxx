@@ -73,7 +73,7 @@ namespace SoDa {
      *
      * @param params command line parameter object
      **/
-    IFRecorder(Params * params);
+    IFRecorder(Params_p params);
 
     /// implement the subscription method
     void subscribe();

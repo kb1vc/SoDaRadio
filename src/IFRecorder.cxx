@@ -40,7 +40,7 @@
 
 namespace SoDa {
 
-  IFRecorder::IFRecorder(Params * params) : Thread("IFRecorder")
+  IFRecorder::IFRecorder(Params_p params) : Thread("IFRecorder")
   {
     // setup the streams
     rx_stream = NULL;

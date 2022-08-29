@@ -78,7 +78,7 @@ namespace SoDa {
      * @param params All settings are taken from the params object. 
      * @param name the name for this object/thread
      */
-    AudioQtRX(Params & params, const std::string & name = "AudioQtRX");
+    AudioQtRX(Params_p params, const std::string & name = "AudioQtRX");
 
     ~AudioQtRX() {
       delete audio_rx_socket;

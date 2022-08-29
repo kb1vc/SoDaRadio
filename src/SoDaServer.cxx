@@ -201,17 +201,17 @@ int loadAccessories(const std::vector<std::string> & libs, SoDa::Debug & d) {
 
 /// do the work of creating the SoDa threads
 /// @param params command line parameter parser object
-int doWork(SoDa::Params & params)
+int doWork(SoDa::Params_p params)
 {
   /// create the components of the radio
-  SoDa::Debug d(params.getDebugLevel(), "SoDaServer");
-  d.setDefaultLevel(params.getDebugLevel());
+  SoDa::Debug d(params->getDebugLevel(), "SoDaServer");
+  d.setDefaultLevel(params->getDebugLevel());
 
   // register all our "built-in" radio models
   SoDa::RadioRegistry radios;
   radios.add("USRP", SoDa::USRP::makeUSRP);
   
-  loadAccessories(params.getLibs(), d);
+  loadAccessories(params->getLibs(), d);
   
   // These are the mailboxes that connect
   // the various widgets
@@ -234,19 +234,29 @@ int doWork(SoDa::Params & params)
   /// create the resamplers here. The resampler determines the size of both the
   /// TX/RX RF buffers and the TX/RX baseband buffers.  This is largely driven by
   /// the sample rates supported by the radio.
+  std::cerr << SoDa::Format("Radio sample rates RX %0 TX %1\n")
+    .addF(radio->getRXSampleRate())
+    .addF(radio->getTXSampleRate());
 
   /// The radio must supply a TX and RX sample rate
   SoDa::ReSampler rx_resampler(radio->getRXSampleRate(), 
-			 params.getAudioSampleRate(), 
-			 params.getSampleChunkDuration());
-  SoDa::ReSampler tx_resampler(params.getAudioSampleRate(),
+			 params->getAudioSampleRate(), 
+			 params->getSampleChunkDuration());
+  SoDa::ReSampler tx_resampler(params->getAudioSampleRate(),
 			 radio->getTXSampleRate(), 
-			 params.getSampleChunkDuration());
+			 params->getSampleChunkDuration());
 
-  params.setRXRate(radio->getRXSampleRate());
-  params.setTXRate(radio->getTXSampleRate());
-  params.setRXAFBufferSize(rx_resampler.getOutputBufferSize());
-  params.setTXAFBufferSize(tx_resampler.getInputBufferSize());
+  params->setRXRate(radio->getRXSampleRate());
+  params->setTXRate(radio->getTXSampleRate());
+  
+  params->setRXAFBufferSize(rx_resampler.getOutputBufferSize());
+  params->setTXAFBufferSize(tx_resampler.getInputBufferSize());
+  params->setRXRFBufferSize(rx_resampler.getInputBufferSize());
+  params->setTXRFBufferSize(tx_resampler.getOutputBufferSize());
+
+  
+  // Initialize the radio. 
+  radio->init();
   
   /// Create the audio server on the host machine.
   /// Audio is either via Qt for RX and ALSA for TX.
@@ -264,17 +274,17 @@ int doWork(SoDa::Params & params)
   SoDa::BaseBandTX bbtx(params, &tx_resampler, &audio_ifc);
 
   /// Create the morse code (CW) tx handler thread @see SoDa::CWTX
-  SoDa::CWTX cwtx(&params);
+  SoDa::CWTX cwtx(params);
     
   /// Create the user interface (UI) thread @see SoDa::UI
-  SoDa::UI ui(&params);
+  SoDa::UI ui(params);
 
   /// Create an IF listener process that copies the IF stream to an output file
   /// when requested.
-  SoDa::IFRecorder ifrec(&params);
+  SoDa::IFRecorder ifrec(params);
 
 #if HAVE_GPSLIB    
-  SoDa::GPSmon gps(&params);
+  SoDa::GPSmon gps(params);
 #endif
   
   d.debugMsg("Created units.");
@@ -319,10 +329,10 @@ int main(int argc, char * argv[])
   /// information from the command line and from
   /// the stored configuration files.
   /// @see SoDa::Params
-  SoDa::Params params(argc, argv);
+  SoDa::Params_p params = std::make_shared<SoDa::Params>(argc, argv);
 
   /// create a lock file to signal that we're alive. 
-  createLockFile(params.getLockFileName()); 
+  createLockFile(params->getLockFileName()); 
 
   try {
     doWork(params); 
@@ -332,5 +342,5 @@ int main(int argc, char * argv[])
     std::cerr << "\t" << exc.what() << std::endl; 
   }
 
-  deleteLockFile(params.getLockFileName());   
+  deleteLockFile(params->getLockFileName());   
 }

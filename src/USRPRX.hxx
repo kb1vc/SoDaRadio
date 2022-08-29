@@ -55,7 +55,7 @@ namespace SoDa {
      *        about sample rates and other configuration details.
      * @param usrp a pointer to the UHD USRP object that we are streaming data from.
      */
-    USRPRX(Params * params, uhd::usrp::multi_usrp::sptr usrp);
+    USRPRX(Params_p params, uhd::usrp::multi_usrp::sptr usrp);
 
     /**
      * @brief report the RX stream sample rate.  This is the sample rate

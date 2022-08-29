@@ -44,7 +44,7 @@
 #include "MacFixes.hxx"
 
 namespace SoDa {
-  BaseBandTX::BaseBandTX(Params & params, 
+  BaseBandTX::BaseBandTX(Params_p params, 
 			 ReSampler * resampler, 
 			 AudioIfc * _audio_ifc
 			 ) : tx_resampler(resampler), Thread("BaseBandTX")
@@ -55,15 +55,15 @@ namespace SoDa {
 
     cmd_stream = NULL;
 
-    audio_buffer_size = params.getTXAFBufferSize();
-    tx_buffer_size = params.getTXRFBufferSize();
+    audio_buffer_size = params->getTXAFBufferSize();
+    tx_buffer_size = params->getTXRFBufferSize();
 
     audio_IQ_buf.resize(audio_buffer_size);
     
     // create the audio stream.
     // borrow the stream from the BaseBandRX side. ? 
     //   pa_stream = _pa_stream;
-    double srate = params.getAudioSampleRate();
+    double srate = params->getAudioSampleRate();
 
     // now setup the FM deviation
     nbfm_deviation = 2.0 * M_PI * 2.5e3 / srate; // 2.5 kHz max deviation

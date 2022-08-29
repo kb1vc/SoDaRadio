@@ -67,6 +67,8 @@ namespace SoDa {
      */
     Radio(const std::string & name) : name(name) { }
 
+    virtual void init() = 0;
+    
     /**
      * @brief EVERY radio must supply a few parameters to all the
      * other units. Most important are the TX and RX sample rates

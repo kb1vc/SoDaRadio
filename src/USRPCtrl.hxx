@@ -78,7 +78,7 @@ namespace SoDa {
     /// Build a USRPCtrl thread
     /// @param params Pointer to a parameter object with all the initial settings
     /// and identification for the attached USRP
-    USRPCtrl(Params * params);
+    USRPCtrl(Params_p params);
     /// start the thread
     void run();
 
@@ -101,7 +101,7 @@ namespace SoDa {
     static SoDa::USRPCtrl * singleton_ctrl_obj;
     
   private:
-    Params * params;
+    Params_p params;
 
     /// The B200 and B210 need some special handling, as they
     /// don't have frontend lock indications (as of 3.7.0)

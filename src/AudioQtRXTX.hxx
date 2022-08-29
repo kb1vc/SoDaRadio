@@ -66,7 +66,7 @@ namespace SoDa {
      * @param params settings for the radio...
      * @param name the name for this object/thread     
      */
-    AudioQtRXTX(Params & params, const std::string & name = "AudioTqRXTX ALSA Interface"); 
+    AudioQtRXTX(Params_p params, const std::string & name = "AudioTqRXTX ALSA Interface"); 
 
     ~AudioQtRXTX() {
     }

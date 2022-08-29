@@ -44,7 +44,7 @@
 
 namespace SoDa {
 
-  USRPRX::USRPRX(Params * params, uhd::usrp::multi_usrp::sptr _usrp) : 
+  USRPRX::USRPRX(Params_p params, uhd::usrp::multi_usrp::sptr _usrp) : 
     RXBase("USRPRX")
   {
 
@@ -63,7 +63,7 @@ namespace SoDa {
     // no UI listening for spectrum dumps yet.
     ui = NULL; 
 
-    rx_sample_rate = 625e3;
+    rx_sample_rate = params->getRXRate();
     rx_buffer_size = params->getRXRFBufferSize(); 
 
     // we aren't receiving yet. 
@@ -118,8 +118,8 @@ namespace SoDa {
     if(audio_rx_stream_enabled) {
       // go get some data
       // get a free buffer.
-      CFBuf buf = makeCFBuf(rx_buffer_size); 
 
+      CFBuf buf = makeCFBuf(rx_buffer_size); 
       if(buf == nullptr) {
 	throw Radio::Exception("USRPRX couldn't allocate Buf object", this); 
       }

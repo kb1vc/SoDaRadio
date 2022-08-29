@@ -56,7 +56,7 @@ namespace SoDa {
      * @param resampler pointer to a resampler from the audio stream to the TX RF stream
      * @param audio_ifc pointer to the audio output handler
      */
-    BaseBandTX(Params & params,
+    BaseBandTX(Params_p params,
 	       ReSampler * resampler, 
 	       AudioIfc * audio_ifc
 	       );

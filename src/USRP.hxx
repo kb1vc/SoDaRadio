@@ -36,10 +36,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "Radio.hxx"
+#include "Params.hxx"
 
 namespace SoDa {
 
-  class Params; 
   class USRPCtrl;
   class USRPRX;
   class USRPTX;
@@ -57,19 +57,21 @@ namespace SoDa {
      * @param parms a parameter object that supplies any unit with initial 
      * settings. 
      */
-    USRP(Params & parms); 
+    USRP(Params_p parms); 
 
 
     float getRXSampleRate();
     float getTXSampleRate();
     
-    static Radio * makeUSRP(Params & parms) { return new USRP(parms); }
+    static Radio * makeUSRP(Params_p parms) { return new USRP(parms); }
 
+    void init();
     void cleanUp();
     
   private:
     USRPCtrl * ctrl;
     USRPRX * rx;
     USRPTX * tx;
+    Params_p params; 
   };
 }

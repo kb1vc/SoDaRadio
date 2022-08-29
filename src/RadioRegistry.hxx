@@ -55,13 +55,13 @@ namespace SoDa {
    public:
      RadioRegistry(); 
 
-     typedef std::function<Radio*(Params &)> RadioBuilderFunc;
+     typedef std::function<Radio*(Params_p)> RadioBuilderFunc;
      
      void add(const std::string & name, RadioBuilderFunc builder);
 
      RadioBuilderFunc & get(const std::string & name);
 
-     Radio * make(const std::string & name, Params & parms);
+     Radio * make(const std::string & name, Params_p parms);
      
      std::string supportedRadios(); 
 

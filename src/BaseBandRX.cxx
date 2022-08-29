@@ -36,7 +36,7 @@
 #include <SoDa/Format.hxx>
 
 namespace SoDa {
-  BaseBandRX::BaseBandRX(Params & params,
+  BaseBandRX::BaseBandRX(Params_p params,
 			 ReSampler * resampler,
 			 AudioIfc * audio_ifc) : 
     audio_ifc(audio_ifc), rx_resampler(resampler), Thread("BaseBandRX")
@@ -48,10 +48,10 @@ namespace SoDa {
     // set up some convenient defaults
     rx_modulation = Command::USB;
     // what is the sample rate and buffer size?
-    audio_sample_rate = params.getAudioSampleRate(); 
-    rf_sample_rate = params.getRXRate(); 
-    audio_buffer_size = params.getRXAFBufferSize();
-    rf_buffer_size = params.getRXRFBufferSize();
+    audio_sample_rate = params->getAudioSampleRate(); 
+    rf_sample_rate = params->getRXRate(); 
+    audio_buffer_size = params->getRXAFBufferSize();
+    rf_buffer_size = params->getRXRFBufferSize();
 
     // setup the audio level meter
     log_audio_buffer_size = log10((float) audio_buffer_size); 
@@ -289,7 +289,8 @@ namespace SoDa {
     CFBuf dbufi = makeCFBuf(audio_buffer_size); 
     CFBuf dbufo = makeCFBuf(audio_buffer_size); 
     // Note that audio_buffer_size must be (sample_length / decimation rate)
-  
+
+
     if((rx_modulation != Command::WBFM) && (rx_modulation != Command::NBFM)) {
       rx_resampler->apply(*rxbuf, *dbufi);
     
@@ -500,8 +501,9 @@ namespace SoDa {
 
       // now look for incoming buffers from the rx_stream. 
       int bcount = 0; 
-      for(bcount = 0; (bcount < 5) && ((rxbuf = rx_stream->get(rx_subs)) != NULL); bcount++) {
-	if(rxbuf == NULL) break; 
+      for(bcount = 0; (bcount < 5) && ((rxbuf = rx_stream->get(rx_subs)) != nullptr); bcount++) {
+	if(rxbuf == nullptr) break; 
+
 	did_work = true; 
 	// if we're in TX mode, we should just pend silence and ignore the incoming buffer
 	// otherwise, demodulate it.
