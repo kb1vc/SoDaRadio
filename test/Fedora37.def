@@ -29,7 +29,7 @@ From: fedora:37
  make package
  cp *.rpm /mnt
  
- %help
+%help
   This builds SoDaRadio and creates an .rpm kit. The resulting kit
   will be written to the current directory with the following command:
 

@@ -67,7 +67,7 @@ namespace SoDa {
      *
      * @return a reference to the accumulator
      */
-    const std::vector<float> & get() const;
+    void get(std::vector<float> & res) const;
     
     /**
      * @brief the magitude of the accumulator may increase with each
@@ -76,6 +76,7 @@ namespace SoDa {
      */
     float getScaleFactor(); 
 
+    uint32_t getSize() { return segment_length; }
     /**
      * @brief clear the state of the periodogram -- zero out the accumulator, 
      * and empty the input save buffer. 

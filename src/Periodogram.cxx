@@ -129,8 +129,16 @@ namespace SoDa {
     }
   }
 
-  const std::vector<float> & Periodogram::get() const {
-    return acc_buffer; 
+  void Periodogram::get(std::vector<float> & res) const {
+    res.resize(acc_buffer.size());
+    // fft shift the acc buffer into the result buffer
+    int len = acc_buffer.size(); 
+    int half_idx = len / 2;
+    for(int i = 0; i < half_idx; i++) {
+      res[i] = acc_buffer[half_idx + i];
+      res[half_idx + i] = acc_buffer[i];
+    }
+    return; 
   }
     
   float Periodogram::getScaleFactor() {
