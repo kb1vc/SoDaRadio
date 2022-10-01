@@ -33,7 +33,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Command.hxx"
 #include "Params.hxx"
 #include "UDSockets.hxx"
-#include "Spectrogram.hxx"
+#include <SoDa/Periodogram.hxx>
 #include "MailBoxTypes.hxx"
 #include "MailBoxRegistry.hxx"
 
@@ -62,14 +62,14 @@ namespace SoDa {
     // these are the pieces of the posix message queue interface to the GUI or whatever.
     SoDa::UD::ServerSocket * server_socket, * wfall_socket; 
 
-    // we ship a spectrogram of the RX IF stream to the GUI
-    Spectrogram * spectrogram;
-    unsigned int spectrogram_buckets; 
+    // we ship a periodogram of the RX IF stream to the GUI
+    Periodogram * periodogram;
+    unsigned int periodogram_buckets; 
 
-    Spectrogram * lo_spectrogram; 
-    unsigned int lo_spectrogram_buckets;
+    Periodogram * lo_periodogram; 
+    unsigned int lo_periodogram_buckets;
     double lo_hz_per_bucket;
-    float * lo_spectrum; 
+    std::vector<float> lo_spectrum; 
 
     // the spectrum runs from -100kHz below to 100kHz above the center freq. 
     static const double spectrum_span; // = 200e3; 
@@ -79,7 +79,7 @@ namespace SoDa {
     double hz_per_bucket; 
     int required_spect_buckets;
 
-    float * spectrum, * log_spectrum;
+    std::vector<float> spectrum, log_spectrum;
     bool new_spectrum_setting;
 
     float fft_acc_gain;

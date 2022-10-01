@@ -43,17 +43,14 @@
 #define ALSA_USE_SIMPLE_SETUP
 
 namespace SoDa {
-  AudioQtRXTX::AudioQtRXTX(unsigned int _sample_rate,
-			   unsigned int _sample_count_hint, 
-			   std::string audio_sock_basename, 
-			   std::string audio_port_name) :
-    AudioQtRX(_sample_rate, _sample_count_hint, "AudioQtRXTX ALSA Interface") {
+  AudioQtRXTX::AudioQtRXTX(Params & params, const std::string & name) : 
+    AudioQtRX(params, "AudioQtRXTX ALSA Interface") {
 
     std::cerr << "Creating AudioQtRXTX\n";    
     // code is largely borrowed from equalarea.com/paul/alsa-audio.html
-    setupCapture(audio_port_name);
+    setupCapture(params.getAudioPortName());
     
-    setupNetwork(audio_sock_basename); 
+    setupNetwork(params.getServerSocketBasename());
 
     ang = 0.0; 
     ang_incr = 2.0 * M_PI / 48.0; 

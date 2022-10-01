@@ -40,6 +40,9 @@ namespace SoDa {
     tx = new SoDa::USRPTX(&params, ctrl->getUSRP());
   }
 
+  float USRP::getRXSampleRate() { return 625e3; }
+  float USRP::getTXSampleRate() { return 625e3; }
+  
   void USRP::cleanUp() {
     // not much here. 
   }

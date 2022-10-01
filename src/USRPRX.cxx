@@ -64,7 +64,7 @@ namespace SoDa {
     ui = NULL; 
 
     rx_sample_rate = 625e3;
-    rx_buffer_size = params->getRFBufferSize(); 
+    rx_buffer_size = params->getRXRFBufferSize(); 
 
     // we aren't receiving yet. 
     audio_rx_stream_enabled = false;

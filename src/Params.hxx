@@ -87,20 +87,36 @@ namespace SoDa {
      * the size of the RX buffer
      */
     double getRXRate() const { 
-#warning this is obsolete getRXRate should be a command from the RX unit
-      return 625000;
+      return rx_sample_rate; 
     }
+    
+    void setRXRate(double rate) {
+      rx_sample_rate = rate; 
+    }
+
     /**
      * @brief TX rate will always be 625K
      */
     double getTXRate() const {
-#warning this is obsolete getTXRate should be a command from the TX unit      
-      return 625000;
+      return tx_sample_rate;
+    }
+    
+    void setTXRate(double rate) {
+      tx_sample_rate = rate; 
     }
 
     double getAudioSampleRate() const { return 48000.0 ; }
-    unsigned int getRFBufferSize() const { return (unsigned int) 30000; }
-    unsigned int getAFBufferSize() const { return (unsigned int) 2304; }
+    unsigned int getTXRFBufferSize() const { return tx_rf_buffer_size; }
+    unsigned int getRXRFBufferSize() const { return rx_rf_buffer_size; }    
+    unsigned int getTXAFBufferSize() const { return tx_af_buffer_size; }
+    unsigned int getRXAFBufferSize() const { return rx_af_buffer_size; }    
+
+    void setTXRFBufferSize(unsigned int s)  { tx_rf_buffer_size = s; }
+    void setRXRFBufferSize(unsigned int s)  { rx_rf_buffer_size = s; }
+    void setTXAFBufferSize(unsigned int s)  { tx_af_buffer_size = s; }
+    void setRXAFBufferSize(unsigned int s)  { rx_af_buffer_size = s; }        
+
+    float getSampleChunkDuration() { return 0.05; }
 
     std::string getServerSocketBasename() const { return server_sock_basename; }
 
@@ -150,6 +166,11 @@ namespace SoDa {
     double rx_rate, tx_rate;
     std::string rx_ant, tx_ant;
 
+    double tx_sample_rate;
+    double rx_sample_rate;
+    unsigned int tx_rf_buffer_size, rx_rf_buffer_size;
+    unsigned int tx_af_buffer_size, rx_af_buffer_size;
+    
     // message socket parameters
     std::string server_sock_basename;
 

@@ -32,8 +32,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "MailBoxTypes.hxx"
 #include "Params.hxx"
 #include "Command.hxx"
-#include "ReSamplers625x48.hxx"
-#include "HilbertTransformer.hxx"
+#include <SoDa/ReSampler.hxx>
+#include <SoDa/OSFilter.hxx>
 #include "AudioIfc.hxx"
 
 namespace SoDa {
@@ -53,9 +53,11 @@ namespace SoDa {
      * constructor
      *
      * @param params command line parameter object
+     * @param resampler pointer to a resampler from the audio stream to the TX RF stream
      * @param audio_ifc pointer to the audio output handler
      */
-    BaseBandTX(Params * params,
+    BaseBandTX(Params & params,
+	       ReSampler * resampler, 
 	       AudioIfc * audio_ifc
 	       );
 
@@ -87,24 +89,19 @@ namespace SoDa {
      * @brief create an AM/SSB modulation envelope
      *
      * @param audio_buf the buffer of modulating audio info
-     * @param len the length of the audio buffer
-     * @param is_usb if true, generate upper sideband
-     * @param is_lsb if true, generate lower sideband
-     * if both is_usb and is_lsb are false, the modulator
-     * creates an IQ stream that is amplitude modulated
+     * @param tx_mode is AM, USB, or LSB
      */
-    SoDa::CFBuf  modulateAM(float * audio_buf, unsigned int len, bool is_usb, bool is_lsb); 
+    SoDa::CFBuf  modulateAM(FBuf audio_buf, Command::ModulationType tx_mode);
 
     /**
      * @brief create a narrowband/wideband FM modulation envelope
      *
      * @param audio_buf the buffer of modulating audio info
-     * @param len the length of the audio buffer
      * @param deviation the phase shift per audio sample for a maximum amplitude (1.0) input.
      *
      * Note that this modulator varies the mic gain to prevent over-deviation. 
      */
-    SoDa::CFBuf  modulateFM(float * audio_buf, unsigned int len, double deviation);
+    SoDa::CFBuf  modulateFM(FBuf audio_buf, double deviation);
     double fm_phase;
     double nbfm_deviation; ///< phase advance for 2.5kHz deviation.
     double wbfm_deviation; ///< phase advance for 75kHz deviation
@@ -116,7 +113,7 @@ namespace SoDa {
     MsgSubs cmd_subs; ///< subscription ID for command stream
     
     // The interpolator
-    SoDa::ReSample48to625 * interpolator;  ///< Upsample from 48KHz to 625KHz
+    SoDa::ReSampler * tx_resampler;  ///< Upsample from 48KHz to 625KHz
 
     // parameters
     unsigned int audio_buffer_size; ///< length (in samples) of an input audio buffer
@@ -137,40 +134,16 @@ namespace SoDa {
 
     // we need some intermediate storage for things like
     // the IQ buffer
-    std::complex<float> * audio_IQ_buf; ///< temporary storage for outbound modulation envelope
+    std::vector<std::complex<float>> audio_IQ_buf; ///< temporary storage for outbound modulation envelope
 
-    /**
-     * SSB modulation requires that we upsample before
-     * doing the quadrature generation.
-     */
-    float * ssb_af_upsample; 
-
-    /**
-     * This is a buffer that holds a set of "noise" samples (uniform random)
-     * for testing the TX audio chain.
-     */
-    float * noise_buffer; 
-
-    /**
-     * When this is TRUE, audio modes (USB,LSB,AM,NBFM,WBFM) use a noise source for
-     * input. 
-     */
-    bool tx_noise_source_ena; 
-
-    /**
-     * There is an audio filter in the chain, by default.  This is the enable.
-     */
-    bool tx_audio_filter_ena; 
-    
     /** 
-     * TX audio filter
+     * TX audio filter.  We use USB/LSB filters to suppress the carrier and
+     * alternate sideband.  Hilbert trannsformers look good in the book, but
+     * their bad behavior around DC makes for mediocre supression. 
      */
-    SoDa::OSFilter * tx_audio_filter;
+    SoDa::OSFilter * tx_usb_audio_filter;
+    SoDa::OSFilter * tx_lsb_audio_filter;    
 
-    /**
-     *The hilbert transformer to create an analytic (I/Q) signal.
-     */
-    SoDa::HilbertTransformer * hilbert;
 
     /**
      * mic gain is adjustable, to make sure we aren't noxious.

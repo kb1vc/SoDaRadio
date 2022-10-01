@@ -70,7 +70,7 @@ namespace SoDa {
 
     // find out how to configure the transmitter
     tx_sample_rate = params->getTXRate();
-    tx_buffer_size = params->getRFBufferSize();
+    tx_buffer_size = params->getTXRFBufferSize();
   
     // 400 Hz is a nice tone
     // but 400 doesn't really work that well.

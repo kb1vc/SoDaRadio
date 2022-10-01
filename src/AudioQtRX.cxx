@@ -34,15 +34,14 @@
 
 
 namespace SoDa {
-  AudioQtRX::AudioQtRX(unsigned int _sample_rate,
-		   unsigned int _sample_count_hint, 
-		   std::string audio_sock_basename, 
-		   std::string audio_port_name) :
-    AudioIfc(_sample_rate, _sample_count_hint, "AudioQtRX Qt Interface") {
+  AudioQtRX::AudioQtRX(Params & params, const std::string & name) :
+		   AudioIfc(params.getAudioSampleRate(), 
+			    params.getRXAFBufferSize(), 
+			    name) {
 
     std::cerr << "Creating AudioQtRX\n";
     
-    setupNetwork(audio_sock_basename); 
+    setupNetwork(params.getServerSocketBasename());
 
     ang = 0.0; 
     ang_incr = 2.0 * M_PI / 48.0; 

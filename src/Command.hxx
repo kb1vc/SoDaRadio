@@ -441,11 +441,6 @@ namespace SoDa
 	 */
 	TX_AUDIO_IN,
 
-	/**
-	 * Enable the TX audio bandpass filter (limit to 2.5 kHz) for SSB/AM/FM
-	 */
-	TX_AUDIO_FILT_ENA,
-
 	/** 
 	 * Report min max RX Gain setting (dparm[0,1] = min, max)
 	 */

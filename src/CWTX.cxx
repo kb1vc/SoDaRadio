@@ -41,7 +41,7 @@ namespace SoDa {
     // get the controlling audio parameters
     // like the audio sample rate and buffer size
     rf_sample_rate = params->getTXRate();
-    rf_buffer_size = params->getRFBufferSize();
+    rf_buffer_size = params->getTXRFBufferSize();
   
   
     sent_char_count = 0;

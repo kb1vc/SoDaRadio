@@ -31,6 +31,7 @@
 #include "SoDaBase.hxx"
 #include "AudioIfc.hxx"
 #include "UDSockets.hxx"
+#include "Params.hxx"
 #include <string>
 #include <mutex>
 #include <iostream>
@@ -74,17 +75,10 @@ namespace SoDa {
   public:
     /**
      * constructor
-     * @param _sample_rate in Hz  48000 is a good choice
-     * @param _sample_count_hint  the size of the buffers passed to and from
-     *                              the audio device (in samples)
-     * @param audio_sock_basename starting string for the unix-domain socket 
-     *                            that carries the audio stream from the SoDaServer (radio) process
-     * @param audio_port_name  which ALSA device are we connecting to?
+     * @param params All settings are taken from the params object. 
+     * @param name the name for this object/thread
      */
-    AudioQtRX(unsigned int _sample_rate,
-	    unsigned int _sample_count_hint = 1024,
-	    std::string audio_sock_basename = std::string("soda_"),
-	    std::string audio_port_name = std::string("default"));
+    AudioQtRX(Params & params, const std::string & name = "AudioQtRX");
 
     ~AudioQtRX() {
       delete audio_rx_socket;

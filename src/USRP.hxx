@@ -59,6 +59,10 @@ namespace SoDa {
      */
     USRP(Params & parms); 
 
+
+    float getRXSampleRate();
+    float getTXSampleRate();
+    
     static Radio * makeUSRP(Params & parms) { return new USRP(parms); }
 
     void cleanUp();

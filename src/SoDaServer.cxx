@@ -230,22 +230,38 @@ int doWork(SoDa::Params & params)
   SoDa::Radio * radio; 
   radio = radios.make("USRP", params);
 
+  /// Though it is rather sad, it looks like the cleanest approach is to
+  /// create the resamplers here. The resampler determines the size of both the
+  /// TX/RX RF buffers and the TX/RX baseband buffers.  This is largely driven by
+  /// the sample rates supported by the radio.
+
+  /// The radio must supply a TX and RX sample rate
+  SoDa::ReSampler rx_resampler(radio->getRXSampleRate(), 
+			 params.getAudioSampleRate(), 
+			 params.getSampleChunkDuration());
+  SoDa::ReSampler tx_resampler(params.getAudioSampleRate(),
+			 radio->getTXSampleRate(), 
+			 params.getSampleChunkDuration());
+
+  params.setRXRate(radio->getRXSampleRate());
+  params.setTXRate(radio->getTXSampleRate());
+  params.setRXAFBufferSize(rx_resampler.getOutputBufferSize());
+  params.setTXAFBufferSize(tx_resampler.getInputBufferSize());
+  
   /// Create the audio server on the host machine.
   /// Audio is either via Qt for RX and ALSA for TX.
   /// If ALSA is not present, the server will be RX only.
   /// These are subclasses of the more generic SoDa::AudioIfc class
-  //
   
-  AudioQt audio_ifc(params.getAudioSampleRate(),
-		    params.getAFBufferSize(),
-		    params.getServerSocketBasename(),
-		    params.getAudioPortName());
+  AudioQt audio_ifc(params);
+  
   /// Create the audio RX and audio TX unit threads
   /// These are also responsible for implementing IF tuning and modulation. 
   /// @see SoDa::BaseBandRX @see SoDa::BaseBandTX
-  SoDa::BaseBandRX bbrx(&params, &audio_ifc);
+						    
+  SoDa::BaseBandRX bbrx(params, &rx_resampler, &audio_ifc);
 
-  SoDa::BaseBandTX bbtx(&params, &audio_ifc);
+  SoDa::BaseBandTX bbtx(params, &tx_resampler, &audio_ifc);
 
   /// Create the morse code (CW) tx handler thread @see SoDa::CWTX
   SoDa::CWTX cwtx(&params);

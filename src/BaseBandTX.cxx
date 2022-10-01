@@ -37,16 +37,17 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdio.h>
-#include "OSFilter.hxx"
-#include "ReSamplers625x48.hxx"
+#include <SoDa/OSFilter.hxx>
+#include <SoDa/ReSampler.hxx>
 #include <cstdlib>
 #include <math.h>
 #include "MacFixes.hxx"
 
 namespace SoDa {
-  BaseBandTX::BaseBandTX(Params * params, 
+  BaseBandTX::BaseBandTX(Params & params, 
+			 ReSampler * resampler, 
 			 AudioIfc * _audio_ifc
-			 ) : Thread("BaseBandTX")
+			 ) : tx_resampler(resampler), Thread("BaseBandTX")
   {
     debug_mode = false;
     debug_ctr = 0;
@@ -54,16 +55,15 @@ namespace SoDa {
 
     cmd_stream = NULL;
 
-    audio_buffer_size = params->getAFBufferSize();
-    tx_buffer_size = params->getRFBufferSize();
-  
-    // create the interpolator.
-    interpolator = new ReSample48to625(audio_buffer_size);
+    audio_buffer_size = params.getTXAFBufferSize();
+    tx_buffer_size = params.getTXRFBufferSize();
 
+    audio_IQ_buf.resize(audio_buffer_size);
+    
     // create the audio stream.
     // borrow the stream from the BaseBandRX side. ? 
     //   pa_stream = _pa_stream;
-    double srate = params->getAudioSampleRate();
+    double srate = params.getAudioSampleRate();
 
     // now setup the FM deviation
     nbfm_deviation = 2.0 * M_PI * 2.5e3 / srate; // 2.5 kHz max deviation
@@ -74,35 +74,11 @@ namespace SoDa {
 
     tx_stream_on = false;
 
-    // create the IQ buffer.
-    audio_IQ_buf = new std::complex<float>[8*audio_buffer_size];
-
-    // create the Hilbert transformer
-    hilbert = new HilbertTransformer(audio_buffer_size);
-
-    // create the noise buffer
-    noise_buffer = new float[audio_buffer_size]; 
-    // and initialize it.
-    // use the same random init every time -- counterintuitive, but 
-    // I want this to be "repeatable" noise.
-    srandom(0x92314159);
-    for(unsigned int i = 0; i < audio_buffer_size; i++) {
-      float rfl = ((float) random()) / ((float) RAND_MAX);
-      rfl = rfl - 0.5; // make the mean 0
-      noise_buffer[i] = rfl * 0.5; 
-    }
-  
-    // clear the noise enable 
-    tx_noise_source_ena = false; 
-
     // setup the audio filter for the tx audio input...
-    tx_audio_filter = new OSFilter(80.0, 150.0, 2300.0, 2400.0, 
-				   512, 1.0, 
-				   srate, audio_buffer_size);
+    tx_usb_audio_filter = new OSFilter(150, 2300, 200, srate, audio_buffer_size); 
 
-    // enable the audio filter by default.
-    tx_audio_filter_ena = true; 
-
+    tx_lsb_audio_filter = new OSFilter(-150, -2300, 200, srate, audio_buffer_size); 
+    
     mic_gain = 0.8;  //  was ... 0.4;
 
     fm_mic_gain = 0.8;
@@ -112,7 +88,8 @@ namespace SoDa {
   {
     bool exitflag = false;
     std::shared_ptr<Command> cmd; 
-    float audio_buf[audio_buffer_size];
+    FBuf audio_buf = makeFBuf(audio_buffer_size); 
+
 
     if((cmd_stream == NULL) || (tx_stream == NULL)) {
       throw Radio::Exception(std::string("Missing a stream connection.\n"),
@@ -146,49 +123,30 @@ namespace SoDa {
 	exitflag |= (cmd->target == Command::STOP); 
       }
       else if (!tx_stream_on || cw_tx_mode) {
-	// read audio information and throw it away. 
-	audio_ifc->recv(audio_buf, audio_buffer_size, true);
+	// read audio information and throw it away. 	  	
+	audio_ifc->recv(audio_buf->data(), audio_buffer_size, true);
 	usleep(1000); 
       }
       else {
 	// If we're in TX mode that isn't CW....
 	// get an input audio buffer.
-	if (tx_stream_on && audio_ifc->recv(audio_buf, audio_buffer_size, true)) { 
+	if (tx_stream_on && audio_ifc->recv(audio_buf->data(), audio_buffer_size, true)) { 
 	  CFBuf txbuf = makeCFBuf(tx_buffer_size);
-	  float * audio_tx_buffer = audio_buf; 
 
-	  if(tx_noise_source_ena) {
-	    audio_tx_buffer = noise_buffer; 	  
+	  switch (tx_mode) {
+	  case Command::USB:
+	  case Command::LSB:
+	  case Command::AM:
+	    txbuf = modulateAM(audio_buf, tx_mode);
+	    break; 
+	  case Command::NBFM:
+	    txbuf = modulateFM(audio_buf, nbfm_deviation);
+	    break; 
+	  case Command::WBFM:
+	    txbuf = modulateFM(audio_buf, wbfm_deviation);
+	    break;
 	  }
 
-	  // If we're using NOISE, we don't want to overwrite the 
-	  // noise buffer with a filtered noise sequence.  Instead,
-	  // if we're using NOISE and filtering, we'll dump the 
-	  // filters into the audio buffer, then point back to 
-	  // the audio buffer. 
-	  // If we aren't using NOISE, then this is all hunky dory too. 
-	  // If we're using NOISE and we aren't filtering, then audio_tx_buffer
-	  // still points to the NOISE buffer. 
-	  if(tx_audio_filter_ena) {
-	    tx_audio_filter->apply(audio_tx_buffer, audio_buf);
-	    audio_tx_buffer = audio_buf; 
-	  }
-	
-	  if(tx_mode == Command::USB) {
-	    txbuf = modulateAM(audio_tx_buffer, audio_buffer_size, true, false); 
-	  }
-	  else if(tx_mode == Command::LSB) {
-	    txbuf = modulateAM(audio_tx_buffer, audio_buffer_size, false, true); 
-	  }
-	  else if(tx_mode == Command::AM) {
-	    txbuf = modulateAM(audio_tx_buffer, audio_buffer_size, false, false); 
-	  }
-	  else if(tx_mode == Command::NBFM) {
-	    txbuf = modulateFM(audio_tx_buffer, audio_buffer_size, nbfm_deviation);
-	  }
-	  else if(tx_mode == Command::WBFM) {
-	    txbuf = modulateFM(audio_tx_buffer, audio_buffer_size, wbfm_deviation);
-	  }
 	  if(txbuf != NULL) {
 	    tx_stream->put(txbuf); 
 	  }
@@ -198,50 +156,48 @@ namespace SoDa {
     }
   }
 
-  CFBuf  BaseBandTX::modulateAM(float * audio_buf,
-				unsigned int len,
-				bool is_usb,
-				bool is_lsb)
+  CFBuf  BaseBandTX::modulateAM(FBuf audio_buf,
+				Command::ModulationType tx_mode)
   {
-    (void) len; 
-    /// If the modulation scheme is USB or SSB,
-    /// we need to make an analytic signal from the scalar real audio_buf.
-  
-    if(is_usb || is_lsb) {
-      /// If we're looking at USB, then for I = sin(w), Q => cos(w)
-      /// for LSB I = sin(w), Q => -cos(w)
-      hilbert->apply(audio_buf, audio_IQ_buf, is_lsb, mic_gain);
+    // Once upon a time  we used a hilbert transformer. That was a bad
+    // idea because the transformer wasn't all that good around DC, making
+    // the carrier and sideband supression pretty sketchy. We'll use a
+    // bandpass filter here, applied to the synthetic complex buffer.
+    for(int i = 0; i < audio_IQ_buf.size(); i++) {
+      audio_IQ_buf[i] = std::complex<float>((*audio_buf)[i] * mic_gain, 0.0);
     }
-    else {
-      /// if neither is_usb is_lsb is true, then we want to produce
-      /// an AM envelope.  Put the same signal in both I and Q.
-      unsigned int i;
-      for(i = 0; i < audio_buffer_size; i++) {
-	audio_IQ_buf[i] = std::complex<float>(audio_buf[i], 0.0) * mic_gain;
-      }
-    }
-
   
+    // now we apply the appropriate filter
+    switch (tx_mode) {
+    case Command::USB:
+      tx_usb_audio_filter->apply(audio_IQ_buf, audio_IQ_buf);
+      break; 
+    case Command::LSB:
+      tx_lsb_audio_filter->apply(audio_IQ_buf, audio_IQ_buf);
+      break; 
+    default:
+      // happy with what we have. 
+	break; 
+    }
 
     /// Now that the I/Q channels have been populated, get a transmit buffer. 
     /// and upsample the I/Q audio up to the RF rate.
     CFBuf txbuf = makeCFBuf(tx_buffer_size);
   
     /// Upsample the IQ audio (at 48KS/s) to the RF sample rate of 625 KS/s
-    interpolator->apply(audio_IQ_buf, txbuf->data()); 
+    tx_resampler->apply(audio_IQ_buf, *txbuf); 
 
     /// pass the newly created and filled buffer back to the caller
     return txbuf; 
   }
 
 
-  CFBuf  BaseBandTX::modulateFM(float *audio_buf, unsigned int len, double deviation)
+  CFBuf  BaseBandTX::modulateFM(FBuf audio_buf, double deviation)
   {
-    (void) len; 
     unsigned int i;
   
     for(i=0; i < audio_buffer_size; i++) {
-      double audio_amp = audio_buf[i] * fm_mic_gain;
+      double audio_amp = (*audio_buf)[i] * fm_mic_gain;
 
       // apply a little clipping here.. better to sound
       // bad than to bleed into the neighboring channel.
@@ -264,7 +220,7 @@ namespace SoDa {
     CFBuf txbuf = makeCFBuf(tx_buffer_size);
 
     // Upsample the IQ audio (at 48KS/s) to the RF sample rate of 625 KS/s
-    interpolator->apply(audio_IQ_buf, txbuf->data());
+    tx_resampler->apply(audio_IQ_buf, *txbuf);
 
     // Pass the newly created and filled buffer back to the caller
     return txbuf;
@@ -291,9 +247,9 @@ namespace SoDa {
 	tx_on = true;
 	if(!cw_tx_mode) {
 	  // Wake up the audio interface. 
-	  // actually, never need to do this, as we never let it sleep
-	  // audio_ifc->wakeIn();
-	  tx_stream_on = true; 
+	    // actually, never need to do this, as we never let it sleep
+	    // audio_ifc->wakeIn();
+	    tx_stream_on = true; 
 	}
       }
 
@@ -303,9 +259,9 @@ namespace SoDa {
 	if(tx_stream_on) {
 	  // Put the audio interface to sleep
 	  // and flush the input buffer	
-	  // Actually, never put the audio interface to sleep. 
-	  // always read from the input buffer. 
-	  // audio_ifc->sleepIn(); 
+	    // Actually, never put the audio interface to sleep. 
+	    // always read from the input buffer. 
+	    // audio_ifc->sleepIn(); 
 	  tx_stream_on = false; 
 	}
       }
@@ -318,26 +274,8 @@ namespace SoDa {
 				    50 + 10.0 * log10(af_gain)));
       break; 
     case Command::TX_AUDIO_IN:
-      if(cmd->iparms[0] == Command::NOISE) {
-	tx_noise_source_ena = true;
-	debugMsg("TX Audio IN is NOISE.\n");      
-      }
-      else {
-	tx_noise_source_ena = false;
-	debugMsg("TX Audio IN is MIC.\n");
-      }
+      debugMsg("TX Audio IN is MIC.\n");
       break;
-    case Command::TX_AUDIO_FILT_ENA: 
-      if(cmd->iparms[0] == 1) {
-	tx_audio_filter_ena = true;
-	debugMsg("TX Audio filter is enabled.\n");      
-      }
-      else {
-	tx_audio_filter_ena = false;      
-	debugMsg("TX Audio filter is disabled.\n");            
-      }
-      break;
-    
     default:
       break; 
     }

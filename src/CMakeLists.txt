@@ -23,10 +23,6 @@ set(SoDaLib_SRCS
     BaseBandTX.cxx
     UI.cxx
     Command.cxx
-    OSFilter.cxx
-    HilbertTransformer.cxx
-    ReSampler.cxx
-    Spectrogram.cxx
     CWGenerator.cxx
     GPSmon.cxx
     UDSockets.cxx
@@ -76,7 +72,8 @@ include_directories(SYSTEM
   ${Radio_INCLUDE_DIRS} 
   ${ALSA_INCLUDE_DIRS} 
   ${FFTW3F_INCLUDE_DIRS} 
-  ${SoDaUtils_INCLUDE_DIR} )
+  ${SoDaUtils_INCLUDE_DIR}
+  ${SoDaSignals_INCLUDE_DIR})
 
 
 add_library(SoDaLib ${SoDaLib_SRCS})
@@ -92,6 +89,7 @@ target_link_libraries(SoDaServer ${RT_LIB}
   Threads::Threads
   SoDaLib
   ${SoDaUtils_LIBRARIES}
+  ${SoDaSignals_LIBRARIES}
   ${Radio_LIBRARIES} ${ALSA_LIBRARIES} ${FFTW3F_LIBRARIES} ${CMAKE_DL_LIBS})
 
 

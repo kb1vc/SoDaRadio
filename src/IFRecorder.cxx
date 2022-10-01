@@ -27,7 +27,7 @@
 */
 
 #include "IFRecorder.hxx"
-#include "OSFilter.hxx"
+#include <SoDa/OSFilter.hxx>
 #include "MailBoxRegistry.hxx"
 #include "Radio.hxx"
 
@@ -48,7 +48,7 @@ namespace SoDa {
 
     // what is the default sample rate and buffer size?
     rf_sample_rate = params->getRXRate(); 
-    rf_buffer_size = params->getRFBufferSize();
+    rf_buffer_size = params->getRXRFBufferSize();
 
     // we aren't recording right now
     write_stream_on = false; 

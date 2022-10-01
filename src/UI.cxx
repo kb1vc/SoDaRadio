@@ -51,34 +51,34 @@ namespace SoDa {
     baseband_rx_freq = 144e6; // just a filler to avoid divide by zero. 
     spectrum_center_freq = 144.2e6;
   
-    // create the spectrogram object -- it eats RX IF buffers and produces
+    // create the periodogram object -- it eats RX IF buffers and produces
     // power spectral density plots.
-    spectrogram_buckets = 4 * 4096;
-    spectrogram = new Spectrogram(spectrogram_buckets);
+    periodogram_buckets = 4 * 4096;
+    periodogram = new Periodogram(periodogram_buckets, 0.1);
 
-    // we also need an LO check spectrogram.  In particular we want
+    // we also need an LO check periodogram.  In particular we want
     // something with really bodacious resolution.
-    lo_spectrogram_buckets = 16384;
-    lo_spectrogram = new Spectrogram(lo_spectrogram_buckets);
-    lo_spectrum = new float[lo_spectrogram_buckets * 4];
-    for(unsigned int i = 0; i < lo_spectrogram_buckets; i++) {
+    lo_periodogram_buckets = 16384;
+    lo_periodogram = new Periodogram(lo_periodogram_buckets, 0.1);
+    lo_spectrum.resize(lo_periodogram_buckets);
+    for(unsigned int i = 0; i < lo_periodogram_buckets; i++) {
       lo_spectrum[i] = 0.0; 
     }
 
     // Now  how wide is a 200KHz wide chunk of spectrum, given
-    // spectrogram_buckets frequency buckets in the RF sample rate
+    // periodogram_buckets frequency buckets in the RF sample rate
     double rxrate = params->getRXRate();
-    hz_per_bucket = rxrate / ((float) spectrogram_buckets);
+    hz_per_bucket = rxrate / ((float) periodogram_buckets);
     required_spect_buckets = (int) (floor(0.5 + spectrum_span / hz_per_bucket));
-    lo_hz_per_bucket = rxrate / ((float) lo_spectrogram_buckets);
+    lo_hz_per_bucket = rxrate / ((float) lo_periodogram_buckets);
   
-    // now allocate the buffer that we'll send to the UI
-    spectrum = new float[spectrogram_buckets * 4];
-    log_spectrum = new float[spectrogram_buckets * 4];
     // make it a little large, and "zero" it out to account for walking off the end...
-    for(unsigned int i = 0; i < spectrogram_buckets * 4; i++) {
+    spectrum.resize(periodogram_buckets);
+    log_spectrum.resize(periodogram_buckets * 2);
+    for(unsigned int i = 0; i < periodogram_buckets; i++) {
       spectrum[i] = 1e-20; 
-      log_spectrum[i] = -200.0; 
+      log_spectrum[i] = -200.0;
+      log_spectrum[periodogram_buckets + i] = -200.0;       
     }
 
     fft_send_counter = 0;
@@ -338,33 +338,34 @@ namespace SoDa {
     // fft_update_interval times that we're called -- this will keep
     // the IP traffic to something reasonable. 
     if(lo_check_mode) {
-      lo_spectrogram->apply_acc(buf->data(), buf->size(), lo_spectrum, (fft_send_counter == 0) ? 0.0 : 0.1);
+      if(fft_send_counter == 0) lo_periodogram->clear();
+      lo_periodogram->accumulate(*buf);
     }
     else {
-      spectrogram->apply_acc(buf->data(), buf->size(), spectrum,
-			     (new_spectrum_setting) ? 0.0 : fft_acc_gain);
+      if(new_spectrum_setting) periodogram->clear();
+      periodogram->accumulate(*buf);
     }
     new_spectrum_setting = false; 
     calc_max_first = false; 
 
-    float * slice = spectrum;
-  
+    int start_idx = -1;
     if(!lo_check_mode) {
+      periodogram->get(spectrum);
       // find the right slice
       int idx;
       // first the index of the center point
       // this is the bucket for the baseband rx freq
-      idx = (spectrogram_buckets / 2); 
+      idx = (periodogram_buckets / 2); 
       idx += (int) round((spectrum_center_freq - baseband_rx_freq) / hz_per_bucket);
       // now we've got the index for the center.
       // correct it to be the start...
       idx -= required_spect_buckets / 2; 
-      int sbuck_target = (int) spectrogram_buckets;
+      int sbuck_target = (int) periodogram_buckets;
       if((idx < 0) || (idx > sbuck_target)) {
-	slice = nullptr; 
+	start_idx = -1; 
       }
       else {
-	slice = &(spectrum[idx]);
+	start_idx = idx; 
       }
     }
 
@@ -375,7 +376,7 @@ namespace SoDa {
       int maxi = 0;
       int idxrange = ((int) (2000.0 / lo_hz_per_bucket));
       int i, j; 
-      for(i = -idxrange, j = (lo_spectrogram_buckets / 2) - idxrange; i < idxrange; i++, j++) {
+      for(i = -idxrange, j = (lo_periodogram_buckets / 2) - idxrange; i < idxrange; i++, j++) {
 	std::complex<float> v = lo_spectrum[j];
 	float mag = v.real() * v.real() + v.imag() * v.imag();
 	if(mag > magmax) {
@@ -401,17 +402,22 @@ namespace SoDa {
       cmd_stream->put(Command::make(Command::SET, Command::LO_CHECK,
 				  0.0)); 
     }
-    else if((fft_send_counter >= fft_update_interval) && (slice != nullptr )) {
+    else if((fft_send_counter >= fft_update_interval) && (start_idx != -1 )) {
       // send the buffer over to the GUI
       for(int i = 0; i < required_spect_buckets; i++) {
-	log_spectrum[i] = 10.0 * log10(slice[i] * 0.05);  // what's with the 0.05 ?  and the 10.0 vs. 20 .. is slice mag^2
+	if((start_idx + i) < periodogram_buckets) {
+	  log_spectrum[i] = 10.0 * log10(spectrum[start_idx + i] * 0.05);  // what's with the 0.05 ?  and the 10.0 vs. 20 .. is sspectrum mag^2
+	}
+	else {
+	  log_spectrum[i] = -120; 
+	}
       }
-      wfall_socket->put(log_spectrum, sizeof(float) * required_spect_buckets);
+      wfall_socket->put(log_spectrum.data(), sizeof(float) * required_spect_buckets);
       fft_send_counter = 0;
       calc_max_first = true; 
       float maxmag = 0.0;
 
-      for(unsigned int ii = 0; ii < spectrogram_buckets; ii++) {
+      for(unsigned int ii = 0; ii < periodogram_buckets; ii++) {
 	if(spectrum[ii] > maxmag) {
 	  maxmag = spectrum[ii];
 	}

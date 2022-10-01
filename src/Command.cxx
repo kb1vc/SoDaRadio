@@ -100,7 +100,6 @@ void SoDa::Command::initTables()
   initTableEntry(std::string("STATUS_MESSAGE"), STATUS_MESSAGE);
 
   initTableEntry(std::string("TX_AUDIO_IN"), TX_AUDIO_IN);
-  initTableEntry(std::string("TX_AUDIO_FILT_ENA"), TX_AUDIO_FILT_ENA);
   
   initTableEntry(std::string("RX_GAIN_RANGE"), RX_GAIN_RANGE);
   initTableEntry(std::string("TX_GAIN_RANGE"), TX_GAIN_RANGE);

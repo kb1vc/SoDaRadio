@@ -27,7 +27,6 @@
 */
 
 #include "BaseBandRX.hxx"
-#include "OSFilter.hxx"
 #include "Radio.hxx"
 #include <fstream>
 #include <stdio.h>
@@ -37,33 +36,28 @@
 #include <SoDa/Format.hxx>
 
 namespace SoDa {
-  BaseBandRX::BaseBandRX(Params * params,
-			 AudioIfc * _audio_ifc) : Thread("BaseBandRX")
+  BaseBandRX::BaseBandRX(Params & params,
+			 ReSampler * resampler,
+			 AudioIfc * audio_ifc) : 
+    audio_ifc(audio_ifc), rx_resampler(resampler), Thread("BaseBandRX")
   {
-    audio_ifc = _audio_ifc; 
     rx_stream = NULL;
 
     cmd_stream = NULL;
 
     // set up some convenient defaults
     rx_modulation = Command::USB;
-    // what is the default sample rate and buffer size?
-    // the audio rate is set and welded, as we have statically calculated
-    // filter parameters. 
-    audio_sample_rate = params->getAudioSampleRate(); 
-    rf_sample_rate = params->getRXRate(); 
-    audio_buffer_size = params->getAFBufferSize();
-    rf_buffer_size = params->getRFBufferSize();
+    // what is the sample rate and buffer size?
+    audio_sample_rate = params.getAudioSampleRate(); 
+    rf_sample_rate = params.getRXRate(); 
+    audio_buffer_size = params.getRXAFBufferSize();
+    rf_buffer_size = params.getRXRFBufferSize();
 
     // setup the audio level meter
     log_audio_buffer_size = log10((float) audio_buffer_size); 
 
-    // setup the resampler now...
+    // setup the filters
     buildFilterMap();
-
-    // build the resamplers
-    rf_resampler = new TDResampler625x48<std::complex<float> >(150000.0);
-    wbfm_resampler = new TDResampler625x48<float>(1.0);  
 
     af_filter_selection = Command::BW_6000;
     cur_audio_filter = filter_map[af_filter_selection];
@@ -72,7 +66,7 @@ namespace SoDa {
     // initial af gain
     af_gain = 1.0;
     af_sidetone_gain = 1.0;
-    cur_af_gain = &af_gain; 
+    cur_af_gain_ptr = &af_gain; 
     unsigned int i, j;
   
     // prime the audio stream so that we don't fall behind
@@ -86,8 +80,6 @@ namespace SoDa {
 	pendAudioBuffer(sidetone_silence); 
       }
     }
-    // create hilbert transformer
-    hilbert = new HilbertTransformer(audio_buffer_size);
 
     // initialize the sample for the NBFM and WBFM demodulator
     last_phase_samp = 0.0;
@@ -137,12 +129,12 @@ namespace SoDa {
     // start with initial hang count of 0 (haven't broken squelch yet)
   }
 
-  void BaseBandRX::demodulateWBFM(CFBuf & rxbuf, Command::ModulationType mod, float af_gain)
+  void BaseBandRX::demodulateWBFM(CFBuf & rxbuf, Command::ModulationType mod)
   {
     (void) mod;
     // now allocate a new audio buffer from the buffer ring
     FBuf audio_buffer = makeFBuf(audio_buffer_size);
-    float demod_out[rf_buffer_size];
+    std::vector<float> demod_out(rf_buffer_size);
     unsigned int i;
 
     // Interestingly, arctan based demodulation (see Lyons p 486 for instance)
@@ -172,21 +164,21 @@ namespace SoDa {
       last_phase_samp = phase; 
     }
     // now downsample it
-    wbfm_resampler->apply(demod_out, audio_buffer->data(), rf_buffer_size, audio_buffer_size);
-    // do a median filter to eliminate the pops.
-    // better not. fmMedianFilter.apply(audio_buffer, audio_buffer, audio_buffer_size); 
+    rx_resampler->apply(demod_out, *audio_buffer);
+    
     // gain was arrived at by trial and error.  
-    fm_audio_filter->apply(audio_buffer->data(), audio_buffer->data(), af_gain);
+    fm_audio_filter->apply(*audio_buffer, *audio_buffer);
+
     // then send it to the audio port.
     pendAudioBuffer(audio_buffer);
   }
 
-  void BaseBandRX::demodulateNBFM(CFBuf &  dbuf, Command::ModulationType mod, float af_gain)
+  void BaseBandRX::demodulateNBFM(CFBuf &  dbuf, Command::ModulationType mod)
   {
     (void) mod;
     // now allocate a new audio buffer from the buffer ring
     FBuf audio_buffer = makeFBuf(audio_buffer_size);
-    std::complex<float> demod_out[audio_buffer_size];
+    std::vector<std::complex<float>> demod_out(audio_buffer_size);
 
     // First we need to band-limit the input RF -- modulation width is about 12.5kHz,
     // so the filter should be a 12.5kHz LPF. 
@@ -229,10 +221,10 @@ namespace SoDa {
       nbfm_squelch_hang_count--;
     }
   
-    cur_audio_filter->apply(demod_out, demod_out, af_gain);
+    cur_audio_filter->apply(demod_out, demod_out);
   
     if(audio_save_enable) {
-      audio_file2.write((char*) demod_out, audio_buffer_size * sizeof(std::complex<float>));
+      audio_file2.write((char*) demod_out.data(), audio_buffer_size * sizeof(std::complex<float>));
     }
     for(i = 0; i < audio_buffer_size; i++) {
       (*audio_buffer)[i] = nbfm_squelch_hang_count ? demod_out[i].real() : 0.0; 
@@ -249,16 +241,23 @@ namespace SoDa {
     // now allocate a new audio buffer
     FBuf audio_buffer = makeFBuf(audio_buffer_size);
 
-    // shift the Q channel by pi/2
-    // note that this hilbert filter transforms the Q channel and delays the I channel
-    hilbert->applyIQ(dbuf->data(), dbuf->data()); 
+    
+    // The original scheme used a hilbert transformer to do the phasing method.
+    // But hilbert transformers have really bad behavior near DC unless the filter
+    // is really really long.  So we're much better off just filtering one side
+    // or the other. Richard Lyons wrote that he hadn't seen the filter method for
+    // SSB demod in DSP applications.  I wonder why people avoid it?  The phasing
+    // method is just too iffy wrt rejection and low frequency response. 
 
-    // then add/subtract I/Q to a single real channel
-    float sbmul = ((mod == Command::LSB) || (mod == Command::CW_L)) ? 1.0 : -1.0;
-    unsigned int i; 
-    for(i = 0; i < audio_buffer_size; i++) {
-      (*audio_buffer)[i] = (float) ((*dbuf)[i].real() + sbmul * (*dbuf)[i].imag()); 
+    if(mod == Command::LSB) {
+      // take the conjugate of the buffer before we filter it
+      // this flips the spectrum about the DC axis... (so LSB becomes USB !)
+      for(auto & v : *dbuf) {
+	v = std::conj(v);
+      }
     }
+    cur_audio_filter->apply(*dbuf, *dbuf);
+
     // then send it to the audio port.
     pendAudioBuffer(audio_buffer);
   }
@@ -278,7 +277,7 @@ namespace SoDa {
     }
     sumsq = sqrt(sumsq / ((float) audio_buffer_size));
     // audio is biased above DC... it really really needs to get its DC component removed. 
-    am_audio_filter->apply(audio_buffer->data(), audio_buffer->data()); 
+    am_audio_filter->apply(*audio_buffer, *audio_buffer);
 
     // then send it to the audio port.
     pendAudioBuffer(audio_buffer);
@@ -292,20 +291,17 @@ namespace SoDa {
     // Note that audio_buffer_size must be (sample_length / decimation rate)
   
     if((rx_modulation != Command::WBFM) && (rx_modulation != Command::NBFM)) {
-      rf_resampler->apply(rxbuf->data(), dbufi->data(), rf_buffer_size, audio_buffer_size);
+      rx_resampler->apply(*rxbuf, *dbufi);
     
       // now do the low pass filter
       if(rx_modulation == Command::AM) {
-	am_pre_filter->apply(dbufi->data(), dbufo->data(), *cur_af_gain); 
-      }
-      else {
-	cur_audio_filter->apply(dbufi->data(), dbufo->data(), *cur_af_gain);
+	am_pre_filter->apply(*dbufi, *dbufo);
       }
     }
     else if(rx_modulation == Command::NBFM) {
       // first, bandpass the RF down to about 25 kHz wide...
-      nbfm_pre_filter->apply(rxbuf->data(), rxbuf->data(), 1.0);
-      rf_resampler->apply(rxbuf->data(), dbufo->data(), rf_buffer_size, audio_buffer_size);
+      nbfm_pre_filter->apply(*rxbuf, *rxbuf);
+      rx_resampler->apply(*rxbuf, *dbufo);
     }
 
  
@@ -319,10 +315,10 @@ namespace SoDa {
       demodulateSSB(dbufo, Command::USB); 
       break;
     case Command::NBFM:
-      demodulateNBFM(dbufo, Command::NBFM, *cur_af_gain);
+      demodulateNBFM(dbufo, Command::NBFM);
       break; 
     case Command::WBFM:
-      demodulateWBFM(rxbuf, Command::NBFM, *cur_af_gain);
+      demodulateWBFM(rxbuf, Command::NBFM);
       break; 
     case Command::AM:
       demodulateAM(dbufo); 
@@ -388,7 +384,7 @@ namespace SoDa {
 	}
 	else if (sidetone_stream_enabled) {
 	  debugMsg("sidetone mode\n"); 
-	  cur_af_gain = &af_sidetone_gain;
+	  cur_af_gain_ptr = &af_sidetone_gain;
 	}
 	else {
 	  audio_rx_stream_enabled = false;
@@ -398,7 +394,7 @@ namespace SoDa {
       }
       if(cmd->iparms[0] == 2) { // the CTRL unit has done the setup.... 
 	debugMsg("In RX ON");
-	cur_af_gain = &af_gain; 
+	cur_af_gain_ptr = &af_gain; 
 	audio_rx_stream_enabled = true;
 	debugMsg("audio_rx_stream_enabled = true\n");      
       }
@@ -554,6 +550,10 @@ namespace SoDa {
   {
     // no big deal here.  We're going to send it right to 
     // the audio device. 
+    // but first we're going to apply some gain.
+      for(auto & v : *b) {
+	v = v * *cur_af_gain_ptr;
+      }
     audio_ifc->send(b->data(), audio_buffer_size * sizeof(float));
 
     if(audio_save_enable) {
@@ -592,21 +592,24 @@ namespace SoDa {
     // The Overlap and Save buffer needs to be long enough to make this all
     // work
   
-    filter_map[Command::BW_2000] = new OSFilter(200.0, 300.0, 2300.0, 2400.0, 512, 1.0, audio_sample_rate, audio_buffer_size);
-    filter_map[Command::BW_WSPR] = new OSFilter(1100.0, 1400.0, 1600.0, 1900.0, 512, 1.0, audio_sample_rate, audio_buffer_size);  
-    filter_map[Command::BW_500] = new OSFilter(300.0, 400.0, 900.0, 1000.0, 512, 1.0, audio_sample_rate, audio_buffer_size);
+    filter_map[Command::BW_2000] = new OSFilter(250.0,2300, 200, audio_sample_rate, audio_buffer_size);
 
-    filter_map[Command::BW_100] = new OSFilter(300.0, 400.0, 500.0, 600.0, 512, 1.0, audio_sample_rate, audio_buffer_size);
+    filter_map[Command::BW_WSPR] = new OSFilter(1100.0,1900, 300, audio_sample_rate, audio_buffer_size);
 
-    filter_map[Command::BW_6000] = new OSFilter(200.0, 300.0, 6300.0, 6400.0, 512, 1.0, audio_sample_rate, audio_buffer_size);
-    filter_map[Command::BW_PASS] = new OSFilter(0.0, 10.0, 15000.0, 18000.0, 512, 1.0, audio_sample_rate, audio_buffer_size);
+    filter_map[Command::BW_500] = new OSFilter(350.0, 850.0, 50, audio_sample_rate, audio_buffer_size);
 
-    fm_audio_filter = new OSFilter(50.0, 100.0, 8000.0, 9000.0, 512, 1.0, audio_sample_rate, audio_buffer_size);
+    filter_map[Command::BW_100] = new OSFilter(450.0, 550.0, 50, audio_sample_rate, audio_buffer_size);
+
+    filter_map[Command::BW_6000] = new OSFilter(200.0, 6300.0, 300, audio_sample_rate, audio_buffer_size);
+    filter_map[Command::BW_PASS] = new OSFilter(0.0, 15000, 1000, audio_sample_rate, audio_buffer_size);
+
+    fm_audio_filter = new OSFilter(50.0, 9000.0, 200, audio_sample_rate, audio_buffer_size);
+    
     am_audio_filter = filter_map[Command::BW_6000]; 
 
-    am_pre_filter = new OSFilter(0.0, 0.0, 8000.0, 9000.0, 512, 1.0, audio_sample_rate, audio_buffer_size);
+    am_pre_filter = new OSFilter(0.0, 9000.0, 100, audio_sample_rate, audio_buffer_size);
 
-    nbfm_pre_filter = new OSFilter(0.0, 0.0, 12500.0, 14000.0, 512, 1.0, rf_sample_rate, rf_buffer_size);
+    nbfm_pre_filter = new OSFilter(0.0, 14000.0, 100, rf_sample_rate, rf_buffer_size);
 
   }
 

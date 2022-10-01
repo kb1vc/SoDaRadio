@@ -41,6 +41,7 @@
 #include <stdexcept>
 // we implement the TX side of things. 
 #include "AudioQtRX.hxx"
+#include "Params.hxx"
 
 namespace SoDa {
   /**
@@ -62,17 +63,10 @@ namespace SoDa {
   public:
     /**
      * constructor
-     * @param _sample_rate in Hz  48000 is a good choice
-     * @param _sample_count_hint  the size of the buffers passed to and from
-     *                              the audio device (in samples)
-     * @param audio_sock_basename starting string for the unix-domain socket 
-     *                            that carries the audio stream from the SoDaServer (radio) process
-     * @param audio_port_name  which ALSA device are we connecting to?
+     * @param params settings for the radio...
+     * @param name the name for this object/thread     
      */
-    AudioQtRXTX(unsigned int _sample_rate,
-	    unsigned int _sample_count_hint = 1024,
-	    std::string audio_sock_basename = std::string("soda_"),
-	    std::string audio_port_name = std::string("default"));
+    AudioQtRXTX(Params & params, const std::string & name = "AudioTqRXTX ALSA Interface"); 
 
     ~AudioQtRXTX() {
     }

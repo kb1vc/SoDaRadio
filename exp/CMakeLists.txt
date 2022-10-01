@@ -70,20 +70,6 @@ target_link_libraries(SoDa_ThreadTest ${TEST_LIBS})
 
 #install(TARGETS SoDa_ThreadTest DESTINATION tests)
 
-add_executable(FilterTest EXCLUDE_FROM_ALL FilterTest.cxx ../src/Filter.cxx ../src/FilterSpec.cxx  ../src/FFT.cxx)
-target_link_libraries(FilterTest ${SIMPLE_TEST_LIBS})
-########### next target ###############
-
-set(OSFilter_Test_SRCS OSFilter_Test.cxx ../src/OSFilter.cxx)
-
-set(OSFILTER_LIBS ${Boost_LIBRARIES}  ${FFTW3F_LIBRARIES})
-
-add_executable(OSFilter_Test EXCLUDE_FROM_ALL ${OSFilter_Test_SRCS})
-
-target_link_libraries(OSFilter_Test ${OSFILTER_LIBS})
-
-#install(TARGETS OSFilter_Test DESTINATION tests)
-
 
 ########### next target ###############
 
@@ -93,7 +79,6 @@ set(TestServer_SRCS
     ../src/UI.cxx
     ../src/Params.cxx
     ../src/UDSockets.cxx
-    ../src/Spectrogram.cxx
     ../src/SoDaBase.cxx
     ../src/Debug.cxx)
 
@@ -101,30 +86,6 @@ add_executable(TestServer EXCLUDE_FROM_ALL ${TestServer_SRCS})
 
 target_link_libraries(TestServer  rt ${TEST_LIBS})
 
-#install(TARGETS TestServer DESTINATION tests)
-
-
-########### next target ###############
-
-set(ReSampler_Test_SRCS
-    ReSampler_Test.cxx
-    ../src/ReSampler.cxx
-    ../src/Filter.cxx
-    ../src/FilterSpec.cxx
-    ../src/FFT.cxx)
-
-add_executable(ReSampler_Test EXCLUDE_FROM_ALL ${ReSampler_Test_SRCS})
-target_link_libraries(ReSampler_Test ${TEST_LIBS})
-
-set(PeriodogramTest_SRCS
-    PeriodogramTest.cxx
-    ../src/Periodogram.cxx
-    ../src/FFT.cxx)
-
-add_executable(PeriodogramTest EXCLUDE_FROM_ALL ${PeriodogramTest_SRCS})
-target_link_libraries(PeriodogramTest ${TEST_LIBS})
-
-#install(TARGETS PeriodogramTest DESTINATION tests)
 
 
 ########### next target ###############
@@ -143,15 +104,6 @@ target_link_libraries(PeriodogramTest ${TEST_LIBS})
 
 
 ########### next target ###############
-
-set(Hilbert_Test_SRCS Hilbert_Test.cxx ../src/HilbertTransformer.cxx ../src/SoDaBase.cxx)
-
-add_executable(Hilbert_Test EXCLUDE_FROM_ALL ${Hilbert_Test_SRCS})
-
-target_link_libraries(Hilbert_Test ${TEST_LIBS})
-
-#install(TARGETS Hilbert_Test DESTINATION tests)
-
 
 ########### next target ###############
 

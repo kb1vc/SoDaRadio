@@ -37,6 +37,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "QuadratureOscillator.hxx"
 #include <uhd/usrp/multi_usrp.hpp>
 #include <uhd/stream.hpp>
+#include <iostream>
+#include <fstream>
 
 namespace SoDa {
   /**

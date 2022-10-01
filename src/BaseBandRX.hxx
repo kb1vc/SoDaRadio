@@ -35,9 +35,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "MailBoxRegistry.hxx"
 #include "MailBoxTypes.hxx"
 #include "Command.hxx"
-#include "OSFilter.hxx"
-#include "HilbertTransformer.hxx"
-#include "TDResamplers625x48.hxx"
+#include <SoDa/OSFilter.hxx>
+#include <SoDa/ReSampler.hxx>
 #include "AudioIfc.hxx"
 #include "MedianFilter.hxx"
 
@@ -78,9 +77,11 @@ namespace SoDa {
      * @brief the constructor
      *
      * @param params command line parameter object
+     * @param rx_resampler pointer to a resampler from the RX RF stream to the audio stream
      * @param audio_ifc pointer to the audio output handler
      **/
-    BaseBandRX(Params * params,
+    BaseBandRX(Params &  params,
+	       ReSampler * rx_resampler,
 	       AudioIfc * audio_ifc);
 
     /// implement the subscription method
@@ -132,11 +133,9 @@ namespace SoDa {
      *
      * @param drxbuf downsampled  RF input buffer
      * @param mod modulation type -- NBFM
-     * @param af_gain factor to goose the audio output
      */
     void demodulateNBFM(CFBuf &  drxbuf,
-			Command::ModulationType mod,
-			float af_gain); 
+			Command::ModulationType mod);
 
     /**
      * @brief demodulate the input stream as a wideband frequency modulated signal
@@ -147,11 +146,9 @@ namespace SoDa {
      *
      * @param rxbuf RF input buffer
      * @param mod modulation type -- WBFM
-     * @param af_gain factor to goose the audio output
      */
     void demodulateWBFM(CFBuf & rxbuf,
-			Command::ModulationType mod,
-			float af_gain);
+			Command::ModulationType mod);
 
     
     /**
@@ -229,10 +226,8 @@ namespace SoDa {
 
     FBuf sidetone_silence;  ///< a sequence of zero samples to stuff silence into the audio
 
-    // resampler -- downsample from 625K samples / sec to 48K samples/sec
-    TDResampler625x48<std::complex<float>> * rf_resampler; ///< downsample the RF input to 48KS/s
-    // a second resampler for wideband fm
-    TDResampler625x48<float>  * wbfm_resampler; ///< downsample the RF input to 48KS/s for WBFM unit
+    // The resampler from RF down to baseband.
+    ReSampler * rx_resampler; 
 
     /**
      * @brief build the audio filter map for selected bandwidths
@@ -250,13 +245,10 @@ namespace SoDa {
     
     std::map<Command::AudioFilterBW, OSFilter *> filter_map; ///< map filter selectors to the filter objects
 
-    // hilbert transformer
-    HilbertTransformer * hilbert; ///< hilbert transform object for SSB/CW widgets
-    
     // audio gain
     float af_gain;   ///< audio gain setting for RX mode
     float af_sidetone_gain; ///< audio gain setting for TX/CW mode
-    float *cur_af_gain; ///< pointer to the gain setting for this mode
+    float *cur_af_gain_ptr; ///< pointer to the gain setting for this mode
 
     // support for NBFM/WBFM demodulator
     float last_phase_samp; ///< history value used to calculate dPhase/dt in FM atan based discriminator.
