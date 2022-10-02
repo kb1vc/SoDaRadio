@@ -54,7 +54,7 @@ namespace SoDa {
     // create the periodogram object -- it eats RX IF buffers and produces
     // power spectral density plots.
     periodogram_buckets = 4 * 4096;
-    periodogram = new Periodogram(periodogram_buckets, 0.1);
+    periodogram = new Periodogram(periodogram_buckets, 0.95);
 
     // we also need an LO check periodogram.  In particular we want
     // something with really bodacious resolution.
