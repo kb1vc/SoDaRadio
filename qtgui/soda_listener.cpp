@@ -358,9 +358,11 @@ void GUISoDa::Listener::recordRF(int checkbox_state)
   if(checkbox_state == Qt::Checked) {
     QString fname = QString("%1.cf").arg(QDateTime::currentDateTime().toString("dd-MMM-yy_HHmmss"));
     put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RF_RECORD_START, fname.toStdString()), __PRETTY_FUNCTION__);
+    qDebug() << QString("GUISoDa::Listener::recordRF sending START\n");
   }
   else if(checkbox_state == Qt::Unchecked) {
     put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RF_RECORD_STOP), __PRETTY_FUNCTION__);
+    qDebug() << QString("GUISoDa::Listener::recordRF sending STOP\n");    
   }
 }
 

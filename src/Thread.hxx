@@ -138,19 +138,19 @@ namespace SoDa {
     void execCommand(CmdMsg  cmd);
     
     /**
-     * optional method to handle "GET" commands -- commands that request a response
+     *  method to handle "GET" commands -- commands that request a response
      */
-    virtual void execGetCommand(CmdMsg  cmd) { (void) cmd; }
+    virtual void execGetCommand(CmdMsg  cmd) = 0; 
 
     /**
-     * optional method to handle "SET" commands -- commands that set internal state in the object.
+     *  method to handle "SET" commands -- commands that set internal state in the object.
      */
-    virtual void execSetCommand(CmdMsg  cmd) { (void) cmd; }
+    virtual void execSetCommand(CmdMsg  cmd) = 0;
 
     /**
-     * optional method that reports status or the result of some action. 
+     *  method that reports status or the result of some action. 
      */
-    virtual void execRepCommand(CmdMsg  cmd) { (void) cmd; } 
+    virtual void execRepCommand(CmdMsg  cmd) = 0; 
 
     /**
      * optional method that performs cleanup -- may not delete. 

@@ -79,19 +79,19 @@ namespace SoDa {
     }
   }
 
-  void GPSmon::execGetCommand(Command * cmd)
+  void GPSmon::execGetCommand(CmdMsg cmd)
   {
     (void) cmd; 
     return; 
   }
 
-  void GPSmon::execSetCommand(Command * cmd)
+  void GPSmon::execSetCommand(CmdMsg cmd)
   {
     (void) cmd; 
     return; 
   }
 
-  void GPSmon::execRepCommand(Command * cmd)
+  void GPSmon::execRepCommand(CmdMsg cmd)
   {
     (void) cmd;
     return;

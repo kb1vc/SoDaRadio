@@ -85,21 +85,22 @@ namespace SoDa {
 
   private:
     /**
-     * @brief execute GET commands from the command channel
-     * @param cmd the incoming command
-     */
-    void execGetCommand(Command * cmd); 
-    /**
      * @brief handle SET commands from the command channel
      * @param cmd the incoming command
      */
-    void execSetCommand(Command * cmd); 
+    void execSetCommand(CmdMsg cmd); 
     /**
      * @brief handle Report commands from the command channel
      * @param cmd the incoming command
      */
-    void execRepCommand(Command * cmd); 
+    void execRepCommand(CmdMsg cmd); 
 
+    /**
+     * @brief handle get commands from the command channel
+     * @param cmd the incoming command
+     */
+    void execGetCommand(CmdMsg cmd); 
+    
     /**
      * @brief open an output stream to receive the RF samples
      * @param ofile_name name of the output file to be created. 

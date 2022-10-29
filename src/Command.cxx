@@ -201,6 +201,7 @@ std::string SoDa::Command::toString() const
     oss << " [?" << target << "?] ";
   }
 
+  sp = oss.str();
 
   SoDa::Format parmstr("%0 %1");
   parmstr.addC(parm_type);

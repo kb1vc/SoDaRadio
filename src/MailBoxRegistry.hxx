@@ -106,6 +106,7 @@ namespace SoDa {
   template<typename T> 
   std::shared_ptr<T> registerMailBox(const std::string & name) {
     auto ret = std::shared_ptr<T>(new T(name));
+    std::cerr << "Registering mailbox with name [" << name << "]\n";
     MailBoxRegistry::getRegistrar()->add(name, ret); 
     return ret; 
   }

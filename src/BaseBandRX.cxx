@@ -166,9 +166,9 @@ namespace SoDa {
     // now downsample it
     rx_resampler->apply(demod_out, *audio_buffer);
     
-    // gain was arrived at by trial and error.  
+    // gain was arrived at by trial and error.
     fm_audio_filter->apply(*audio_buffer, *audio_buffer);
-
+    
     // then send it to the audio port.
     pendAudioBuffer(audio_buffer);
   }
@@ -183,6 +183,7 @@ namespace SoDa {
     // First we need to band-limit the input RF -- modulation width is about 12.5kHz,
     // so the filter should be a 12.5kHz LPF. 
   
+	 
     // Interestingly, arctan based demodulation (see Lyons p 486 for instance)
     // performs much better than the approximation that avoids the atan call.
     // Texts that talk about atan generally don't talk about the problem of
@@ -220,7 +221,13 @@ namespace SoDa {
     else if(nbfm_squelch_hang_count > 0) {
       nbfm_squelch_hang_count--;
     }
-  
+
+    dbg_ctr++; 
+    if((dbg_ctr % 256) == 0) {
+      std::cerr << SoDa::Format("BaseBandRX: NBFM amp_sum %0 squelch %1\n")
+	.addF(amp_sum)
+	.addF(nbfm_squelch_level);
+    }
     cur_audio_filter->apply(demod_out, demod_out);
   
     if(audio_save_enable) {
@@ -240,7 +247,6 @@ namespace SoDa {
   {
     // now allocate a new audio buffer
     FBuf audio_buffer = makeFBuf(audio_buffer_size);
-
     
     // The original scheme used a hilbert transformer to do the phasing method.
     // But hilbert transformers have really bad behavior near DC unless the filter
@@ -258,7 +264,38 @@ namespace SoDa {
     }
     cur_audio_filter->apply(*dbuf, *dbuf);
 
+    // copy the audio buffer
+    // We have to apply some gain here -- beyond the
+    // audio gain setting. (We'd wrap it into the
+    // audio_gain setting if not for FM where there's
+    // a kind of AVC going on there. 4000 seems like a
+    // good number (tested on a B200). This may need to
+    // be a radio model parameter. 
+    for(int i = 0; i < audio_buffer_size; i++) {
+      (*audio_buffer)[i] = (*dbuf)[i].real() * 4000;
+    }
+
     // then send it to the audio port.
+    dbg_ctr++;
+    if((dbg_ctr % 256) == 0) {
+      float sum, max; 
+      sum = 0.0;
+      max = 0.0;
+      auto fn = SoDa::Format("SSB_%0.f").addI(dbg_ctr).str();
+      std::ofstream ofi(fn, std::ios::binary);
+      
+      for(int i = 0; i < audio_buffer_size; i++) {
+	auto v = (*audio_buffer)[i];
+	auto av = std::abs(v);
+	max = (max > av) ? max : av;
+	sum += av; 
+	ofi.write(reinterpret_cast<char*>(&v), sizeof(v));
+      }
+      ofi.close();
+      std::cerr << SoDa::Format("BaseBandRX: SSB amp_sum = %0 max = %1\n")
+	.addF(sum)
+	.addF(max);
+    }
     pendAudioBuffer(audio_buffer);
   }
 
@@ -309,11 +346,11 @@ namespace SoDa {
     switch(rx_modulation) {
     case Command::LSB:
     case Command::CW_L:
-      demodulateSSB(dbufo, Command::LSB); 
+      demodulateSSB(dbufi, Command::LSB); 
       break; 
     case Command::USB:
     case Command::CW_U:
-      demodulateSSB(dbufo, Command::USB); 
+      demodulateSSB(dbufi, Command::USB); 
       break;
     case Command::NBFM:
       demodulateNBFM(dbufo, Command::NBFM);
@@ -429,7 +466,7 @@ namespace SoDa {
 				  50. + 4.0 * log10(af_sidetone_gain)));
       break;
     case Command::NBFM_SQUELCH:
-      nbfm_squelch_level = powf(10, 0.5 * cmd->dparms[0]) * ((float) audio_buffer_size);
+      nbfm_squelch_level = (powf(10, cmd->dparms[0] / 12.0) - 1.0) * 0.1 * (float) audio_buffer_size;
       break; 
     default:
       break; 
@@ -611,8 +648,13 @@ namespace SoDa {
 
     am_pre_filter = new OSFilter(0.0, 9000.0, 100, audio_sample_rate, audio_buffer_size);
 
-    nbfm_pre_filter = new OSFilter(0.0, 14000.0, 100, rf_sample_rate, rf_buffer_size);
+    nbfm_pre_filter = new OSFilter(-14000.0, 14000.0, 100, rf_sample_rate, rf_buffer_size);
 
+    debugMsg(SoDa::Format("BasebandRX:: audio sample rate %0 buffer size %1 rf rate %2 buffer size %3\n")
+	     .addF(audio_sample_rate)
+	     .addI(audio_buffer_size)
+	     .addF(rf_sample_rate)
+	     .addI(rf_buffer_size));
   }
 
   /// implement the subscription method

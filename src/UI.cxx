@@ -84,7 +84,7 @@ namespace SoDa {
     fft_send_counter = 0;
     fft_update_interval = 4;
     new_spectrum_setting = true;
-    fft_acc_gain = 0.9;
+    fft_acc_gain = 0.99;
     // we are not yet in lo check mode
     lo_check_mode = false;
   }
@@ -275,7 +275,11 @@ namespace SoDa {
       reportSpectrumCenterFreq();
       break;
     case Command::SPEC_AVG_WINDOW:
-      fft_acc_gain = 1.0 - (1.0 / ((double) cmd->iparms[0]));
+      fft_acc_gain = (1.0 / ((double) cmd->iparms[0]));
+      periodogram->setAlpha(fft_acc_gain);
+      debugMsg(SoDa::Format("UI:: just got SPEC_AVG_WINDOW set to %0 from %1\n")
+	       .addF(fft_acc_gain)
+	       .addF(cmd->iparms[0]));
       new_spectrum_setting = true;
       break; 
     case Command::SPEC_UPDATE_RATE:
@@ -406,7 +410,7 @@ namespace SoDa {
       // send the buffer over to the GUI
       for(int i = 0; i < required_spect_buckets; i++) {
 	if((start_idx + i) < periodogram_buckets) {
-	  log_spectrum[i] = 10.0 * log10(spectrum[start_idx + i] * 0.05);  // what's with the 0.05 ?  and the 10.0 vs. 20 .. is sspectrum mag^2
+	  log_spectrum[i] = 20.0 * log10(spectrum[start_idx + i]);  // what's with the 0.05 ?  and the 10.0 vs. 20 .. is sspectrum mag^2
 	}
 	else {
 	  log_spectrum[i] = -120; 

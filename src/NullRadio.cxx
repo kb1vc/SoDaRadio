@@ -25,17 +25,32 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+#include "USRP.hxx"
+#include "Params.hxx"
+#include "USRPCtrl.hxx"
+#include "USRPRX.hxx"
+#include "USRPTX.hxx"
 
-#include "RadioModel.hxx"
-#include "NullCtrl.hxx"
-#include "NullRX.hxx"
-#include "NullTX.hxx"
-
-
-/**
- * not much to do here. Creating "my_radio" in this scope will register 
- * a radio model maker that knows how to create a null radio. 
- */
 namespace SoDa {
-  static RadioModel<NullCtrl, NullRX, NullTX> my_radio;
+  USRP::USRP(Params_p params) : params(params), Radio("USRP") {
+    /// create the USRP Control, RX Streamer, and TX Streamer threads
+    /// @see SoDa::USRPCtrl @see SoDa::USRPRX @see SoDa::USRPTX
+    // but first, set the parameters for this radio
+    params->setRXRate(getRXSampleRate());
+    params->setTXRate(getTXSampleRate());
+  }
+
+  void USRP::init() {
+    ctrl = new SoDa::USRPCtrl(params);
+    rx = new SoDa::USRPRX(params, ctrl->getUSRP());
+    tx = new SoDa::USRPTX(params, ctrl->getUSRP());
+  }
+
+  
+  float USRP::getRXSampleRate() { return 625e3; }
+  float USRP::getTXSampleRate() { return 625e3; }
+  
+  void USRP::cleanUp() {
+    // not much here. 
+  }
 }

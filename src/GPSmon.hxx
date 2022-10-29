@@ -48,9 +48,9 @@ namespace SoDa {
     
     void run();
   private:
-    void execGetCommand(Command * cmd); 
-    void execSetCommand(Command * cmd); 
-    void execRepCommand(Command * cmd); 
+    void execGetCommand(CmdMsg cmd); 
+    void execSetCommand(CmdMsg cmd); 
+    void execRepCommand(CmdMsg cmd); 
 
     MsgMBoxPtr cmd_stream;
     MsgSubs    cmd_subs;

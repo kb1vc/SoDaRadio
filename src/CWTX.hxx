@@ -68,17 +68,17 @@ namespace SoDa {
      * @brief execute GET commands from the command channel
      * @param cmd the incoming command
      */
-    void execGetCommand(CmdMsg & cmd); 
+    void execGetCommand(CmdMsg cmd); 
     /**
      * @brief handle SET commands from the command channel
      * @param cmd the incoming command
      */
-    void execSetCommand(CmdMsg & cmd); 
+    void execSetCommand(CmdMsg cmd); 
     /**
      * @brief handle Report commands from the command channel
      * @param cmd the incoming command
      */
-    void execRepCommand(CmdMsg & cmd);
+    void execRepCommand(CmdMsg cmd);
 
     /**
      * @brief add text to the outbound text queue

@@ -131,7 +131,7 @@ namespace SoDa {
     return sent_char; 
   }
 
-  void CWTX::execGetCommand(CmdMsg &  cmd)
+  void CWTX::execGetCommand(CmdMsg cmd)
   {
     switch(cmd->target) {
     case Command::TX_STATE:
@@ -151,7 +151,7 @@ namespace SoDa {
     }
   }
 
-  void CWTX::execSetCommand(CmdMsg &  cmd)
+  void CWTX::execSetCommand(CmdMsg cmd)
   {
     Command::ModulationType txmode;
   
@@ -235,7 +235,7 @@ namespace SoDa {
   
   }
 
-  void CWTX::execRepCommand(CmdMsg &  cmd)
+  void CWTX::execRepCommand(CmdMsg cmd)
   {
     switch(cmd->target) {
     case Command::TX_CW_EMPTY:

@@ -1,4 +1,3 @@
-#pragma once
 /*
 Copyright (c) 2022, Matthew H. Reilly (kb1vc)
 All rights reserved.

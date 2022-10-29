@@ -59,28 +59,32 @@ namespace SoDa {
 
 
 
-  void IFRecorder::execSetCommand(Command * cmd)
+  void IFRecorder::execSetCommand(CmdMsg cmd)
   {
     Command::AudioFilterBW fbw;
     Command::ModulationType txmod; 
+    debugMsg(SoDa::Format("IFRecorder in execSetCommand [%0]\n").addS(cmd->toString()));
     switch (cmd->target) {
     case Command::RF_RECORD_START:
       openOutStream(cmd->sparm);
+      debugMsg(SoDa::Format("IFRecorder:: record start on file [%0]\n")
+	       .addS(cmd->sparm));
       break;
     case Command::RF_RECORD_STOP:
       closeOutStream();
+      debugMsg(SoDa::Format("IFRecorder:: record stop\n"));
+      
       break; 
     default:
       break; 
     }
   }
 
-  void IFRecorder::execGetCommand(Command * cmd)
-  {
+  void IFRecorder::execGetCommand(CmdMsg cmd) {
     (void) cmd;
   }
-
-  void IFRecorder::execRepCommand(Command * cmd)
+  
+  void IFRecorder::execRepCommand(CmdMsg cmd)
   {
     switch (cmd->target) {
     case Command::RX_FE_FREQ:
@@ -109,6 +113,8 @@ namespace SoDa {
 
       if((cmd = cmd_stream->get(cmd_subs)) != NULL) {
 	// process the command.
+	debugMsg(SoDa::Format("IFRecorder got command [%0]\n")
+		 .addS(cmd->toString()));
 	execCommand(cmd);
 	did_work = true; 
 	exitflag |= (cmd->target == Command::STOP); 
@@ -170,5 +176,9 @@ namespace SoDa {
 
     rx_stream = MailBoxBase::convert<CFMBox>(reg->get("RX"));
     rx_subs = rx_stream->subscribe();
+
+    debugMsg(SoDa::Format("IFRecorder subscribed to RX %0 and CMD %1 streams\n")
+	     .addU((unsigned long) rx_stream.get())
+	     .addU((unsigned long) cmd_stream.get()));
   }
 }
