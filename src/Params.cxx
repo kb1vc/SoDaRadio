@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013, Matthew H. Reilly (kb1vc)
+Copyright (c) 2013, 2022 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -37,10 +37,8 @@ SoDa::Params::Params(int argc, char * argv[])
   cmd
     .addV<std::string>(&load_list, "load", 'l',
      "one or more shared library objects, each containing a SoDa::Thread object")
-    .add<std::string>(&radio_args, "uhdargs", 'u', "",
+    .add<std::string>(&radio_args, "devargs", 'd', "",
      "extra parameters to pass to device creator (e.g. device id, address, type)")
-    .add<std::string>(&config_filename, "config", 'c', "~/.soda/config.xml",
-     "configuration file for initial settings")
     .add<std::string>(&server_sock_basename, "uds_name", 'S', "/tmp/SoDa_",
      "unix domain socket name for server to UI client message channels")
     .add<std::string>(&audio_portname, "audio", 'a', "default", 

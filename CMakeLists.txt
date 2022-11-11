@@ -161,12 +161,13 @@ FIND_PACKAGE(SndFile REQUIRED)
 
 FIND_PACKAGE(Boost 1.45 REQUIRED COMPONENTS program_options thread date_time system filesystem serialization regex QUIET)
 
+
 IF(${NO_UHD})
   MESSAGE("libUHD Support disabled.")
   SET(HAVE_UHD 0)  
 ELSE()
   # Enable UHD support
-  FIND_PACKAGE(UHD "3.11" REQUIRED)
+  FIND_PACKAGE(UHD "3.15" REQUIRED)
   IF(NOT UHD_FOUND)
     MESSAGE("UHD Library NOT FOUND!")
     SET(HAVE_UHD 0)  
@@ -211,6 +212,11 @@ endif()
 find_package(PkgConfig)
 pkg_search_module(HAMLIB REQUIRED hamlib)
 pkg_search_module(GPSLIB OPTIONAL libgps)
+# if we want rtlsdr, fedora: rtl-sdr-devel
+# The package doesn't include any cmake support... (or documentation -- who
+# *writes* crap like that?
+pkg_search_module(RTLSDR librtlsdr)
+MESSAGE("RTLSDR_FOUND = [${RTLSDR_FOUND}]")
 
 IF(DISABLE_ALSA)
   message("ALSA Disabled")

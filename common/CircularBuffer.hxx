@@ -4,7 +4,6 @@
 #include <cstring>
 #include <iostream> 
 #include <mutex>
-#include <boost/format.hpp>
 
 
 namespace SoDa {
@@ -146,23 +145,6 @@ namespace SoDa {
       return ret; 
     }
 
-    void dump(std::ostream & os) {
-      os << boost::format("buffer       = %p\n") % buffer;
-      os << boost::format("head_pointer = %p\n") % head_pointer; 
-      os << boost::format("tail_pointer = %p\n") % tail_pointer;
-      os << boost::format("buffer_elements    = %d\n") % buffer_elements; 
-      os << boost::format("available elements = %d\n") % numElements();
-      os << boost::format("num_written        = %d\n") % num_written; 
-      os << boost::format("num_read           = %d\n") % num_read; 
-      for(int i = 0; i < buffer_elements; i++) {
-	char tp, hp; 
-	tp = (tail_pointer == (buffer + i)) ? 'T' : ' ';
-	hp = (head_pointer == (buffer + i)) ? 'H' : ' ';	
-	os << boost::format("%c%c %4d: ") % tp % hp % i; 
-	os << buffer[i] << std::endl; 
-      }
-    }
-    
     template <typename T2> void dumpBuf(std::ostream & os) {
       T2 * tptr = (T2*) buffer; 
       for(int i = 0; i < (buffer_elements * sizeof(T)) / sizeof(T2); i++) {

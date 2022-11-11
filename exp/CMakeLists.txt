@@ -186,9 +186,3 @@ add_executable(NCOexp EXCLUDE_FROM_ALL NCOexp.cxx)
 target_link_libraries(NCOexp ${Boost_LIBRARIES})
 
 
-set(CircularBuffer_test_SRCS CircularBuffer_test.cxx ../common/CircularBuffer.hxx)
-
-add_executable(CircularBuffer_test EXCLUDE_FROM_ALL ${CircularBuffer_test_SRCS})
-
-target_link_libraries(CircularBuffer_test ${TEST_LIBS})
-

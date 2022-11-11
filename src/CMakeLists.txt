@@ -17,7 +17,6 @@ set(SoDaLib_SRCS
     MailBoxRegistry.cxx
     RadioRegistry.cxx
     Radio.cxx
-    USRP.cxx
     CWTX.cxx
     BaseBandRX.cxx
     BaseBandTX.cxx
@@ -34,6 +33,10 @@ set(SoDaLib_SRCS
     B200Control.cxx
     IFRecorder.cxx
     fix_gpsd_ugliness.cxx
+    NullRadio.cxx
+    NullRadioCtrl.cxx
+    NullRadioRX.cxx
+    NullRadioTX.cxx
 )
 
 
@@ -61,10 +64,23 @@ IF(${HAVE_UHD})
     USRPRX.cxx
     USRPTX.cxx
     USRPFrontEnd.cxx
+    USRP.cxx
     )
   LIST(APPEND Radio_INCLUDE_DIRS ${UHD_INCLUDE_DIRS})
   LIST(APPEND Radio_LIBRARIES ${UHD_LIBRARIES})
 ENDIF()
+
+IF(${RTLSDR_FOUND})
+  LIST(APPEND SoDaLib_SRCS
+    RTLsdr.cxx
+    RTLsdrCtrl.cxx    
+    RTLsdrRX.cxx
+    RTLsdrTX.cxx    
+    )
+  LIST(APPEND Radio_INCLUDE_DIRS ${RTLSDR_INCLUDE_DIRS})
+  LIST(APPEND Radio_LIBRARIES ${RTLSDR_LIBRARIES})
+ENDIF()
+
 
 add_definitions(-DHAVE_UHD=${HAVE_UHD})
 

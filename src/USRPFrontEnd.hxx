@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2017, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2017, 2022 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -31,7 +31,7 @@
 
 #include <string>
 #include <iostream>
-#include "PropTree.hxx"
+#include "USRPPropTree.hxx"
 
 namespace SoDa {
   /** 
@@ -44,22 +44,22 @@ namespace SoDa {
    */
 
   /**
-   * @brief return a pointer to a PropTree object for the first "T" or "R" front end
+   * @brief return a pointer to a USRPPropTree object for the first "T" or "R" front end
    * that provides an IQ or QI stream.
    * 
-   * @param tree pointer to a PropTree root 
+   * @param tree pointer to a USRPPropTree root 
    * @param tr_choice 'T', 't' for transmit, 'R', 'r' for receive.
-   * @return PropTree object or NULL if none found
+   * @return USRPPropTree object or NULL if none found
    */
-  PropTree * getUSRPFrontEnd(PropTree * tree, char tr_choice);  
+  USRPPropTree * getUSRPFrontEnd(USRPPropTree * tree, char tr_choice);  
   /**
-   * @brief return a pointer to a PropTree object for the first "T" or "R" front end
+   * @brief return a pointer to a USRPPropTree object for the first "T" or "R" front end
    * that provides an IQ or QI stream.
    * 
-   * @param tree reference to a PropTree root 
+   * @param tree reference to a USRPPropTree root 
    * @param tr_choice 'T', 't' for transmit, 'R', 'r' for receive.
-   * @return PropTree object or NULL if none found
+   * @return USRPPropTree object or NULL if none found
    */
-  PropTree * getUSRPFrontEnd(PropTree & tree, char tr_choice);
+  USRPPropTree * getUSRPFrontEnd(USRPPropTree & tree, char tr_choice);
 }
 #endif

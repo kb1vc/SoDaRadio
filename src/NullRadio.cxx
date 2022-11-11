@@ -25,32 +25,31 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#include "USRP.hxx"
+#include "NullRadio.hxx"
 #include "Params.hxx"
-#include "USRPCtrl.hxx"
-#include "USRPRX.hxx"
-#include "USRPTX.hxx"
+#include "NullRadioCtrl.hxx"
+#include "NullRadioRX.hxx"
+#include "NullRadioTX.hxx"
 
 namespace SoDa {
-  USRP::USRP(Params_p params) : params(params), Radio("USRP") {
-    /// create the USRP Control, RX Streamer, and TX Streamer threads
-    /// @see SoDa::USRPCtrl @see SoDa::USRPRX @see SoDa::USRPTX
-    // but first, set the parameters for this radio
+  NullRadio::NullRadio(Params_p params) : params(params), Radio("NullRadio") {
+    // set the parameters for this radio
     params->setRXRate(getRXSampleRate());
     params->setTXRate(getTXSampleRate());
   }
 
-  void USRP::init() {
-    ctrl = new SoDa::USRPCtrl(params);
-    rx = new SoDa::USRPRX(params, ctrl->getUSRP());
-    tx = new SoDa::USRPTX(params, ctrl->getUSRP());
+  void NullRadio::init() {
+    ctrl = new SoDa::NullRadioCtrl(params);
+    rx = new SoDa::NullRadioRX(params);
+    tx = new SoDa::NullRadioTX(params);
   }
 
+  static Radio * makeNullRadio(Params_p parms) { return new NullRadio(parms); }
   
-  float USRP::getRXSampleRate() { return 625e3; }
-  float USRP::getTXSampleRate() { return 625e3; }
+  float NullRadio::getRXSampleRate() { return 1e6; }
+  float NullRadio::getTXSampleRate() { return 1e6; }
   
-  void USRP::cleanUp() {
+  void NullRadio::cleanUp() {
     // not much here. 
   }
 }

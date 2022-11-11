@@ -29,7 +29,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /** 
  *   @file RadioRegistry.hxx
- *   @brief key-value table that holds functions that produce radios.
+ *   @brief This is a singleton object that maintains a
+ *    key-value table that holds functions that produce radios.
  * 
  * 
  *   @author M. H. Reilly (kb1vc)
@@ -40,6 +41,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <map>
 #include <functional>
 #include <string>
+#include <mutex>
 #include "Radio.hxx"
 #include "Params.hxx"
 
@@ -53,17 +55,27 @@ namespace SoDa {
    */
    class RadioRegistry {
    public:
+
+     typedef std::function<Radio*(Params_p)> RadioBuilderFunc;          
+
+     static void addRadio(const std::string & name, RadioBuilderFunc builder);
+
+     static Radio * make(const std::string & name, Params_p parms);
+     
+     static std::string supportedRadios(); 
+
+   private:
      RadioRegistry(); 
 
-     typedef std::function<Radio*(Params_p)> RadioBuilderFunc;
+     static RadioRegistry * getRegistrar();
+
+     static RadioRegistry * registrar; 
      
-     void add(const std::string & name, RadioBuilderFunc builder);
+     static std::mutex get_reg_mutex;
 
      RadioBuilderFunc & get(const std::string & name);
 
-     Radio * make(const std::string & name, Params_p parms);
-     
-     std::string supportedRadios(); 
+   public:
 
      class ModelNotFound : public Radio::Exception {
      public:

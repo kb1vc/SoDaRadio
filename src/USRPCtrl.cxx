@@ -88,7 +88,7 @@ namespace SoDa {
 
     // We need to find out if this is a B2xx or something like it -- they don't
     // have daughter cards and there are other things to watch out for....
-    PropTree tree(usrp, getObjName()); 
+    USRPPropTree tree(usrp, getObjName()); 
 
     motherboard_name = tree.getStringProp("name", "unknown");
 

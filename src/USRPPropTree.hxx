@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2015, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2015, 2022 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -38,10 +38,10 @@
 namespace SoDa
 {
 /** 
-   * @brief PropTree class encapsulates the USRP property tree 
+   * @brief USRPPropTree class encapsulates the USRP property tree 
    * functions to allow better trap and error recovery management. 
    */
-class PropTree
+class USRPPropTree
 {
 public:
   /**
@@ -52,7 +52,7 @@ public:
      * @param mb_index which motherboard are we interested in? 
      *
      */
-  PropTree(const uhd::usrp::multi_usrp::sptr usrp, const std::string &requester, int mb_index = 0)
+  USRPPropTree(const uhd::usrp::multi_usrp::sptr usrp, const std::string &requester, int mb_index = 0)
   {
     client_name = requester;
     try
@@ -83,7 +83,7 @@ public:
      * @param path path to this property tree. 
      *
      */
-  PropTree(PropTree *ptree, const std::string &path)
+  USRPPropTree(USRPPropTree *ptree, const std::string &path)
   {
     init(ptree, path);
   }
@@ -95,7 +95,7 @@ public:
      * @param path path to this property tree. 
      *
      */
-  PropTree(PropTree &ptree, const std::string &path)
+  USRPPropTree(USRPPropTree &ptree, const std::string &path)
   {
     init(&ptree, path);
   }
@@ -212,7 +212,7 @@ public:
   }
 
 private:
-  void init(PropTree *ptree, const std::string &path)
+  void init(USRPPropTree *ptree, const std::string &path)
   {
     client_name = ptree->client_name;
     try
@@ -231,7 +231,7 @@ private:
                 std::runtime_error &e,
                 bool continue_p = true)
   {
-    std::cerr << SoDa::Format("PropTree encountered %0\n\tRequester: %1\n\tException: [%2]\n\t%3\n")
+    std::cerr << SoDa::Format("USRPPropTree encountered %0\n\tRequester: %1\n\tException: [%2]\n\t%3\n")
       .addS(explain_string)
       .addS(client_name)
       .addS(e.what())
@@ -245,7 +245,7 @@ private:
                 std::runtime_error &e,
                 bool continue_p = true)
   {
-    std::cerr << SoDa::Format("PropTree encountered %0\n\twhile looking for path [%1]\n\tRequester: %2\n\tException: [%3]\n\t%4\n")
+    std::cerr << SoDa::Format("USRPPropTree encountered %0\n\twhile looking for path [%1]\n\tRequester: %2\n\tException: [%3]\n\t%4\n")
       .addS(explain_string)
       .addS(path)
       .addS(client_name)

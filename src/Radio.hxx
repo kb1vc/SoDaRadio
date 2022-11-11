@@ -76,6 +76,9 @@ namespace SoDa {
     virtual float getRXSampleRate() = 0;
     virtual float getTXSampleRate() = 0; 
     virtual void cleanUp() {}; 
+
+    virtual bool hasTX() = 0;
+    virtual bool hasRX() = 0;
     
     const std::string & getName() const { return name; }
   private:

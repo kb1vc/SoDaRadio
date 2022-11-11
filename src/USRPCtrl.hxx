@@ -41,7 +41,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Command.hxx"
 #include "Params.hxx"
 #include "TRControl.hxx"
-#include "PropTree.hxx"
+#include "USRPPropTree.hxx"
 #include "MailBoxTypes.hxx"
 
 #include <uhd/version.hpp>
@@ -90,11 +90,6 @@ namespace SoDa {
     /// implement the subscription method
     void subscribe();
 
-#if UHD_VERSION < 3110000
-    /// This is the more permanent message handler used before the elimination of the msg class    
-    static void normal_message_handler(uhd::msg::type_t type, const std::string & msg);
-#endif
-    
     /// This is a singleton object -- the last (and only, we hope) such object
     /// to be created sets a static pointer to itself.  This looks pretty gross, but
     /// it is necessary to provide context to the error message handlers.
@@ -171,9 +166,9 @@ namespace SoDa {
     uhd::usrp::multi_usrp::sptr usrp; ///< to which USRP unit is this connected?
     uhd::usrp::dboard_iface::sptr dboard;  ///< the daughterboard we're controlling
     // need this for TX/RX enable.
-    SoDa::PropTree * tx_fe_subtree; ///< property tree from daughtercard module
+    SoDa::USRPPropTree * tx_fe_subtree; ///< property tree from daughtercard module
     // need this for TX/RX enable.
-    SoDa::PropTree * rx_fe_subtree; ///< property tree from daughtercard module
+    SoDa::USRPPropTree * rx_fe_subtree; ///< property tree from daughtercard module
 
     // what controls and widgets do we have for the two front-ends? 
 

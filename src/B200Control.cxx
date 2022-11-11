@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2015, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2015, 2022 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -42,7 +42,7 @@
 #include <iostream>
 
 //new
-#include "PropTree.hxx"
+#include "USRPPropTree.hxx"
 #include <uhd/property_tree.hpp>
 
 namespace SoDa 
@@ -52,7 +52,7 @@ namespace SoDa
     mboard = _mboard; 
   
     //new
-    PropTree tree(usrp, "TRControl");
+    USRPPropTree tree(usrp, "TRControl");
     B200Control::modelname = tree.getStringProp("name", "unknown");
     if ((modelname == std::string("B200")) ) {
         B200_type = SoDa_B200_type_t::eB200;};

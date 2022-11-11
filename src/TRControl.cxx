@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2015, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2015, 2022 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,7 @@
 #include "TRControl.hxx"
 #include "N200Control.hxx"
 #include "B200Control.hxx"
-#include "PropTree.hxx"
+#include "USRPPropTree.hxx"
 
 #include <uhd/version.hpp>
 #include <uhd/device.hpp>
@@ -43,7 +43,7 @@ namespace SoDa {
 
   TRControl * TRControl::makeTRControl(uhd::usrp::multi_usrp::sptr usrp, int mboard) {
     // first figure out what kind of device we are... 
-    PropTree tree(usrp, "TRControl");
+    USRPPropTree tree(usrp, "TRControl");
     std::string modelname = tree.getStringProp("name", "unknown");
 
     // now do something different for each one... 

@@ -134,6 +134,8 @@
 #include "MailBoxRegistry.hxx"
 #include "MailBoxTypes.hxx"
 #include "RadioRegistry.hxx"
+#include "NullRadio.hxx"
+#include "RTLsdr.hxx"
 
 // Include functions to dynamically link any user supplied plugins
 #include <dlfcn.h>
@@ -208,9 +210,10 @@ int doWork(SoDa::Params_p params)
   d.setDefaultLevel(params->getDebugLevel());
 
   // register all our "built-in" radio models
-  SoDa::RadioRegistry radios;
-  radios.add("USRP", SoDa::USRP::makeUSRP);
-  
+  SoDa::RadioRegistry::addRadio("USRP", SoDa::USRP::makeRadio);
+  SoDa::RadioRegistry::addRadio("NullRadio", SoDa::NullRadio::makeRadio);
+  SoDa::RadioRegistry::addRadio("RTLsdr", SoDa::RTLsdr::makeRadio);    
+
   loadAccessories(params->getLibs(), d);
   
   // These are the mailboxes that connect
@@ -228,7 +231,7 @@ int doWork(SoDa::Params_p params)
   SoDa::MsgMBoxPtr cwtxt_stream = SoDa::registerMailBox<SoDa::MsgMBox>("CW_TXT");
 
   SoDa::Radio * radio; 
-  radio = radios.make("USRP", params);
+  radio =   SoDa::RadioRegistry::make("USRP", params);
 
   /// Though it is rather sad, it looks like the cleanest approach is to
   /// create the resamplers here. The resampler determines the size of both the

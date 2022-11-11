@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2017, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2017, 2022 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -29,10 +29,10 @@
 #include <string>
 #include <iostream>
 #include "USRPFrontEnd.hxx"
-#include "PropTree.hxx"
+#include "USRPPropTree.hxx"
 
 namespace SoDa {
-  PropTree * getUSRPFrontEnd(PropTree * tree, char tr_choice) {
+  USRPPropTree * getUSRPFrontEnd(USRPPropTree * tree, char tr_choice) {
     // find a daughterboard.
     std::vector<std::string> dblist = tree->getPropNames("dboards");
     
@@ -59,7 +59,7 @@ namespace SoDa {
 	// now see what the connection type is.... 
 	std::string conn_type = tree->getStringProp(fe_name + "/connection");
 	if((conn_type == "IQ") || (conn_type == "QI")) {
-	  return new PropTree(tree, fe_name);
+	  return new USRPPropTree(tree, fe_name);
 	}
       }
     }
@@ -67,7 +67,7 @@ namespace SoDa {
     return NULL; 
   }
 
-  PropTree * getUSRPFrontEnd(PropTree & tree, char tr_choice) {
+  USRPPropTree * getUSRPFrontEnd(USRPPropTree & tree, char tr_choice) {
     return getUSRPFrontEnd(&tree, tr_choice);
   }  
 }

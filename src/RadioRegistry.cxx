@@ -30,10 +30,23 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iostream>
 
 namespace SoDa {
+  RadioRegistry * RadioRegistry::registrar = nullptr;
+  std::mutex RadioRegistry::get_reg_mutex; 
+
   RadioRegistry::RadioRegistry() { }
 
-  void RadioRegistry::add(const std::string & name, RadioBuilderFunc builder) {
-    builders[name] = builder; 
+  RadioRegistry * RadioRegistry::getRegistrar() {
+    std::lock_guard<std::mutex> lock(get_reg_mutex);
+    if(registrar == nullptr) {
+      registrar = new RadioRegistry; 
+    }
+    return registrar; 
+  }
+
+  void RadioRegistry::addRadio(const std::string & name, 
+			       RadioBuilderFunc builder) {
+    auto reg = getRegistrar();
+    reg->builders[name] = builder; 
   }
 
   RadioRegistry::RadioBuilderFunc & RadioRegistry::get(const std::string & name) {
@@ -45,14 +58,17 @@ namespace SoDa {
 
   Radio * RadioRegistry::make(const std::string & name, 
 			      Params_p parms) {
-    auto mkr = get(name); 
+    auto reg = getRegistrar();        
+    auto mkr = reg->get(name); 
     return mkr(parms);
   }
 
   std::string RadioRegistry::supportedRadios() {
     std::string ret; 
     std::string sep("");
-    for(auto e : builders) {
+    auto reg = getRegistrar();
+
+    for(auto e : reg->builders) {
       ret = ret + sep + e.first; 
       sep = ", "; 
     }
