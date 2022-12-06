@@ -1,0 +1,28 @@
+#  It would be nice if this worked: FIND_PACKAGE(rtlsdr)
+# but it doesn't.  The rtlsdrConfig.cmake file is a hull.
+set(HAVE_RTL_SDR 0) 
+find_path(rtlsdr_INCLUDE_DIRS
+  NAMES rtl-sdr.h
+  PATHS /usr/local/include 
+        /usr/include
+        /opt/local/include
+	${RTLSDR_ROOT}/include	
+	)
+if(rtlsdr_INCLUDE_DIRS STREQUAL "rtlsdr_INCLUDE_DIRS-NOTFOUND")
+  message("RTLsdr Library NOT FOUND.  Well, we won't be having any of that, then
+.")
+else()
+  find_library(rtlsdr_LIBRARIES
+    NAMES rtlsdr
+    PATHS /usr/local/lib
+    /usr/local/lib64
+    /usr/lib
+    /usr/lib64
+    /opt/local/lib
+    /opt/local/lib64
+    ${RTLSDR_ROOT}/lib
+    )
+  set(HAVE_RTLSDR 1)
+  LIST(APPEND INCLUDE_DIRS ${rtlsdr_INCLUDE_DIRS})
+  LIST(APPEND LIBRARIES ${rtlsdr_LIBRARIES})
+endif()
