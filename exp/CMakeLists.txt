@@ -171,7 +171,7 @@ target_link_libraries(IntN_FreqTable ${TEST_LIBS})
 
 ########### next target ###############
 IF(${HAVE_UHD})
-  set(USRPFrontEnd_test_SRCS USRPFrontEnd_test.cxx ../src/USRPFrontEnd.cxx ../src/PropTree.hxx)
+  set(USRPFrontEnd_test_SRCS USRPFrontEnd_test.cxx ../src/USRPFrontEnd.cxx ../src/USRPPropTree.hxx)
 
   add_executable(USRPFrontEnd_test EXCLUDE_FROM_ALL ${USRPFrontEnd_test_SRCS})
 
