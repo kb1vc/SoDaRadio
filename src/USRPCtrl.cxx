@@ -76,7 +76,14 @@ namespace SoDa {
     tx_samp_rate = 625000;
     tx_ant = std::string("TX");
     motherboard_name = std::string("UNKNOWN_MB");
-  
+
+    std::cerr << SoDa::Format("USRPCtrl radioargs [%0]\n")
+      .addS(params->getRadioArgs());
+
+    auto dev_addrs = uhd::device::find(params->getRadioArgs());
+    for(auto da : dev_addrs) {
+      std::cerr << "da [" << da.to_pp_string() << "]\n";
+    }
     // make the device.
     usrp = uhd::usrp::multi_usrp::make(params->getRadioArgs());
 

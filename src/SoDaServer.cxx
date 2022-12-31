@@ -332,7 +332,12 @@ int main(int argc, char * argv[])
   /// information from the command line and from
   /// the stored configuration files.
   /// @see SoDa::Params
+  std::cerr << "About to parse SoDaServer params\n";
+  for(int i = 0; i < argc; i++) {
+    std::cerr << i << "\t[" << argv[i] << "]\n";
+  }
   SoDa::Params_p params = std::make_shared<SoDa::Params>(argc, argv);
+  std::cerr << "Parsed SoDaServer params.\n";
 
   /// create a lock file to signal that we're alive. 
   createLockFile(params->getLockFileName()); 

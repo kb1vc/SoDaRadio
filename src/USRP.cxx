@@ -41,6 +41,7 @@ namespace SoDa {
   }
 
   void USRP::init() {
+    std::cerr << "server_args = [" << params->getRadioArgs() << "]\n";
     ctrl = new SoDa::USRPCtrl(params);
     rx = new SoDa::USRPRX(params, ctrl->getUSRP());
     tx = new SoDa::USRPTX(params, ctrl->getUSRP());

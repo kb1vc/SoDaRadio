@@ -37,8 +37,6 @@ SoDa::GuiParams::GuiParams(int argc, char ** argv)
      "Name/path to SoDaServer program. Normally found in the directory containing SoDaRadio")
     .add<std::string>(&server_args, "serverargs", 'a', "", 
      "Argument string to be passed to SoDaServer program")
-    .add<std::string>(&uhd_args, "uhdargs", 'u', "", 
-     "multi uhd device address arguments -- 'type=b200' selects a B2xx unit in preference over an N2xx device")
     .add<std::string>(&server_sock_basename, "uds_name", 'S', "",
      "unix domain socket name for server to UI client message channels")
     .add<std::string>(&config_filename, "config", 'c', "",
@@ -54,11 +52,18 @@ SoDa::GuiParams::GuiParams(int argc, char ** argv)
      "Enable debug messages for value > 0.  Higher values may produce more detail.")
     ;
 
+  std::cerr << "About to parse GUI commands\n";
+  for(int i = 0; i < argc; i++) {
+    std::cerr << i << "\t[" << argv[i] << "]\n";
+  }
+  
   if(!cmd.parse(argc, argv)) {
     no_command_only_help = true; 
+    std::cerr << "Ooops.\n";
   }
   else {
-    no_command_only_help = false; 
+    no_command_only_help = false;
+    std::cerr << "OK-----------------.\n";    
   }
 }
 

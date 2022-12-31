@@ -99,15 +99,14 @@ static void startupServer(const QString & lock_file_name, SoDa::GuiParams & p)
   server_command = QString("%1 --uds_name \"%2\" ").arg(server_name).arg(ss2QS(p.getServerSocketBasename()));
 
   // now add the uhd args
-  QString uhd_args = ss2QS(p.getUHDArgs());
-  if(uhd_args != "") server_command += QString("--uhdargs %1 ").arg(uhd_args);
   if(p.getDebugLevel() > 0) server_command += QString("--debug %1 ").arg(p.getDebugLevel());
   QString server_args = ss2QS(p.getServerArgs());
-  if(server_args != "") server_command += QString("%1 ").arg(server_args);
+  if(server_args != "") server_command += QString("--devargs %1 ").arg(server_args);
   
   
   server_command += QString(" --lockfile %1 ").arg(lock_file_name); 
 
+  qDebug() << QString("Server Command [%1]\n").arg(server_command);
   QProcess::startDetached(server_command); 
 
 }
@@ -204,7 +203,7 @@ int main(int argc, char *argv[])
       QDir().mkdir(apdir);
     }
 
-    QString uhdargs = QString::fromStdString(p.getUHDArgs());
+    QString uhdargs = QString::fromStdString(p.getServerArgs());
     QString server_lock_filename = QString("%1/sodaserver_args%2.lock")
       .arg(apdir)
       .arg(uhdargs);

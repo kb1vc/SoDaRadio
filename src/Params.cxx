@@ -30,6 +30,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iostream>
 #include <stdlib.h>
 #include <SoDa/Utils.hxx>
+#include <SoDa/Format.hxx>
 
 SoDa::Params::Params(int argc, char * argv[])
 {
@@ -59,7 +60,14 @@ SoDa::Params::Params(int argc, char * argv[])
      "lock file to signal that a sodaradio server is active")
     ;
 
-
+  std::cerr << "**************************\n";
+  for(int i = 0; i < argc; i++) {
+    std::cerr << SoDa::Format("arg %0 value [%1]\n")
+      .addI(i)
+      .addS(argv[i]);
+  }
+  std::cerr << "**************************\n";
+    
   // do we need a help message?
   if(!cmd.parse(argc, argv)) exit(-1);
 
