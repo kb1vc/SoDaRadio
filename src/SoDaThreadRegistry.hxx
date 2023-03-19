@@ -50,7 +50,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace SoDa { 
   
-  class ThreadRegistry : public std::list<SoDa::Thread *> {
+  class ThreadRegistry {
   public:
 
     static ThreadRegistry * getRegistrar();
@@ -64,8 +64,6 @@ namespace SoDa {
      *
      */
     void addThread(SoDa::Thread * thread, const std::string & version);
-    
-    void apply(std::function<bool(SoDa::Thread *)> f);
 
     void subscribeThreads(const SoDa::MailBoxMap & mailbox_map);
     void startThreads();
@@ -73,6 +71,7 @@ namespace SoDa {
     void shutDownThreads();
 
   private:
+    std::list<SoDa::Thread *> threads; 
     ThreadRegistry() { }    
 
     static ThreadRegistry * registrar; 

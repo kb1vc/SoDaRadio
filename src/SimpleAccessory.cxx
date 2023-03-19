@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019 Matthew H. Reilly (kb1vc)
+Copyright (c) 2019,2023 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -55,23 +55,21 @@ void SimpleAccessory::run() {
   bool exitflag = false; 
 
   while(!exitflag) {
-    auto cmd = cmd_stream->get(cmd_subs); 
+    auto cmd = cmd_stream->get(this);
     while (cmd != NULL) {
       execCommand(cmd);
       exitflag |= (cmd->target == SoDa::Command::STOP);      
-      cmd_stream->free(cmd);
-      cmd = cmd_stream->get(cmd_subs); 
+      cmd = nullptr; 
+      cmd = cmd_stream->get(this);
     }
 
     usleep(10000);
   }
 }
 
-void SimpleAccessory::subscribeToMailBox(const std::string & mbox_name, SoDa::BaseMBox * mbox_p)
+void SimpleAccessory::subscribeToMailBoxList(SoDa::MailBoxMap & mailboxes)
 {
-  if(SoDa::connectMailBox<SoDa::CmdMBox>(this, cmd_stream, "CMD", mbox_name, mbox_p)) {
-    cmd_subs = cmd_stream->subscribe();
-  }
+  cmd_stream = SoDa::connectMailBox<SoDa::CmdMBox>(this, "CMD", mailboxes);  
 }
 
 

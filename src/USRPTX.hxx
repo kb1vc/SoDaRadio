@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012,2013,2014 Matthew H. Reilly (kb1vc)
+Copyright (c) 2012,2013,2014,2023 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,8 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef USRPTX_HDR
-#define USRPTX_HDR
+#pragma once
+
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
 #include "MultiMBox.hxx"
@@ -61,7 +61,7 @@ namespace SoDa {
     USRPTX(Params * params, uhd::usrp::multi_usrp::sptr _usrp);
 
     /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
+    void subscribeToMailBoxList(MailBoxMap & mailboxes);
     
     /**
      * @brief USRPTX run loop: handle commands, and modulate the tx carrier
@@ -87,17 +87,17 @@ namespace SoDa {
      * @brief execute GET commands from the command channel
      * @param cmd the incoming command
      */
-    void execGetCommand(Command * cmd); 
+    void execGetCommand(CommandPtr  cmd); 
     /**
      * @brief handle SET commands from the command channel
      * @param cmd the incoming command
      */
-    void execSetCommand(Command * cmd); 
+    void execSetCommand(CommandPtr  cmd); 
     /**
      * @brief handle Report commands from the command channel
      * @param cmd the incoming command
      */
-    void execRepCommand(Command * cmd);
+    void execRepCommand(CommandPtr  cmd);
 
     /**
      * @brief set the CW tone frequency to generate an IQ stream
@@ -119,10 +119,6 @@ namespace SoDa {
      */
     void doCW(std::complex<float> * out, float * envelope, unsigned int env_len);
     
-    unsigned int tx_subs;  ///< subscription handle for transmit audio stream (from BaseBandTX)
-    unsigned int cmd_subs; ///< subscription handle for command stream
-    unsigned int cw_subs;  ///< subscription handle for cw envelope stream (from CW unit)
-
     DatMBox * tx_stream;  ///< transmit audio stream 
     DatMBox * cw_env_stream; ///< envelope stream from text-to-CW converter (CW unit)
     CmdMBox * cmd_stream; ///< command stream
@@ -161,5 +157,3 @@ namespace SoDa {
 
 }
 
-
-#endif

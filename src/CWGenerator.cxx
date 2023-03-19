@@ -75,7 +75,8 @@ CWGenerator::CWGenerator(DatMBox * cw_env_stream, double _samp_rate, unsigned in
   setCWSpeed(10);
 
   // allocate our first outbound buffer
-  cur_buf = getFreeSoDaBuf();
+  cur_buf = SoDa::Buf::make(env_buf_len);
+
   cur_buf_idx = 0; 
   // we really want a buffer that is the complex length. 
   cur_buf_len = cur_buf->getComplexMaxLen(); 
@@ -216,7 +217,7 @@ void CWGenerator::appendToOut(const float * v, unsigned int vlen)
     if(cur_buf_idx >= cur_buf_len) {
       // post the buffer.
       env_stream->put(cur_buf);
-      cur_buf = getFreeSoDaBuf(); 
+      cur_buf = SoDa::Buf::make(env_buf_len); 
       cur_buf_idx = 0;
       cur_buf_len = cur_buf->getComplexMaxLen(); 
     }
@@ -233,7 +234,7 @@ void CWGenerator::flushBuffer()
     }
     // post the buffer.
     env_stream->put(cur_buf);
-    cur_buf = getFreeSoDaBuf();
+    cur_buf = SoDa::Buf::make(env_buf_len);
     cur_buf_idx = 0;
     cur_buf_len = cur_buf->getComplexMaxLen(); 
   }

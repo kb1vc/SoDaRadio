@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012,2017 Matthew H. Reilly (kb1vc)
+Copyright (c) 2012,2017,2023 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,8 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef GPS_MON_HDR
-#define GPS_MON_HDR
+#pragma once
+
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
 #include "MultiMBox.hxx"
@@ -45,20 +45,17 @@ namespace SoDa {
     GPSmon(Params * params);
 
     /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
+    void subscribeToMailBoxList(MailBoxMap & mailboxes);
     
     void run();
   private:
-    void execGetCommand(Command * cmd); 
-    void execSetCommand(Command * cmd); 
-    void execRepCommand(Command * cmd); 
+    void execGetCommand(CommandPtr  cmd); 
+    void execSetCommand(CommandPtr  cmd); 
+    void execRepCommand(CommandPtr  cmd); 
 
     CmdMBox *cmd_stream;
-    unsigned int cmd_subs;
 
     GPSDShim * gps_shim; 
   }; 
 }
 
-
-#endif

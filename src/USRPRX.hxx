@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+Copyright (c) 2012,2023 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,8 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef USRPRX_HDR
-#define USRPRX_HDR
+#pragma once
+
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
 #include "MultiMBox.hxx"
@@ -56,7 +56,7 @@ namespace SoDa {
     USRPRX(Params * params, uhd::usrp::multi_usrp::sptr usrp);
 
     /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
+    void subscribeToMailBoxList(MailBoxMap & mailboxes);
     
     /**
      * USRPRX is a thread -- this is its run loop. 
@@ -64,10 +64,10 @@ namespace SoDa {
     void run();
     
   private:   
-    void execCommand(Command * cmd); 
-    void execGetCommand(Command * cmd); 
-    void execSetCommand(Command * cmd); 
-    void execRepCommand(Command * cmd);
+    void execCommand(CommandPtr  cmd); 
+    void execGetCommand(CommandPtr  cmd); 
+    void execSetCommand(CommandPtr  cmd); 
+    void execRepCommand(CommandPtr  cmd);
 
     void startStream();
     void stopStream(); 
@@ -79,13 +79,12 @@ namespace SoDa {
      *
      * @param inout the input/output RF buffer
      */
-    void doMixer(SoDa::Buf * inout);
+    void doMixer(SoDa::BufPtr  inout);
     void set3rdLOFreq(double IF_tuning);
 
     DatMBox * rx_stream;
     DatMBox * if_stream; 
     CmdMBox * cmd_stream;
-    unsigned int cmd_subs; 
 
     // state for the USRP widget
     uhd::rx_streamer::sptr rx_bits;
@@ -120,4 +119,3 @@ namespace SoDa {
 }
 
 
-#endif

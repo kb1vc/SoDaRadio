@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012,2013,2014,2019 Matthew H. Reilly (kb1vc)
+Copyright (c) 2012,2013,2014,2019,2023 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,9 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-
-#ifndef SODA_THREAD_HDR
-#define SODA_THREAD_HDR
+#pragma once
 
 #include "SoDaBase.hxx"
 #include <string>
@@ -94,19 +92,6 @@ namespace SoDa {
     /**
      * @brief the creator of this thread may offer one or more mailboxes
      * to this object.  The thread may "subscribe" to the mailboxes as it
-     * chooses.  
-     * 
-     * @param mbox_name The name of the mailbox.  This identifies the purpose
-     * of the mailbox, and the thread should be able to infer the the "T" in 
-     * the actual MultiMBox<T> type from this identifying string. 
-     * @param mbox_p a pointer to a multimbox.  This should be cast to the 
-     */
-    virtual void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p) {
-    }
-
-    /**
-     * @brief the creator of this thread may offer one or more mailboxes
-     * to this object.  The thread may "subscribe" to the mailboxes as it
      * chooses.  offerSubscriptionList is a convenience function that allows
      * a thread creator to present a list of mailboxes to which the thread
      * may subscribe. 
@@ -115,11 +100,7 @@ namespace SoDa {
      * of the mailbox, and the thread should be able to infer the the "T" in 
      * the actual MultiMBox<T> type from this identifying string. 
      */
-    void subscribeToMailBoxList(const MailBoxMap & subscription_map) {
-      for(auto p : subscription_map) {
-	subscribeToMailBox(p.first, p.second);
-      }
-    }
+    virtual void subscribeToMailBoxList(const MailBoxMap & subscription_map) { }
 
     void operator() () {
       // we woke up with a "start" or "join" call
@@ -160,22 +141,22 @@ namespace SoDa {
      * 
      * @param cmd the command message to be handled
      */
-    void execCommand(Command * cmd);
+    void execCommand(CommandPtr cmd);
     
     /**
      * optional method to handle "GET" commands -- commands that request a response
      */
-    virtual void execGetCommand(Command * cmd) { (void) cmd; }
+    virtual void execGetCommand(CommandPtr cmd) { (void) cmd; }
 
     /**
      * optional method to handle "SET" commands -- commands that set internal state in the object.
      */
-    virtual void execSetCommand(Command * cmd) { (void) cmd; }
+    virtual void execSetCommand(CommandPtr cmd) { (void) cmd; }
 
     /**
      * optional method that reports status or the result of some action. 
      */
-    virtual void execRepCommand(Command * cmd) { (void) cmd; } 
+    virtual void execRepCommand(CommandPtr cmd) { (void) cmd; } 
 
     /**
      * optional method that performs cleanup -- may not delete. 
@@ -212,39 +193,32 @@ namespace SoDa {
     void hookSigSeg();
   };
 
+  enum MailBoxPublish { WRITE_ONLY, READ_WRITE };  
+
   /**
    * @brief if the pattern and key match, return true and set "mbox_ptr" to point
    * to the mailbox pointed to by "could_be_pointer".  Otherwise, just return false;
    * 
    * @param obj A SoDa object so we have someone to blame for an exception.
-   * @param current_ptr if the mailbox has already been connected, then this is it, otherwise, we'll update the mailbox on a match.
-
-   * @param pattern this is the mailbox name we're looking for
-   * @param key this is the name of the  mailbox we're being offered
-   * @param could_be_pointer this is the mailbox we're being offered. 
-   * @return true if we find a match
+   * @param key this is the mailbox name we're looking for
+   * @param mailboxes a map of name to mailbox pointer
+   * @param pub if WRITE_ONLY, we won't subscribe to the mailbox.
+   * @return a pointer to the mailbox if we find a match
    *
    */
-  template<class T> bool connectMailBox(SoDa::Base * obj, 
-					T * & current_ptr, 
-					const std::string & pattern,
-					const std::string & key, 
-					SoDa::BaseMBox * could_be_pointer) {
-    T * ret;
-    if(pattern == key) {
-      ret = dynamic_cast<T *>(could_be_pointer);
-      if(ret == NULL) {
-	throw SoDa::Radio::Exception(SoDa::Format("Bad mailbox pointer for mailbox named = [%0]\n") 
+  template<class T> T* connectMailBox(Thread * obj, 
+				      const std::string & key,
+				      MailBoxMap & mailboxes, 
+				      MailBoxPublish pub = MailBoxPublish::READ_WRITE) {
+    if(mailboxes.count(key) == 0) {
+	throw Radio::Exception(SoDa::Format("Could not find mailbox named [%0]\n") 
 			      .addS(key), obj);
-      }
-      else {
-	current_ptr = ret; 
-	return true;
-      }
     }
-    return false;
+    T* ret = dynamic_cast<T*>(mailboxes[key]);
+    if(pub == READ_WRITE) {
+      ret->subscribe(obj);
+    }
+    return ret; 
   }
 }
 
-
-#endif

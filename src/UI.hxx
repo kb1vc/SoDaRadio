@@ -44,19 +44,18 @@ namespace SoDa {
     ~UI();
 
     /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
+    void subscribeToMailBoxList(MailBoxMap & mailboxes);
     
     void run();
 
   private:
     // Do an FFT on an rx buffer and send the positive
     // frequencies to any network listeners. 
-    void sendFFT(SoDa::Buf * buf);
+    void sendFFT(SoDa::BufPtr  buf);
 
     // the internal communications paths -- between the SoDa threads. 
     CmdMBox * cwtxt_stream, * cmd_stream, * gps_stream;
     DatMBox * if_stream; 
-    unsigned int if_subs, cmd_subs, gps_subs;
 
 
     // these are the pieces of the posix message queue interface to the GUI or whatever.

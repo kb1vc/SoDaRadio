@@ -19,45 +19,30 @@ void SoDa::ThreadRegistry::addThread(SoDa::Thread * thread, const std::string & 
 			  .addS(version)
 			  .addS(SoDaRadio_VERSION), thread);
   }
-  push_back(thread);
-}
-
-void SoDa::ThreadRegistry::apply(std::function<bool(SoDa::Thread*)> f) {
-  for(auto el : *this) {
-    f(el);
-  }
+  threads.push_back(thread);
 }
 
 void SoDa::ThreadRegistry::subscribeThreads(const SoDa::MailBoxMap & mailbox_map) {
-  apply([mailbox_map](SoDa::Thread * el) ->
-	bool { 
-	  el->subscribeToMailBoxList(mailbox_map); 
-	  return true;
-	});
-
+  for(auto el : threads) {
+    el->subscribeToMailBoxList(mailbox_map); 
+  }
 }
 
 void SoDa::ThreadRegistry::startThreads() {
-  apply([](SoDa::Thread * el) ->
-	bool {
-	  el->start();
-	  return true; 
-	});
+  for(auto el : threads) {
+    el->start();
+  }
 } 
  
 void SoDa::ThreadRegistry::joinThreads() {
-  apply([](SoDa::Thread * el) ->
-	bool {
-	  el->join();
-	  return true;
-	});
+  for(auto el : threads) {
+    el->join();
+  }
 }
 
 void SoDa::ThreadRegistry::shutDownThreads() {
-  apply([](SoDa::Thread * el) ->
-	bool {
-	  el->shutDown();
-	  return true;
-	});
+  for(auto el : threads) {
+    el->shutDown();
+  }
 }
 

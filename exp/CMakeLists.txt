@@ -2,14 +2,15 @@
 
 find_package(FFTW3f REQUIRED QUIET)
 
-add_definitions(-DHAVE_LIBASOUND=1)
+message("HEY! I'm In exp/CMakeLists.txt!")
 
-include_directories(SYSTEM ${Boost_INCLUDE_DIRS} ${UHD_INCLUDE_DIRS} ${ALSA_INCLUDE_DIRS} ${FFTW3F_INCLUDE_DIRS}
+include_directories(SYSTEM ${UHD_INCLUDE_DIRS} ${ALSA_INCLUDE_DIRS} ${FFTW3F_INCLUDE_DIRS}
   ${SoDaUtils_INCLUDE_DIR}
   ../src ../common)
 
-set(TEST_LIBS ${Boost_LIBRARIES} ${UHD_LIBRARIES} ${ALSA_LIBRARIES} ${FFTW3F_LIBRARIES} ${SoDaUtils_LIBRARIES})
+set(TEST_LIBS ${UHD_LIBRARIES} ${ALSA_LIBRARIES} ${FFTW3F_LIBRARIES} ${SoDaUtils_LIBRARIES})
 
+if(0)
 ########### next target ###############
 
 set(FFT_Test_SRCS FFT_Test.cxx)
@@ -46,19 +47,13 @@ add_executable(LineSockets_Test EXCLUDE_FROM_ALL ${LineSockets_Test_SRCS})
 target_link_libraries(LineSockets_Test ${TEST_LIBS})
 
 #install(TARGETS Sockets_Test DESTINATION tests)
-
+endif()
 
 ########### next target ###############
 
-set(MultiMBox_Test_SRCS MultiMBox_Test.cxx ../src/SoDaBase.cxx ../src/Debug.cxx)
-
-add_executable(MultiMBox_Test EXCLUDE_FROM_ALL ${MultiMBox_Test_SRCS})
-
-target_link_libraries(MultiMBox_Test ${TEST_LIBS})
-
 #install(TARGETS MultiMBox_Test DESTINATION tests)
 
-
+if(0)
 ########### next target ###############
 
 set(SoDa_ThreadTest_SRCS SoDa_ThreadTest.cxx ../src/SoDaBase.cxx ../src/Debug.cxx ../src/SoDaThread.cxx ../src/SoDaThreadRegistry.cxx)
@@ -260,3 +255,11 @@ add_executable(CircularBuffer_test EXCLUDE_FROM_ALL ${CircularBuffer_test_SRCS})
 
 target_link_libraries(CircularBuffer_test ${TEST_LIBS})
 
+endif()
+
+
+set(MultiMBox_Test_SRCS MultiMBox_Test.cxx ../src/SoDaBase.cxx ../src/Debug.cxx
+  ../src/SoDaThread.cxx ../src/SoDaThreadRegistry.cxx)
+add_executable(MultiMBox_Test EXCLUDE_FROM_ALL ${MultiMBox_Test_SRCS})
+
+target_link_libraries(MultiMBox_Test ${TEST_LIBS})

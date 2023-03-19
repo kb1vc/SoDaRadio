@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2023 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -29,11 +29,7 @@
 #include "USRPTX.hxx"
 #include <uhd/version.hpp>
 #include <uhd/utils/safe_main.hpp>
-#if UHD_VERSION < 3110000
-#  include <uhd/utils/thread_priority.hpp>
-#else 
 #  include <uhd/utils/thread.hpp>
-#endif
 #include <uhd/usrp/multi_usrp.hpp>
 #include <unistd.h>
 #include <sys/types.h>
@@ -41,11 +37,12 @@
 #include <fcntl.h>
 #include <stdio.h>
 
-SoDa::USRPTX::USRPTX(Params * params, uhd::usrp::multi_usrp::sptr _usrp) : SoDa::Thread("USRPTX")
+namespace SoDa {
+USRPTX::USRPTX(Params * params, uhd::usrp::multi_usrp::sptr _usrp) : Thread("USRPTX")
 {
-  cmd_stream = NULL;
-  tx_stream = NULL;
-  cw_env_stream = NULL;
+  cmd_stream = nullptr;
+  tx_stream = nullptr;
+  cw_env_stream = nullptr;
   
   usrp = _usrp; 
 
@@ -108,10 +105,10 @@ SoDa::USRPTX::USRPTX(Params * params, uhd::usrp::multi_usrp::sptr _usrp) : SoDa:
   tx_enabled = false;
 }
 
-void SoDa::USRPTX::run()
+void USRPTX::run()
 {
-  if((cmd_stream == NULL) || (tx_stream == NULL) || (cw_env_stream == NULL)) {
-    throw SoDa::Radio::Exception(std::string("Missing a stream connection.\n"), 
+  if((cmd_stream == nullptr) || (tx_stream == nullptr) || (cw_env_stream == nullptr)) {
+    throw Radio::Exception(std::string("Missing a stream connection.\n"), 
 			  this);	
   }
 
@@ -126,8 +123,9 @@ void SoDa::USRPTX::run()
   debugMsg("Created tx streamer.\n");
 
   bool exitflag = false;
-  SoDa::Buf * txbuf, * cwenv;
-  Command * cmd; 
+  BufPtr  txbuf;
+  BufPtr  cwenv;
+  CommandPtr  cmd; 
   std::vector<std::complex<float> *> buffers(LO_capable ? 2 : 1);
 
   while(!exitflag) {
@@ -135,18 +133,18 @@ void SoDa::USRPTX::run()
     if(LO_capable && LO_enabled && LO_configured) buffers[1] = const_buf;
     else if(LO_capable) buffers[1] = zero_buf;
     
-    if((cmd = cmd_stream->get(cmd_subs)) != NULL) {
+    if((cmd = cmd_stream->get(this)) != nullptr) {
       // process the command.
       execCommand(cmd);
       didwork = true; 
       exitflag |= (cmd->target == Command::STOP); 
-      cmd_stream->free(cmd); 
+      cmd = nullptr; 
     }
     else if(tx_enabled &&
 	    tx_bits &&
-	    (tx_modulation != SoDa::Command::CW_L) &&
-	    (tx_modulation != SoDa::Command::CW_U) &&
-	    (txbuf = tx_stream->get(tx_subs)) != NULL) {
+	    (tx_modulation != Command::CW_L) &&
+	    (tx_modulation != Command::CW_U) &&
+	    (txbuf = tx_stream->get(this)) != nullptr) {
       // get a buffer and 
       buffers[0] = txbuf->getComplexBuf();
       tx_bits->send(buffers, txbuf->getComplexLen(), md);
@@ -154,21 +152,21 @@ void SoDa::USRPTX::run()
       didwork = true; 
 
       // now free the buffer up.
-      tx_stream->free(txbuf);
+      txbuf = nullptr; 
     }
     else if(tx_enabled &&
 	    tx_bits &&
 	    !beacon_mode &&
-	    ((tx_modulation == SoDa::Command::CW_L) ||
-	     (tx_modulation == SoDa::Command::CW_U))) {
-      cwenv = cw_env_stream->get(cw_subs);
-      if(cwenv != NULL) {
+	    ((tx_modulation == Command::CW_L) ||
+	     (tx_modulation == Command::CW_U))) {
+      cwenv = cw_env_stream->get(this);
+      if(cwenv != nullptr) {
 	// modulate a carrier with a cw message
 	doCW(cw_buf, cwenv->getFloatBuf(), cwenv->getComplexLen());
 	// now send it to the USRP
 	buffers[0] = cw_buf;
 	tx_bits->send(buffers, cwenv->getComplexLen(), md);
-	cw_env_stream->free(cwenv);
+	cwenv = nullptr; 
 	md.start_of_burst = false; 
 	didwork = true; 
       }
@@ -179,7 +177,7 @@ void SoDa::USRPTX::run()
 	tx_bits->send(buffers, tx_buffer_size, md); 
 	// are we supposed to tell anybody about this? 
 	if(waiting_to_run_dry) {
-	  cmd_stream->put(new Command(Command::REP, Command::TX_CW_EMPTY, 0));
+	  cmd_stream->put(Command::make(Command::REP, Command::TX_CW_EMPTY, 0));
 	  waiting_to_run_dry = false; 
 	}
       }
@@ -187,8 +185,8 @@ void SoDa::USRPTX::run()
     else if(tx_enabled &&
 	    tx_bits &&
 	    beacon_mode &&
-	    ((tx_modulation == SoDa::Command::CW_L) ||
-	     (tx_modulation == SoDa::Command::CW_U))) {
+	    ((tx_modulation == Command::CW_L) ||
+	     (tx_modulation == Command::CW_U))) {
       // modulate a carrier with a constant envelope
       doCW(cw_buf, beacon_env, tx_buffer_size);
       // now send it to the USRP
@@ -214,7 +212,7 @@ void SoDa::USRPTX::run()
 }
 
 
-void SoDa::USRPTX::doCW(std::complex<float> * out, float * envelope, unsigned int env_len)
+void USRPTX::doCW(std::complex<float> * out, float * envelope, unsigned int env_len)
 {
   unsigned int i;
   std::complex<float> c;
@@ -225,14 +223,14 @@ void SoDa::USRPTX::doCW(std::complex<float> * out, float * envelope, unsigned in
   }
 }
 
-void SoDa::USRPTX::setCWFreq(bool usb, double freq)
+void USRPTX::setCWFreq(bool usb, double freq)
 {
   // set to - for USB and + for LSB.
   CW_osc.setPhaseIncr((usb ? -1.0 : 1.0) * freq * 2.0 * M_PI / tx_sample_rate);
   // likely to be extremely small... 
 }
 
-void SoDa::USRPTX::transmitSwitch(bool tx_on)
+void USRPTX::transmitSwitch(bool tx_on)
 {
   if(tx_on) {
     if(tx_enabled) return;
@@ -251,25 +249,25 @@ void SoDa::USRPTX::transmitSwitch(bool tx_on)
     }
     tx_enabled = false;
     // flush the input stream for us. 
-    tx_stream->flush(tx_subs);
+    tx_stream->flush(this);
   }
 }
 
-void SoDa::USRPTX::getTXStreamer()
+void USRPTX::getTXStreamer()
 {
   tx_bits = usrp->get_tx_stream(*stream_args); 
 }
 
 
-void SoDa::USRPTX::execSetCommand(Command * cmd)
+void USRPTX::execSetCommand(CommandPtr  cmd)
 {
   switch(cmd->target) {
-  case SoDa::Command::TX_MODE:
-    tx_modulation = SoDa::Command::ModulationType(cmd->iparms[0]);
-    if(tx_modulation == SoDa::Command::CW_L) {
+  case Command::TX_MODE:
+    tx_modulation = Command::ModulationType(cmd->iparms[0]);
+    if(tx_modulation == Command::CW_L) {
       setCWFreq(false, CW_tone_freq); 
     }
-    else if(tx_modulation == SoDa::Command::CW_U) {
+    else if(tx_modulation == Command::CW_U) {
       setCWFreq(true, CW_tone_freq); 
     }
     break; 
@@ -279,7 +277,7 @@ void SoDa::USRPTX::execSetCommand(Command * cmd)
     // setup for TX <-> RX mode transitions.
     if((cmd->iparms[0] & 0x2) != 0) {  
       transmitSwitch(cmd->iparms[0] == 3);
-      cmd_stream->put(new Command(Command::REP, Command::TX_STATE, tx_enabled ? 1 : 0));
+      cmd_stream->put(Command::make(Command::REP, Command::TX_STATE, tx_enabled ? 1 : 0));
     }
     break;
   case Command::TX_BEACON:
@@ -288,11 +286,11 @@ void SoDa::USRPTX::execSetCommand(Command * cmd)
   case Command::TX_CW_EMPTY:
     waiting_to_run_dry = true; 
     break;
-  case SoDa::Command::TVRT_LO_ENABLE:
+  case Command::TVRT_LO_ENABLE:
     debugMsg("Enable Transverter LO");
     LO_enabled = true; 
     break; 
-  case SoDa::Command::TVRT_LO_DISABLE:
+  case Command::TVRT_LO_DISABLE:
     debugMsg("Disable Transverter LO");
     LO_enabled = false; 
     break;
@@ -301,21 +299,21 @@ void SoDa::USRPTX::execSetCommand(Command * cmd)
   }
 }
 
-void SoDa::USRPTX::execGetCommand(Command * cmd)
+void USRPTX::execGetCommand(CommandPtr  cmd)
 {
   switch(cmd->target) {
   case Command::TX_STATE:
-    cmd_stream->put(new Command(Command::REP, Command::TX_STATE, tx_enabled ? 1 : 0)); 
+    cmd_stream->put(Command::make(Command::REP, Command::TX_STATE, tx_enabled ? 1 : 0)); 
     break;
   default:
     break; 
   }
 }
 
-void SoDa::USRPTX::execRepCommand(Command * cmd)
+void USRPTX::execRepCommand(CommandPtr  cmd)
 {
   switch(cmd->target) {
-  case SoDa::Command::TVRT_LO_CONFIG:
+  case Command::TVRT_LO_CONFIG:
     debugMsg("LO configured");
     LO_configured = true; 
     break;
@@ -325,15 +323,9 @@ void SoDa::USRPTX::execRepCommand(Command * cmd)
 }
 
 /// implement the subscription method
-void SoDa::USRPTX::subscribeToMailBox(const std::string & mbox_name, 
-					SoDa::BaseMBox * mbox_p) {
-  if(SoDa::connectMailBox<SoDa::CmdMBox>(this, cmd_stream, "CMD", mbox_name, mbox_p)) {
-    cmd_subs = cmd_stream->subscribe();
-  }
-  if(SoDa::connectMailBox<SoDa::DatMBox>(this, tx_stream, "TX", mbox_name, mbox_p)) {
-    tx_subs = tx_stream->subscribe();
-  }
-  if(SoDa::connectMailBox<SoDa::DatMBox>(this, cw_env_stream, "CW_ENV", mbox_name, mbox_p)) {
-    cw_subs = cw_env_stream->subscribe();
-  }
+  void USRPTX::subscribeToMailBoxList(MailBoxMap & mailboxes) {
+  cmd_stream = connectMailBox<CmdMBox>(this, "CMD", mailboxes);
+  tx_stream = connectMailBox<DatMBox>(this, "TX", mailboxes);
+  cw_env_stream = connectMailBox<DatMBox>(this, "CW_ENV", mailboxes);
+}
 }

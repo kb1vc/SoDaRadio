@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012,2013,2014 Matthew H. Reilly (kb1vc)
+Copyright (c) 2012,2013,2014,2023 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,9 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-
-#ifndef SODA_BASE_HDR
-#define SODA_BASE_HDR
+#pragma once
 
 #include "Command.hxx"
 #include "MultiMBox.hxx"
@@ -38,6 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <unistd.h>
 #include <sys/syscall.h>
 #include <SoDa/Format.hxx>
+#include <memory>
 
 extern "C" {
 #include <signal.h>
@@ -68,7 +67,7 @@ namespace SoDa {
    * can be allocated from the same storage pool.  
    *
    */
-  class Buf : public MBoxMessage {
+  class Buf {
   public:
     /**
      * constructor: Allocate a complex/real buffer of complex data values
@@ -135,6 +134,10 @@ namespace SoDa {
      */
     float * getFloatBuf() { return fdat; }
     
+    static std::shared_ptr<Buf> make(unsigned int size) {
+      return std::make_shared<Buf>(size);
+    }
+
   private:
     std::complex<float> * dat; ///< the storage array (complex version) Storage is common to both types
     float * fdat;              ///< the storage array (REAL version)  Storage is common to both types
@@ -145,14 +148,25 @@ namespace SoDa {
   };
 
   /**
+   * We allocate buffers as things that are pointed to by shared_ptrs
+   */
+  typedef std::shared_ptr<Buf> BufPtr;
+  
+  /**
    * Mailboxes that carry commands only are of type CmdMBox
    */
   typedef MultiMBox<Command> CmdMBox;
+
   /**
    * Mailboxes that carry float or complex data are of type DatMBox
    */ 
   typedef MultiMBox<Buf> DatMBox;
 
+  /**
+   * We need a set of shared pointers
+   */
+  typedef std::shared_ptr<std::vector<float>> FVecPtr; 
+  FVecPtr makeFVec(unsigned int size);
 
   /**
    * The SoDa Base class
@@ -285,5 +299,3 @@ namespace SoDa {
     };
   }
 }
-
-#endif

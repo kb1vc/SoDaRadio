@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2023 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -29,76 +29,77 @@
 #include "GPSmon.hxx"
 #include <list>
 
-SoDa::GPSmon::GPSmon(Params * params) : SoDa::Thread("GPSmon")
-{
-  cmd_stream = NULL;
-
-  gps_shim = new SoDa::GPSDShim(params->getGPSHostName(), params->getGPSPortName());
-}
-
-void SoDa::GPSmon::run()
-{
-  bool exitflag = false;
-  Command * cmd;
-
-  if(cmd_stream == NULL) {
-    throw SoDa::Radio::Exception(std::string("Missing a stream connection.\n"),
-			  this);	
-  }
+namespace SoDa {
   
-  while(!exitflag) {
-    while((cmd = cmd_stream->get(cmd_subs)) != NULL) {
-      // process the command.
-      execCommand(cmd);
-      exitflag |= (cmd->target == Command::STOP);
-      //      std::cerr << "GPSmon got a message. target = " << cmd->target << std::endl; 
-      cmd_stream->free(cmd);
+  GPSmon::GPSmon(Params * params) : Thread("GPSmon")
+  {
+    cmd_stream = NULL;
+
+    gps_shim = new GPSDShim(params->getGPSHostName(), params->getGPSPortName());
+  }
+
+  void GPSmon::run()
+  {
+    bool exitflag = false;
+    CommandPtr  cmd;
+
+    if(cmd_stream == NULL) {
+      throw Radio::Exception(std::string("Missing a stream connection.\n"),
+			     this);	
     }
+  
+    while(!exitflag) {
+      while((cmd = cmd_stream->get(this)) != NULL) {
+	// process the command.
+	execCommand(cmd);
+	exitflag |= (cmd->target == Command::STOP);
+	//      std::cerr << "GPSmon got a message. target = " << cmd->target << std::endl; 
+	cmd = nullptr; 
+      }
 
-    double lat, lon;
-    struct tm utc_time;
-    // this could block for 0.1 seconds
-    if(gps_shim->getFix(100000, utc_time, lat, lon)) {
+      double lat, lon;
+      struct tm utc_time;
+      // this could block for 0.1 seconds
+      if(gps_shim->getFix(100000, utc_time, lat, lon)) {
 	  
-      cmd_stream->put(new SoDa::Command(Command::REP, Command::GPS_UTC, 
-					(int) utc_time.tm_hour,
-					(int) utc_time.tm_min, 
-					(int) utc_time.tm_sec));
+	cmd_stream->put(Command::make(Command::REP, Command::GPS_UTC, 
+				      (int) utc_time.tm_hour,
+				      (int) utc_time.tm_min, 
+				      (int) utc_time.tm_sec));
 
-      cmd_stream->put(new SoDa::Command(Command::REP, Command::GPS_LATLON, 
-					lat, lon)); 
-    }	
-    else if(!gps_shim->isEnabled()) {
-      // If we have no gps widget, the getFix call returned
-      // immediately.  we don't really have anything to do here, so go
-      // to sleep for a little while.
-      usleep(100000);
+	cmd_stream->put(Command::make(Command::REP, Command::GPS_LATLON, 
+				      lat, lon)); 
+      }	
+      else if(!gps_shim->isEnabled()) {
+	// If we have no gps widget, the getFix call returned
+	// immediately.  we don't really have anything to do here, so go
+	// to sleep for a little while.
+	usleep(100000);
+      }
     }
   }
-}
 
-void SoDa::GPSmon::execGetCommand(Command * cmd)
-{
-  (void) cmd; 
-  return; 
-}
+  void GPSmon::execGetCommand(CommandPtr  cmd)
+  {
+    (void) cmd; 
+    return; 
+  }
 
-void SoDa::GPSmon::execSetCommand(Command * cmd)
-{
-  (void) cmd; 
-  return; 
-}
+  void GPSmon::execSetCommand(CommandPtr  cmd)
+  {
+    (void) cmd; 
+    return; 
+  }
 
-void SoDa::GPSmon::execRepCommand(Command * cmd)
-{
-  (void) cmd;
-  return;
-}
+  void GPSmon::execRepCommand(CommandPtr  cmd)
+  {
+    (void) cmd;
+    return;
+  }
 
-/// implement the subscription method
-void SoDa::GPSmon::subscribeToMailBox(const std::string & mbox_name, SoDa::BaseMBox * mbox_p)
-{
-  if(SoDa::connectMailBox<SoDa::CmdMBox>(this, cmd_stream, "GPS", mbox_name, mbox_p)) {
-    cmd_subs = cmd_stream->subscribe();    
+  /// implement the subscription method
+  void GPSmon::subscribeToMailBoxList(MailBoxMap & mailboxes) 
+  {
+    cmd_stream = connectMailBox<CmdMBox>(this, "CMD", mailboxes);
   }
 }

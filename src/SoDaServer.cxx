@@ -201,11 +201,14 @@ int doWork(SoDa::Params & params)
   // the rx and tx streams are vectors of complex floats.
   // we don't declare the extent here, as it will be set
   // by a negotiation.  
-  SoDa::DatMBox rx_stream, tx_stream, if_stream, cw_env_stream;
-  SoDa::CmdMBox cmd_stream(false);
+  SoDa::DatMBox rx_stream("RX");
+  SoDa::DatMBox tx_stream("TX");
+  SoDa::DatMBox if_stream("IF");
+  SoDa::DatMBox cw_env_stream("CW");
+  SoDa::CmdMBox cmd_stream("CMD");
   // create a separate gps stream to avoid "leaks" and latency problems... 
-  SoDa::CmdMBox gps_stream(false);
-  SoDa::CmdMBox cwtxt_stream(false);
+  SoDa::CmdMBox gps_stream("GPS");
+  SoDa::CmdMBox cwtxt_stream("CWTXT");
 
   SoDa::Thread * ctrl;
   SoDa::Thread * rx;
@@ -216,6 +219,7 @@ int doWork(SoDa::Params & params)
   mailbox_map["RX"] = &rx_stream;
   mailbox_map["TX"] = &tx_stream;
   mailbox_map["CMD"] = &cmd_stream;
+  
   mailbox_map["CW_TXT"] = &cwtxt_stream;
   mailbox_map["CW_ENV"] = &cw_env_stream;  
   mailbox_map["GPS"] = &gps_stream;

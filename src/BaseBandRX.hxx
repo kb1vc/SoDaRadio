@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012,2013,2014 Matthew H. Reilly (kb1vc)
+Copyright (c) 2012,2013,2014,2023 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,8 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef BASEBANDRX_HDR
-#define BASEBANDRX_HDR
+#pragma once
+
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
 #include "Params.hxx"
@@ -83,7 +83,7 @@ namespace SoDa {
 	       AudioIfc * audio_ifc);
 
     /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
+    void subscribeToMailBoxList(MailBoxMap & mailboxes);
     
     /**
      * @brief the run method -- does the work of the audio receiver process
@@ -95,17 +95,17 @@ namespace SoDa {
      * @brief execute GET commands from the command channel
      * @param cmd the incoming command
      */
-    void execGetCommand(Command * cmd); 
+    void execGetCommand(CommandPtr  cmd); 
     /**
      * @brief handle SET commands from the command channel
      * @param cmd the incoming command
      */
-    void execSetCommand(Command * cmd); 
+    void execSetCommand(CommandPtr  cmd); 
     /**
      * @brief handle Report commands from the command channel
      * @param cmd the incoming command
      */
-    void execRepCommand(Command * cmd); 
+    void execRepCommand(CommandPtr  cmd); 
 
     /**
      * @brief demodulate the input stream as an SSB signal
@@ -148,7 +148,7 @@ namespace SoDa {
      * @param mod modulation type -- WBFM
      * @param af_gain factor to goose the audio output
      */
-    void demodulateWBFM(SoDa::Buf * rxbuf,
+    void demodulateWBFM(SoDa::BufPtr  rxbuf,
 			SoDa::Command::ModulationType mod,
 			float af_gain);
 
@@ -159,7 +159,7 @@ namespace SoDa {
      *
      * @param rxbuf RF input buffer
      */
-    void demodulate(SoDa::Buf * rxbuf);
+    void demodulate(SoDa::BufPtr  rxbuf);
 
     /**
      * @brief send a report of the lower and upper edges of the IF passband
@@ -185,15 +185,19 @@ namespace SoDa {
 
     AudioIfc * audio_ifc; ///< pointer to the audio interface (output) object
     
-    // buffer pool management
 
+    /**
+     * 
+     */
+    FVecPtr getBuffer(unsigned int size); 
+    
     /**
      * @brief put an audio buffer on the "pending for output" list
      *
      * @param b pointer to an audio buffer
      *
      */
-    void pendAudioBuffer(float * b); 
+    void pendAudioBuffer(FVecPtr b); 
     
     /**
      * @brief put an empty (zero signal) audio buffer on the pending for output list
@@ -207,7 +211,7 @@ namespace SoDa {
      *
      * @return a pointer to the next buffer in sequence
      */
-    float * getNextAudioBuffer();
+    FVecPtr getNextAudioBuffer();
     /**
      * @brief empty the queue of pending audio buffers, we're going into TX mode.
      */
@@ -224,15 +228,12 @@ namespace SoDa {
     bool in_fallback;  ///< when true, the audio server has gotten ahead...
     unsigned int catchup_rand_mask; ///< a mask to use for fast selection of a random index into an audio buffer. 
 
-    BufferPool<float> * bpool;
-    
-    std::queue<float *> free_buffers; ///< a pool of free audio buffers
-    std::queue<float *> ready_buffers; ///< a list of audio buffers ready to send to the output
+    std::queue<FVecPtr> ready_buffers; ///< a list of audio buffers ready to send to the output
 
     std::mutex free_mutex; ///< lock for the free_buffers pool
     std::mutex ready_mutex; ///< lock for the ready_buffers_pool
 
-    float * sidetone_silence;  ///< a sequence of zero samples to stuff silence into the audio
+    FVecPtr sidetone_silence;  ///< a sequence of zero samples to stuff silence into the audio
 
     // resampler -- downsample from 625K samples / sec to 48K samples/sec
     SoDa::TDResampler625x48<std::complex<float> > * rf_resampler; ///< downsample the RF input to 48KS/s
@@ -288,5 +289,3 @@ namespace SoDa {
   };
 }
 
-
-#endif

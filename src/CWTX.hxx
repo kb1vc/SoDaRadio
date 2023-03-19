@@ -56,7 +56,7 @@ namespace SoDa {
     CWTX(Params * params);
 
     /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
+    void subscribeToMailBoxList(MailBoxMap & mailboxes);
 
     /**
      * @brief CWTX run loop: translate text to CW envelopes, handle incoming commands
@@ -67,17 +67,17 @@ namespace SoDa {
      * @brief execute GET commands from the command channel
      * @param cmd the incoming command
      */
-    void execGetCommand(Command * cmd); 
+    void execGetCommand(CommandPtr  cmd); 
     /**
      * @brief handle SET commands from the command channel
      * @param cmd the incoming command
      */
-    void execSetCommand(Command * cmd); 
+    void execSetCommand(CommandPtr  cmd); 
     /**
      * @brief handle Report commands from the command channel
      * @param cmd the incoming command
      */
-    void execRepCommand(Command * cmd);
+    void execRepCommand(CommandPtr  cmd);
 
     /**
      * @brief add text to the outbound text queue
@@ -102,8 +102,6 @@ namespace SoDa {
     CmdMBox * cwtxt_stream; ///< stream of characters to be encoded (from UI or elsewhere)
     CmdMBox * cmd_stream; ///< stream of commands to modify radio state
     DatMBox * cw_env_stream; ///< stream carrying cw envelope buffers to USRPTX
-    unsigned int cwtxt_subs; ///< subscription for text stream
-    unsigned int cmd_subs; ///< subscription for command stream
 
     bool txmode_is_cw; ///< if true, we're transmitting a CW stream
     bool old_txmode_is_cw; ///< remember the mode we were in

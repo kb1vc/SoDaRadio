@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2023 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -28,73 +28,84 @@
 
 #include "MultiMBox.hxx"
 #include "SoDaBase.hxx"
+#include "SoDaThread.hxx"
+#include <SoDa/Format.hxx>
 #include <iostream>
 #include <string>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/condition.hpp>
 
-boost::mutex iomutex;
+std::mutex iomutex; 
+
 namespace SoDaTest {
   
-  class MyMsg : public SoDa::MBoxMessage {
+  class MyMsg {
   public:
     enum CMD { START, BCAST, KILL, STOP };
-    MyMsg(const std::string ss, CMD _c) {
-      s = ss;
-      cmd = _c;
-      {
-	boost::mutex::scoped_lock lock(iomutex);
-	std::cerr << "Creating message [" << s << "," << cmd << "]" << std::endl;
-      }
+    MyMsg(const std::string ss, CMD _c, int dest) :
+      s(ss), cmd(_c), dest_idx(dest)
+    {
+      create_count++; 
     }
 
     MyMsg() {
       s = "Dunno"; 
+      create_count++;
     }
 
     ~MyMsg() {
-      boost::mutex::scoped_lock lock(iomutex);
-      std::cerr << "Destroying message [" << s << "," << cmd << "]" << std::endl;
+      destroy_count++; 
     }
+
+    static std::shared_ptr<MyMsg> make(const std::string ss, CMD _c, int idx) {
+      return std::make_shared<MyMsg>(ss, _c, idx);
+    }
+
     std::string s;
-    CMD cmd; 
+    CMD cmd;
+    int dest_idx;
+    static int create_count;
+    static int destroy_count; 
   };
 
-  class MultiMBox_Test_Thread: public SoDa::SoDaThread {
+  int MyMsg::create_count = 0;
+  int MyMsg::destroy_count = 0;
+  
+  typedef std::shared_ptr<MyMsg> MyMsgPtr;
+  typedef std::shared_ptr<SoDa::MultiMBox<MyMsg>> MyMsgMBoxPtr; 
+  
+  class MultiMBox_Test_Thread: public SoDa::Thread {
   public:
-    MultiMBox_Test_Thread(const std::string & n) : SoDaThread(n) {
+    MultiMBox_Test_Thread(const std::string & n,
+			  int my_idx, 
+			  int next_mbox_idx) :
+      SoDa::Thread(n), my_idx(my_idx), next_mbox_idx(next_mbox_idx) {
       name = n;
-      sub_count = 0; 
+      all_done = false; 
     }
 
-    void subscribe(SoDa::MultiMBox<MyMsg> * mbox) {
-      if(sub_count < 10) {
-	subscriptions[sub_count] = mbox->subscribe();
-	mboxes[sub_count] = mbox;
-	sub_count++; 
-      }
+    ~MultiMBox_Test_Thread() {
+      mbox->unsubscribe(this);
     }
-
-    void execute(MyMsg * msg, int i) {
-      {
-	boost::mutex::scoped_lock lock(iomutex);
-	std::cerr << "Process " << name << "got message " << msg->cmd << " " << msg->s << " subcount = " << sub_count << " i = " << i << std::endl;
-      }
+    
+    void execute(MyMsgPtr msg) {
+      if(msg->dest_idx != my_idx) return;
+      
       switch (msg->cmd) {
       case MyMsg::START:
-	if((i + 1) < sub_count) {
-	  mboxes[i+1]->put(new MyMsg("from" + name, MyMsg::KILL));
-	  name = name + ".";
+	if(next_mbox_idx != 0) {
+	  mbox->put(MyMsg::make("from" + name, MyMsg::START, next_mbox_idx));
+	}
+	if(next_mbox_idx == 0) {
+	  mbox->put(MyMsg::make("from" + name, MyMsg::KILL, next_mbox_idx));
 	}
 	break;
       case MyMsg::BCAST:
 	break;
       case MyMsg::KILL:
-	if((i + 1) < sub_count) {
-	  mboxes[i+1]->put(new MyMsg("from" + name, MyMsg::KILL));
-	  name = name + ".";
+	if(next_mbox_idx != 0) {
+	  mbox->put(MyMsg::make("from" + name, MyMsg::KILL, next_mbox_idx));
 	}
-	break;
+	all_done = true; 	
+	return; 
 	break;
       case MyMsg::STOP:
 	break;
@@ -108,28 +119,39 @@ namespace SoDaTest {
       // iterate through our subscriptions and print out the
       // contents of each one.
       int i;
-      MyMsg * msg;
-      while(1) {
+      MyMsgPtr msg;
+      while(!all_done) {
 	bool flag = false; 
-	for(i = 0; i < sub_count; i++) {
-	  // check to see if there is a message on the mailbox.
-	  if((msg = (mboxes[i]->get(subscriptions[i])))) {
-	    execute(msg, i);
-	    mboxes[i]->free(msg);
-	    flag = true; 
-	  }
+	// check to see if there is a message on the mailbox.
+	if((msg = mbox->get(this)) != nullptr) {
+	  execute(msg);
+	  auto nm = msg->s; 
+	  auto cmd = msg->cmd;
+	  msg = nullptr;
+	  
+	  flag = true; 
 	}
 
 	if(!flag) usleep(10000);
       }
+      
+      {
+	std::lock_guard<std::mutex> lock(iomutex); 
+	std::cerr << "Thread " << name << " leaving runloop\n";
+      }
+
     }
   
-  
-    std::string name;
 
-    int subscriptions[10];
-    SoDa::MultiMBox<MyMsg> * mboxes[10];
-    int sub_count;
+    void subscribe(MyMsgMBoxPtr mbx) {
+      mbx->subscribe(this);
+      mbox = mbx; 
+    }
+    
+    std::string name;
+    unsigned int my_idx, next_mbox_idx; 
+    bool all_done;
+    MyMsgMBoxPtr mbox; 
   }; 
 }
 
@@ -137,32 +159,47 @@ int main(int argc, char * argv[])
 {
   (void) argc; (void) argv; 
   
-  SoDa::MultiMBox<SoDaTest::MyMsg> * mbox[5];
+  auto mbox =  SoDa::MultiMBox<SoDaTest::MyMsg>::make("Test Mailbox");
 
-  int i;
-  for(i = 0; i < 5; i++) mbox[i] = new SoDa::MultiMBox<SoDaTest::MyMsg>(false); 
+  std::list<SoDaTest::MultiMBox_Test_Thread *> threads;
+  threads.push_back(new SoDaTest::MultiMBox_Test_Thread (std::string("A"), 0, 1));
+  threads.push_back(new SoDaTest::MultiMBox_Test_Thread (std::string("B"), 1, 2));
+  threads.push_back(new SoDaTest::MultiMBox_Test_Thread (std::string("C"), 2, 3));
+  threads.push_back(new SoDaTest::MultiMBox_Test_Thread (std::string("D"), 3, 4));
+  threads.push_back(new SoDaTest::MultiMBox_Test_Thread (std::string("E"), 4, 0));
 
-  SoDaTest::MultiMBox_Test_Thread a(std::string("A"));
-  SoDaTest::MultiMBox_Test_Thread b(std::string("B"));
-  SoDaTest::MultiMBox_Test_Thread c(std::string("C"));
-  SoDaTest::MultiMBox_Test_Thread d(std::string("D"));
-  SoDaTest::MultiMBox_Test_Thread e(std::string("E"));
-
-  SoDaTest::MultiMBox_Test_Thread * v[5];
-  v[0] = &a; v[1] = &b; v[2] = &c; v[3] = &d; v[4] = &e;
-
-  int j; 
-  for(i = 0; i < 5; i++) {
-    for(j = i; j < 5; j++) {
-      v[j]->subscribe(mbox[i]);
-    }
+  for(auto th : threads) {
+    th->subscribe(mbox);
   }
 
-  for(i = 0; i < 5; i++) v[i]->start();
+  for(auto th : threads) {
+    {
+      std::lock_guard<std::mutex> lock(iomutex);      
+      std::cerr << SoDa::Format("starting thread %0\n")
+	.addS(th->getObjName());
+    }
+    th->start();
+  }
 
-  mbox[0]->put(new SoDaTest::MyMsg("first_toall", SoDaTest::MyMsg::START));
-  while(1) {
-    usleep(10000);
+  mbox->put(SoDaTest::MyMsg::make("first", SoDaTest::MyMsg::START, 0));
+  
+  for(auto th : threads) {
+    th->join();
+    std::cerr << "Joined " << th->getObjName() << "\n";
+    delete(th);
+  }
+
+  std::cerr << "joined all\n";
+  
+  if(SoDaTest::MyMsg::create_count == SoDaTest::MyMsg::destroy_count) {
+    std::cerr << SoDa::Format("MultiMBox_Test PASSED create_count = %0 destry_count = %1\n")
+    .addI(SoDaTest::MyMsg::create_count).addI(SoDaTest::MyMsg::destroy_count);      
+
+  }
+  else {
+    std::cerr << SoDa::Format("MultiMBox_Test FAILED create_count = %0 destry_count = %1\n")
+    .addI(SoDaTest::MyMsg::create_count).addI(SoDaTest::MyMsg::destroy_count);      
+    
   }
 }
 

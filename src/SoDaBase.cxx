@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2014,2023 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -62,7 +62,12 @@ namespace SoDa {
     }
     return ret - base_first_time; 
   }
-}
 
-bool SoDa::Base::first_time = true;
-double SoDa::Base::base_first_time;
+
+  FVecPtr makeFVec(unsigned int size) {
+    return std::make_shared<std::vector<float>>(size);
+  }
+  
+  bool Base::first_time = true;
+  double Base::base_first_time;
+}

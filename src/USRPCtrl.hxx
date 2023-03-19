@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+Copyright (c) 2012,2023 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -35,8 +35,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ///  @date   July 2013
  ///
 
-#ifndef USRPCTRL_HDR
-#define USRPCTRL_HDR
+#pragma once
+
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
 #include "MultiMBox.hxx"
@@ -88,18 +88,8 @@ namespace SoDa {
     uhd::usrp::multi_usrp::sptr getUSRP() { return usrp; }
 
     /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
+    void subscribeToMailBoxList(MailBoxMap & mailboxes);
 
-#if UHD_VERSION < 3110000
-    /// This is the more permanent message handler used before the elimination of the msg class    
-    static void normal_message_handler(uhd::msg::type_t type, const std::string & msg);
-#endif
-    
-    /// This is a singleton object -- the last (and only, we hope) such object
-    /// to be created sets a static pointer to itself.  This looks pretty gross, but
-    /// it is necessary to provide context to the error message handlers.
-    static SoDa::USRPCtrl * singleton_ctrl_obj;
-    
   private:
     Params * params;
 
@@ -111,16 +101,16 @@ namespace SoDa {
 
     /// Parse an incoming command and dispatch.
     /// @param cmd a command record
-    void execCommand(Command * cmd);
+    void execCommand(CommandPtr  cmd);
     /// Dispatch an incoming GET command
     /// @param cmd a command record
-    void execGetCommand(Command * cmd); 
+    void execGetCommand(CommandPtr  cmd); 
     /// Dispatch an incoming SET command
     /// @param cmd a command record
-    void execSetCommand(Command * cmd); 
+    void execSetCommand(CommandPtr  cmd); 
     /// Dispatch an incoming REPort command
     /// @param cmd a command record
-    void execRepCommand(Command * cmd); 
+    void execRepCommand(CommandPtr  cmd); 
 
     /// get the number of seconds since the "Epoch"
     /// @return relative time in seconds
@@ -169,7 +159,6 @@ namespace SoDa {
 
     
     CmdMBox * cmd_stream; ///< command stream channel
-    unsigned int subid;   ///< subscriber ID for this thread's connection to the command channel
 
     // USRP stuff.
     uhd::usrp::multi_usrp::sptr usrp; ///< to which USRP unit is this connected?
@@ -293,5 +282,3 @@ namespace SoDa {
   };
 }
 
-
-#endif

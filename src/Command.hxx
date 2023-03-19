@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012,2017 Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2017,2023 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,7 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef COMMAND_HDR
-#define COMMAND_HDR
+#pragma once
 
 #include <string>
 #include "MultiMBox.hxx"
@@ -44,7 +43,7 @@ namespace SoDa
    * universal.)
    *
    */
-class Command : public MBoxMessage
+class Command 
 {
 public:
   /**
@@ -753,9 +752,42 @@ public:
      */
   static void initTables();
 
+  static std::shared_ptr<Command> make(CmdType ct, CmdTarget tgt) {
+    return std::make_shared<Command>(ct, tgt);
+  }
+
+  static std::shared_ptr<Command> make(CmdType ct, CmdTarget tgt,
+          int p0,
+          int p1 = 0,
+          int p2 = 0,
+          int p3 = 0) {
+    return std::make_shared<Command>(ct, tgt, p0, p1, p2, p3);
+  }
+
+  static std::shared_ptr<Command> make(CmdType ct, CmdTarget tgt,
+          double p0,
+          double p1 = 0.0,
+          double p2 = 0.0,
+          double p3 = 0.0) {
+    return std::make_shared<Command>(ct, tgt, p0, p1, p2, p3);
+  }
+
+  static std::shared_ptr<Command> make(CmdType ct, CmdTarget tgt, 
+				       const std::string &str_arg, 
+				       unsigned int tag = 0) {
+    return std::make_shared<Command>(ct, tgt, str_arg, tag);
+  }
+  static std::shared_ptr<Command> make(CmdType ct, CmdTarget tgt, 
+				       const char * cp,
+				       unsigned int tag = 0) {
+    return std::make_shared<Command>(ct, tgt, cp, tag);
+  }
+
 private:
   static void initTableEntry(const std::string &, CmdTarget tgt);
 };
+  
+  typedef std::shared_ptr<Command> CommandPtr;
+  
 } // namespace SoDa
 
-#endif

@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2013, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2013,2023 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -88,15 +88,15 @@ SoDa::UI::UI(Params * params) : SoDa::Thread("UI")
 
 void SoDa::UI::updateSpectrumState()
 {
-  cmd_stream->put(new SoDa::Command(Command::REP, Command::SPEC_STEP,
+  cmd_stream->put(SoDa::Command::make(Command::REP, Command::SPEC_STEP,
 				    hz_per_bucket));
-  cmd_stream->put(new SoDa::Command(Command::REP, Command::SPEC_BUF_LEN,
+  cmd_stream->put(SoDa::Command::make(Command::REP, Command::SPEC_BUF_LEN,
 				    required_spect_buckets));
-  cmd_stream->put(new SoDa::Command(Command::REP, Command::SPEC_RANGE_LOW,
+  cmd_stream->put(SoDa::Command::make(Command::REP, Command::SPEC_RANGE_LOW,
 				    spectrum_center_freq - 0.5 * spectrum_span));
-  cmd_stream->put(new SoDa::Command(Command::REP, Command::SPEC_RANGE_HI,
+  cmd_stream->put(SoDa::Command::make(Command::REP, Command::SPEC_RANGE_HI,
 				    spectrum_center_freq + 0.5 * spectrum_span));
-  cmd_stream->put(new SoDa::Command(Command::REP, Command::SPEC_DIMS, 
+  cmd_stream->put(SoDa::Command::make(Command::REP, Command::SPEC_DIMS, 
 				    spectrum_center_freq, 
 				    spectrum_span, 
 				    ((double) required_spect_buckets)));
@@ -110,12 +110,13 @@ SoDa::UI::~UI()
 
 void SoDa::UI::run()
 {
-  SoDa::Command * net_cmd, * ring_cmd;
+  SoDa::Command * net_cmd;
+  SoDa::CommandPtr ring_cmd;
 
-  if((cwtxt_stream == NULL) || 
-     (if_stream == NULL) || 
-     (cmd_stream == NULL) || 
-     (gps_stream == NULL)) {
+  if((cwtxt_stream == nullptr) || 
+     (if_stream == nullptr) || 
+     (cmd_stream == nullptr) || 
+     (gps_stream == nullptr)) {
     
       throw SoDa::Radio::Exception(SoDa::Format("Missing a stream connection %0 %1 %2 %3.\n") 
 			    .addU((unsigned long) cwtxt_stream, 'x')
@@ -125,15 +126,15 @@ void SoDa::UI::run()
 			    this);	
   }
   
-  net_cmd = NULL;
-  ring_cmd = NULL;
+  net_cmd = nullptr;
+  ring_cmd = nullptr;
   
-  cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_FE_FREQ, 144.2e6));
-  cmd_stream->put(new SoDa::Command(Command::SET, Command::TX_FE_FREQ, 144.2e6));
-  cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_LO3_FREQ, 100e3));
-  cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_AF_FILTER, 1));
+  cmd_stream->put(SoDa::Command::make(Command::SET, Command::RX_FE_FREQ, 144.2e6));
+  cmd_stream->put(SoDa::Command::make(Command::SET, Command::TX_FE_FREQ, 144.2e6));
+  cmd_stream->put(SoDa::Command::make(Command::SET, Command::RX_LO3_FREQ, 100e3));
+  cmd_stream->put(SoDa::Command::make(Command::SET, Command::RX_AF_FILTER, 1));
   sleep_ms(100);
-  cmd_stream->put(new SoDa::Command(Command::SET, Command::TX_STATE, 0));
+  cmd_stream->put(SoDa::Command::make(Command::SET, Command::TX_STATE, 0));
 
   updateSpectrumState(); 
 
@@ -155,15 +156,15 @@ void SoDa::UI::run()
 	  .addS(SoDaRadio_VERSION)
 	  .addS(SoDaRadio_GIT_ID).str();
 	
-	SoDa::Command * vers_cmd = new SoDa::Command(Command::REP,
-						     Command::SDR_VERSION,
-						     vers.c_str());
-	server_socket->put(vers_cmd, sizeof(SoDa::Command));
+	auto vers_cmd = SoDa::Command::make(Command::REP,
+					    Command::SDR_VERSION,
+					    vers.c_str());
+	server_socket->put(vers_cmd.get(), sizeof(SoDa::Command));
 	new_connection = false; 
       }
       
-      if(net_cmd == NULL) {
-	net_cmd = new SoDa::Command();
+      if(net_cmd == nullptr) {
+	net_cmd = new SoDa::Command; 
       }
       int stat = server_socket->get(net_cmd, sizeof(SoDa::Command));
       if(stat <= 0) {
@@ -181,50 +182,51 @@ void SoDa::UI::run()
     // if there are commands arriving from the socket port, handle them.
     if(got_new_netmsg) {
       debugMsg(SoDa::Format("UI got message [%0]\n").addS(net_cmd->toString()));
-      cmd_stream->put(net_cmd);
+      std::shared_ptr<SoDa::Command> ncmd(net_cmd);
+      cmd_stream->put(ncmd);
       didwork = true;
       if(net_cmd->target == SoDa::Command::TX_CW_EMPTY) {
        	debugMsg("got TX_CW_EMPTY command from socket.\n"); 
       }
       if(net_cmd->target == SoDa::Command::STOP) {
 	// relay "stop" commands to the GPS unit. 
-	gps_stream->put(new SoDa::Command(Command::SET, Command::STOP, 0));
+	gps_stream->put(SoDa::Command::make(Command::SET, Command::STOP, 0));
 	break;
       }
-      net_cmd = NULL; 
+      net_cmd = nullptr; 
     }
 
-    while((ring_cmd = cmd_stream->get(cmd_subs)) != NULL) {
+    while((ring_cmd = cmd_stream->get(this)) != nullptr) {
       if(ring_cmd->cmd == SoDa::Command::REP) {
-	server_socket->put(ring_cmd, sizeof(SoDa::Command));
+	server_socket->put(ring_cmd.get(), sizeof(SoDa::Command));
       }
       // if(net_cmd->target == SoDa::Command::TX_CW_EMPTY) {
       // 	debugMsg("send TX_CW_EMPTY report to socket.\n"); 
       // }
       
       execCommand(ring_cmd); 
-      cmd_stream->free(ring_cmd);
+      ring_cmd = nullptr; 
       didwork = true; 
     }
 
-    while((ring_cmd = gps_stream->get(gps_subs)) != NULL) {
+    while((ring_cmd = gps_stream->get(this)) != nullptr) {
       if(ring_cmd->cmd == SoDa::Command::REP) {
-	server_socket->put(ring_cmd, sizeof(SoDa::Command));
+	server_socket->put(ring_cmd.get(), sizeof(SoDa::Command));
       }
       execCommand(ring_cmd); 
-      gps_stream->free(ring_cmd);
+      ring_cmd = nullptr; 
       didwork = true; 
     }
       
     
     // listen ont the IF stream
     int bcount;
-    SoDa::Buf * if_buf; 
+    SoDa::BufPtr if_buf; 
     for(bcount = 0;
-	(bcount < 4) && ((if_buf = if_stream->get(if_subs)) != NULL);
+	(bcount < 4) && ((if_buf = if_stream->get(this)) != nullptr);
 	bcount++) {
       sendFFT(if_buf);
-      if_stream->free(if_buf); 
+      if_buf = nullptr; 
     }
 
     // 
@@ -323,7 +325,7 @@ static unsigned int dbgctrfft = 0;
 static bool first_ready = true;
 static bool calc_max_first = true;
 
-void SoDa::UI::sendFFT(SoDa::Buf * buf)
+void SoDa::UI::sendFFT(SoDa::BufPtr buf)
 {
   fft_send_counter++; 
   dbgctrfft++; 
@@ -362,7 +364,7 @@ void SoDa::UI::sendFFT(SoDa::Buf * buf)
     idx -= required_spect_buckets / 2; 
     int sbuck_target = (int) spectrogram_buckets;
     if((idx < 0) || (idx > sbuck_target)) {
-      slice = NULL; 
+      slice = nullptr; 
     }
     else {
       slice = &(spectrum[idx]);
@@ -388,21 +390,21 @@ void SoDa::UI::sendFFT(SoDa::Buf * buf)
     // send the report
     double freq = ((float) maxi) * lo_hz_per_bucket;
     debugMsg(SoDa::Format("offset = %0\n").addF(freq, 10, 6, 'e')); 
-    cmd_stream->put(new SoDa::Command(Command::REP, Command::LO_OFFSET,
+    cmd_stream->put(SoDa::Command::make(Command::REP, Command::LO_OFFSET,
 				      freq)); 
-    cmd_stream->put(new SoDa::Command(Command::REP, Command::SPEC_RANGE_LOW,
+    cmd_stream->put(SoDa::Command::make(Command::REP, Command::SPEC_RANGE_LOW,
 				      spectrum_center_freq - 0.5 * spectrum_span));
-    cmd_stream->put(new SoDa::Command(Command::REP, Command::SPEC_RANGE_HI,
+    cmd_stream->put(SoDa::Command::make(Command::REP, Command::SPEC_RANGE_HI,
 				      spectrum_center_freq + 0.5 * spectrum_span));
-    cmd_stream->put(new SoDa::Command(Command::REP, Command::SPEC_DIMS, 
+    cmd_stream->put(SoDa::Command::make(Command::REP, Command::SPEC_DIMS, 
 				      spectrum_center_freq, 
 				      spectrum_span, 
 				      ((double) required_spect_buckets)));
     // send the end-of-calib command
-    cmd_stream->put(new SoDa::Command(Command::SET, Command::LO_CHECK,
+    cmd_stream->put(SoDa::Command::make(Command::SET, Command::LO_CHECK,
 				      0.0)); 
   }
-  else if((fft_send_counter >= fft_update_interval) && (slice != NULL)) {
+  else if((fft_send_counter >= fft_update_interval) && (slice != nullptr)) {
     // send the buffer over to the XY plotter.
     for(int i = 0; i < required_spect_buckets; i++) {
       log_spectrum[i] = 10.0 * log10(slice[i] * 0.05); 
@@ -421,18 +423,10 @@ void SoDa::UI::sendFFT(SoDa::Buf * buf)
 }
 
 /// implement the subscription method
-void SoDa::UI::subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p)
+void SoDa::UI::subscribeToMailBoxList(SoDa::MailBoxMap & mailboxes)
 {
-  if(SoDa::connectMailBox<SoDa::CmdMBox>(this, cmd_stream, "CMD", mbox_name, mbox_p)) {
-    cmd_subs = cmd_stream->subscribe();
-  }
-  if(SoDa::connectMailBox<SoDa::CmdMBox>(this, cwtxt_stream, "CW_TXT", mbox_name, mbox_p)) {
-    // we publish here. 
-  }
-  if(SoDa::connectMailBox<SoDa::DatMBox>(this, if_stream, "IF", mbox_name, mbox_p)) {
-    if_subs = if_stream->subscribe();
-  }
-  if(SoDa::connectMailBox<SoDa::CmdMBox>(this, gps_stream, "GPS", mbox_name, mbox_p)) {
-    gps_subs = gps_stream->subscribe();
-  }
+  cmd_stream = connectMailBox<SoDa::CmdMBox>(this, "CMD", mailboxes);
+  cwtxt_stream = connectMailBox<SoDa::CmdMBox>(this, "CW_TXT", mailboxes, WRITE_ONLY);
+  gps_stream = connectMailBox<SoDa::CmdMBox>(this, "GPS", mailboxes);    
+  if_stream = connectMailBox<SoDa::DatMBox>(this, "IF", mailboxes);  
 }
