@@ -189,7 +189,9 @@ USRPCtrl::USRPCtrl(Params * _params) : Thread("USRPCtrl")
 
 /// implement the subscription method
 void USRPCtrl::subscribeToMailBoxList(MailBoxMap & mailboxes) {
+  std::cerr << "USRPCtrl in subscribe to mailboxlist\n";
     cmd_stream = connectMailBox<CmdMBox>(this, "CMD", mailboxes);
+    std::cerr << "USRPCtrl cmd_stream = " << cmd_stream << "\n";
 }
 
 

@@ -22,8 +22,10 @@ void SoDa::ThreadRegistry::addThread(SoDa::Thread * thread, const std::string & 
   threads.push_back(thread);
 }
 
-void SoDa::ThreadRegistry::subscribeThreads(const SoDa::MailBoxMap & mailbox_map) {
+void SoDa::ThreadRegistry::subscribeThreads(SoDa::MailBoxMap & mailbox_map) {
+  std::cerr << "Subscribing all threads\n";
   for(auto el : threads) {
+    std::cerr << "Subscribing thread " << el->getObjName() << "\n";
     el->subscribeToMailBoxList(mailbox_map); 
   }
 }

@@ -100,7 +100,9 @@ namespace SoDa {
      * of the mailbox, and the thread should be able to infer the the "T" in 
      * the actual MultiMBox<T> type from this identifying string. 
      */
-    virtual void subscribeToMailBoxList(const MailBoxMap & subscription_map) { }
+    virtual void subscribeToMailBoxList(MailBoxMap & subscription_map) { 
+      std::cerr << "Why are we here?  Doesn't " << getObjName() << " declare a subscription method?\n";
+    }
 
     void operator() () {
       // we woke up with a "start" or "join" call
