@@ -84,6 +84,10 @@ namespace SoDa {
       flen = len * 2; 
     }
 
+    ~Buf() {
+      delete[] dat;
+    }
+    
     bool copy(Buf * src) {
       if(maxlen >= src->maxlen) {
 	flen = src->flen;
