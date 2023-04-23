@@ -111,14 +111,6 @@ namespace SoDa
 	std::lock_guard<std::mutex> lck(s->post_mutex);
 	s->posted_list.push(m);
 	s->post_cond.notify_all();
-	auto sz = s->posted_list.size();
-	if((sz % 32) == 0) {
-	  std::cerr << "\n" << sub_e.first->getObjName() << "\n";
-	  dumpStatus(std::cerr);
-	}
-      }
-      if((put_count % 128) == 0) {
-	dumpStatus(std::cerr);
       }
     }
 

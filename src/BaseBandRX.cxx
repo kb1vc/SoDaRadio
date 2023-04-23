@@ -553,13 +553,6 @@ namespace SoDa {
 
   void BaseBandRX::pendNullBuffer(int count) {
     for(int b = 0; b < count; b++) {
-#if 0      
-      auto nullbuf = getBuffer(audio_buffer_size);
-      for(int i = 0; i < audio_buffer_size; i++) {
-	(*nullbuf)[i] = 0.0; 
-      }
-      pendAudioBuffer(nullbuf);
-#endif
       pendAudioBuffer(sidetone_silence);
     }
   }
@@ -590,10 +583,6 @@ namespace SoDa {
     if(ready_buffers.empty()) return NULL;
     FVecPtr ret;
     ret = ready_buffers.front();
-    auto sz = ready_buffers.size();
-    if((sz % 16) == 0) {
-      std::cerr << "Ready audio buffers: " << sz << "\n";
-    }
     ready_buffers.pop();
     return ret; 
   }

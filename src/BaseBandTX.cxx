@@ -165,6 +165,12 @@ namespace SoDa {
 	    audio_tx_buffer = noise_buffer; 	  
 	  }
 
+	  if((debug_ctr % 256) == 0) {
+	    std::cerr << "Got " << debug_ctr << " tx buffers from audio ifc\n";
+	  }
+
+	  debug_ctr++;
+	  
 	  // If we're using NOISE, we don't want to overwrite the 
 	  // noise buffer with a filtered noise sequence.  Instead,
 	  // if we're using NOISE and filtering, we'll dump the 
