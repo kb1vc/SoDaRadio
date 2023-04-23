@@ -576,6 +576,8 @@ void BaseBandRX::pendAudioBuffer(FVecPtr b)
     al += bv[i] * bv[i]; 
   }
   audio_level = 10.0 * (log10(al / af_gain) - log_audio_buffer_size);
+  
+  b = nullptr; 
 }
 
 FVecPtr BaseBandRX::getNextAudioBuffer()

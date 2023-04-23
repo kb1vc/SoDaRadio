@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012,2013,2014 Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2013,2014,2023 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,7 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef QUADOSC_HDR
-#define QUADOSC_HDR
+#pragma once
 #include <complex>
 #include <math.h>
 
@@ -45,7 +44,7 @@ namespace SoDa {
       idx = 0;
       ang = 0.0;
       last = std::complex<double>(1.0,0.0);
-      ejw = last;
+      ejw = std::complex<double>(1.0,0.0);
 
       // default IF freq is SampRate/1000;
       setPhaseIncr(2.0 * M_PI / 1000.0);
@@ -100,11 +99,14 @@ namespace SoDa {
     }
 
     std::complex<double> stepOscCD_complex() {
-      std::complex<double> nval;
+      std::complex<double> nval(0.0,0.0);
       idx++;
       nval = last * ejw;     
       if(idx > 512) {
-	idx = 0; 
+	idx = 0;
+	// keep the magnitude from growing above 1.
+	// We should probably measure this, as it will manifest
+	// itself as a kind of phase noise on the NCO
 	nval = nval / abs(nval);
       }
       last = nval;
@@ -151,4 +153,3 @@ namespace SoDa {
   };
 }
 
-#endif

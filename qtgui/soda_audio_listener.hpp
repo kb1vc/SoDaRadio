@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2018 Matthew H. Reilly (kb1vc)
+Copyright (c) 2018,2023 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -136,7 +136,8 @@ namespace GUISoDa {
   protected slots:  
     void processRXAudio();
     void audioSocketError(QLocalSocket::LocalSocketError err) {
-      qWarning() << QString("Audio Listener Error [%1]").arg(err);
+      qWarning() << QString("Audio Listener Error [%1] %2").arg(err)
+	.arg(audio_rx_socket->error());
     }
   
   private:

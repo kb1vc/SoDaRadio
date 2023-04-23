@@ -52,7 +52,7 @@ SoDa::UI::UI(Params * params) : SoDa::Thread("UI")
   // power spectral density plots.
   spectrogram_buckets = 4 * 4096;
   spectrogram = new Spectrogram(spectrogram_buckets);
-
+ 
   // we also need an LO check spectrogram.  In particular we want
   // something with really bodacious resolution.
   lo_spectrogram_buckets = 16384;
@@ -110,7 +110,7 @@ SoDa::UI::~UI()
 
 void SoDa::UI::run()
 {
-  SoDa::Command * net_cmd;
+  SoDa::CommandPtr net_cmd;
   SoDa::CommandPtr ring_cmd;
 
   if((cwtxt_stream == nullptr) || 
@@ -141,6 +141,7 @@ void SoDa::UI::run()
   unsigned int socket_read_count = 0;
   unsigned int socket_empty_count = 0;
   unsigned int iter_count = 0;
+
   bool new_connection = true; ;
   while(1) {
     iter_count++;
@@ -164,9 +165,9 @@ void SoDa::UI::run()
       }
       
       if(net_cmd == nullptr) {
-	net_cmd = new SoDa::Command; 
+	net_cmd = SoDa::Command::make(Command::REP, Command::NULL_CMD); 
       }
-      int stat = server_socket->get(net_cmd, sizeof(SoDa::Command));
+      int stat = server_socket->get(net_cmd.get(), sizeof(SoDa::Command));
       if(stat <= 0) {
 	socket_empty_count++; 
       }
@@ -184,6 +185,8 @@ void SoDa::UI::run()
       debugMsg(SoDa::Format("UI got message [%0]\n").addS(net_cmd->toString()));
       std::shared_ptr<SoDa::Command> ncmd(net_cmd);
       cmd_stream->put(ncmd);
+      if((socket_read_count % 128) == 0) cmd_stream->dumpStatus(std::cerr);
+      
       didwork = true;
       if(net_cmd->target == SoDa::Command::TX_CW_EMPTY) {
        	debugMsg("got TX_CW_EMPTY command from socket.\n"); 
@@ -247,24 +250,23 @@ void SoDa::UI::run()
 
 void SoDa::UI::reportSpectrumCenterFreq()
 {
-    server_socket->put(new SoDa::Command(Command::REP, Command::SPEC_RANGE_LOW,
-					 spectrum_center_freq - 0.5 * spectrum_span),
+    server_socket->put(SoDa::Command::make(Command::REP, Command::SPEC_RANGE_LOW,
+					   spectrum_center_freq - 0.5 * spectrum_span).get(),
 		       sizeof(SoDa::Command));
-    server_socket->put(new SoDa::Command(Command::REP, Command::SPEC_RANGE_HI,
-					 spectrum_center_freq + 0.5 * spectrum_span),
+    server_socket->put(SoDa::Command::make(Command::REP, Command::SPEC_RANGE_HI,
+					   spectrum_center_freq + 0.5 * spectrum_span).get(),
 		       sizeof(SoDa::Command));
-    server_socket->put(new SoDa::Command(Command::REP, Command::SPEC_STEP,
-					 hz_per_bucket),
+    server_socket->put(SoDa::Command::make(Command::REP, Command::SPEC_STEP,
+					   hz_per_bucket).get(),
 		       sizeof(SoDa::Command));
-    server_socket->put(new SoDa::Command(Command::REP, Command::SPEC_BUF_LEN,
-					 required_spect_buckets),
+    server_socket->put(SoDa::Command::make(Command::REP, Command::SPEC_BUF_LEN,
+					   required_spect_buckets).get(),
 		       sizeof(SoDa::Command));
-    server_socket->put(new SoDa::Command(Command::REP, Command::SPEC_DIMS, 
+    server_socket->put(SoDa::Command::make(Command::REP, Command::SPEC_DIMS, 
 					 spectrum_center_freq, 
 					 spectrum_span, 
-					 ((double) required_spect_buckets)), 
+					   ((double) required_spect_buckets)).get(), 
 		       sizeof(SoDa::Command));
-    
 }
 
 

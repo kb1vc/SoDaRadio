@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017 Matthew H. Reilly (kb1vc)
+Copyright (c) 2017,2023 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -94,6 +94,7 @@ void GUISoDa::HamlibHandler::initCommandTables()
   registerCommand("T", "set_ptt", &GUISoDa::HamlibHandler::cmdPTT, false);
   registerCommand("s", "get_split_vfo", &GUISoDa::HamlibHandler::cmdSplitVFO, true);
   registerCommand("S", "set_split_vfo", &GUISoDa::HamlibHandler::cmdSplitVFO, false);  
+  registerCommand("checkvfo", "\\check_vfo", &GUISoDa::HamlibHandler::cmdCheckVFO, true);  
   registerCommand("q", "exit", &GUISoDa::HamlibHandler::cmdQuit, true);
   registerCommand("Q", "quit", &GUISoDa::HamlibHandler::cmdQuit, true);    
 }
@@ -121,7 +122,7 @@ void GUISoDa::HamlibHandler::processCommand(const QString & cmd, QTcpSocket * so
   // first chop the current command up into tokens
   // This is eventually going to break, as Qt has deprecated it
   // in favor of Qt::SkipEmptyParts. 
-  QStringList cmd_list = cmd.split(QRegularExpression("\\s+"), QString::SkipEmptyParts);
+  QStringList cmd_list = cmd.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
 
   if (cmd_list.size() == 0) return;
 
@@ -349,6 +350,15 @@ bool GUISoDa::HamlibHandler::cmdSplitVFO(QTextStream & out, QTextStream & in, bo
     in >> split_ena >> tx_VFO; 
     split_enabled = (split_ena == "1");
     out << "RPRT 0" << "\n"; 
+  }
+  return true; 
+}
+
+bool GUISoDa::HamlibHandler::cmdCheckVFO(QTextStream & out, QTextStream & in, bool getval)
+{
+  if(getval) {
+    QString se = split_enabled ? "1" : "0"; 
+    out << "CHKVFO 0\n";
   }
   return true; 
 }

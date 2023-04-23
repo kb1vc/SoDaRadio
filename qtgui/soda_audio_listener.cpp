@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2018 Matthew H. Reilly (kb1vc)
+Copyright (c) 2018,2023 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -225,7 +225,7 @@ qint64 GUISoDa::AudioRXListener::readData(char * data, qint64 max_len)
   // behaved. It won't call readData if we have nothing to offer.
   // and will buffer what it gets. 
   if((MACOSX == 0) && (avail < max_len)) {
-    // we're below the acceptable reserver... stuff some silence
+    // we're below the acceptable reserve... stuff some silence
     // into the output buffers until we're 
     qInfo() << QString("[%3] Audio device attempts to read [%1] bytes, only [%2] available.")
       .arg(max_len).arg(avail).arg(QDateTime::currentDateTime().toString("HH:mm:ss.zzz t"));

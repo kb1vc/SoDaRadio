@@ -84,6 +84,7 @@ namespace SoDa
       : BaseMBox(name)
     {
       last_subscriber_idx = 0;
+      put_count = 0; 
     }
 
     ~MultiMBox() { 
@@ -103,11 +104,15 @@ namespace SoDa
     {
       unsigned int i;
       std::lock_guard<std::mutex> lcks(subscription_mutex);
+      put_count++; 
       for(auto & sub_e : subscriptions) {
 	auto s = sub_e.second; 
 	std::lock_guard<std::mutex> lck(s->post_mutex);
 	s->posted_list.push(m);
 	s->post_cond.notify_all();
+      }
+      if((put_count % 128) == 0) {
+	dumpStatus(std::cerr);
       }
     }
 
@@ -173,6 +178,12 @@ namespace SoDa
       return std::make_shared<MultiMBox<T>>(name);
     }
 
+    void dumpStatus(std::ostream & os) {
+      for(auto s : subscriptions) {
+	os << name << " subscription:[" << s.first << "].size " << s.second->posted_list.size() << "\n";
+      }
+    }
+
   private:
     std::shared_ptr<T> getCommon(void * subscriber_id, bool wait)
     {
@@ -204,6 +215,8 @@ namespace SoDa
 
     unsigned int last_subscriber_idx;
     bool keep_freelist;
+    
+    unsigned int put_count; 
 
     std::map<void *, std::shared_ptr<Subscription<T>>> subscriptions;
     std::mutex subscription_mutex;
