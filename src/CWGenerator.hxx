@@ -30,6 +30,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "SoDaBase.hxx"
 #include "MultiMBox.hxx"
+#include "SoDaThread.hxx" // to get mailbox typedefs
 #include "Command.hxx"
 #include "Params.hxx"
 #include <map>

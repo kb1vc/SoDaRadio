@@ -29,8 +29,9 @@
 #pragma once
 
 #include <string>
-#include "MultiMBox.hxx"
 #include <string.h>
+#include <map>
+#include <memory>
 
 namespace SoDa
 {

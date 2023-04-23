@@ -28,7 +28,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #pragma once
 
 #include "Command.hxx"
-#include "MultiMBox.hxx"
 #include "Debug.hxx"
 #include <complex>
 #include <string>
@@ -37,6 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sys/syscall.h>
 #include <SoDa/Format.hxx>
 #include <memory>
+#include <vector>
 
 extern "C" {
 #include <signal.h>
@@ -152,15 +152,6 @@ namespace SoDa {
    */
   typedef std::shared_ptr<Buf> BufPtr;
   
-  /**
-   * Mailboxes that carry commands only are of type CmdMBox
-   */
-  typedef MultiMBox<Command> CmdMBox;
-
-  /**
-   * Mailboxes that carry float or complex data are of type DatMBox
-   */ 
-  typedef MultiMBox<Buf> DatMBox;
 
   /**
    * We need a set of shared pointers

@@ -34,6 +34,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <iostream>
+#include "SoDaBase.hxx"
 
 namespace SoDa
 {
@@ -93,7 +94,7 @@ namespace SoDa
       }
     }
 
-    void subscribe(void * subscriber_id)
+    void subscribe(SoDa::Base * subscriber_id)
     {
       subscriptions[subscriber_id] = std::make_shared<Subscription<T>>();
     }
@@ -110,18 +111,23 @@ namespace SoDa
 	std::lock_guard<std::mutex> lck(s->post_mutex);
 	s->posted_list.push(m);
 	s->post_cond.notify_all();
+	auto sz = s->posted_list.size();
+	if((sz % 32) == 0) {
+	  std::cerr << "\n" << sub_e.first->getObjName() << "\n";
+	  dumpStatus(std::cerr);
+	}
       }
       if((put_count % 128) == 0) {
 	dumpStatus(std::cerr);
       }
     }
 
-    std::shared_ptr<T> get(void * subscriber_id)
+    std::shared_ptr<T> get(SoDa::Base * subscriber_id)
     {
       return getCommon(subscriber_id, false);
     }
 
-    std::shared_ptr<T> getWait(void * subscriber_id)
+    std::shared_ptr<T> getWait(SoDa::Base * subscriber_id)
     {
       return getCommon(subscriber_id, true);
     }
@@ -149,7 +155,7 @@ namespace SoDa
       return max_len;
     }
 
-    void unsubscribe(void * subscriber_id) {
+    void unsubscribe(SoDa::Base * subscriber_id) {
       std::lock_guard<std::mutex> lcks(subscription_mutex);      
       if(subscriptions.count(subscriber_id) != 0) {      
 	auto sub = subscriptions[subscriber_id];
@@ -164,7 +170,7 @@ namespace SoDa
      *
      * @param subscriber_id this is the identity of the requesting subscriber.
      */
-    bool flush(void * subscriber_id)
+    bool flush(SoDa::Base * subscriber_id)
     {
       std::lock_guard<std::mutex> lcks(subscription_mutex);      
       if (subscriptions.count(subscriber_id) == 0) return false; 
@@ -185,7 +191,7 @@ namespace SoDa
     }
 
   private:
-    std::shared_ptr<T> getCommon(void * subscriber_id, bool wait)
+    std::shared_ptr<T> getCommon(SoDa::Base * subscriber_id, bool wait)
     {
       std::lock_guard<std::mutex> lcks(subscription_mutex);      
       if (subscriptions.count(subscriber_id) == 0) return nullptr;
@@ -218,7 +224,7 @@ namespace SoDa
     
     unsigned int put_count; 
 
-    std::map<void *, std::shared_ptr<Subscription<T>>> subscriptions;
+    std::map<SoDa::Base *, std::shared_ptr<Subscription<T>>> subscriptions;
     std::mutex subscription_mutex;
 
     std::mutex free_mutex;

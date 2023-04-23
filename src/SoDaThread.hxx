@@ -28,6 +28,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #pragma once
 
 #include "SoDaBase.hxx"
+#include "MultiMBox.hxx"
 #include <string>
 #include "Debug.hxx"
 #include <thread>
@@ -55,6 +56,16 @@ namespace SoDa {
   
   class BaseMBox; 
   class Command;
+
+  /**
+   * Mailboxes that carry commands only are of type CmdMBox
+   */
+  typedef MultiMBox<Command> CmdMBox;
+
+  /**
+   * Mailboxes that carry float or complex data are of type DatMBox
+   */ 
+  typedef MultiMBox<Buf> DatMBox;
   
   typedef std::map<std::string, BaseMBox *> MailBoxMap; 
   

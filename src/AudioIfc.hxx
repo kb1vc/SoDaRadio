@@ -3,7 +3,7 @@
 
 
 /*
-  Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012, 2023 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -31,7 +31,6 @@
 */
 
 #include "SoDaBase.hxx"
-#include "BufferPool.hxx"
 
 namespace SoDa {
   /**
@@ -58,19 +57,9 @@ namespace SoDa {
     AudioIfc(unsigned int _sample_rate,
 	     unsigned int _sample_count_hint,
 	     const std::string & name = "AudioIfc") : SoDa::Base(name) {
-      rx_buffer_pool = NULL;
-      tx_buffer_pool = NULL;      
       sample_rate = _sample_rate;
       sample_count_hint = _sample_count_hint;
       datatype_size = sizeof(float);
-    }
-
-    void setRXBufferPool(BufferPool<float> * bp) {
-      rx_buffer_pool = bp; 
-    }
-
-    void setTXBufferPool(BufferPool<float> * bp) {
-      tx_buffer_pool = bp; 
     }
     
     /**
@@ -178,8 +167,6 @@ namespace SoDa {
 
     int datatype_size; 
 
-    BufferPool<float> * rx_buffer_pool;
-    BufferPool<float> * tx_buffer_pool;     
   };
 }
 

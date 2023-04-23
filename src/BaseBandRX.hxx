@@ -38,7 +38,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "TDResamplers625x48.hxx"
 #include "AudioIfc.hxx"
 #include "MedianFilter.hxx"
-#include "BufferPool.hxx"
 
 #include <queue>
 #include <mutex>
