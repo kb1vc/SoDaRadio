@@ -49,6 +49,7 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   QMainWindow(parent),
   ui(new Ui::MainWindow)
 {
+
   ui->setupUi(this);
 
   // setup the listener. 
@@ -56,21 +57,19 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
 
   // setup the audio listener
   audio_listener = new GUISoDa::AudioListener(this, QString::fromStdString(params.getServerSocketBasename()));
-  
+
   setupSpectrum();
   setupWaterFall();
-    
   setupTopControls();
   setupMidControls();
   setupLogGPS();
-
   setupSettings();
   setupBandConfig();
   setupLogEditor();
   setupStatus();
 
   this->setWindowIcon(QIcon(QPixmap(SoDaLogo_Big)));
-  
+
   // connect(listener, SIGNAL(repHWMBVersion(const QString &)), 
   // 	  this, SLOT(setWindowTitle(const QString &)));
   connect(listener, &GUISoDa::Listener::repHWMBVersion,
@@ -116,7 +115,6 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   current_band_selector = ui->bandSel_cb->currentText(); 
   auto_bandswitch_target = QString("");
 
-
   listener->init();
   listener->start();
   audio_listener->init();
@@ -126,7 +124,8 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   
   hlib_server->start();
 
-  setupHamlib();  
+  setupHamlib();
+  
 }
 
 MainWindow::~MainWindow()

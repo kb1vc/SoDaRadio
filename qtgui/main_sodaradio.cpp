@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017 Matthew H. Reilly (kb1vc)
+Copyright (c) 2017,2023 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QDir>
 
 #include "../common/GuiParams.hxx"
-#include <stdlib.h>
+
+#include <cstdlib>
+
 /**
  * @brief simple conversion from std::string to QString... 
  *
@@ -181,6 +183,18 @@ SoDaServer instance is still running.\n\n\
   return false; 
 }
 
+void fixupQtBadAttitude() {
+  // For some reason the Qt people and the Wayland people
+  // don't get along. There are a few unpleasant notices that
+  // pop up from time to time because of this. One of them is a
+  // warning about a QSocketNotifier and QThread.
+  // This fixes that problem.
+  char * en = std::getenv("WAYLAND_DISPLAY");
+
+  if(en != nullptr) {
+    qputenv("QT_QPA_PLATFORM", "xcb");
+  }
+}
 
 /**
  * @brief Start the SoDaRadio GUI app and launch the server process
@@ -190,43 +204,52 @@ SoDaServer instance is still running.\n\n\
  */
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
-    SoDa::GuiParams p(argc, argv);    
+  int mws_count = 0;
 
-    if(p.hadNoCommand()) {
-      a.quit();
-      return 0;
-    }
+  fixupQtBadAttitude(); 
+  
+  qDebug() << QString("Setting up MainWindow %1").arg(mws_count++);
+
+  QApplication a(argc, argv);
+  qDebug() << QString("Setting up MainWindow %1").arg(mws_count++);  
+  SoDa::GuiParams p(argc, argv);    
+
+  if(p.hadNoCommand()) {
+    a.quit();
+    return 0;
+  }
+  qDebug() << QString("Setting up MainWindow %1").arg(mws_count++);    
+  QString apdir =  QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);  
+
+  if(!QDir(apdir).exists()) {
+    QDir().mkdir(apdir);
+  }
+  qDebug() << QString("Setting up MainWindow %1").arg(mws_count++);
+  QString uhdargs = QString::fromStdString(p.getUHDArgs());
+  QString server_lock_filename = QString("%1/sodaserver_args%2.lock")
+    .arg(apdir)
+    .arg(uhdargs);
     
-    QString apdir =  QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);  
-
-    if(!QDir(apdir).exists()) {
-      QDir().mkdir(apdir);
-    }
-
-    QString uhdargs = QString::fromStdString(p.getUHDArgs());
-    QString server_lock_filename = QString("%1/sodaserver_args%2.lock")
-      .arg(apdir)
-      .arg(uhdargs);
+  QString ssbn; 
+  if(p.getServerSocketBasename() == std::string("")) {
+    ssbn = QString("%1/SoDa_%2_").arg(apdir).arg(uhdargs);
+    std::string nbn = ssbn.toStdString();
+    p.setServerSocketBasename(nbn);
+  }
+  else {
+    ssbn = QString::fromStdString(p.getServerSocketBasename());
+  }
+  qDebug() << QString("Setting up MainWindow %1").arg(mws_count++);
     
-    QString ssbn; 
-    if(p.getServerSocketBasename() == std::string("")) {
-      ssbn = QString("%1/SoDa_%2_").arg(apdir).arg(uhdargs);
-      std::string nbn = ssbn.toStdString();
-      p.setServerSocketBasename(nbn);
-    }
-    else {
-      ssbn = QString::fromStdString(p.getServerSocketBasename());
-    }
-
-    
-    if(!checkForZombies(server_lock_filename, ssbn)) {
-      startupServer(server_lock_filename, p); 
+  if(!checkForZombies(server_lock_filename, ssbn)) {
+    startupServer(server_lock_filename, p); 
       
-      setupLookNFeel();
+    setupLookNFeel();
     
-      MainWindow w(0, p);
-      w.show();
-      return a.exec();
-    }
+    MainWindow w(0, p);
+    w.show();
+    return a.exec();
+  }
+
+  qDebug() << QString("Setting up MainWindow %1").arg(mws_count++);    
 }

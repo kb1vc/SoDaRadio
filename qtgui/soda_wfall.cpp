@@ -29,6 +29,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iostream>
 #include <cmath>
 
+#include <QDebug>
+
 #include <qwt/qwt_interval.h>
 #include <qwt/qwt_plot_grid.h>
 #include <qwt/qwt_scale_engine.h>
@@ -255,6 +257,7 @@ void GUISoDa::WFall::pickPoint(const QPointF & pos)
   setFreqMarker(freq);
   if(center_on_next_setting) {
     center_on_next_setting = false;
+    qDebug() << QString("WFall::picPoint emits setSpectrumCenter(%1)\n").arg(freq);    
     emit setSpectrumCenter(freq);
   }
 

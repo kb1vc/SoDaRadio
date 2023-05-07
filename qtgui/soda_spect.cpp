@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017 Matthew H. Reilly (kb1vc)
+Copyright (c) 2017,2023 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "soda_spect.hpp"
 #include <iostream>
 #include <cmath>
-
+#include <QDebug>
 #include <qwt/qwt_plot_grid.h>
 #include <qwt/qwt_scale_engine.h>
 
@@ -148,6 +148,7 @@ void GUISoDa::Spect::replotXAxis()
 void GUISoDa::Spect::setFreqCenter(double cf, bool check_boundary) 
 {
   (void) check_boundary;
+  qDebug() << QString("Spect::setFreqCenter(%1)\n").arg(cf);
   center_freq_disp = cf; 
   replotXAxis();
 }
@@ -165,7 +166,7 @@ double GUISoDa::Spect::correctCenterFreq(double cfreq)
 }
 
 void GUISoDa::Spect::setFreqSpan(double fs, bool check_boundary) {
-  freq_span_disp = fs;   
+  freq_span_disp = fs;
   if(check_boundary) {
     center_freq_disp = correctCenterFreq(center_freq_disp);
     if((marker_freq < (center_freq_disp - 0.5 * freq_span_disp)) ||
@@ -173,6 +174,7 @@ void GUISoDa::Spect::setFreqSpan(double fs, bool check_boundary) {
       center_freq_disp = correctCenterFreq(marker_freq);
     }
   }
+  qDebug() << QString("Spect::setFreqSpan(%2) sets new center_freq_disp = %1\n").arg(center_freq_disp).arg(fs);
   replotXAxis();
 }
 
@@ -183,6 +185,7 @@ void GUISoDa::Spect::pickPoint(const QPointF & pos)
   setFreqMarker(freq);
   if(center_on_next_setting) {
     center_on_next_setting = false;
+    qDebug() << QString("Spect::picPoint emits setSpectrumCenter(%1)\n").arg(freq);
     emit setSpectrumCenter(freq);
   }
   emit xClick(freq);

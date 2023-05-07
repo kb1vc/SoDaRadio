@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017 Matthew H. Reilly (kb1vc)
+Copyright (c) 2017,2023 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -168,6 +168,8 @@ namespace GUISoDa {
     QLocalSocket * cmd_socket;
     QLocalSocket * spect_socket;
     bool quit; 
+
+    double debug_center_freq; 
   };
 }
 #endif
