@@ -1,5 +1,6 @@
+#pragma once
 /*
-Copyright (c) 2017 Matthew H. Reilly (kb1vc)
+Copyright (c) 2017,2023 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,11 +27,10 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef SODAPLOTPICKER_H
-#define SODAPLOTPICKER_H
 #include <QBrush>
 #include <QColor>
 #include <QPen>
+#include <qwt/qwt_text.h>
 #include <qwt/qwt_picker_machine.h>
 #include <QObject>
 
@@ -95,4 +95,3 @@ namespace GUISoDa {
     double last_x; 
   };
 }
-#endif // SODAPLOTPICKER_H

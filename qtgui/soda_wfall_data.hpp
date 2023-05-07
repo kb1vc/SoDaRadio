@@ -1,5 +1,6 @@
+#pragma once
 /*
-Copyright (c) 2017 Matthew H. Reilly (kb1vc)
+Copyright (c) 2017,2023 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,10 +27,9 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef SODA_WFALL_DATA_H
-#define SODA_WFALL_DATA_H
 
 #include <QWidget>
+#include <qwt/qwt_interval.h>
 #include <qwt/qwt_plot.h>
 #include <qwt/qwt_raster_data.h>
 
@@ -58,7 +58,10 @@ namespace GUISoDa {
       f_hi_marker = hi; 
     }
   
+    QwtInterval interval(Qt::Axis ax) const;
+    
   private:
+    
     void setReady() { is_ready = true; }
     void clearReady() { is_ready = false; }
     bool is_ready;
@@ -89,5 +92,4 @@ namespace GUISoDa {
   };
 }
 
-#endif
 

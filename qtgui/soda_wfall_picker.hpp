@@ -1,5 +1,6 @@
+#pragma once
 /*
-Copyright (c) 2017 Matthew H. Reilly (kb1vc)
+Copyright (c) 2017,2023 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,12 +26,10 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-
-#ifndef SODAWFALL_PICKER_H
-#define SODAWFALL_PICKER_H
 #include <QBrush>
 #include <QColor>
 #include <QPen>
+#include <qwt/qwt_text.h>
 #include <qwt/qwt_picker_machine.h>
 namespace GUISoDa {
 
@@ -89,5 +88,3 @@ namespace GUISoDa {
     }
   };
 }
-
-#endif // SODAWFALL_PICKER_H
