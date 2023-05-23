@@ -204,27 +204,22 @@ void fixupQtBadAttitude() {
  */
 int main(int argc, char *argv[])
 {
-  int mws_count = 0;
-
   fixupQtBadAttitude(); 
   
-  qDebug() << QString("Setting up MainWindow %1").arg(mws_count++);
-
   QApplication a(argc, argv);
-  qDebug() << QString("Setting up MainWindow %1").arg(mws_count++);  
   SoDa::GuiParams p(argc, argv);    
 
   if(p.hadNoCommand()) {
     a.quit();
     return 0;
   }
-  qDebug() << QString("Setting up MainWindow %1").arg(mws_count++);    
+
   QString apdir =  QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);  
 
   if(!QDir(apdir).exists()) {
     QDir().mkdir(apdir);
   }
-  qDebug() << QString("Setting up MainWindow %1").arg(mws_count++);
+
   QString uhdargs = QString::fromStdString(p.getUHDArgs());
   QString server_lock_filename = QString("%1/sodaserver_args%2.lock")
     .arg(apdir)
@@ -239,7 +234,7 @@ int main(int argc, char *argv[])
   else {
     ssbn = QString::fromStdString(p.getServerSocketBasename());
   }
-  qDebug() << QString("Setting up MainWindow %1").arg(mws_count++);
+
     
   if(!checkForZombies(server_lock_filename, ssbn)) {
     startupServer(server_lock_filename, p); 
@@ -251,5 +246,4 @@ int main(int argc, char *argv[])
     return a.exec();
   }
 
-  qDebug() << QString("Setting up MainWindow %1").arg(mws_count++);    
 }

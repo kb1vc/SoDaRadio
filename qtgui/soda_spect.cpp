@@ -33,7 +33,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <qwt/qwt_plot_grid.h>
 #include <qwt/qwt_scale_engine.h>
 
-
+I think the problem here has to do with the freq array
+// 				      and updating the X axis information. 
+																       
 
 GUISoDa::Spect::Spect(QWidget *parent) :
     QwtPlot(parent)
@@ -101,7 +103,11 @@ void GUISoDa::Spect::initPlot()
 
 void GUISoDa::Spect::updateData(double cfreq, float * y)
 {
-  if(cfreq != center_freq_in) resetFreqAxis(cfreq); 
+  if(cfreq != center_freq_in) {
+    //qDebug() << QString("Spect::updateData(%1,..) about to change Freq Axis\n").arg(cfreq);
+    // did this eliminate the trace?   center_freq_in = cfreq; 
+    resetFreqAxis(cfreq); 
+  }
   for(int i = 0; i < num_buckets; i++) vals[i] = y[i]; 
   curve_p->setSamples(freqs, vals, num_buckets);
   replot();
@@ -222,6 +228,7 @@ void GUISoDa::Spect::configureSpectrum(double cfreq, double span, long buckets) 
   marker_freq = cfreq; 
   center_freq_in = cfreq; 
   freq_span_in = span; 
+  //did this screw things up?  qDebug() << QString("Spect::configureSpectrum(%1, %2, %3)\n").arg(cfreq).arg(span).arg(buckets);
   if(num_buckets < buckets) {
     if(freqs != NULL) delete[] freqs; 
     if(vals != NULL) delete[] vals; 
