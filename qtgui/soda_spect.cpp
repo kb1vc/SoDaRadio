@@ -33,7 +33,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <qwt/qwt_plot_grid.h>
 #include <qwt/qwt_scale_engine.h>
 
-I think the problem here has to do with the freq array
+// I think the problem here has to do with the freq array
 // 				      and updating the X axis information. 
 																       
 
@@ -104,12 +104,22 @@ void GUISoDa::Spect::initPlot()
 void GUISoDa::Spect::updateData(double cfreq, float * y)
 {
   if(cfreq != center_freq_in) {
-    //qDebug() << QString("Spect::updateData(%1,..) about to change Freq Axis\n").arg(cfreq);
+    qDebug() << QString("Spect::updateData(%1,..) about to change Freq Axis\n").arg(cfreq);
+    center_freq_in = cfreq;
     // did this eliminate the trace?   center_freq_in = cfreq; 
     resetFreqAxis(cfreq); 
   }
-  for(int i = 0; i < num_buckets; i++) vals[i] = y[i]; 
+  float ymin = 1e21;
+  float ymax = 1e-21;
+  for(int i = 0; i < num_buckets; i++) {
+    vals[i] = y[i];
+    if(y[i] < ymin) ymin = y[i];
+    if(y[i] > ymax) ymax = y[i];
+  }
   curve_p->setSamples(freqs, vals, num_buckets);
+
+  qDebug() << QString("Spect::updateData moves %1 buckets to plot ymin %2 ymax %3 fmin = %4 fmax = %5").arg(num_buckets).arg(ymin).arg(ymax).arg(freqs[0]).arg(freqs[num_buckets-1]);
+  
   replot();
 }
 
@@ -133,6 +143,8 @@ void GUISoDa::Spect::replotYAxis()
   if(val_range < 10.1) y_step = 1.0;
   setAxisScale(QwtPlot::yLeft, y_min, val_ref, y_step);
   setAxisScale(QwtPlot::yRight, y_min, val_ref, y_step);
+  qDebug() << QString("Spect::replotYAxis() y_min %1 y_step %2 val_ref %3")
+    .arg(y_min).arg(y_step).arg(val_ref);
   replot();
 }
 
@@ -142,6 +154,8 @@ void GUISoDa::Spect::replotXAxis()
   double min = center_freq_disp - freq_span_disp * 0.5;
   double max = center_freq_disp + freq_span_disp * 0.5;
 
+  qDebug() << QString("Spect::replotXAxis() min = %1 max = %2 center = %3 span = %4")
+    .arg(min).arg(max).arg(center_freq_disp).arg(freq_span_disp);
   
   setAxisScale(QwtPlot::xBottom, min, max, freq_span_disp / 5.0); // step);
 
@@ -218,10 +232,13 @@ void GUISoDa::Spect::resetFreqAxis(double cfreq) {
   // load up the X axis values. (frequency)
   double fincr = freq_span_in / ((double) (num_buckets-1));
   double fr = cfreq - 0.5 * freq_span_in; 
+  center_freq_disp = cfreq; 
   for(int i = 0; i < num_buckets; i++) {
     freqs[i] = fr; 
     fr += fincr; 
   }
+  double hspan = 0.5 * freq_span_disp; 
+  setAxisScale(QwtPlot::xBottom, center_freq_disp - hspan, center_freq_disp + hspan, freq_span_disp / 5.0);
 }
 
 void GUISoDa::Spect::configureSpectrum(double cfreq, double span, long buckets) {
