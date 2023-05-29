@@ -270,7 +270,7 @@ void SoDa::UI::reportSpectrumCenterFreq()
 }
 
 
-void SoDa::UI::execSetCommand(Command * cmd)
+void SoDa::UI::execSetCommand(CommandPtr cmd)
 {
   // when we get a SET SPEC_CENTER_FREQ
   switch(cmd->target) {
@@ -297,7 +297,7 @@ void SoDa::UI::execSetCommand(Command * cmd)
   }
 }
 
-void SoDa::UI::execGetCommand(Command * cmd)
+void SoDa::UI::execGetCommand(CommandPtr cmd)
 {
   switch(cmd->target) {
   case SoDa::Command::LO_OFFSET: // remember that we want to report
@@ -310,11 +310,13 @@ void SoDa::UI::execGetCommand(Command * cmd)
   }
 }
 
-void SoDa::UI::execRepCommand(Command * cmd)
+void SoDa::UI::execRepCommand(CommandPtr cmd)
 {
   switch(cmd->target) {
   case SoDa::Command::RX_FE_FREQ:
     // save the front end baseband frequency
+    debugMsg(SoDa::Format("UI::execRepCommand got RX_FE_FREQ new freq %0\n")
+	     .addF(cmd->dparms[0], 'e'));
     baseband_rx_freq = cmd->dparms[0];
     break;
   default:
@@ -360,7 +362,13 @@ void SoDa::UI::sendFFT(SoDa::BufPtr buf)
     // first the index of the center point
     // this is the bucket for the baseband rx freq
     idx = (spectrogram_buckets / 2); 
+
     idx += (int) round((spectrum_center_freq - baseband_rx_freq) / hz_per_bucket);
+    std::cerr << SoDa::Format("UI send wfall mid idx = %0 sig idx = %1 baseband_rx_freq %2\n")
+      .addI(spectrogram_buckets/2)
+      .addI(idx)
+      .addF(baseband_rx_freq, 'e');
+    
     // now we've got the index for the center.
     // correct it to be the start...
     idx -= required_spect_buckets / 2; 

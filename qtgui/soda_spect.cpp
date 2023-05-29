@@ -232,13 +232,21 @@ void GUISoDa::Spect::resetFreqAxis(double cfreq) {
   // load up the X axis values. (frequency)
   double fincr = freq_span_in / ((double) (num_buckets-1));
   double fr = cfreq - 0.5 * freq_span_in; 
+
+  qDebug() << QString("Spect::resetFreqAxis(%1) center_freq_disp %2 freq_span_in %3").arg(cfreq).arg(center_freq_disp).arg(freq_span_in);  
+  
   center_freq_disp = cfreq; 
+
   for(int i = 0; i < num_buckets; i++) {
     freqs[i] = fr; 
     fr += fincr; 
   }
-  double hspan = 0.5 * freq_span_disp; 
+  double hspan = 0.5 * freq_span_disp;
+
+
   setAxisScale(QwtPlot::xBottom, center_freq_disp - hspan, center_freq_disp + hspan, freq_span_disp / 5.0);
+  // why isn't center_freq_in getting reset?
+  replotXAxis();
 }
 
 void GUISoDa::Spect::configureSpectrum(double cfreq, double span, long buckets) {

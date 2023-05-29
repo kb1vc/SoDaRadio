@@ -90,9 +90,9 @@ namespace SoDa {
     bool lo_check_mode;
 
     void updateSpectrumState();
-    void execSetCommand(Command * cmd);
-    void execGetCommand(Command * cmd);
-    void execRepCommand(Command * cmd);
+    void execSetCommand(CommandPtr cmd);
+    void execGetCommand(CommandPtr  cmd);
+    void execRepCommand(CommandPtr cmd);
 
     void reportSpectrumCenterFreq();
   }; 
