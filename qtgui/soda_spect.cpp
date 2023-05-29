@@ -33,9 +33,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <qwt/qwt_plot_grid.h>
 #include <qwt/qwt_scale_engine.h>
 
-// I think the problem here has to do with the freq array
-// 				      and updating the X axis information. 
-																       
 
 GUISoDa::Spect::Spect(QWidget *parent) :
     QwtPlot(parent)
@@ -104,9 +101,7 @@ void GUISoDa::Spect::initPlot()
 void GUISoDa::Spect::updateData(double cfreq, float * y)
 {
   if(cfreq != center_freq_in) {
-    qDebug() << QString("Spect::updateData(%1,..) about to change Freq Axis\n").arg(cfreq);
     center_freq_in = cfreq;
-    // did this eliminate the trace?   center_freq_in = cfreq; 
     resetFreqAxis(cfreq); 
   }
   float ymin = 1e21;
@@ -118,8 +113,6 @@ void GUISoDa::Spect::updateData(double cfreq, float * y)
   }
   curve_p->setSamples(freqs, vals, num_buckets);
 
-  qDebug() << QString("Spect::updateData moves %1 buckets to plot ymin %2 ymax %3 fmin = %4 fmax = %5").arg(num_buckets).arg(ymin).arg(ymax).arg(freqs[0]).arg(freqs[num_buckets-1]);
-  
   replot();
 }
 
@@ -143,8 +136,6 @@ void GUISoDa::Spect::replotYAxis()
   if(val_range < 10.1) y_step = 1.0;
   setAxisScale(QwtPlot::yLeft, y_min, val_ref, y_step);
   setAxisScale(QwtPlot::yRight, y_min, val_ref, y_step);
-  qDebug() << QString("Spect::replotYAxis() y_min %1 y_step %2 val_ref %3")
-    .arg(y_min).arg(y_step).arg(val_ref);
   replot();
 }
 
@@ -154,8 +145,6 @@ void GUISoDa::Spect::replotXAxis()
   double min = center_freq_disp - freq_span_disp * 0.5;
   double max = center_freq_disp + freq_span_disp * 0.5;
 
-  qDebug() << QString("Spect::replotXAxis() min = %1 max = %2 center = %3 span = %4")
-    .arg(min).arg(max).arg(center_freq_disp).arg(freq_span_disp);
   
   setAxisScale(QwtPlot::xBottom, min, max, freq_span_disp / 5.0); // step);
 
@@ -168,7 +157,6 @@ void GUISoDa::Spect::replotXAxis()
 void GUISoDa::Spect::setFreqCenter(double cf, bool check_boundary) 
 {
   (void) check_boundary;
-  qDebug() << QString("Spect::setFreqCenter(%1)\n").arg(cf);
   center_freq_disp = cf; 
   replotXAxis();
 }
@@ -194,7 +182,6 @@ void GUISoDa::Spect::setFreqSpan(double fs, bool check_boundary) {
       center_freq_disp = correctCenterFreq(marker_freq);
     }
   }
-  qDebug() << QString("Spect::setFreqSpan(%2) sets new center_freq_disp = %1\n").arg(center_freq_disp).arg(fs);
   replotXAxis();
 }
 
@@ -205,7 +192,6 @@ void GUISoDa::Spect::pickPoint(const QPointF & pos)
   setFreqMarker(freq);
   if(center_on_next_setting) {
     center_on_next_setting = false;
-    qDebug() << QString("Spect::picPoint emits setSpectrumCenter(%1)\n").arg(freq);
     emit setSpectrumCenter(freq);
   }
   emit xClick(freq);
@@ -233,7 +219,6 @@ void GUISoDa::Spect::resetFreqAxis(double cfreq) {
   double fincr = freq_span_in / ((double) (num_buckets-1));
   double fr = cfreq - 0.5 * freq_span_in; 
 
-  qDebug() << QString("Spect::resetFreqAxis(%1) center_freq_disp %2 freq_span_in %3").arg(cfreq).arg(center_freq_disp).arg(freq_span_in);  
   
   center_freq_disp = cfreq; 
 
@@ -253,7 +238,6 @@ void GUISoDa::Spect::configureSpectrum(double cfreq, double span, long buckets) 
   marker_freq = cfreq; 
   center_freq_in = cfreq; 
   freq_span_in = span; 
-  //did this screw things up?  qDebug() << QString("Spect::configureSpectrum(%1, %2, %3)\n").arg(cfreq).arg(span).arg(buckets);
   if(num_buckets < buckets) {
     if(freqs != NULL) delete[] freqs; 
     if(vals != NULL) delete[] vals; 

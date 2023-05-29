@@ -166,17 +166,11 @@ void GUISoDa::Listener::processSpectrum() {
     if(rlen != len) {
       char * nbuf = new char[len];
       // throw it away.
-      qDebug() << QString("!");
       spect_socket->read(nbuf, len); 
       delete[] nbuf; 
     }
     else {
       spect_socket->read((char*) spect_buffer, rlen); 
-      if(debug_center_freq != spect_center_freq) {
-	qDebug() << QString("Listener::processSpectrum() updating spectrum center freq from %1 to %2\n").arg(debug_center_freq).arg(spect_center_freq);
-	debug_center_freq = spect_center_freq; 
-      }
-      qDebug() << QString("Listener::processSpectrum cf = %1").arg(spect_center_freq);
       emit(updateData(spect_center_freq, spect_buffer)); 
     }
   }
@@ -317,8 +311,6 @@ void GUISoDa::Listener::setTXAnt(const QString & antname)
 
 void GUISoDa::Listener::setSpectrumCenter(double freq) 
 {
-  qDebug() << QString("Listener::setSpectrumCenter(%1) received\n").arg(freq);  
-  spect_center_freq = freq;
   put(SoDa::Command(SoDa::Command::SET, SoDa::Command::SPEC_CENTER_FREQ, freq), __PRETTY_FUNCTION__);
   
 }

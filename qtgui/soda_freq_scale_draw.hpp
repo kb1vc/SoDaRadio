@@ -42,7 +42,6 @@ namespace GUISoDa {
     }
 
     void setFreqStep(double cf, double st) { 
-      qDebug() << QString("FreqScaleDraw::setFreqStep(%1,%2)").arg(cf).arg(st);
       center_freq = cf; freq_step = st; 
     }
 
@@ -57,8 +56,6 @@ namespace GUISoDa {
 
 	ret = QwtText(QString::number(df * 1000.0, 'f', 0));
       }
-      qDebug() << QString("FreqScaleDraw::label(%1) returns %2")
-	.arg(f).arg(ret.text());
       return ret;
     }
   protected:

@@ -257,7 +257,6 @@ void GUISoDa::WFall::pickPoint(const QPointF & pos)
   setFreqMarker(freq);
   if(center_on_next_setting) {
     center_on_next_setting = false;
-    qDebug() << QString("WFall::picPoint emits setSpectrumCenter(%1)\n").arg(freq);    
     emit setSpectrumCenter(freq);
   }
 

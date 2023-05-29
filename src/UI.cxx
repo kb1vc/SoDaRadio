@@ -364,11 +364,6 @@ void SoDa::UI::sendFFT(SoDa::BufPtr buf)
     idx = (spectrogram_buckets / 2); 
 
     idx += (int) round((spectrum_center_freq - baseband_rx_freq) / hz_per_bucket);
-    std::cerr << SoDa::Format("UI send wfall mid idx = %0 sig idx = %1 baseband_rx_freq %2\n")
-      .addI(spectrogram_buckets/2)
-      .addI(idx)
-      .addF(baseband_rx_freq, 'e');
-    
     // now we've got the index for the center.
     // correct it to be the start...
     idx -= required_spect_buckets / 2; 
