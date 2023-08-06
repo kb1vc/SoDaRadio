@@ -1,3 +1,4 @@
+#pragma once
 /*
 Copyright (c) 2017 Matthew H. Reilly (kb1vc)
 All rights reserved.
@@ -26,8 +27,6 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
 
 #include <QMainWindow>
 #include <QCloseEvent>
@@ -176,4 +175,3 @@ private:
   bool full_duplex; // if we're in satellite mode... 
 };
 
-#endif // MAINWINDOW_H

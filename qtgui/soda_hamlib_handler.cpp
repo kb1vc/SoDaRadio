@@ -36,6 +36,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using namespace GUISoDa;
 
+Q_LOGGING_CATEGORY(d_hamlibHandler, "hamlib.handler")
+
 GUISoDa::HamlibHandler::HamlibHandler(QObject * parent) : QObject(parent)
 {
   // setup the tables
@@ -78,10 +80,14 @@ void GUISoDa::HamlibHandler::initModTables()
 
 void GUISoDa::HamlibHandler::initCommandTables()
 {
+  qCDebug(d_hamlibHandler) << QString("HamlibHandler::initCommandTables()\n");
+  
   // setup all the commands
   registerCommand("dump_state", "\\dump_state", &GUISoDa::HamlibHandler::cmdDumpState, true);
   registerCommand("v", "get_vfo", &GUISoDa::HamlibHandler::cmdVFO, true);
   registerCommand("V", "set_vfo", &GUISoDa::HamlibHandler::cmdVFO, false);  
+  registerCommand("p", "\\get_powerstat", &GUISoDa::HamlibHandler::cmdPowerstat, true);
+  registerCommand("P", "\\set_powerstat", &GUISoDa::HamlibHandler::cmdPowerstat, false);  
   registerCommand("f", "get_freq", &GUISoDa::HamlibHandler::cmdFreq, true);
   registerCommand("F", "set_freq", &GUISoDa::HamlibHandler::cmdFreq, false);  
   registerCommand("i", "get_split_freq", &GUISoDa::HamlibHandler::cmdSplitFreq, true);
@@ -147,7 +153,7 @@ void GUISoDa::HamlibHandler::processCommand(const QString & cmd, QTcpSocket * so
 	  (this->*get_command_map[cmdchar])(out, in, true);
 	}
 	else {
-	  qDebug() << QString("HAMLIB handler can't deal with this command [%1]\n").arg(cmdchar);
+	  qCDebug(d_hamlibHandler) << QString("HAMLIB handler can't deal with this command [%1]\n").arg(cmdchar);
 	  out << "RPRT " << RIG_EINVAL << "\n";
 	}
       }
@@ -159,7 +165,7 @@ void GUISoDa::HamlibHandler::processCommand(const QString & cmd, QTcpSocket * so
       (this->*get_command_map[cmdkey])(out, in, true);
     }
     else {
-      qDebug() << QString("HAMLIB handler can't deal with this command [%1]\n").arg(cmd);
+      qCDebug(d_hamlibHandler) << QString("HAMLIB handler can't deal with this command [%1]\n").arg(cmd);
       out << "RPRT " << RIG_EINVAL << "\n";
     }
   }
@@ -243,6 +249,19 @@ bool GUISoDa::HamlibHandler::cmdVFO(QTextStream & out, QTextStream & in, bool ge
   else {
     in >> current_VFO;
     out << "RPRT 0" << "\n"; 
+  }
+  return true;
+}
+
+bool GUISoDa::HamlibHandler::cmdPowerstat(QTextStream & out, QTextStream & in, bool getval)
+{
+  int dummy;
+  if(getval) {
+    out << 1 << "\n";
+  }
+  else {
+    in >> dummy;
+    out << "1" << "\n"; 
   }
   return true;
 }
