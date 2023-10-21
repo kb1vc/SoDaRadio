@@ -34,6 +34,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iostream>
 #include <errno.h>
 #include "../src/Command.hxx"
+#include <QLoggingCategory>
+
+Q_DECLARE_LOGGING_CATEGORY(d_sodaListener)
 
 namespace GUISoDa {
   
@@ -45,6 +48,7 @@ namespace GUISoDa {
     ~Listener() {
     }
 
+    
     /**
      * @brief connect to radio server sockets and initialize listener state
      * 

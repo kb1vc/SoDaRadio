@@ -161,6 +161,10 @@ void USRPTX::run()
 	     (tx_modulation == Command::CW_U))) {
       cwenv = cw_env_stream->get(this);
       if(cwenv != nullptr) {
+	std::cerr << SoDa::Format("USRPTX::%0 got cw envelope %1 long\n")
+	  .addS(__func__)
+	  .addI(cwenv->getComplexLen());
+	
 	// modulate a carrier with a cw message
 	doCW(cw_buf, cwenv->getFloatBuf(), cwenv->getComplexLen());
 	// now send it to the USRP
@@ -216,11 +220,17 @@ void USRPTX::doCW(std::complex<float> * out, float * envelope, unsigned int env_
 {
   unsigned int i;
   std::complex<float> c;
-  
+
+  float sum = 0.0; 
   for(i = 0; i < env_len; i++) {
     c = CW_osc.stepOscCF(); 
     out[i] = c * envelope[i] * cw_env_amplitude;
+    sum += envelope[i];
   }
+  std::cerr << SoDa::Format("USRPTX::%0 envelope size %1 average value %2\n")
+    .addS(__func__)
+    .addI(env_len)
+    .addF(sum / ((float) env_len));
 }
 
 void USRPTX::setCWFreq(bool usb, double freq)

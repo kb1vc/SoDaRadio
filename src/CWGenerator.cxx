@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+Copyright (c) 2012,2023 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -196,6 +196,10 @@ void CWGenerator::setCWSpeed(unsigned int wpm)
 void CWGenerator::appendToOut(const float * v, unsigned int vlen)
 {
   int svlen = vlen; 
+  std::cerr << SoDa::Format("CWGenerator::%0 appending %1 samples\n")
+    .addS(__func__)
+    .addI(vlen);
+  
   while(svlen != 0) {
     int left = cur_buf_len - (cur_buf_idx + 1);
     float *dbuf = cur_buf->getFloatBuf();

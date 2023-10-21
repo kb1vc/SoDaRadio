@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2023 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -111,6 +111,9 @@ bool SoDa::CWTX::sendAvailChar()
       outchar = text_queue.front(); text_queue.pop();
     }
     if(outchar != '\003') {
+      std::cerr << SoDa::Format("CWTX::%0 sending character [%1]\n")
+	.addS(__func__)
+	.addC(outchar);
       cwgen->sendChar(outchar);
       sent_char = true;
       tbuf[0] = outchar; 
@@ -130,6 +133,7 @@ bool SoDa::CWTX::sendAvailChar()
 
 void SoDa::CWTX::execGetCommand(CommandPtr  cmd)
 {
+  debugMsg(SoDa::Format("%0 gets command [%1]\n").addS(__func__).addS(cmd->toString()));
   switch(cmd->target) {
   case SoDa::Command::TX_STATE:
     break; 
@@ -151,6 +155,8 @@ void SoDa::CWTX::execGetCommand(CommandPtr  cmd)
 void SoDa::CWTX::execSetCommand(CommandPtr  cmd)
 {
   SoDa::Command::ModulationType txmode;
+
+  debugMsg(SoDa::Format("%0 gets command [%1]\n").addS(__func__).addS(cmd->toString()));
   
   switch(cmd->target) {
   case SoDa::Command::TX_STATE:
@@ -181,6 +187,9 @@ void SoDa::CWTX::execSetCommand(CommandPtr  cmd)
     cwgen->setCWSpeed(cmd->iparms[0]); 
     break;
   case SoDa::Command::TX_CW_TEXT:
+    std::cerr << SoDa::Format("CWTX::%0 got string [%1]\n")
+      .addS(__func__)
+      .addS(cmd->sparm);
     enqueueText(cmd->sparm); 
     break;
   case SoDa::Command::TX_CW_MARKER:
@@ -235,6 +244,8 @@ void SoDa::CWTX::clearTextQueue()
 
 void SoDa::CWTX::execRepCommand(CommandPtr  cmd)
 {
+  debugMsg(SoDa::Format("%0 gets command [%1]\n").addS(__func__).addS(cmd->toString()));
+  
   switch(cmd->target) {
   case SoDa::Command::TX_CW_EMPTY:
     // The CW generator has run out of things to send. 
@@ -262,5 +273,5 @@ void SoDa::CWTX::subscribeToMailBoxList(MailBoxMap & mailboxes)
 {
   cmd_stream = connectMailBox<SoDa::CmdMBox>(this, "CMD", mailboxes);
   cwtxt_stream = connectMailBox<SoDa::CmdMBox>(this, "CW_TXT", mailboxes);
-  cw_env_stream = connectMailBox<SoDa::DatMBox>(this, "CW_ENV", mailboxes);  
+  cw_env_stream = connectMailBox<SoDa::DatMBox>(this, "CW_ENV", mailboxes, MailBoxPublish::WRITE_ONLY);  
 }

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017 Matthew H. Reilly (kb1vc)
+Copyright (c) 2017, 2023 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "soda_listener.hpp"
 #include <QDebug>
+
+Q_LOGGING_CATEGORY(d_sodaListener, "soda.listener")
 
 GUISoDa::Listener::Listener(QObject * parent, const QString & _socket_basename) : QObject(parent) {
   quit = false;
@@ -396,6 +398,9 @@ void GUISoDa::Listener::sendCW(const QString & txt)
     j++; 
 
     if((j >= SoDa::Command::getMaxStringLen()) || (i == txt.size())) {
+      qCDebug(d_sodaListener) 
+	<< QString("Listener: sends TX_CW_TEXT with [%1]\n")
+	.arg(cwbuf);
       put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_CW_TEXT, cwbuf), __PRETTY_FUNCTION__);
       j = 0; 
     }
