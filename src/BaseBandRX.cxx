@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012,2023 Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2023,2024 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -37,7 +37,7 @@
 
 namespace SoDa {
   BaseBandRX::BaseBandRX(Params * params,
-			 AudioIfc * _audio_ifc) : Thread("BaseBandRX")
+			 AudioQtRX * _audio_ifc) : Thread("BaseBandRX")
   {
     audio_ifc = _audio_ifc; 
     rx_stream = NULL;
@@ -383,12 +383,12 @@ namespace SoDa {
       }
       break; 
     case Command::TX_STATE: // SET TX_ON
-      if(cmd->iparms[0] == 1) {
+      if(cmd->iparms[0] == Command::TX_ON) {
 	// flush the audio buffers that have RX info that we
 	// aren't going to need anymore.
 	debugMsg("In TX ON");      
 	flushAudioBuffers(); 
-	if (cmd->iparms[1] != 0) {
+	if (cmd->iparms[1] == Command::FULL_DUPLEX) {
 	  // we're in full-duplex mode, don't change the RX at all.
 	  debugMsg("full duplex mode\n");
 	}
@@ -402,7 +402,7 @@ namespace SoDa {
 	  // 	audio_ifc->sleepOut();
 	}
       }
-      if(cmd->iparms[0] == 2) { // the CTRL unit has done the setup.... 
+      if(cmd->iparms[0] == Command::RX_READY) { // the CTRL unit has done the setup.... 
 	debugMsg("In RX ON");
 	cur_af_gain = &af_gain; 
 	audio_rx_stream_enabled = true;

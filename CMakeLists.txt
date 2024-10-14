@@ -212,15 +212,6 @@ find_package(PkgConfig)
 pkg_search_module(HAMLIB REQUIRED hamlib)
 pkg_search_module(GPSLIB OPTIONAL libgps)
 
-IF(DISABLE_ALSA)
-  message("ALSA Disabled")
-ELSE()  
-  find_package(ALSA QUIET)  
-ENDIF()
-
-UNSET(ALSA_FOUND CACHE)
-UNSET(DISABLE_ALSA CACHE)
-
 
 IF(DISABLE_GPSD)
   SET(HAVE_GPSLIB 0)

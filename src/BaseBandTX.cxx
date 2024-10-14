@@ -139,9 +139,6 @@ namespace SoDa {
      * \endcode
      */
 
-    // first wake up the audio channel
-    audio_ifc->wakeIn();  
-
     while(!exitflag) {
       if((cmd = cmd_stream->get(this)) != NULL) {
 	// process the command.
@@ -151,13 +148,13 @@ namespace SoDa {
       }
       else if (!tx_stream_on || cw_tx_mode) {
 	// read audio information and throw it away. 
-	audio_ifc->recv(audio_buf->data(), audio_buffer_size, true);
+	audio_ifc->recv(audio_buf, audio_buffer_size, true);
 	usleep(1000); 
       }
       else {
 	// If we're in TX mode that isn't CW....
 	// get an input audio buffer.
-	if (tx_stream_on && audio_ifc->recv(audio_buf->data(), audio_buffer_size, true)) { 
+	if (tx_stream_on && audio_ifc->recv(audio_buf, audio_buffer_size, true)) { 
 	  BufPtr txbuf;
 	  auto audio_tx_buffer = audio_buf; 
 
@@ -303,25 +300,18 @@ namespace SoDa {
       break; 
     case Command::TX_STATE: // SET TX_ON
       // transition from RX to TX
-      if(cmd->iparms[0] == 3) {
+      if(cmd->iparms[0] == Command::TX_ON) {
 	tx_on = true;
 	if(!cw_tx_mode) {
 	  // Wake up the audio interface. 
-	  // actually, never need to do this, as we never let it sleep
-	  // audio_ifc->wakeIn();
 	  tx_stream_on = true; 
 	}
       }
 
       // transition from TX to RX
-      if(cmd->iparms[0] == 0) {
+      if(cmd->iparms[0] == Command::RX_READY) {
 	tx_on = false;
 	if(tx_stream_on) {
-	  // Put the audio interface to sleep
-	  // and flush the input buffer	
-	  // Actually, never put the audio interface to sleep. 
-	  // always read from the input buffer. 
-	  // audio_ifc->sleepIn(); 
 	  tx_stream_on = false; 
 	}
       }

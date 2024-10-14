@@ -571,7 +571,7 @@ void USRPCtrl::execSetCommand(CommandPtr  cmd)
     break; 
   case Command::TX_STATE: // SET TX_ON
     debugMsg(SoDa::Format("TX_STATE arg = %0\n").addI(cmd->iparms[0]));
-    if(cmd->iparms[0] == 1) {
+    if(cmd->iparms[0] == Command::TX_READY) {
       // set the txgain to where it is supposed to be.
       tx_on = true; 
       bool full_duplex = cmd->iparms[1] != 0;
@@ -599,16 +599,15 @@ void USRPCtrl::execSetCommand(CommandPtr  cmd)
       // and tell the TX unit to turn on the TX
       // This avoids the race between CTRL and TX/RX units for setup and teardown.... 
       cmd_stream->put(Command::make(Command::SET, Command::TX_STATE, 
-				  3, cmd->iparms[1]));
+				    Command::TX_ON, cmd->iparms[1]));
     }
-    if(cmd->iparms[0] == 0) {
+    if(cmd->iparms[0] == Command::RX_READY) {
       tx_on = false; 
       // set txgain to zero
       usrp->set_tx_gain(0.0);
       usrp->set_rx_gain(rx_rf_gain);
       // tune the TX unit 1MHz away from where we want to be.
       tx_freq_rxmode_offset = rxmode_offset; // so tuning works.
-      set1stLOFreq(tx_freq + tx_freq_rxmode_offset, 't', false);
 
       // turn off the transmit relay and the TX chain.
       // This also turns off the TX LO on a WBX module, so
@@ -625,12 +624,12 @@ void USRPCtrl::execSetCommand(CommandPtr  cmd)
       // and tell the RX unit to turn on the RX
       // This avoids the race between CTRL and TX/RX units for setup and teardown.... 
       cmd_stream->put(Command::make(Command::SET, Command::TX_STATE, 
-				  2));
+				    Command::RX_ON, cmd->iparms[1]));
     }
     break; 
 
   case Command::CLOCK_SOURCE:
-    if((cmd->iparms[0] & 1) == 1) {
+    if((cmd->iparms[0] & 1) == Command::SEL_EXTERNAL) {
       debugMsg("Setting reference to external");
       usrp->set_clock_source(std::string("external"));
     }
@@ -706,20 +705,20 @@ void USRPCtrl::execGetCommand(CommandPtr  cmd)
 
   case Command::CLOCK_SOURCE:
     res = 0;
-    if(usrp->get_clock_source(0) == std::string("external")) {
-      res = 2; 
-    }
-
-    if (1) {
-      // is it locked?
+    // is it locked?
+    {
+      bool is_external = (usrp->get_clock_source(0) == std::string("external"));      
       uhd::sensor_value_t ref_locked = usrp->get_mboard_sensor("ref_locked", 0);
       if(ref_locked.to_bool()) {
-	res |= 1; 
+	res = is_external ? Command::REP_EXTERNAL_LOCK : Command::REP_INTERNAL_LOCK; 
       }
-    }
+      else {
+	res = is_external ? Command::REP_EXTERNAL_UNLOCK : Command::REP_INTERNAL_UNLOCK;
+      }
        
-    cmd_stream->put(Command::make(Command::REP, Command::CLOCK_SOURCE,
-				res));
+      cmd_stream->put(Command::make(Command::REP, Command::CLOCK_SOURCE,
+				    res));
+    }
     break;
 
   case Command::HWMB_REP:
@@ -825,9 +824,9 @@ void USRPCtrl::setTXEna(bool val)
   }
 
   if(!val) {
+    set1stLOFreq(tx_freq + tx_freq_rxmode_offset, 't', false);    
     tr_control->setTXOff(); 
   }
-  
 }
 
 void USRPCtrl::setTXFrontEndEnable(bool val) 

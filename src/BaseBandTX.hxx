@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012,2013,2014,2023 Matthew H. Reilly (kb1vc)
+Copyright (c) 2012,2013,2014,2023, 2024 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
   FM modulator features based on code contributed by and 

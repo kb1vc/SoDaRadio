@@ -344,15 +344,17 @@ void GUISoDa::Listener::setSquelchLevel(int lev)
 
 void GUISoDa::Listener::setClockRef(int external)
 {
-  int clock_source = (external != Qt::Unchecked) ? 1 : 0;
+  int clock_source = (external != Qt::Unchecked) ? 
+    SoDa::Command::SEL_EXTERNAL : SoDa::Command::SEL_INTERNAL;
+  
   put(SoDa::Command(SoDa::Command::SET, SoDa::Command::CLOCK_SOURCE, clock_source), __PRETTY_FUNCTION__);
 }
 
 void GUISoDa::Listener::setPTT(bool on, bool full_duplex)
 {
-  int tx_state = on ? 1 : 0;
-  int duplex = full_duplex ? 1 : 0;
-  put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_STATE, tx_state, full_duplex), __PRETTY_FUNCTION__);
+  int tx_state = on ? SoDa::Command::TX_READY : SoDa::Command::RX_READY;
+  int duplex = full_duplex ? SoDa::Command::FULL_DUPLEX : SoDa::Command::HALF_DUPLEX;
+  put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_STATE, tx_state, duplex), __PRETTY_FUNCTION__);
 }
 
 void GUISoDa::Listener::recordRF(int checkbox_state)

@@ -36,7 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "OSFilter.hxx"
 #include "HilbertTransformer.hxx"
 #include "TDResamplers625x48.hxx"
-#include "AudioIfc.hxx"
+#include "AudioQtRX.hxx"
 #include "MedianFilter.hxx"
 
 #include <queue>
@@ -79,7 +79,7 @@ namespace SoDa {
      * @param audio_ifc pointer to the audio output handler
      **/
     BaseBandRX(Params * params,
-	       AudioIfc * audio_ifc);
+	       AudioQtRX * audio_ifc);
 
     /// implement the subscription method
     void subscribeToMailBoxList(MailBoxMap & mailboxes);
@@ -182,7 +182,7 @@ namespace SoDa {
     unsigned int rx_subs; ///< mailbox subscription ID for rx data stream
     unsigned int cmd_subs; ///< mailbox subscription ID for command stream
 
-    AudioIfc * audio_ifc; ///< pointer to the audio interface (output) object
+    AudioQtRX * audio_ifc; ///< pointer to the audio interface (output) object
     
 
     /**

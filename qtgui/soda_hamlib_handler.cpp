@@ -50,9 +50,13 @@ GUISoDa::HamlibHandler::HamlibHandler(QObject * parent) : QObject(parent)
   rx_freq = 1.0e9;
   tx_freq = 1.0e9;
   tx_on = false;
-  current_VFO = QString("VFOA");  
+  current_VFO = QString("VFOA");
+  // having trouble with getting wsjt to put us in TX mode
+  // I think it has to do with the VFO setting -- tx_VFO was VFOB
+  // but that didn't help.  
   tx_VFO = QString("VFOB");
-  split_enabled = true; 
+  // maybe we should turn off "split"
+  split_enabled = false; 
 }
   
 GUISoDa::HamlibHandler::~HamlibHandler() {
@@ -130,6 +134,8 @@ void GUISoDa::HamlibHandler::processCommand(const QString & cmd, QTcpSocket * so
   // in favor of Qt::SkipEmptyParts. 
   QStringList cmd_list = cmd.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
 
+  qInfo() << "hamlib handling [" << cmd << "]\n";
+  
   if (cmd_list.size() == 0) return;
 
   QTextStream out(socket_p);
@@ -270,7 +276,8 @@ bool GUISoDa::HamlibHandler::cmdFreq(QTextStream & out, QTextStream & in, bool g
 {
   if(getval) {
     QString resp = QString("%1").arg(rx_freq, 15, 'f');
-    out << resp << "\n"; 
+    out << resp << "\n";
+    qInfo() << "cmdFreq (get) answers with [" << resp << "]\n";
   }
   else {
     double setfreq; 
@@ -362,7 +369,9 @@ bool GUISoDa::HamlibHandler::cmdSplitVFO(QTextStream & out, QTextStream & in, bo
   if(getval) {
     QString se = split_enabled ? "1" : "0"; 
     out << se << "\n" << tx_VFO << "\n"; 
-    out << "RPRT 0" << "\n"; 
+    out << "RPRT 0" << "\n";
+
+    qInfo() << "cmdSplitVFO returns se = [" << se << "] tx_VFO = [" << tx_VFO << "]\n";
   }
   else {
     QString split_ena; 

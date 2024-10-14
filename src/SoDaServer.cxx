@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012,2013,2014,2015,2016,2017 Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2013,2014,2015,2016,2017,2024 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -86,10 +86,9 @@
  *
  * Audio is handled in two ways in the SoDa::AudioQt class.
  * 
- * @li Transmit audio is read from an ALSA device by the SoDaServer process
- * via the SoDa::AudioQt::recv method.  With time, this function will migrate
- * to a socket connection the Qt GUI.
- * @li Receive audio is written by the SoDa::AudioQt send method
+ * @li Transmit audio is read from a socket by the SoDaServer process
+ * via the SoDa::AudioQtTX::recv method.  
+ * @li Receive audio is written by the SoDa::AudioQtRX send method
  *  to a socket that, in the normal configuration, 
  * is connected to the Qt based GUI.  This allows for better flow control and
  * also simplifies interfacing the audio stream to external modems like "fldigi"
@@ -154,13 +153,6 @@
 #include "Command.hxx"
 #include "Debug.hxx"
 
-#ifdef HAVE_ASOUND
-#  include "AudioQtRXTX.hxx"
-   using AudioQt = SoDa::AudioQtRXTX;
-#else
-#  include "AudioQtRX.hxx"
-   using AudioQt = SoDa::AudioQtRX;  
-#endif
 
 
 
@@ -244,18 +236,18 @@ int doWork(SoDa::Params & params)
   /// These are subclasses of the more generic SoDa::AudioIfc class
   //
   
-  AudioQt audio_ifc(params.getAudioSampleRate(),
-			  params.getAFBufferSize(),
-			  params.getServerSocketBasename(),
-			  params.getAudioPortName());
+  AudioQtRX audio_rx(params.getAudioSampleRate(),
+		    params.getAFBufferSize(),
+		    params.getServerSocketBasename(),
+		    params.getAudioPortName());
   /// Create the audio RX and audio TX unit threads
   /// These are also responsible for implementing IF tuning and modulation. 
   /// @see SoDa::BaseBandRX @see SoDa::BaseBandTX
   std::cerr << "About to create baseband rx\n";
-  SoDa::BaseBandRX bbrx(&params, &audio_ifc);
+  SoDa::BaseBandRX bbrx(&params, &audio_rx);
 
   std::cerr << "About to create baseband tx\n";  
-  SoDa::BaseBandTX bbtx(&params, &audio_ifc);
+  SoDa::BaseBandTX bbtx(&params, &audio_tx);
 
   /// Create the morse code (CW) tx handler thread @see SoDa::CWTX
   std::cerr << "About to create cwtx\n";  

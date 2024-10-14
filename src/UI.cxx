@@ -134,7 +134,10 @@ void SoDa::UI::run()
   cmd_stream->put(SoDa::Command::make(Command::SET, Command::RX_LO3_FREQ, 100e3));
   cmd_stream->put(SoDa::Command::make(Command::SET, Command::RX_AF_FILTER, 1));
   sleep_ms(100);
-  cmd_stream->put(SoDa::Command::make(Command::SET, Command::TX_STATE, 0));
+  cmd_stream->put(SoDa::Command::make(Command::SET, 
+				      Command::TX_STATE, 
+				      Command::RX_READY, 
+				      Command::HALF_DUPLEX));
 
   updateSpectrumState(); 
 

@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012, 2023 Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012, 2023, 2024 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -36,16 +36,14 @@
 namespace SoDa {
   AudioQtRX::AudioQtRX(unsigned int _sample_rate,
 		   unsigned int _sample_count_hint, 
-		   std::string audio_sock_basename, 
-		   std::string audio_port_name) :
-    AudioIfc(_sample_rate, _sample_count_hint, "AudioQtRX Qt Interface") {
+		   std::string audio_sock_basename) : SoDa::Base("AudioQtRX") {
+
+    sample_rate = _sample_rate;
+    sample_count_hint = _sample_count_hint; 
 
     std::cerr << "Creating AudioQtRX\n";
     
     setupNetwork(audio_sock_basename); 
-
-    ang = 0.0; 
-    ang_incr = 2.0 * M_PI / 48.0; 
   }
 
   void AudioQtRX::setupNetwork(std::string audio_sock_basename) 

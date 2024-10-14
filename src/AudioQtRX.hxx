@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-  Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2024 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,6 @@
 */
 
 #include "SoDaBase.hxx"
-#include "AudioIfc.hxx"
 #include "UDSockets.hxx"
 #include <string>
 #include <mutex>
@@ -44,33 +43,12 @@ namespace SoDa {
    *
    * @brief Qt audio interface class
    *
-   * AudioQt implements the interface specified by AudioIfc.  It should
-   * be interchangable with other audio interface handlers.  When BasebandRX
+   * AudioQt implements the interface specified by AudioIfc. When BasebandRX
    * posts data to the audio interface, it is transmitted via a unix domain
    * socket to the GUI where the audio output device is managed. 
-   *
-   * For now, the transmit side is via ALSA.  That will change in time. 
-   *
-   * The first several generations of SoDa used a Port Audio interface, but
-   * the PA library tends to spew a lot of extraneous "informational" messages
-   * on the console.  Though it is quite simple, the noise that PA creates makes
-   * it not my (kb1vc) interface of choice.
-   *
-   * ALSA on the other hand is documented poorly, organized oddly, and
-   * nearly inscrutable. But it is fast, and doesn't make a lot of noise on the
-   * console. 
-   *
-   * On the other hand, ALSA doesn't support asynchronous callbacks on the
-   * audio output channel.  Because of this it really really stinks 
-   * when it comes to dealing with real-time problems.  Yes there is a documented
-   * "register a callback" function, but here's a surprise: it isn't supported 
-   * in certain cases that are common for Fedora, Ubuntu, and others.  
-   *
-   * Qt, on the other hand, is well documented, nicely written, and 
-   * works pretty much all the time.  
    * 
    */
-  class AudioQtRX : public AudioIfc, public Debug {
+  class AudioQtRX : public Debug {
   public:
     /**
      * constructor
@@ -109,33 +87,6 @@ namespace SoDa {
     bool sendBufferReady(unsigned int len);
 
     /**
-     * recv -- get a buffer of data from the audio input -- Always returns a buffer
-     * of 0.0.  AudioQtRXTX over-rides this method. 
-     * 
-     * @param buf buffer of type described by the DataFormat selected at init
-     * @param len number of elements in the buffer to get
-     * @param when_ready if true, test with recvBufferReady and return 0 if not ready
-     * otherwise perform the recv regardless.
-     * @return number of elements transferred from the audio input
-     */
-    virtual int recv(void * buf, unsigned int len, bool when_ready = false) { 
-      std::ignore = buf;
-      std::ignore = when_ready;
-      float *bp = (float*) buf;
-      for(int i = 0; i < len; i++) { bp[i] = 0.0; }
-      return len; 
-    }
-
-    /**
-     * recvBufferReady -- are there samples waiting in the audio device?
-     * Always returns true. 
-     *                    
-     * @param len the number of samples that we wish to get
-     * @return true if len samples are waiting in in the device buffer
-     */
-    bool recvBufferReady(unsigned int len) { return true; }
-
-    /**
      * stop the output stream so that we don't encounter a buffer underflow
      * while the reciever is muted.
      */
@@ -164,6 +115,25 @@ namespace SoDa {
     virtual std::string currentCaptureState() {
       return std::string("NOT IMPLEMENTED");
     }
+
+    /**
+     * set the gain for the output device.
+     * @param gain -- range from 0 to 1.0
+     * @return true if gain was set, false otherwise.
+     */
+    virtual bool setOutGain(float _gain) {
+      gain = _gain;
+      return true; 
+    }
+
+
+    /**
+     * get the gain for the output device.
+     * @return the gain; 
+     */
+    virtual float getOutGain() { return gain; }
+
+
     
   protected:
     /**
@@ -171,16 +141,13 @@ namespace SoDa {
      */
     void setupNetwork(std::string audio_sock_basename) ;
     
-    
-
-  private:
-
   private:
     SoDa::UD::ServerSocket * audio_rx_socket; 
 
-    // debug assistance
-    float ang; 
-    float ang_incr; 
+    unsigned int sample_rate;
+    unsigned int sample_count_hint;
+    
+    float gain; 
   };
 
 }

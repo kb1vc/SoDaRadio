@@ -160,7 +160,7 @@ void SoDa::CWTX::execSetCommand(CommandPtr  cmd)
   
   switch(cmd->target) {
   case SoDa::Command::TX_STATE:
-    if(cmd->iparms[0] == 3) tx_on = true;
+    if(cmd->iparms[0] == Command::TX_ON) tx_on = true;
     else tx_on = false; 
     break; 
   case SoDa::Command::TX_BEACON:

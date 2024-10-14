@@ -209,6 +209,7 @@ public:
        *
        * param 1 is integer 0 disables TX, 3 enables TX
        * param 2 is integer 0 is half-duplex, 1 full-duplex
+       * See the symbolic definitions for the TX_STATE values below. 
        * (In full duplex mode, the state of the RX chain is
        * unchanged when the transmitter is enabled.)
        */
@@ -505,8 +506,22 @@ public:
   };
 
   /**
-     * @brief modulation selector targets take one of these values
-     */
+   * @brief CLOCK_SOURCE set and report values
+   */
+  enum ClockSelnState {
+    SEL_INTERNAL, SEL_EXTERNAL,
+    REP_INTERNAL_LOCK, REP_EXTERNAL_LOCK,
+    REP_INTERNAL_UNLOCK, REP_EXTERNAL_UNLOCK };
+    
+  /**
+   * @brief TX_STATE values
+   */
+  enum TXStateDuplex { HALF_DUPLEX, FULL_DUPLEX };
+  enum TXStateSelector { RX_READY, TX_READY, RX_ON, TX_ON };
+  
+  /**
+   * @brief modulation selector targets take one of these values
+   */
   enum ModulationType
   {
     LSB,

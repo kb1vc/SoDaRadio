@@ -285,9 +285,13 @@ void USRPTX::execSetCommand(CommandPtr  cmd)
     // TX_STATE must be 3 to turn the transmitter on.
     // bit 1 of the command indicates that CTRL has already done the
     // setup for TX <-> RX mode transitions.
-    if((cmd->iparms[0] & 0x2) != 0) {  
-      transmitSwitch(cmd->iparms[0] == 3);
-      cmd_stream->put(Command::make(Command::REP, Command::TX_STATE, tx_enabled ? 1 : 0));
+
+    if(cmd->iparms[0] == Command::TX_ON) {
+      transmitSwitch(cmd->iparms[0] == Command::TX_ON);
+      cmd_stream->put(Command::make(Command::REP, Command::TX_STATE, cmd->iparms[0], cmd->iparms[1]));
+    }
+    else if(cmd->iparms[0] == Command::RX_READY) {
+      transmitSwitch(0);
     }
     break;
   case Command::TX_BEACON:
@@ -313,7 +317,8 @@ void USRPTX::execGetCommand(CommandPtr  cmd)
 {
   switch(cmd->target) {
   case Command::TX_STATE:
-    cmd_stream->put(Command::make(Command::REP, Command::TX_STATE, tx_enabled ? 1 : 0)); 
+    // don't do this -- there are other places that know better. 
+    //     cmd_stream->put(Command::make(Command::REP, Command::TX_STATE, tx_enabled ? Command::TX_ON : Command::RX_READY)); 
     break;
   default:
     break; 

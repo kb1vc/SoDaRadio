@@ -35,6 +35,7 @@ SET(SoDaRadio_Lib_SRCS
   soda_hamlib_handler.cpp
   soda_hamlib_listener.cpp  
   soda_audio_listener.cpp
+  soda_audio_server.cpp  
   )
 
 SET(SoDaRadio_HDRS

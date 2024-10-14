@@ -85,7 +85,7 @@ void MainWindow::setupAudioDeviceList()
   ui->audioOut_cb->addItem(def_rx_dev_info.deviceName(), QVariant::fromValue(def_rx_dev_info));
   QAudioFormat format = GUISoDa::AudioRXListener::createAudioFormat();
   for(auto &rx_dev_info: QAudioDeviceInfo::availableDevices(QAudio::AudioOutput)) {
-    if(rx_dev_info.isFormatSupported(format) && (rx_dev_info != def_rx_dev_info)) {
+    if(rx_dev_info.isFormatSupported(format) && (rx_dev_info.deviceName() != def_rx_dev_info.deviceName())) {
       ui->audioOut_cb->addItem(rx_dev_info.deviceName(), QVariant::fromValue(rx_dev_info));
     }
   }
@@ -96,7 +96,9 @@ void MainWindow::setupAudioDeviceList()
   const QAudioDeviceInfo & def_tx_dev_info = QAudioDeviceInfo::defaultInputDevice(); 
   ui->audioIn_cb->addItem(def_tx_dev_info.deviceName(), QVariant::fromValue(def_tx_dev_info));
   for(auto &tx_dev_info: QAudioDeviceInfo::availableDevices(QAudio::AudioInput)) {
-    if(tx_dev_info != def_tx_dev_info) {
+    qInfo() << "Input audio device [" << tx_dev_info.deviceName() << "]\n";
+    if(tx_dev_info.deviceName() != def_tx_dev_info.deviceName()) {
+      qInfo() << "Adding device [" << tx_dev_info.deviceName() << "]\n";
       ui->audioIn_cb->addItem(tx_dev_info.deviceName(), QVariant::fromValue(tx_dev_info));
     }
   }

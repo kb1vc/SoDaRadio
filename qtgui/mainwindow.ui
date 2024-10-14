@@ -1171,7 +1171,7 @@
                 <item>
                  <widget class="QComboBox" name="audioIn_cb">
                   <property name="enabled">
-                   <bool>false</bool>
+                   <bool>true</bool>
                   </property>
                   <property name="maximumSize">
                    <size>

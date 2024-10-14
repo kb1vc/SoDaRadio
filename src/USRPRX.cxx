@@ -248,7 +248,7 @@ namespace SoDa {
       set3rdLOFreq(cmd->dparms[0]); 
       break;
     case Command::TX_STATE: // SET TX_ON
-      if(cmd->iparms[0] == 3) {
+      if(cmd->iparms[0] == Command::TX_ON) {
 	if((rx_modulation == Command::CW_L) || (rx_modulation == Command::CW_U)) {
 	  // If we're in a CW mode, set the RF gain to zip.
 	  // this is already done in the USRPCtrl thread.
@@ -262,7 +262,7 @@ namespace SoDa {
 	}
 	enable_spectrum_report = (cmd->iparms[1] > 0);
       }
-      if(cmd->iparms[0] == 2) {
+      if(cmd->iparms[0] == Command::RX_ON) {
 	// start the RX stream.
 	//usleep(750000);
 	debugMsg("In TX OFF -- restart stream");
@@ -270,9 +270,6 @@ namespace SoDa {
 	// but we need to start it the very first time. 
 	startStream();
 	enable_spectrum_report = true;
-	// tell the baseband unit that it is ready to start. 
-	cmd_stream->put(Command::make(Command::SET, Command::TX_STATE, 
-				      4));
       }
       break; 
     default:

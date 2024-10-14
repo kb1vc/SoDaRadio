@@ -29,20 +29,12 @@ set(SoDaServer_SRCS
     B200Control.cxx
     IFRecorder.cxx
     fix_gpsd_ugliness.cxx
+    AudioQtRX.cxx
+    AudioQtTX.cxx
 )
 
 
 find_package(FFTW3f REQUIRED QUIET)
-
-set(SoDaServer_SRCS ${SoDaServer_SRCS} AudioQtRX.cxx)
-IF(ALSA_FOUND)
-  add_definitions(-DHAVE_LIBASOUND=1)
-  set(SoDaServer_SRCS ${SoDaServer_SRCS} AudioQtRXTX.cxx)
-  message("ALSA enabled -- TX is enabled in this configuration.")
-ELSE()
-  message("ALSA is disabled/not available -- TX is disabled in this configuration.")  
-ENDIF()
-
 
 IF(HAVE_GPSLIB)
   ADD_DEFINITIONS(-DHAVE_GPSLIB=1)
@@ -65,7 +57,6 @@ add_definitions(-DHAVE_UHD=${HAVE_UHD})
 
 include_directories(SYSTEM 
   ${Radio_INCLUDE_DIRS} 
-  ${ALSA_INCLUDE_DIRS} 
   ${FFTW3F_INCLUDE_DIRS} 
   ${SoDaUtils_INCLUDE_DIR} )
 
@@ -77,7 +68,7 @@ add_executable(SoDaServer ${SoDaServer_SRCS})
 target_link_libraries(SoDaServer ${RT_LIB}
   Threads::Threads
   ${SoDaUtils_LIBRARIES}
-    ${Radio_LIBRARIES} ${ALSA_LIBRARIES} ${FFTW3F_LIBRARIES} ${CMAKE_DL_LIBS})
+    ${Radio_LIBRARIES}  ${FFTW3F_LIBRARIES} ${CMAKE_DL_LIBS})
 
 
 install(TARGETS SoDaServer DESTINATION bin)
