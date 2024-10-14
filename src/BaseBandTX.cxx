@@ -48,7 +48,7 @@
 namespace SoDa {
   
   BaseBandTX::BaseBandTX(Params * params, 
-			 AudioIfc * _audio_ifc
+			 AudioQtTX * _audio_ifc
 			 ) : Thread("BaseBandTX")
   {
     debug_mode = false;
@@ -148,13 +148,13 @@ namespace SoDa {
       }
       else if (!tx_stream_on || cw_tx_mode) {
 	// read audio information and throw it away. 
-	audio_ifc->recv(audio_buf, audio_buffer_size, true);
+	audio_ifc->getBuffer(audio_buf, audio_buffer_size, true);
 	usleep(1000); 
       }
       else {
 	// If we're in TX mode that isn't CW....
 	// get an input audio buffer.
-	if (tx_stream_on && audio_ifc->recv(audio_buf, audio_buffer_size, true)) { 
+	if (tx_stream_on && audio_ifc->getBuffer(audio_buf, audio_buffer_size, true)) { 
 	  BufPtr txbuf;
 	  auto audio_tx_buffer = audio_buf; 
 

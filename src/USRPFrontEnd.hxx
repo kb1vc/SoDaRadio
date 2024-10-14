@@ -26,8 +26,7 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef USRP_FRONTEND_HDR
-#define USRP_FRONTEND_HDR
+#pragma once
 
 #include <string>
 #include <iostream>
@@ -62,4 +61,3 @@ namespace SoDa {
    */
   PropTree * getUSRPFrontEnd(PropTree & tree, char tr_choice);
 }
-#endif

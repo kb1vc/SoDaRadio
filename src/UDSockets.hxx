@@ -1,5 +1,6 @@
+#pragma once
 /*
-  Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2024 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -26,8 +27,6 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef UDSOCKETS_HDR
-#define UDSOCKETS_HDR
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -108,5 +107,3 @@ namespace SoDa {
   }
 }
 
-
-#endif

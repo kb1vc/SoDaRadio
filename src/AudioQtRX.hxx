@@ -48,7 +48,7 @@ namespace SoDa {
    * socket to the GUI where the audio output device is managed. 
    * 
    */
-  class AudioQtRX : public Debug {
+  class AudioQtRX : public Debug, public Base {
   public:
     /**
      * constructor
@@ -57,12 +57,10 @@ namespace SoDa {
      *                              the audio device (in samples)
      * @param audio_sock_basename starting string for the unix-domain socket 
      *                            that carries the audio stream from the SoDaServer (radio) process
-     * @param audio_port_name  which ALSA device are we connecting to?
      */
     AudioQtRX(unsigned int _sample_rate,
-	    unsigned int _sample_count_hint = 1024,
-	    std::string audio_sock_basename = std::string("soda_"),
-	    std::string audio_port_name = std::string("default"));
+	      unsigned int _sample_count_hint = 1024,
+	      std::string audio_sock_basename = std::string("soda_"));
 
     ~AudioQtRX() {
       delete audio_rx_socket;
@@ -118,7 +116,7 @@ namespace SoDa {
 
     /**
      * set the gain for the output device.
-     * @param gain -- range from 0 to 1.0
+     * @param _gain -- range from 0 to 1.0
      * @return true if gain was set, false otherwise.
      */
     virtual bool setOutGain(float _gain) {

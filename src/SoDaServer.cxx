@@ -230,16 +230,15 @@ int doWork(SoDa::Params & params)
     exit(-1);
   }
 
-  /// Create the audio server on the host machine.
-  /// Audio is either via Qt for RX and ALSA for TX.
-  /// If ALSA is not present, the server will be RX only.
-  /// These are subclasses of the more generic SoDa::AudioIfc class
-  //
+  /// Create the audio connections (RX and TX) 
   
-  AudioQtRX audio_rx(params.getAudioSampleRate(),
-		    params.getAFBufferSize(),
-		    params.getServerSocketBasename(),
-		    params.getAudioPortName());
+  SoDa::AudioQtRX audio_rx(params.getAudioSampleRate(),
+			   params.getAFBufferSize(),
+			   params.getServerSocketBasename());
+  SoDa::AudioQtTX audio_tx(params.getAudioSampleRate(),
+			   params.getAFBufferSize(),
+			   params.getServerSocketBasename());
+  
   /// Create the audio RX and audio TX unit threads
   /// These are also responsible for implementing IF tuning and modulation. 
   /// @see SoDa::BaseBandRX @see SoDa::BaseBandTX

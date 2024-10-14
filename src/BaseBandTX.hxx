@@ -37,7 +37,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Command.hxx"
 #include "ReSamplers625x48.hxx"
 #include "HilbertTransformer.hxx"
-#include "AudioIfc.hxx"
+#include "AudioQtTX.hxx"
 
 namespace SoDa {
   /**
@@ -59,7 +59,7 @@ namespace SoDa {
      * @param audio_ifc pointer to the audio output handler
      */
     BaseBandTX(Params * params,
-	       AudioIfc * audio_ifc
+	       AudioQtTX * audio_ifc
 	       );
 
     /// implement the subscription method
@@ -136,7 +136,7 @@ namespace SoDa {
     float af_gain; ///< local microphone gain. 
 
     // audio server state
-    AudioIfc * audio_ifc; ///< pointer to an AudioIfc object for the microphone input
+    AudioQtTX * audio_ifc; ///< pointer to an AudioIfc object for the microphone input
 
     bool tx_stream_on; ///< if true, we are transmitting. 
 

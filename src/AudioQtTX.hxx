@@ -71,22 +71,21 @@ namespace SoDa {
     void subscribeToMailBoxList(MailBoxMap & mailboxes);
     
     /**
-     * recv -- get a buffer of data from the audio input
+     * @brief get a buffer of data from the audio input
      * @param buf buffer of type described by the DataFormat selected at init
      * @param len number of elements in the buffer to get
      * @param when_ready if true, test with sendBufferReady and return 0 if not ready
      * otherwise perform the recv regardless.
      * @return number of elements transferred from the audio input
      */
-    int recv(FVecPtr & buf, unsigned int len, bool when_ready = false);
+    int getBuffer(FVecPtr & buf, unsigned int len, bool when_ready = false);
 
     /**
-     * recvBufferReady -- are there samples waiting in the audio device?
+     * bufferReady -- are there samples waiting in the audio device?
      *                    
-     * @param len the number of samples that we wish to get
-     * @return true if len samples are waiting in in the device buffer
+     * @return true if  samples are waiting in in the device buffer
      */
-    bool recvBufferReady(unsigned int len);
+    bool bufferReady();
 
     /**
      * @brief run method -- looks for messages on the tx audio socket
@@ -114,7 +113,7 @@ namespace SoDa {
 
     /**
      * set the gain for the input device.
-     * @param gain -- range from 0 to 1.0
+     * @param _gain -- range from 0 to 1.0
      * @return true if gain was set, false otherwise.
      */
     bool setGain(float _gain) {
@@ -125,7 +124,8 @@ namespace SoDa {
   protected:
     SoDa::UD::ServerSocket * audio_tx_socket;
     
-    unsigned int audio_buffer_size; 
+    unsigned int audio_buffer_size;
+    unsigned int sample_rate; 
     
     CmdMBox * cmd_stream;
     
@@ -133,7 +133,9 @@ namespace SoDa {
     bool cw_mode; 
     float gain;
 
-    std::queue<FVecPtr> buffer_list; 
+    std::queue<FVecPtr> buffer_list;
+
+    std::mutex buf_list_mutex; 
   };
 
 }

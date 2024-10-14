@@ -35,8 +35,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ///  @date   November 2015
  ///
 
-#ifndef USRPTUNER_HDR
-#define USRPTUNER_HDR
+#pragma once
 #include "SoDaBase.hxx"
 #include "Params.hxx"
 
@@ -222,4 +221,3 @@ namespace SoDa {
   };
 
 }
-#endif

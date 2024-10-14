@@ -500,6 +500,16 @@ public:
     NBFM_SQUELCH,
 
     /**
+     * set/get audio sample buffer length
+     */
+    AUDIO_BUF_SIZE,
+
+    /**
+     * set/get audio sample rate
+     */ 
+    AUDIO_SAMPLE_RATE,
+    
+    /**
        * No comment
        */
     NULL_CMD

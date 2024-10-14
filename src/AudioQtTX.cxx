@@ -52,13 +52,13 @@ namespace SoDa {
   }
 
 
-  int AudioQtTX::recv(FVecPtr & buf, unsigned int len, bool when_ready) {
-    if(when_ready && !recvBufferReady(len)) return 0;
+  int AudioQtTX::getBuffer(FVecPtr & buf, unsigned int len, bool when_ready) {
+    if(when_ready && !bufferReady()) return 0;
 
     // do we have anything in the buffer list?
-    if(!buffer_list.empty()) {
+    if(bufferReady()) {
       auto rdy_buf = buffer_list.front();
-      buffer_list.pop_front();
+      buffer_list.pop();
 
       // copy the data from rdy_buf to buf
       *buf = *rdy_buf;
@@ -68,22 +68,29 @@ namespace SoDa {
     else {
       return 0; 
     }
+    return buf->size();
   }
 
+  bool AudioQtTX::bufferReady() {
+    std::lock_guard<std::mutex> lock(buf_list_mutex);
+    return !buffer_list.empty();
+  }
 
   void AudioQtTX::run() {
     // look for incoming data from the TX audio socket.
     // if we are "on" push the data onto the buffer list.
 
     // but first, tell the GUI how big our audio buffer needs to be
-    cmd_stream->put(Command::make(Command::SET, Command::AUDIO_BUF_SIZE, audio_buffer_size));
+    cmd_stream->put(Command::make(Command::SET, Command::AUDIO_BUF_SIZE, (int) audio_buffer_size));
     // and the sample rate
-    cmd_stream->put(Command::make(Command::SET, Command::AUDIO_SAMPLE_RATE, sample_rate));    
+    cmd_stream->put(Command::make(Command::SET, Command::AUDIO_SAMPLE_RATE, (int) sample_rate));    
 
     auto ab_bytes = audio_buffer_size * sizeof(float);     
     auto current_buf = makeFVec(audio_buffer_size);
     
     bool exitflag = false; 
+    
+    CommandPtr cmd; 
     
     while(!exitflag) {
       if((cmd = cmd_stream->get(this)) != nullptr) {
@@ -98,7 +105,8 @@ namespace SoDa {
 	int stat = audio_tx_socket->get(current_buf->data(), ab_bytes);
 	if((stat == ab_bytes) && tx_on) {
 	  // pend the incoming buffer onto the list
-	  buffer_list.push_back(current_buf);
+	  std::lock_guard<std::mutex> lock(buf_list_mutex);	  
+	  buffer_list.push(current_buf);
 	  current_buf = makeFVec(audio_buffer_size);
 	}
 	else if (stat <= 0) {
@@ -148,9 +156,10 @@ namespace SoDa {
   }
 
   void AudioQtTX::clearBufferList() {
+    std::lock_guard<std::mutex> lock(buf_list_mutex);    
     while(!buffer_list.empty()) {
       auto bp = buffer_list.front();
-      buffer_list.pop_front();
+      buffer_list.pop();
       bp = nullptr; 
     }
   }
