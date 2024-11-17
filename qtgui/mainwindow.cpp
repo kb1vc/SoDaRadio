@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017,2018,2019,2020 Matthew H. Reilly (kb1vc)
+Copyright (c) 2017,2018,2019,2020,2024 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -40,6 +40,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "soda_comboboxes.hpp"
 #include "soda_listener.hpp"
 #include "../common/GuiParams.hxx"
+#include "soda_audio_listener.hpp"
 
 #include "SoDaLogo_Big.xpm"
 
@@ -83,6 +84,13 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   connect(listener, SIGNAL(fatalError(const QString &)), 
 	  this, SLOT(handleFatalError(const QString &)));
 
+  // connect the audio server to the tx selector combobox
+  connect(ui->audioIn_cb, QOverload<int>::of(&QComboBox::currentIndexChanged), 
+	  [=](int index) {
+	    int tidx = ((index >= 0) && (index < ui->audioIn_cb->count())) ? index : 0;
+	    audio_server->setInDevice(ui->audioIn_cb->itemData(tidx).value<QAudioDeviceInfo>());
+	  }); 
+  
   // connect the audio listener to the rx selector combobox
   connect(ui->audioOut_cb, QOverload<int>::of(&QComboBox::currentIndexChanged),
 	  [=](int index) {

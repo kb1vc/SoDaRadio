@@ -49,7 +49,8 @@ SET(SoDaRadio_HDRS
   soda_hamlib_server.hpp
   soda_hamlib_handler.hpp
   soda_hamlib_listener.hpp
-  soda_audio_listener.hpp  
+  soda_audio_listener.hpp
+  soda_audio_server.hpp
   )
 
 SET(SoDaRadio_NOMOC_HDRS

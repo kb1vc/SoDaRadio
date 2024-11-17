@@ -122,6 +122,9 @@ namespace SoDa {
     }
     
   protected:
+    
+    void setupCurrentBuf();
+    
     SoDa::UD::ServerSocket * audio_tx_socket;
     
     unsigned int audio_buffer_size;
@@ -134,6 +137,11 @@ namespace SoDa {
     float gain;
 
     std::queue<FVecPtr> buffer_list;
+    
+    FVecPtr current_buf;
+    char * current_buf_end_ptr;
+    unsigned int current_buf_bytes_left; 
+    
 
     std::mutex buf_list_mutex; 
   };

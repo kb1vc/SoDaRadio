@@ -49,6 +49,10 @@ namespace SoDa {
     cw_mode = false; 
     
     std::cerr << "Creating AudioQtTX\n";    
+    
+    // setup socket
+    audio_tx_socket = new SoDa::UD::ServerSocket(audio_sock_basename + "_audioTX");
+    
   }
 
 
@@ -76,6 +80,12 @@ namespace SoDa {
     return !buffer_list.empty();
   }
 
+  void AudioQtTX::setupCurrentBuf() {
+    current_buf = makeFVec(audio_buffer_size);
+    current_buf_end_ptr = (char*) (current_buf.get()->data());
+    current_buf_bytes_left = audio_buffer_size; 
+  }
+  
   void AudioQtTX::run() {
     // look for incoming data from the TX audio socket.
     // if we are "on" push the data onto the buffer list.
@@ -85,8 +95,8 @@ namespace SoDa {
     // and the sample rate
     cmd_stream->put(Command::make(Command::SET, Command::AUDIO_SAMPLE_RATE, (int) sample_rate));    
 
-    auto ab_bytes = audio_buffer_size * sizeof(float);     
-    auto current_buf = makeFVec(audio_buffer_size);
+    setupCurrentBuf(); 
+  
     
     bool exitflag = false; 
     
@@ -101,22 +111,28 @@ namespace SoDa {
       
       // are there any audio buffers coming in?
       // are we awake?  if so, pend them to the buffer list
-      if(audio_tx_socket->isReady()) {
-	int stat = audio_tx_socket->get(current_buf->data(), ab_bytes);
-	if((stat == ab_bytes) && tx_on) {
-	  // pend the incoming buffer onto the list
-	  std::lock_guard<std::mutex> lock(buf_list_mutex);	  
-	  buffer_list.push(current_buf);
-	  current_buf = makeFVec(audio_buffer_size);
+      while(audio_tx_socket->isReady()) {
+	// fill the current buffer, and start a new one when
+	// we need to.  This allows the QtAudio side to send buffers
+	// that aren't necessarily the size we've planned on.
+	int stat = audio_tx_socket->get(current_buf_end_ptr, current_buf_bytes_left);
+	if(stat >= 0) {
+	  current_buf_bytes_left -= stat;
+	  current_buf_end_ptr += stat;
+	  if(current_buf_bytes_left == 0) {
+	    // pend the buffer if tx is on and we have filled the current buffer. 
+	    if(tx_on) {
+	      std::lock_guard<std::mutex> lock(buf_list_mutex);	  
+	      buffer_list.push(current_buf);
+	    }
+
+	    setupCurrentBuf(); 
+	  }
 	}
-	else if (stat <= 0) {
-	  // it was an empty socket. 
-	}
-	else {
-	  // the buffer was the wrong size
-	  std::cerr << SoDa::Format("OH NO.  Bad QtTX buffer size! was %0 should have been %1\n")
+	else if (stat < 0) {
+	  // the socket is broken
+	  std::cerr << SoDa::Format("OH NO. Audio TX socket error: get stat = %0\n")
 	    .addI(stat)
-	    .addI(audio_buffer_size * sizeof(float))
 	    ;
 	}
       }

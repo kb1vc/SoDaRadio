@@ -1,6 +1,6 @@
 #pragma once
 /*
-Copyright (c) 2017 Matthew H. Reilly (kb1vc)
+Copyright (c) 2017,2024 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "soda_band.hpp"
 #include "soda_hamlib_server.hpp"
 #include "soda_audio_listener.hpp"
+#include "soda_audio_server.hpp"
 namespace Ui {
   class MainWindow;
 }
@@ -166,6 +167,7 @@ private:
   GUISoDa::Listener * listener;
 
   GUISoDa::AudioListener * audio_listener;
+  GUISoDa::AudioServer * audio_server;
 
   GUISoDa::HamlibServer * hlib_server; 
 
