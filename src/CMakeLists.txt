@@ -69,7 +69,7 @@ set(SoDaServer_SRCS
 
 #find_package(Portaudio)
 find_package(ALSA REQUIRED QUIET)
-find_package(FFTW3f REQUIRED QUIET)
+find_package(FFTW3F REQUIRED QUIET)
 
 add_definitions(-DHAVE_LIBASOUND=1)
 add_definitions(-DHAVE_UHD=${HAVE_UHD})
