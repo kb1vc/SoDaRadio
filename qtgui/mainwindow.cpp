@@ -59,6 +59,9 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   // setup the audio listener
   audio_listener = new GUISoDa::AudioListener(this, QString::fromStdString(params.getServerSocketBasename()));
 
+  // and the audio server
+  audio_server = new GUISoDa::AudioServer(this, QString::fromStdString(params.getServerSocketBasename()));  
+
   setupSpectrum();
   setupWaterFall();
   setupTopControls();
@@ -87,8 +90,10 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   // connect the audio server to the tx selector combobox
   connect(ui->audioIn_cb, QOverload<int>::of(&QComboBox::currentIndexChanged), 
 	  [=](int index) {
+	    qInfo() << "In callback for audioIn_cb " << index << "\n";
 	    int tidx = ((index >= 0) && (index < ui->audioIn_cb->count())) ? index : 0;
 	    audio_server->setInDevice(ui->audioIn_cb->itemData(tidx).value<QAudioDeviceInfo>());
+	    qInfo() << "done with audioIn_cb\n";
 	  }); 
   
   // connect the audio listener to the rx selector combobox

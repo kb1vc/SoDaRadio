@@ -65,6 +65,7 @@ namespace SoDa {
 	      std::string audio_sock_basename = std::string("soda_"));
 
     ~AudioQtTX() {
+      delete audio_tx_socket;
     }
 
     /// implement the subscription method
