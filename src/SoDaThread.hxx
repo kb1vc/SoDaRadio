@@ -60,14 +60,34 @@ namespace SoDa {
   /**
    * Mailboxes that carry commands only are of type CmdMBox
    */
-  typedef MultiMBox<Command> CmdMBox;
+  class CmdMBox; 
+  typedef std::shared_ptr<CmdMBox> CmdMBoxPtr;
+  class CmdMBox : public MultiMBox<Command> {
+  public:
+    CmdMBox(const std::string & name = "NONE") : MultiMBox<Command>(name) { }
+
+    static CmdMBoxPtr make(const std::string & name) {
+      return std::make_shared<CmdMBox>(name);
+    }
+  }; 
 
   /**
    * Mailboxes that carry float or complex data are of type DatMBox
-   */ 
-  typedef MultiMBox<Buf> DatMBox;
+   */
+  class DatMBox; 
+  typedef std::shared_ptr<DatMBox> DatMBoxPtr;
+  class DatMBox : public MultiMBox<Buf> {
+  public:
+    DatMBox(const std::string & name = "NONE") : MultiMBox<Buf>(name) { }
+
+    static DatMBoxPtr make(const std::string & name) {
+      return std::make_shared<DatMBox>(name);
+    }
+  }; 
   
-  typedef std::map<std::string, BaseMBox *> MailBoxMap; 
+  typedef std::map<std::string, CmdMBoxPtr> CmdMailBoxMap;
+  typedef std::map<std::string, DatMBoxPtr> DatMailBoxMap;  
+  
   
   /**
    * The Thread baseclass for all SoDa thread objects.
@@ -107,11 +127,9 @@ namespace SoDa {
      * a thread creator to present a list of mailboxes to which the thread
      * may subscribe. 
      * 
-     * @param subscription_map The name/mailbox pairs. The name identifies the purpose
-     * of the mailbox, and the thread should be able to infer the the "T" in 
-     * the actual MultiMBox<T> type from this identifying string. 
      */
-    virtual void subscribeToMailBoxList(MailBoxMap & subscription_map) { 
+    virtual void subscribeToMailBoxList(CmdMailBoxMap & cmd_map, 
+					DatMailBoxMap & dat_map) { 
       std::cerr << "Why are we here?  Doesn't " << getObjName() << " declare a subscription method?\n";
     }
 
@@ -219,15 +237,17 @@ namespace SoDa {
    * @return a pointer to the mailbox if we find a match
    *
    */
-  template<class T> T* connectMailBox(Thread * obj, 
-				      const std::string & key,
-				      MailBoxMap & mailboxes, 
-				      MailBoxPublish pub = MailBoxPublish::READ_WRITE) {
+  template<class T> T
+  connectMailBox(Thread * obj, 
+		 const std::string & key,
+		 std::map<std::string, T> & mailboxes, 
+		 MailBoxPublish pub = MailBoxPublish::READ_WRITE) {
+    
     if(mailboxes.count(key) == 0) {
 	throw Radio::Exception(SoDa::Format("Could not find mailbox named [%0]\n") 
 			      .addS(key), obj);
     }
-    T* ret = dynamic_cast<T*>(mailboxes[key]);
+    auto ret = mailboxes[key];
     if(pub == READ_WRITE) {
       ret->subscribe(obj);
     }

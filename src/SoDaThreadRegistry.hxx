@@ -65,7 +65,8 @@ namespace SoDa {
      */
     void addThread(SoDa::Thread * thread, const std::string & version);
 
-    void subscribeThreads(SoDa::MailBoxMap & mailbox_map);
+    void subscribeThreads(SoDa::CmdMailBoxMap & cmd_mailbox_map,
+			  SoDa::DatMailBoxMap & dat_mailbox_map);
     void startThreads();
     void joinThreads();
     void shutDownThreads();

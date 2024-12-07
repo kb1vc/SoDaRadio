@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012,2013,2014,2023 Matthew H. Reilly (kb1vc)
+Copyright (c) 2012,2013,2014,2023,2024 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -61,7 +61,8 @@ namespace SoDa {
     USRPTX(Params * params, uhd::usrp::multi_usrp::sptr _usrp);
 
     /// implement the subscription method
-    void subscribeToMailBoxList(MailBoxMap & mailboxes);
+    void subscribeToMailBoxList(CmdMailBoxMap & cmd_boxes,
+				DatMailBoxMap & dat_boxes);
     
     /**
      * @brief USRPTX run loop: handle commands, and modulate the tx carrier
@@ -119,9 +120,9 @@ namespace SoDa {
      */
     void doCW(std::complex<float> * out, float * envelope, unsigned int env_len);
     
-    DatMBox * tx_stream;  ///< transmit audio stream 
-    DatMBox * cw_env_stream; ///< envelope stream from text-to-CW converter (CW unit)
-    CmdMBox * cmd_stream; ///< command stream
+    DatMBoxPtr tx_stream;  ///< transmit audio stream 
+    DatMBoxPtr cw_env_stream; ///< envelope stream from text-to-CW converter (CW unit)
+    CmdMBoxPtr cmd_stream; ///< command stream
     
     bool tx_enabled; ///< if true, we're transmitting. 
     SoDa::Command::ModulationType tx_modulation; ///< type of transmit modulation (CW_U,CW_L,USB,LSB...)

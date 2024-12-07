@@ -51,7 +51,7 @@ namespace SoDa {
     std::cerr << "Creating AudioQtTX\n";    
     
     // setup socket
-    audio_tx_socket = new SoDa::UD::ServerSocket(audio_sock_basename + "_audioTX");
+    audio_tx_socket = SoDa::UD::ServerSocket::make(audio_sock_basename + "_audioTX");
     
   }
 
@@ -182,11 +182,11 @@ namespace SoDa {
 
   
   /// implement the subscription method
-  void AudioQtTX::subscribeToMailBoxList(MailBoxMap & mailboxes)
-  {
+  void AudioQtTX::subscribeToMailBoxList(CmdMailBoxMap & cmd_boxes,
+					 DatMailBoxMap & dat_boxes) {
     // we need the cmd mailbox so that we can tell the GUI what
     // the audio buffer size should be.
-    cmd_stream = connectMailBox<CmdMBox>(this, "CMD", mailboxes);    
+    cmd_stream = connectMailBox<CmdMBoxPtr>(this, "CMD", cmd_boxes);    
   }
 
 }

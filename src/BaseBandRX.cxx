@@ -622,10 +622,10 @@ namespace SoDa {
   }
 
   /// implement the subscription method
-  void BaseBandRX::subscribeToMailBoxList(MailBoxMap & mailboxes)
-  {
-    cmd_stream = connectMailBox<SoDa::CmdMBox>(this, "CMD", mailboxes);
-    rx_stream = connectMailBox<SoDa::DatMBox>(this, "RX", mailboxes);
+  void BaseBandRX::subscribeToMailBoxList(CmdMailBoxMap & cmd_boxes,
+					  DatMailBoxMap & dat_boxes) {
+    cmd_stream = connectMailBox<SoDa::CmdMBoxPtr>(this, "CMD", cmd_boxes);
+    rx_stream = connectMailBox<SoDa::DatMBoxPtr>(this, "RX", dat_boxes);
   }
   
   FVecPtr BaseBandRX::getBuffer(unsigned int size) {

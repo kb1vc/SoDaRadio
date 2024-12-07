@@ -38,9 +38,18 @@
 
 #include <string>
 #include <iostream>
+#include <memory>
 
 namespace SoDa {
-  namespace UD {  // Unix Domain sockets. 
+  namespace UD {  // Unix Domain sockets.
+
+    class NetSocket;
+    typedef std::shared_ptr<NetSocket> NetSocketPtr;     
+    class ServerSocket;
+    typedef std::shared_ptr<ServerSocket> ServerSocketPtr; 
+    class ClientSocket;
+    typedef std::shared_ptr<ClientSocket> ClientSocketPtr; 
+    
     class NetSocket {
     public:
       NetSocket() {
@@ -55,7 +64,7 @@ namespace SoDa {
       int server_socket, conn_socket, portnum;
       struct sockaddr_un server_address, client_address;
 
-      struct timeval timeout; 
+      struct timeval timeout;
     private:
       int loopWrite(int fd, const void * ptr, unsigned int nbytes);
     };
@@ -88,6 +97,10 @@ namespace SoDa {
 	debug = v;
       }
 
+      static ServerSocketPtr make(const std::string & path) {
+	return std::make_shared<ServerSocket>(path);
+      }
+      
     private:
       bool debug; 
       bool ready;
@@ -100,6 +113,11 @@ namespace SoDa {
       ~ClientSocket() { 
 	close(conn_socket); 
       }
+
+      static ClientSocketPtr make(const std::string & path) {
+	return std::make_shared<ClientSocket>(path);
+      }
+      
     private:
       struct hostent * server; 
       std::string mailbox_pathname; 

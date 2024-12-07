@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012,2013,2014,2023 Matthew H. Reilly (kb1vc)
+Copyright (c) 2012,2013,2014,2023,2024 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -82,7 +82,8 @@ namespace SoDa {
 	       AudioQtRX * audio_ifc);
 
     /// implement the subscription method
-    void subscribeToMailBoxList(MailBoxMap & mailboxes);
+    void subscribeToMailBoxList(CmdMailBoxMap & cmd_boxes,
+				DatMailBoxMap & dat_boxes);
     
     /**
      * @brief the run method -- does the work of the audio receiver process
@@ -177,8 +178,8 @@ namespace SoDa {
 
     SoDa::Command::ModulationType rx_modulation; ///< current receive modulation mode (USB,LSB,CW_U,CW_L,NBFM,WBFM,AM,...)
     
-    DatMBox * rx_stream; ///< mailbox producing rx sample stream from USRP
-    CmdMBox * cmd_stream; ///< mailbox producing command stream from user
+    DatMBoxPtr rx_stream; ///< mailbox producing rx sample stream from USRP
+    CmdMBoxPtr cmd_stream; ///< mailbox producing command stream from user
     unsigned int rx_subs; ///< mailbox subscription ID for rx data stream
     unsigned int cmd_subs; ///< mailbox subscription ID for command stream
 

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012,2023 Matthew H. Reilly (kb1vc)
+Copyright (c) 2012,2023,2024 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -56,7 +56,8 @@ namespace SoDa {
     USRPRX(Params * params, uhd::usrp::multi_usrp::sptr usrp);
 
     /// implement the subscription method
-    void subscribeToMailBoxList(MailBoxMap & mailboxes);
+    void subscribeToMailBoxList(CmdMailBoxMap & cmd_boxes,
+				DatMailBoxMap & dat_boxes);
     
     /**
      * USRPRX is a thread -- this is its run loop. 
@@ -82,9 +83,9 @@ namespace SoDa {
     void doMixer(SoDa::BufPtr  inout);
     void set3rdLOFreq(double IF_tuning);
 
-    DatMBox * rx_stream;
-    DatMBox * if_stream; 
-    CmdMBox * cmd_stream;
+    DatMBoxPtr rx_stream;
+    DatMBoxPtr if_stream; 
+    CmdMBoxPtr cmd_stream;
 
     // state for the USRP widget
     uhd::rx_streamer::sptr rx_bits;

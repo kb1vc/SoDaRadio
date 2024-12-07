@@ -49,7 +49,7 @@ namespace SoDa {
   void AudioQtRX::setupNetwork(std::string audio_sock_basename) 
   {
     std::string sockname = audio_sock_basename + "_rxa";
-    audio_rx_socket = new SoDa::UD::ServerSocket(sockname);
+    audio_rx_socket = SoDa::UD::ServerSocket::make(sockname);
     audio_rx_socket->setDebug(true);
   }
 

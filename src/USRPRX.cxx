@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012,2023 Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2023,2024 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -288,9 +288,10 @@ namespace SoDa {
   }
 
   /// implement the subscription method
-  void USRPRX::subscribeToMailBoxList(MailBoxMap & mailboxes) {
-    cmd_stream = connectMailBox<CmdMBox>(this, "CMD", mailboxes);
-    rx_stream = connectMailBox<DatMBox>(this, "RX", mailboxes, MailBoxPublish::WRITE_ONLY);
-    if_stream = connectMailBox<DatMBox>(this, "IF", mailboxes, MailBoxPublish::WRITE_ONLY);
+  void USRPRX::subscribeToMailBoxList(CmdMailBoxMap & cmd_boxes,
+				      DatMailBoxMap & dat_boxes) {
+    cmd_stream = connectMailBox<CmdMBoxPtr>(this, "CMD", cmd_boxes);
+    rx_stream = connectMailBox<DatMBoxPtr>(this, "RX", dat_boxes, MailBoxPublish::WRITE_ONLY);
+    if_stream = connectMailBox<DatMBoxPtr>(this, "IF", dat_boxes, MailBoxPublish::WRITE_ONLY);
   }
 }

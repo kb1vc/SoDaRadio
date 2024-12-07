@@ -63,7 +63,6 @@ namespace SoDa {
 	      std::string audio_sock_basename = std::string("soda_"));
 
     ~AudioQtRX() {
-      delete audio_rx_socket;
     }
     
     /**
@@ -140,7 +139,7 @@ namespace SoDa {
     void setupNetwork(std::string audio_sock_basename) ;
     
   private:
-    SoDa::UD::ServerSocket * audio_rx_socket; 
+    SoDa::UD::ServerSocketPtr audio_rx_socket; 
 
     unsigned int sample_rate;
     unsigned int sample_count_hint;

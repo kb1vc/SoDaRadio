@@ -50,7 +50,7 @@ namespace SoDa {
      * @param _samp_rate sample rate for outbound envelope
      * @param _env_buf_len length of outbound buffer
      */
-    CWGenerator(DatMBox * cw_env_stream, double _samp_rate, unsigned int _env_buf_len);
+    CWGenerator(DatMBoxPtr cw_env_stream, double _samp_rate, unsigned int _env_buf_len);
 
     /**
      * @brief set the speed of the cw stream in words per minute
@@ -102,7 +102,7 @@ namespace SoDa {
     void initMorseMap();
     
     // configuration params. 
-    DatMBox * env_stream;  ///< this is the stream we send envelope buffers into. 
+    DatMBoxPtr env_stream;  ///< this is the stream we send envelope buffers into. 
     double sample_rate;  ///< we need to know how long a sample is (in time)
     unsigned int env_buf_len; ///< the length of an envelope buffer 
 

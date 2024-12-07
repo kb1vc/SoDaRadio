@@ -65,11 +65,11 @@ namespace SoDa {
 	      std::string audio_sock_basename = std::string("soda_"));
 
     ~AudioQtTX() {
-      delete audio_tx_socket;
     }
 
     /// implement the subscription method
-    void subscribeToMailBoxList(MailBoxMap & mailboxes);
+    void subscribeToMailBoxList(CmdMailBoxMap & cmd_boxes,
+				DatMailBoxMap & dat_boxes);
     
     /**
      * @brief get a buffer of data from the audio input
@@ -126,12 +126,12 @@ namespace SoDa {
     
     void setupCurrentBuf();
     
-    SoDa::UD::ServerSocket * audio_tx_socket;
+    SoDa::UD::ServerSocketPtr audio_tx_socket;
     
     unsigned int audio_buffer_size;
     unsigned int sample_rate; 
     
-    CmdMBox * cmd_stream;
+    CmdMBoxPtr cmd_stream;
     
     bool tx_on; 
     bool cw_mode; 

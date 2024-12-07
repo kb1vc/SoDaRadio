@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012,2017,2023 Matthew H. Reilly (kb1vc)
+Copyright (c) 2012,2017,2023,2024 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -45,7 +45,8 @@ namespace SoDa {
     GPSmon(Params * params);
 
     /// implement the subscription method
-    void subscribeToMailBoxList(MailBoxMap & mailboxes);
+    void subscribeToMailBoxList(CmdMailBoxMap & cmd_boxes,
+				DatMailBoxMap & dat_boxes);
     
     void run();
   private:
@@ -53,7 +54,7 @@ namespace SoDa {
     void execSetCommand(CommandPtr  cmd); 
     void execRepCommand(CommandPtr  cmd); 
 
-    CmdMBox *cmd_stream;
+    CmdMBoxPtr cmd_stream;
 
     GPSDShim * gps_shim; 
   }; 

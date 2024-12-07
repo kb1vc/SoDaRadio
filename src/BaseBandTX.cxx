@@ -364,9 +364,9 @@ namespace SoDa {
   }
 
   /// implement the subscription method
-  void BaseBandTX::subscribeToMailBoxList(MailBoxMap & mailboxes)
-  {
-    cmd_stream = connectMailBox<CmdMBox>(this, "CMD", mailboxes);
-    tx_stream = connectMailBox<DatMBox>(this, "TX", mailboxes, MailBoxPublish::WRITE_ONLY);
+  void BaseBandTX::subscribeToMailBoxList(CmdMailBoxMap & cmd_boxes,
+					  DatMailBoxMap & dat_boxes) {
+    cmd_stream = connectMailBox<CmdMBoxPtr>(this, "CMD", cmd_boxes);
+    tx_stream = connectMailBox<DatMBoxPtr>(this, "TX", dat_boxes, MailBoxPublish::WRITE_ONLY);
   }
 }

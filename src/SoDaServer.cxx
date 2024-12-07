@@ -193,29 +193,32 @@ int doWork(SoDa::Params & params)
   // the rx and tx streams are vectors of complex floats.
   // we don't declare the extent here, as it will be set
   // by a negotiation.  
-  SoDa::DatMBox rx_stream("RX");
-  SoDa::DatMBox tx_stream("TX");
-  SoDa::DatMBox if_stream("IF");
-  SoDa::DatMBox cw_env_stream("CW");
-  SoDa::CmdMBox cmd_stream("CMD");
-  // create a separate gps stream to avoid "leaks" and latency problems... 
-  SoDa::CmdMBox gps_stream("GPS");
-  SoDa::CmdMBox cwtxt_stream("CWTXT");
+  auto rx_stream = SoDa::DatMBox::make("RX");
+  auto tx_stream = SoDa::DatMBox::make("TX");
+  auto if_stream = SoDa::DatMBox::make("IF");
+  auto cw_env_stream = SoDa::DatMBox::make("CW");
+
+  auto cmd_stream = SoDa::CmdMBox::make("CMD");
+  // create a separate gps stream to avoid "leaks" and latency problems...   
+  auto gps_stream = SoDa::CmdMBox::make("GPS");
+  auto cwtxt_stream = SoDa::CmdMBox::make("CWTXT");
+  
 
   SoDa::Thread * ctrl;
   SoDa::Thread * rx;
   SoDa::Thread * tx;
 
-  SoDa::MailBoxMap mailbox_map;
+  SoDa::DatMailBoxMap dat_mailbox_map;
+  SoDa::CmdMailBoxMap cmd_mailbox_map;  
 
-  mailbox_map["RX"] = &rx_stream;
-  mailbox_map["TX"] = &tx_stream;
-  mailbox_map["CMD"] = &cmd_stream;
-  
-  mailbox_map["CW_TXT"] = &cwtxt_stream;
-  mailbox_map["CW_ENV"] = &cw_env_stream;  
-  mailbox_map["GPS"] = &gps_stream;
-  mailbox_map["IF"] = &if_stream;
+  dat_mailbox_map["RX"] = rx_stream;
+  dat_mailbox_map["TX"] = tx_stream;
+
+  cmd_mailbox_map["CMD"] = cmd_stream;
+  cmd_mailbox_map["CW_TXT"] = cwtxt_stream;
+  dat_mailbox_map["CW_ENV"] = cw_env_stream;  
+  cmd_mailbox_map["GPS"] = gps_stream;
+  dat_mailbox_map["IF"] = if_stream;
   
   if(params.isRadioType("USRP")) {
     /// create the USRP Control, RX Streamer, and TX Streamer threads
@@ -272,7 +275,7 @@ int doWork(SoDa::Params & params)
   auto registrar = SoDa::ThreadRegistry::getRegistrar();  
 
   // hook everyone up to the mailboxes. 
-  registrar->subscribeThreads(mailbox_map);
+  registrar->subscribeThreads(cmd_mailbox_map, dat_mailbox_map);
   
   // Now start each of the activities -- they may or may not
   // implement the "start" method -- not all objects need to be threads.

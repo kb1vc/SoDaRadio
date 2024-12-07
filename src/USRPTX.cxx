@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012,2023 Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2023,2024 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -338,9 +338,10 @@ void USRPTX::execRepCommand(CommandPtr  cmd)
 }
 
 /// implement the subscription method
-  void USRPTX::subscribeToMailBoxList(MailBoxMap & mailboxes) {
-  cmd_stream = connectMailBox<CmdMBox>(this, "CMD", mailboxes);
-  tx_stream = connectMailBox<DatMBox>(this, "TX", mailboxes);
-  cw_env_stream = connectMailBox<DatMBox>(this, "CW_ENV", mailboxes);
+  void USRPTX::subscribeToMailBoxList(CmdMailBoxMap & cmd_boxes,
+				      DatMailBoxMap & dat_boxes) {
+    cmd_stream = connectMailBox<CmdMBoxPtr>(this, "CMD", cmd_boxes);
+    tx_stream = connectMailBox<DatMBoxPtr>(this, "TX", dat_boxes);
+    cw_env_stream = connectMailBox<DatMBoxPtr>(this, "CW_ENV", dat_boxes);
 }
 }

@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2019,2023 Matthew H. Reilly (kb1vc)
+  Copyright (c) 2019,2023,2024 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,7 @@
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
 
+
 /**
  * @file SimpleAccessory.hxx
  *
@@ -49,9 +50,11 @@ public:
   /**
    * @brief connect to useful mailboxes. 
    * 
-   * @param mailboxes a table of mailboxes indexed by name
+   * @param cmd_boxes The name/mailbox pairs for all CmdMailBox objects
+   * @param dat_boxes The name/mailbox pairs for all DatMailBox objects     
    */
-  void subscribeToMailBoxList(SoDa::MailBoxMap & mailboxes);
+  void subscribeToMailBoxList(SoDa::CmdMailBoxMap & cmd_boxes,
+			      SoDa::DatMailBoxMap & dat_boxes);
 
   void run();
 
@@ -83,7 +86,7 @@ public:
 
   void printReport();
 
-  SoDa::CmdMBox * cmd_stream; ///< mailbox producing command stream from user
+  SoDa::CmdMBoxPtr cmd_stream; ///< mailbox producing command stream from user
     
   unsigned int get_count, set_count, rep_count; 
 };

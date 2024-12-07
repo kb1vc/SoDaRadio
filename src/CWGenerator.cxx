@@ -38,7 +38,7 @@ using namespace SoDa;
 
 std::map<char, std::string> CWGenerator::morse_map; 
 
-CWGenerator::CWGenerator(DatMBox * cw_env_stream, double _samp_rate, unsigned int _env_buf_len)
+CWGenerator::CWGenerator(DatMBoxPtr cw_env_stream, double _samp_rate, unsigned int _env_buf_len)
 {
   env_stream = cw_env_stream;
   sample_rate = _samp_rate;

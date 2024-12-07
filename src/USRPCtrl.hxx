@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012,2023 Matthew H. Reilly (kb1vc)
+Copyright (c) 2012,2023,2024 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -88,7 +88,9 @@ namespace SoDa {
     uhd::usrp::multi_usrp::sptr getUSRP() { return usrp; }
 
     /// implement the subscription method
-    void subscribeToMailBoxList(MailBoxMap & mailboxes);
+    void subscribeToMailBoxList(CmdMailBoxMap & cmd_boxes,
+				DatMailBoxMap & dat_boxes);				
+    
 
   private:
     Params * params;
@@ -158,7 +160,7 @@ namespace SoDa {
     void set1stLOFreq(double freq, char sel, bool set_if_freq = false);
 
     
-    CmdMBox * cmd_stream; ///< command stream channel
+    CmdMBoxPtr cmd_stream; ///< command stream channel
 
     // USRP stuff.
     uhd::usrp::multi_usrp::sptr usrp; ///< to which USRP unit is this connected?

@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2013,2023 Matthew H. Reilly (kb1vc)
+  Copyright (c) 2013,2023,2024 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -42,8 +42,8 @@ SoDa::UI::UI(Params * params) : SoDa::Thread("UI")
 
   // create the network ports
   // This UI object is a server.
-  server_socket = new SoDa::UD::ServerSocket(params->getServerSocketBasename() + "_cmd");
-  wfall_socket = new SoDa::UD::ServerSocket(params->getServerSocketBasename() + "_wfall");
+  server_socket = SoDa::UD::ServerSocket::make(params->getServerSocketBasename() + "_cmd");
+  wfall_socket = SoDa::UD::ServerSocket::make(params->getServerSocketBasename() + "_wfall");
 
   baseband_rx_freq = 144e6; // just a filler to avoid divide by zero. 
   spectrum_center_freq = 144.2e6;
@@ -104,8 +104,6 @@ void SoDa::UI::updateSpectrumState()
 
 SoDa::UI::~UI()
 {
-  delete server_socket;
-  delete wfall_socket; 
 }
 
 void SoDa::UI::run()
@@ -119,10 +117,10 @@ void SoDa::UI::run()
      (gps_stream == nullptr)) {
     
       throw SoDa::Radio::Exception(SoDa::Format("Missing a stream connection %0 %1 %2 %3.\n") 
-			    .addU((unsigned long) cwtxt_stream, 'x')
-			    .addU((unsigned long) if_stream, 'x')
-			    .addU((unsigned long) cmd_stream, 'x')
-			    .addU((unsigned long) gps_stream, 'x'),
+			    .addB(cwtxt_stream == nullptr)
+			    .addB(if_stream == nullptr)
+			    .addB(cmd_stream == nullptr)
+			    .addB(gps_stream == nullptr),
 			    this);	
   }
   
@@ -431,10 +429,10 @@ void SoDa::UI::sendFFT(SoDa::BufPtr buf)
 }
 
 /// implement the subscription method
-void SoDa::UI::subscribeToMailBoxList(SoDa::MailBoxMap & mailboxes)
-{
-  cmd_stream = connectMailBox<SoDa::CmdMBox>(this, "CMD", mailboxes);
-  cwtxt_stream = connectMailBox<SoDa::CmdMBox>(this, "CW_TXT", mailboxes, WRITE_ONLY);
-  gps_stream = connectMailBox<SoDa::CmdMBox>(this, "GPS", mailboxes);    
-  if_stream = connectMailBox<SoDa::DatMBox>(this, "IF", mailboxes);  
+void SoDa::UI::subscribeToMailBoxList(CmdMailBoxMap & cmd_boxes,
+				      DatMailBoxMap & dat_boxes) {
+  cmd_stream = connectMailBox<SoDa::CmdMBoxPtr>(this, "CMD", cmd_boxes);
+  cwtxt_stream = connectMailBox<SoDa::CmdMBoxPtr>(this, "CW_TXT", cmd_boxes, WRITE_ONLY);
+  gps_stream = connectMailBox<SoDa::CmdMBoxPtr>(this, "GPS", cmd_boxes);    
+  if_stream = connectMailBox<SoDa::DatMBoxPtr>(this, "IF", dat_boxes);  
 }

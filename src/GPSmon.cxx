@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012,2023 Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2023,2024 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -98,8 +98,8 @@ namespace SoDa {
   }
 
   /// implement the subscription method
-  void GPSmon::subscribeToMailBoxList(MailBoxMap & mailboxes) 
-  {
-    cmd_stream = connectMailBox<CmdMBox>(this, "CMD", mailboxes);
+  void GPSmon::subscribeToMailBoxList(CmdMailBoxMap & cmd_boxes,
+				      DatMailBoxMap & dat_boxes) {
+    cmd_stream = connectMailBox<CmdMBoxPtr>(this, "CMD", cmd_boxes);
   }
 }

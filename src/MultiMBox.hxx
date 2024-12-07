@@ -50,8 +50,6 @@ namespace SoDa
   public:
     BaseMBox(const std::string & name) : name(name) {}
 
-    virtual ~BaseMBox() {}
-    
     std::string getName() { return name; }
     std::string name;
     

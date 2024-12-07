@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012,2013,2014 Matthew H. Reilly (kb1vc)
+Copyright (c) 2012,2013,2014,2024 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -56,7 +56,8 @@ namespace SoDa {
     CWTX(Params * params);
 
     /// implement the subscription method
-    void subscribeToMailBoxList(MailBoxMap & mailboxes);
+    void subscribeToMailBoxList(CmdMailBoxMap & cmd_boxes,
+				DatMailBoxMap & dat_boxes);
 
     /**
      * @brief CWTX run loop: translate text to CW envelopes, handle incoming commands
@@ -99,9 +100,9 @@ namespace SoDa {
 
     CWGenerator * cwgen; ///< Pointer to a text-to-morse translator
     
-    CmdMBox * cwtxt_stream; ///< stream of characters to be encoded (from UI or elsewhere)
-    CmdMBox * cmd_stream; ///< stream of commands to modify radio state
-    DatMBox * cw_env_stream; ///< stream carrying cw envelope buffers to USRPTX
+    CmdMBoxPtr cwtxt_stream; ///< stream of characters to be encoded (from UI or elsewhere)
+    CmdMBoxPtr cmd_stream; ///< stream of commands to modify radio state
+    DatMBoxPtr cw_env_stream; ///< stream carrying cw envelope buffers to USRPTX
 
     bool txmode_is_cw; ///< if true, we're transmitting a CW stream
     bool old_txmode_is_cw; ///< remember the mode we were in

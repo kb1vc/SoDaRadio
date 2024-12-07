@@ -27,6 +27,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #pragma once
 
+#include <memory>
+
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
 #include "MultiMBox.hxx"
@@ -43,7 +45,8 @@ namespace SoDa {
     ~UI();
 
     /// implement the subscription method
-    void subscribeToMailBoxList(MailBoxMap & mailboxes);
+    void subscribeToMailBoxList(CmdMailBoxMap & cmd_boxes,
+				DatMailBoxMap & dat_boxes); 
     
     void run();
 
@@ -53,12 +56,12 @@ namespace SoDa {
     void sendFFT(SoDa::BufPtr  buf);
 
     // the internal communications paths -- between the SoDa threads. 
-    CmdMBox * cwtxt_stream, * cmd_stream, * gps_stream;
-    DatMBox * if_stream; 
+    std::shared_ptr<CmdMBox> cwtxt_stream, cmd_stream, gps_stream;
+    std::shared_ptr<DatMBox> if_stream; 
 
 
     // these are the pieces of the posix message queue interface to the GUI or whatever.
-    SoDa::UD::ServerSocket * server_socket, * wfall_socket; 
+    SoDa::UD::ServerSocketPtr server_socket, wfall_socket; 
 
     // we ship a spectrogram of the RX IF stream to the GUI
     Spectrogram * spectrogram;

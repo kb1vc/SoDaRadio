@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2018,2023 Matthew H. Reilly (kb1vc)
+Copyright (c) 2018,2023,2024 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -77,7 +77,8 @@ namespace SoDa {
     IFRecorder(Params * params);
 
     /// implement the subscription method
-    void subscribeToMailBoxList(MailBoxMap & mailboxes);
+    void subscribeToMailBoxList(CmdMailBoxMap & cmd_boxes,
+				DatMailBoxMap & dat_boxes);
     
     /**
      * @brief the run method -- does the work of the audio receiver process
@@ -118,8 +119,8 @@ namespace SoDa {
 
     double current_rx_center_freq; 
 
-    DatMBox * rx_stream; ///< mailbox producing rx sample stream from USRP
-    CmdMBox * cmd_stream; ///< mailbox producing command stream from user
+    DatMBoxPtr rx_stream; ///< mailbox producing rx sample stream from USRP
+    CmdMBoxPtr cmd_stream; ///< mailbox producing command stream from user
 
     std::ofstream ostr; ///< raw (binary) output stream.
     bool write_stream_on; ///< when true, write each incoming buffer to the output stream. 

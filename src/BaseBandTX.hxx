@@ -63,7 +63,8 @@ namespace SoDa {
 	       );
 
     /// implement the subscription method
-    void subscribeToMailBoxList(MailBoxMap & mailboxes);
+    void subscribeToMailBoxList(CmdMailBoxMap & cmd_boxes,
+				DatMailBoxMap & dat_boxes);
 
     /**
      * @brief the run method -- does the work of the audio transmitter process
@@ -117,8 +118,8 @@ namespace SoDa {
     double fm_mic_gain; ///< separate gain control for FM deviation....
 
     
-    DatMBox * tx_stream; ///< outbound RF stream to USRPTX transmit chain
-    CmdMBox * cmd_stream; ///< command stream from UI and other units
+    DatMBoxPtr tx_stream; ///< outbound RF stream to USRPTX transmit chain
+    CmdMBoxPtr cmd_stream; ///< command stream from UI and other units
     
     // The interpolator
     ReSample48to625 * interpolator;  ///< Upsample from 48KHz to 625KHz

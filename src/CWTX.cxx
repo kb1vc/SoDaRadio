@@ -269,9 +269,9 @@ void SoDa::CWTX::execRepCommand(CommandPtr  cmd)
 
 
 /// implement the subscription method
-void SoDa::CWTX::subscribeToMailBoxList(MailBoxMap & mailboxes) 
-{
-  cmd_stream = connectMailBox<SoDa::CmdMBox>(this, "CMD", mailboxes);
-  cwtxt_stream = connectMailBox<SoDa::CmdMBox>(this, "CW_TXT", mailboxes);
-  cw_env_stream = connectMailBox<SoDa::DatMBox>(this, "CW_ENV", mailboxes, MailBoxPublish::WRITE_ONLY);  
+void SoDa::CWTX::subscribeToMailBoxList(CmdMailBoxMap & cmd_boxes,
+					DatMailBoxMap & dat_boxes) {
+  cmd_stream = connectMailBox<SoDa::CmdMBoxPtr>(this, "CMD", cmd_boxes);
+  cwtxt_stream = connectMailBox<SoDa::CmdMBoxPtr>(this, "CW_TXT", cmd_boxes);
+  cw_env_stream = connectMailBox<SoDa::DatMBoxPtr>(this, "CW_ENV", dat_boxes, MailBoxPublish::WRITE_ONLY);  
 }

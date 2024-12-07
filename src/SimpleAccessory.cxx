@@ -67,9 +67,10 @@ void SimpleAccessory::run() {
   }
 }
 
-void SimpleAccessory::subscribeToMailBoxList(SoDa::MailBoxMap & mailboxes)
+void SimpleAccessory::subscribeToMailBoxList(SoDa::CmdMailBoxMap & cmd_boxes,
+					     SoDa::DatMailBoxMap & dat_boxes)
 {
-  cmd_stream = SoDa::connectMailBox<SoDa::CmdMBox>(this, "CMD", mailboxes);  
+  cmd_stream = SoDa::connectMailBox<SoDa::CmdMBoxPtr>(this, "CMD", cmd_boxes);  
 }
 
 
