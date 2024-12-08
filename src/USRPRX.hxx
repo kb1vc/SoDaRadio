@@ -27,6 +27,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #pragma once
+#include <memory>
 
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
@@ -39,6 +40,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <uhd/stream.hpp>
 
 namespace SoDa {
+  class USRPRX;
+  typedef std::shared_ptr<USRPRX> USRPRXPtr;
+  
   /**
    * The Receive RF Path
    *
@@ -53,7 +57,11 @@ namespace SoDa {
      *        about sample rates and other configuration details.
      * @param usrp a pointer to the UHD USRP object that we are streaming data from.
      */
-    USRPRX(Params * params, uhd::usrp::multi_usrp::sptr usrp);
+    USRPRX(ParamsPtr params, uhd::usrp::multi_usrp::sptr usrp);
+
+    static USRPRXPtr make(ParamsPtr params, uhd::usrp::multi_usrp::sptr usrp) {
+      return std::make_shared<USRPRX>(params, usrp);
+    }
 
     /// implement the subscription method
     void subscribeToMailBoxList(CmdMailBoxMap & cmd_boxes,

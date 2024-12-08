@@ -39,6 +39,9 @@
 #include "AudioQtRX.hxx"
 
 namespace SoDa {
+  class AudioQtTX;
+  typedef std::shared_ptr<AudioQtTX> AudioQtTXPtr;
+  
   /**
    * @class AudioQtTX
    *
@@ -64,9 +67,18 @@ namespace SoDa {
 	      unsigned int _audio_buffer_size, 
 	      std::string audio_sock_basename = std::string("soda_"));
 
+    
     ~AudioQtTX() {
     }
 
+    static AudioQtTXPtr make(unsigned int _sample_rate,
+			     unsigned int _audio_buffer_size, 
+			     std::string audio_sock_basename = std::string("soda_")) {
+      return std::make_shared<AudioQtTX>(_sample_rate, _audio_buffer_size,
+					 audio_sock_basename); 
+    }
+
+    
     /// implement the subscription method
     void subscribeToMailBoxList(CmdMailBoxMap & cmd_boxes,
 				DatMailBoxMap & dat_boxes);

@@ -31,13 +31,13 @@
 
 const double SoDa::UI::spectrum_span = 200e3;
 
-SoDa::UI::UI(Params * params) : SoDa::Thread("UI")
+SoDa::UI::UI(ParamsPtr params) : SoDa::Thread("UI")
 {
   // connect to our message streams.
-  cwtxt_stream = NULL;
-  if_stream = NULL;
-  cmd_stream = NULL;
-  gps_stream = NULL;
+  cwtxt_stream = nullptr;
+  if_stream = nullptr;
+  cmd_stream = nullptr;
+  gps_stream = nullptr;
 
 
   // create the network ports
@@ -51,12 +51,12 @@ SoDa::UI::UI(Params * params) : SoDa::Thread("UI")
   // create the spectrogram object -- it eats RX IF buffers and produces
   // power spectral density plots.
   spectrogram_buckets = 4 * 4096;
-  spectrogram = new Spectrogram(spectrogram_buckets);
+  spectrogram = Spectrogram::make(spectrogram_buckets);
  
   // we also need an LO check spectrogram.  In particular we want
   // something with really bodacious resolution.
   lo_spectrogram_buckets = 16384;
-  lo_spectrogram = new Spectrogram(lo_spectrogram_buckets);
+  lo_spectrogram = Spectrogram::make(lo_spectrogram_buckets);
   lo_spectrum = new float[lo_spectrogram_buckets * 4];
   for(unsigned int i = 0; i < lo_spectrogram_buckets; i++) {
     lo_spectrum[i] = 0.0; 

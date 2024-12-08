@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012,2023 Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2023,2024 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,7 @@
 #include "CWTX.hxx"
 #include "CWGenerator.hxx"
 
-SoDa::CWTX::CWTX(Params * params) : SoDa::Thread("CWTX")
+SoDa::CWTX::CWTX(ParamsPtr params) : SoDa::Thread("CWTX")
 {
   cwtxt_stream = NULL;
   cw_env_stream = NULL;

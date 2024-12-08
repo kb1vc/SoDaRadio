@@ -1,5 +1,6 @@
+#pragma once
 /*
-Copyright (c) 2013,2014 Matthew H. Reilly (kb1vc)
+Copyright (c) 2013,2014,2024 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,16 +27,17 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef PARAMS_HDR
-#define PARAMS_HDR
-
 #include <SoDa/Options.hxx>
 #include <string>
 #include <algorithm>
 #include <iostream>
 #include <vector>
+#include <memory>
 
 namespace SoDa {
+  class Params;
+  typedef std::shared_ptr<Params> ParamsPtr;
+  
   /**
    * This class handles command line parameters and built-ins. 
    */
@@ -49,6 +51,10 @@ namespace SoDa {
      */
     Params(int argc, char * argv[]);
 
+    static ParamsPtr make(int argc, char * argv[]) {
+      return std::make_shared<Params>(argc, argv);
+    }
+    
     /**
      * @brief return args that point to a particular USRP unit
      * @return string identifying which USRP we are selecting
@@ -157,4 +163,3 @@ namespace SoDa {
     unsigned int debug_level; 
   };
 }
-#endif

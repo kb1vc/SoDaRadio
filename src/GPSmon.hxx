@@ -40,9 +40,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sys/time.h>
 
 namespace SoDa {
+  class GPSmon;
+  typedef std::shared_ptr<GPSmon> GPSmonPtr;
+  
   class GPSmon : public SoDa::Thread {
   public:
-    GPSmon(Params * params);
+    GPSmon(ParamsPtr params);
+
+    static GPSmonPtr make(ParamsPtr params) {
+      return std::make_shared<GPSmon>(params); 
+    }
 
     /// implement the subscription method
     void subscribeToMailBoxList(CmdMailBoxMap & cmd_boxes,

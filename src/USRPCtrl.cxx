@@ -49,7 +49,7 @@ const unsigned int USRPCtrl::TX_RELAY_MON = 0x0800;
 
 const double USRPCtrl::rxmode_offset = 1.0e6;
 
-USRPCtrl::USRPCtrl(Params * _params) : Thread("USRPCtrl")
+USRPCtrl::USRPCtrl(ParamsPtr _params) : Thread("USRPCtrl")
 {
 
   // setup a normal message handler that doesn't babble

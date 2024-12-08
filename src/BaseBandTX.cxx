@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012,2023 Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2023,2024 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   FM modulator features based on code contributed by and 
@@ -47,8 +47,8 @@
 
 namespace SoDa {
   
-  BaseBandTX::BaseBandTX(Params * params, 
-			 AudioQtTX * _audio_ifc
+  BaseBandTX::BaseBandTX(ParamsPtr params, 
+			 AudioQtTXPtr _audio_ifc
 			 ) : Thread("BaseBandTX")
   {
     debug_mode = false;
@@ -61,7 +61,7 @@ namespace SoDa {
     tx_buffer_size = params->getRFBufferSize();
   
     // create the interpolator.
-    interpolator = new ReSample48to625(audio_buffer_size);
+    interpolator = ReSample48to625::make(audio_buffer_size);
 
     // create the audio stream.
     // borrow the stream from the BaseBandRX side. ? 
@@ -81,7 +81,7 @@ namespace SoDa {
     audio_IQ_buf = new std::complex<float>[8*audio_buffer_size];
 
     // create the Hilbert transformer
-    hilbert = new HilbertTransformer(audio_buffer_size);
+    hilbert = HilbertTransformer::make(audio_buffer_size);
 
     // create the noise buffer
     auto noise_buffer = getBuffer(audio_buffer_size); 
@@ -99,10 +99,10 @@ namespace SoDa {
     tx_noise_source_ena = false; 
 
     // setup the audio filter for the tx audio input...
-    tx_audio_filter = new OSFilter(80.0, 150.0, 2300.0, 2400.0, 
-				   512, 1.0, 
-				   srate, audio_buffer_size);
-
+    tx_audio_filter = OSFilter::make(80.0, 150.0, 2300.0, 2400.0, 
+				     512, 1.0, 
+				     srate, audio_buffer_size);
+    
     // enable the audio filter by default.
     tx_audio_filter_ena = true; 
 

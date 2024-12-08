@@ -1,5 +1,6 @@
+#pragma once
 /*
-  Copyright (c) 2012,2013,2014 Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2013,2014,2024 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -25,17 +26,18 @@
   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef HILBERT_HDR
-#define HILBERT_HDR
 
 #include <fstream>
 #include <complex>
+#include <memory>
+
 #include <stdio.h>
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fftw3.h>
 #include "SoDaBase.hxx"
+
 namespace SoDa {
   /**
    * @class HilbertTransformer
@@ -51,6 +53,9 @@ namespace SoDa {
    *   real(g(t)) = real(x(t + tau)) and
    *   imag(g(t)) = shift_by_90deg(imag(x(t + tau)))
    */
+  class HilbertTransformer;
+  typedef std::shared_ptr<HilbertTransformer> HilbertTransformerPtr;
+  
   class HilbertTransformer : public SoDa::Base {
   public:
     /**
@@ -94,7 +99,13 @@ namespace SoDa {
      */
     unsigned int apply(float * inbuf, std::complex<float> * outbuf, bool pos_sided = true, float gain = 1.0);
 
-    std::ostream & dump(std::ostream & os); 
+    std::ostream & dump(std::ostream & os);
+
+    static HilbertTransformerPtr make(unsigned int inout_buffer_length, 
+				      unsigned int filter_length = 256) {
+      return std::make_shared<HilbertTransformer>(inout_buffer_length, 
+						  filter_length); 
+    }
   private:
     /**
      *these are the salient dimensions for this Overlap/Save
@@ -124,4 +135,3 @@ namespace SoDa {
   };
 }
 
-#endif

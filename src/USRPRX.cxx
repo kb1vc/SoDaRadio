@@ -42,7 +42,7 @@
 #include <fstream>
 
 namespace SoDa {
-  USRPRX::USRPRX(Params * params, uhd::usrp::multi_usrp::sptr _usrp) : 
+  USRPRX::USRPRX(ParamsPtr params, uhd::usrp::multi_usrp::sptr _usrp) : 
     Thread("USRPRX")
   {
 

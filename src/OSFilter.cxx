@@ -50,7 +50,7 @@ SoDa::OSFilter::OSFilter(float * filter_impulse_response,
 			 unsigned int filter_length,
 			 float filter_gain, 
 			 unsigned int inout_buffer_length,
-			 OSFilter * cascade, 
+			 OSFilterPtr cascade, 
 			 unsigned int suggested_transform_length)
 {
   // these are the salient dimensions for this Overlap/Save

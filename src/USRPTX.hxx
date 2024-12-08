@@ -38,6 +38,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <uhd/stream.hpp>
 
 namespace SoDa {
+  class USRPTX;
+  typedef std::shared_ptr<USRPTX> USRPTXPtr;
+  
   /**
    * The Transmit RF Path
    *
@@ -58,8 +61,12 @@ namespace SoDa {
      * @param _usrp libuhd handle for the USRP radio
      *
      */
-    USRPTX(Params * params, uhd::usrp::multi_usrp::sptr _usrp);
+    USRPTX(ParamsPtr params, uhd::usrp::multi_usrp::sptr _usrp);
 
+    static USRPTXPtr make(ParamsPtr params, uhd::usrp::multi_usrp::sptr usrp) {
+      return std::make_shared<USRPTX>(params, usrp);
+    }
+    
     /// implement the subscription method
     void subscribeToMailBoxList(CmdMailBoxMap & cmd_boxes,
 				DatMailBoxMap & dat_boxes);

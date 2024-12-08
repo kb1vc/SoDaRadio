@@ -180,13 +180,13 @@ int loadAccessories(const std::vector<std::string> & libs, SoDa::Debug & d) {
 
 /// do the work of creating the SoDa threads
 /// @param params command line parameter parser object
-int doWork(SoDa::Params & params)
+int doWork(SoDa::ParamsPtr params)
 {
   /// create the components of the radio
-  SoDa::Debug d(params.getDebugLevel(), "SoDaServer");
-  d.setDefaultLevel(params.getDebugLevel());
+  SoDa::Debug d(params->getDebugLevel(), "SoDaServer");
+  d.setDefaultLevel(params->getDebugLevel());
   
-  loadAccessories(params.getLibs(), d);
+  loadAccessories(params->getLibs(), d);
   
   // These are the mailboxes that connect
   // the various widgets
@@ -204,9 +204,9 @@ int doWork(SoDa::Params & params)
   auto cwtxt_stream = SoDa::CmdMBox::make("CWTXT");
   
 
-  SoDa::Thread * ctrl;
-  SoDa::Thread * rx;
-  SoDa::Thread * tx;
+  SoDa::ThreadPtr ctrl;
+  SoDa::ThreadPtr rx;
+  SoDa::ThreadPtr tx;
 
   SoDa::DatMailBoxMap dat_mailbox_map;
   SoDa::CmdMailBoxMap cmd_mailbox_map;  
@@ -220,52 +220,53 @@ int doWork(SoDa::Params & params)
   cmd_mailbox_map["GPS"] = gps_stream;
   dat_mailbox_map["IF"] = if_stream;
   
-  if(params.isRadioType("USRP")) {
+  if(params->isRadioType("USRP")) {
     /// create the USRP Control, RX Streamer, and TX Streamer threads
     /// @see SoDa::USRPCtrl @see SoDa::USRPRX @see SoDa::USRPTX
-    ctrl = new SoDa::USRPCtrl(&params);
-    rx = new SoDa::USRPRX(&params, ((SoDa::USRPCtrl *)ctrl)->getUSRP());
-    tx = new SoDa::USRPTX(&params, ((SoDa::USRPCtrl *)ctrl)->getUSRP());
+    auto uctrl = SoDa::USRPCtrl::make(params);
+    ctrl = std::dynamic_pointer_cast<SoDa::Thread>(uctrl);
+    rx = SoDa::USRPRX::make(params, uctrl->getUSRP());
+    tx = SoDa::USRPTX::make(params, uctrl->getUSRP());
   }
   else {
     std::cerr << SoDa::Format("Radio type [%0] is not yet supported\nHit ^C to exit.\n")
-      .addS(params.getRadioType()); 
+      .addS(params->getRadioType()); 
     exit(-1);
   }
 
   /// Create the audio connections (RX and TX) 
   
-  SoDa::AudioQtRX audio_rx(params.getAudioSampleRate(),
-			   params.getAFBufferSize(),
-			   params.getServerSocketBasename());
-  SoDa::AudioQtTX audio_tx(params.getAudioSampleRate(),
-			   params.getAFBufferSize(),
-			   params.getServerSocketBasename());
+  auto audio_rx = SoDa::AudioQtRX::make(params->getAudioSampleRate(),
+					params->getAFBufferSize(),
+					params->getServerSocketBasename());
+  auto audio_tx = SoDa::AudioQtTX::make(params->getAudioSampleRate(),
+					params->getAFBufferSize(),
+					params->getServerSocketBasename());
   
   /// Create the audio RX and audio TX unit threads
   /// These are also responsible for implementing IF tuning and modulation. 
   /// @see SoDa::BaseBandRX @see SoDa::BaseBandTX
   std::cerr << "About to create baseband rx\n";
-  SoDa::BaseBandRX bbrx(&params, &audio_rx);
+  auto bbrx = SoDa::BaseBandRX::make(params, audio_rx);
 
   std::cerr << "About to create baseband tx\n";  
-  SoDa::BaseBandTX bbtx(&params, &audio_tx);
+  auto bbtx = SoDa::BaseBandTX::make(params, audio_tx);
 
   /// Create the morse code (CW) tx handler thread @see SoDa::CWTX
   std::cerr << "About to create cwtx\n";  
-  SoDa::CWTX cwtx(&params);
+  auto cwtx = SoDa::CWTX::make(params);
     
   /// Create the user interface (UI) thread @see SoDa::UI
   std::cerr << "About to create UI listener\n";    
-  SoDa::UI ui(&params);
+  auto ui = SoDa::UI::make(params);
 
   /// Create an IF listener process that copies the IF stream to an output file
   /// when requested.
   std::cerr << "About to create if recorder\n";
-  SoDa::IFRecorder ifrec(&params);
+  auto ifrec = SoDa::IFRecorder::make(params);
 
 #if HAVE_GPSLIB    
-  SoDa::GPSmon gps(&params);
+  auto gps = SoDa::GPSmon::make(params);
 #endif
   
   d.debugMsg("Created units.");
@@ -308,10 +309,10 @@ int main(int argc, char * argv[])
   /// information from the command line and from
   /// the stored configuration files.
   /// @see SoDa::Params
-  SoDa::Params params(argc, argv);
+  auto params = SoDa::Params::make(argc, argv);
 
   /// create a lock file to signal that we're alive. 
-  createLockFile(params.getLockFileName()); 
+  createLockFile(params->getLockFileName()); 
 
   try {
     doWork(params); 
@@ -321,5 +322,5 @@ int main(int argc, char * argv[])
     std::cerr << "\t" << exc.toString() << std::endl; 
   }
 
-  deleteLockFile(params.getLockFileName());   
+  deleteLockFile(params->getLockFileName());   
 }

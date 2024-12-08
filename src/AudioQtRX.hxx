@@ -34,10 +34,13 @@
 #include <mutex>
 #include <iostream>
 #include <stdexcept>
-
+#include <memory>
 #include <tuple>
 
 namespace SoDa {
+  class AudioQtRX;
+  typedef std::shared_ptr<AudioQtRX> AudioQtRXPtr;
+  
   /**
    * @class AudioQtRX
    *
@@ -64,7 +67,15 @@ namespace SoDa {
 
     ~AudioQtRX() {
     }
-    
+
+    static AudioQtRXPtr make(unsigned int _sample_rate,
+			     unsigned int _sample_count_hint = 1024,
+			     std::string audio_sock_basename = std::string("soda_")) {
+      return std::make_shared<AudioQtRX>(_sample_rate,
+					 _sample_count_hint = 1024,
+					 audio_sock_basename);
+    }
+
     /**
      * send -- send a buffer to the audio output
      * @param buf buffer of type described by the DataFormat selected at init

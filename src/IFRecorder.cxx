@@ -36,7 +36,7 @@
 #include <SoDa/Format.hxx>
 
 namespace SoDa {
-  IFRecorder::IFRecorder(Params * params) : Thread("IFRecorder")
+  IFRecorder::IFRecorder(ParamsPtr params) : Thread("IFRecorder")
   {
     // setup the streams
     rx_stream = nullptr;

@@ -30,6 +30,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #pragma once
 
+#include <memory>
+
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
 #include "MultiMBox.hxx"
@@ -49,7 +51,9 @@ namespace SoDa {
    * CW (CW_L and CW_U) modes are implemented in the USRPTX module and the CW unit.
    *
    */
-  class BaseBandRX;  
+  class BaseBandTX;
+  typedef std::shared_ptr<BaseBandTX> BaseBandTXPtr;
+  
   class BaseBandTX : public Thread {
   public:
     /**
@@ -58,10 +62,16 @@ namespace SoDa {
      * @param params command line parameter object
      * @param audio_ifc pointer to the audio output handler
      */
-    BaseBandTX(Params * params,
-	       AudioQtTX * audio_ifc
+    BaseBandTX(ParamsPtr params,
+	       AudioQtTXPtr audio_ifc
 	       );
 
+    static BaseBandTXPtr make(ParamsPtr params,
+			      AudioQtTXPtr audio_ifc) {
+      return std::make_shared<BaseBandTX>(params, audio_ifc);
+    }
+    
+    
     /// implement the subscription method
     void subscribeToMailBoxList(CmdMailBoxMap & cmd_boxes,
 				DatMailBoxMap & dat_boxes);
@@ -122,7 +132,7 @@ namespace SoDa {
     CmdMBoxPtr cmd_stream; ///< command stream from UI and other units
     
     // The interpolator
-    ReSample48to625 * interpolator;  ///< Upsample from 48KHz to 625KHz
+    ReSample48to625Ptr interpolator;  ///< Upsample from 48KHz to 625KHz
 
     // parameters
     unsigned int audio_buffer_size; ///< length (in samples) of an input audio buffer
@@ -137,7 +147,7 @@ namespace SoDa {
     float af_gain; ///< local microphone gain. 
 
     // audio server state
-    AudioQtTX * audio_ifc; ///< pointer to an AudioIfc object for the microphone input
+    AudioQtTXPtr audio_ifc; ///< pointer to an AudioIfc object for the microphone input
 
     bool tx_stream_on; ///< if true, we are transmitting. 
 
@@ -171,12 +181,12 @@ namespace SoDa {
     /** 
      * TX audio filter
      */
-    OSFilter * tx_audio_filter;
+    OSFilterPtr tx_audio_filter;
 
     /**
      *The hilbert transformer to create an analytic (I/Q) signal.
      */
-    HilbertTransformer * hilbert;
+    HilbertTransformerPtr hilbert;
 
     /**
      * mic gain is adjustable, to make sure we aren't noxious.

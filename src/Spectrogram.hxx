@@ -1,5 +1,6 @@
+#pragma once
 /*
-Copyright (c) 2012,2013,2014 Matthew H. Reilly (kb1vc)
+Copyright (c) 2012,2013,2014,2024 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,10 +27,10 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef SPECTROGRAM_HDR
-#define SPECTROGRAM_HDR
+
 #include <fstream>
 #include <complex>
+#include <memory>
 #include <fftw3.h>
 #include "SoDaBase.hxx"
 
@@ -37,6 +38,9 @@ namespace SoDa {
   /**
    * Spectrogram generates magnitude buffers from input sample stream. 
    */
+  class Spectrogram;
+  typedef std::shared_ptr<Spectrogram> SpectrogramPtr;
+  
   class Spectrogram : public Base {
   public:
     /**
@@ -71,7 +75,10 @@ namespace SoDa {
     void apply_max(std::complex<float> * invec, unsigned int inveclen,
 		   float * outvec, bool first = true);
 
-    
+    static SpectrogramPtr make(unsigned int fftlen) {
+      return std::make_shared<Spectrogram>(fftlen);
+    }
+
   private:
 
     /**
@@ -95,5 +102,3 @@ namespace SoDa {
     unsigned int fft_len; 
   }; 
 }
-
-#endif

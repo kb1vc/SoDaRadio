@@ -88,6 +88,9 @@ namespace SoDa {
   typedef std::map<std::string, CmdMBoxPtr> CmdMailBoxMap;
   typedef std::map<std::string, DatMBoxPtr> DatMailBoxMap;  
   
+
+  class Thread;
+  typedef std::shared_ptr<Thread> ThreadPtr;
   
   /**
    * The Thread baseclass for all SoDa thread objects.

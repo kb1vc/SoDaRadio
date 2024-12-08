@@ -43,8 +43,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <mutex>
 #include <fstream>
 #include <string>
+#include <memory>
 
 namespace SoDa {
+  class BaseBandRX;
+  typedef std::shared_ptr<BaseBandRX> BaseBandRXPtr;
+  
   /**
    * BaseBandRX -- this is the audio processing chain for the recieve path
    *
@@ -78,9 +82,14 @@ namespace SoDa {
      * @param params command line parameter object
      * @param audio_ifc pointer to the audio output handler
      **/
-    BaseBandRX(Params * params,
-	       AudioQtRX * audio_ifc);
+    BaseBandRX(ParamsPtr params,
+	       AudioQtRXPtr audio_ifc);
 
+    static BaseBandRXPtr make(ParamsPtr params,
+			      AudioQtRXPtr audio_ifc) {
+      return std::make_shared<BaseBandRX>(params, audio_ifc);
+    }
+    
     /// implement the subscription method
     void subscribeToMailBoxList(CmdMailBoxMap & cmd_boxes,
 				DatMailBoxMap & dat_boxes);
@@ -183,7 +192,7 @@ namespace SoDa {
     unsigned int rx_subs; ///< mailbox subscription ID for rx data stream
     unsigned int cmd_subs; ///< mailbox subscription ID for command stream
 
-    AudioQtRX * audio_ifc; ///< pointer to the audio interface (output) object
+    AudioQtRXPtr audio_ifc; ///< pointer to the audio interface (output) object
     
 
     /**
@@ -236,9 +245,9 @@ namespace SoDa {
     FVecPtr sidetone_silence;  ///< a sequence of zero samples to stuff silence into the audio
 
     // resampler -- downsample from 625K samples / sec to 48K samples/sec
-    SoDa::TDResampler625x48<std::complex<float> > * rf_resampler; ///< downsample the RF input to 48KS/s
+    std::shared_ptr<SoDa::TDResampler625x48<std::complex<float>>> rf_resampler; ///< downsample the RF input to 48KS/s
     // a second resampler for wideband fm
-    SoDa::TDResampler625x48<float>  * wbfm_resampler; ///< downsample the RF input to 48KS/s for WBFM unit
+    std::shared_ptr<SoDa::TDResampler625x48<float>> wbfm_resampler; ///< downsample the RF input to 48KS/s for WBFM unit
 
     /**
      * @brief build the audio filter map for selected bandwidths
@@ -246,18 +255,18 @@ namespace SoDa {
     void buildFilterMap();
     
     SoDa::Command::AudioFilterBW af_filter_selection; ///< currently audio filter selector
-    SoDa::OSFilter * cur_audio_filter; ///< currently selected audio filter
-    SoDa::OSFilter * fm_audio_filter; ///< audio filter for FM (wider passband)
-    SoDa::OSFilter * am_pre_filter; ///< Before AM demod, we do some (6KHz) prefilter
-    SoDa::OSFilter * nbfm_pre_filter; ///< Before NBFM demod, we do some (15KHz) prefilter -- rf rate
-    SoDa::OSFilter * am_audio_filter; ///< After AM demod, we do a second filter
+    SoDa::OSFilterPtr cur_audio_filter; ///< currently selected audio filter
+    SoDa::OSFilterPtr fm_audio_filter; ///< audio filter for FM (wider passband)
+    SoDa::OSFilterPtr am_pre_filter; ///< Before AM demod, we do some (6KHz) prefilter
+    SoDa::OSFilterPtr nbfm_pre_filter; ///< Before NBFM demod, we do some (15KHz) prefilter -- rf rate
+    SoDa::OSFilterPtr am_audio_filter; ///< After AM demod, we do a second filter
 
     
     
-    std::map<SoDa::Command::AudioFilterBW, SoDa::OSFilter *> filter_map; ///< map filter selectors to the filter objects
+    std::map<SoDa::Command::AudioFilterBW, SoDa::OSFilterPtr> filter_map; ///< map filter selectors to the filter objects
 
     // hilbert transformer
-    SoDa::HilbertTransformer * hilbert; ///< hilbert transform object for SSB/CW widgets
+    SoDa::HilbertTransformerPtr hilbert; ///< hilbert transform object for SSB/CW widgets
     
     // audio gain
     float af_gain;   ///< audio gain setting for RX mode

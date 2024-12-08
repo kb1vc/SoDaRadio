@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2024 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -45,8 +45,13 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fftw3.h>
+#include <memory>
+
 namespace SoDa {
   /// Overlap-and-save filter class.  
+  class OSFilter;
+  typedef std::shared_ptr<OSFilter> OSFilterPtr;
+  
   class OSFilter {
   public:
     
@@ -64,7 +69,7 @@ namespace SoDa {
 	     unsigned int filter_length,
 	     float filter_gain, 
 	     unsigned int inout_buffer_length,
-	     OSFilter * cascade = NULL,
+	     OSFilterPtr cascade = nullptr, 
 	     unsigned int suggested_transform_length = 0);
     
     /// constructor
@@ -114,6 +119,46 @@ namespace SoDa {
 
     std::pair<double, double> getFilterEdges() { 
       return std::pair<double, double>(low_edge, high_edge); 
+    }
+
+    static OSFilterPtr make(float * filter_impulse_response,
+			    unsigned int filter_length,
+			    float filter_gain, 
+			    unsigned int inout_buffer_length,
+			    OSFilterPtr cascade = nullptr, 
+			    unsigned int suggested_transform_length = 0) {
+      return std::make_shared<OSFilter>(filter_impulse_response,
+					filter_length,
+					filter_gain,
+					inout_buffer_length,
+					cascade,
+					suggested_transform_length);
+    }
+
+
+    static OSFilterPtr make(float low_cutoff,
+			    float low_pass_edge,
+			    float high_pass_edge,
+			    float high_cutoff,
+
+			    unsigned int filter_length,
+			    float filter_gain, 
+			    float sample_rate, 
+
+			    unsigned int inout_buffer_length,
+			    unsigned int suggested_transform_length = 0) {
+
+      return std::make_shared<OSFilter>(low_cutoff,
+					low_pass_edge,
+					high_pass_edge,
+					high_cutoff,
+
+					filter_length,
+					filter_gain, 
+					sample_rate, 
+
+					inout_buffer_length,
+					suggested_transform_length); 
     }
 
   protected:

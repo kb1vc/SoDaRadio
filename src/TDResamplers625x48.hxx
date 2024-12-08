@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2018 Matthew H. Reilly (kb1vc)
+  Copyright (c) 2018,2024 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -80,7 +80,7 @@ namespace SoDa {
 
       delete[] prefix_buf; 
     }
-
+    
     /**
      * @brief Perform interpolation on a complex float buffer
      * @param in input buffer
@@ -125,6 +125,10 @@ namespace SoDa {
       }
     }
 
+    static std::shared_ptr<TDResampler625x48<T>> make(float gain = 1.0) {
+      return std::make_shared<TDResampler625x48<T>>(gain); 
+    }
+    
     /**
      * @brief Perform interpolation on a complex float buffer
      * @param in input buffer

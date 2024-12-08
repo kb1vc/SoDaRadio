@@ -39,10 +39,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Spectrogram.hxx"
 
 namespace SoDa {
+  class UI;
+  typedef std::shared_ptr<UI> UIPtr;
+  
   class UI : public SoDa::Thread {
   public:
-    UI(Params * params);
+    UI(ParamsPtr params);
     ~UI();
+
+    static UIPtr make(ParamsPtr params) {
+      return std::make_shared<UI>(params);
+    }
 
     /// implement the subscription method
     void subscribeToMailBoxList(CmdMailBoxMap & cmd_boxes,
@@ -64,10 +71,10 @@ namespace SoDa {
     SoDa::UD::ServerSocketPtr server_socket, wfall_socket; 
 
     // we ship a spectrogram of the RX IF stream to the GUI
-    Spectrogram * spectrogram;
+    SpectrogramPtr spectrogram;
     unsigned int spectrogram_buckets; 
 
-    Spectrogram * lo_spectrogram; 
+    SpectrogramPtr lo_spectrogram; 
     unsigned int lo_spectrogram_buckets;
     double lo_hz_per_bucket;
     float * lo_spectrum; 

@@ -39,9 +39,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <fstream>
 #include <string>
 #include <fstream>
+#include <memory>
 
 
 namespace SoDa {
+  class IFRecorder;
+  typedef std::shared_ptr<IFRecorder> IFRecorderPtr;
+  
   /**
    * IFRecorder -- this is the audio processing chain for the recieve path
    *
@@ -74,7 +78,11 @@ namespace SoDa {
      *
      * @param params command line parameter object
      **/
-    IFRecorder(Params * params);
+    IFRecorder(ParamsPtr params);
+
+    static IFRecorderPtr make(ParamsPtr params) {
+      return std::make_shared<IFRecorder>(params);
+    }
 
     /// implement the subscription method
     void subscribeToMailBoxList(CmdMailBoxMap & cmd_boxes,

@@ -31,7 +31,7 @@
 
 namespace SoDa {
   
-  GPSmon::GPSmon(Params * params) : Thread("GPSmon")
+  GPSmon::GPSmon(ParamsPtr params) : Thread("GPSmon")
   {
     cmd_stream = NULL;
 

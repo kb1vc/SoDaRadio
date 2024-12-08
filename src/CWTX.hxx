@@ -47,13 +47,20 @@ namespace SoDa {
    * This block uses the CWGenerator object to convert text to a
    * CW envelope. 
    */
+  class CWTX;
+  typedef std::shared_ptr<CWTX> CWTXPtr;
+  
   class CWTX : public SoDa::Thread {
   public:
     /**
      * @brief Constructor
      * @param params block describing intial setup of the radio
      */
-    CWTX(Params * params);
+    CWTX(ParamsPtr params);
+
+    static CWTXPtr make(ParamsPtr params) {
+      return std::make_shared<CWTX>(params);
+    }
 
     /// implement the subscription method
     void subscribeToMailBoxList(CmdMailBoxMap & cmd_boxes,

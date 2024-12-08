@@ -36,8 +36,8 @@
 #include <SoDa/Format.hxx>
 
 namespace SoDa {
-  BaseBandRX::BaseBandRX(Params * params,
-			 AudioQtRX * _audio_ifc) : Thread("BaseBandRX")
+  BaseBandRX::BaseBandRX(ParamsPtr params,
+			 AudioQtRXPtr _audio_ifc) : Thread("BaseBandRX")
   {
     audio_ifc = _audio_ifc; 
     rx_stream = NULL;
@@ -61,8 +61,8 @@ namespace SoDa {
     buildFilterMap();
 
     // build the resamplers
-    rf_resampler = new TDResampler625x48<std::complex<float> >(150000.0);
-    wbfm_resampler = new TDResampler625x48<float>(1.0);  
+    rf_resampler = TDResampler625x48<std::complex<float>>::make(150000.0);
+    wbfm_resampler = TDResampler625x48<float>::make(1.0);  
 
     af_filter_selection = Command::BW_6000;
     cur_audio_filter = filter_map[af_filter_selection];
@@ -87,7 +87,7 @@ namespace SoDa {
     }
 
     // create hilbert transformer
-    hilbert = new HilbertTransformer(audio_buffer_size);
+    hilbert = HilbertTransformer::make(audio_buffer_size);
 
     // initialize the sample for the NBFM and WBFM demodulator
     last_phase_samp = 0.0;
@@ -603,21 +603,21 @@ namespace SoDa {
     // The Overlap and Save buffer needs to be long enough to make this all
     // work
   
-    filter_map[Command::BW_2000] = new OSFilter(200.0, 300.0, 2300.0, 2400.0, 512, 1.0, audio_sample_rate, audio_buffer_size);
-    filter_map[Command::BW_WSPR] = new OSFilter(1100.0, 1400.0, 1600.0, 1900.0, 512, 1.0, audio_sample_rate, audio_buffer_size);  
-    filter_map[Command::BW_500] = new OSFilter(300.0, 400.0, 900.0, 1000.0, 512, 1.0, audio_sample_rate, audio_buffer_size);
+    filter_map[Command::BW_2000] = OSFilter::make(200.0, 300.0, 2300.0, 2400.0, 512, 1.0, audio_sample_rate, audio_buffer_size);
+    filter_map[Command::BW_WSPR] = OSFilter::make(1100.0, 1400.0, 1600.0, 1900.0, 512, 1.0, audio_sample_rate, audio_buffer_size);  
+    filter_map[Command::BW_500] = OSFilter::make(300.0, 400.0, 900.0, 1000.0, 512, 1.0, audio_sample_rate, audio_buffer_size);
 
-    filter_map[Command::BW_100] = new OSFilter(300.0, 400.0, 500.0, 600.0, 512, 1.0, audio_sample_rate, audio_buffer_size);
+    filter_map[Command::BW_100] = OSFilter::make(300.0, 400.0, 500.0, 600.0, 512, 1.0, audio_sample_rate, audio_buffer_size);
 
-    filter_map[Command::BW_6000] = new OSFilter(200.0, 300.0, 6300.0, 6400.0, 512, 1.0, audio_sample_rate, audio_buffer_size);
-    filter_map[Command::BW_PASS] = new OSFilter(0.0, 10.0, 15000.0, 18000.0, 512, 1.0, audio_sample_rate, audio_buffer_size);
+    filter_map[Command::BW_6000] = OSFilter::make(200.0, 300.0, 6300.0, 6400.0, 512, 1.0, audio_sample_rate, audio_buffer_size);
+    filter_map[Command::BW_PASS] = OSFilter::make(0.0, 10.0, 15000.0, 18000.0, 512, 1.0, audio_sample_rate, audio_buffer_size);
 
-    fm_audio_filter = new OSFilter(50.0, 100.0, 8000.0, 9000.0, 512, 1.0, audio_sample_rate, audio_buffer_size);
+    fm_audio_filter = OSFilter::make(50.0, 100.0, 8000.0, 9000.0, 512, 1.0, audio_sample_rate, audio_buffer_size);
     am_audio_filter = filter_map[Command::BW_6000]; 
 
-    am_pre_filter = new OSFilter(0.0, 0.0, 8000.0, 9000.0, 512, 1.0, audio_sample_rate, audio_buffer_size);
+    am_pre_filter = OSFilter::make(0.0, 0.0, 8000.0, 9000.0, 512, 1.0, audio_sample_rate, audio_buffer_size);
 
-    nbfm_pre_filter = new OSFilter(0.0, 0.0, 12500.0, 14000.0, 512, 1.0, rf_sample_rate, rf_buffer_size);
+    nbfm_pre_filter = OSFilter::make(0.0, 0.0, 12500.0, 14000.0, 512, 1.0, rf_sample_rate, rf_buffer_size);
 
   }
 

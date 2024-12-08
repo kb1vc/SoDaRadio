@@ -1,5 +1,6 @@
+#pragma once
 /*
-  Copyright (c) 2012,2013,2014 Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2013,2014,2024 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -30,12 +31,13 @@
 // fast, small, simple. 
 #include "SoDaBase.hxx"
 
-#ifndef RESAMPLERS_48625_HDR
-#define RESAMPLERS_48625_HDR
 #include <complex>
 #include "ReSampler.hxx"
 
 namespace SoDa {
+  class ReSample48to625;
+  typedef std::shared_ptr<ReSample48to625> ReSample48to625Ptr;
+  
   /**
    * Resampler for 48KHz to 625KHz data stream, built on rational ReSampler class
    */
@@ -49,6 +51,10 @@ namespace SoDa {
     ReSample48to625(unsigned int inbufsize, float gain = 1.0);
     ~ReSample48to625();
 
+    static ReSample48to625Ptr make(unsigned int inbufsize, float gain = 1.0) {
+      return std::make_shared<ReSample48to625>(inbufsize, gain); 
+    }
+    
     /**
      * @brief Perform the resampling on a complex float buffer
      * @param in input buffer
@@ -116,4 +122,4 @@ namespace SoDa {
   }; 
 
 }
-#endif
+
