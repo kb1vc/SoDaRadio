@@ -78,7 +78,7 @@ namespace SoDa {
     tx_stream_on = false;
 
     // create the IQ buffer.
-    audio_IQ_buf = new std::complex<float>[8*audio_buffer_size];
+    audio_IQ_buf.resize(8*audio_buffer_size); 
 
     // create the Hilbert transformer
     hilbert = HilbertTransformer::make(audio_buffer_size);
@@ -217,7 +217,7 @@ namespace SoDa {
     if(is_usb || is_lsb) {
       /// If we're looking at USB, then for I = sin(w), Q => cos(w)
       /// for LSB I = sin(w), Q => -cos(w)
-      hilbert->apply(audio_buf->data(), audio_IQ_buf, is_lsb, mic_gain);
+      hilbert->apply(audio_buf->data(), audio_IQ_buf.data(), is_lsb, mic_gain);
     }
     else {
       /// if neither is_usb is_lsb is true, then we want to produce
@@ -238,7 +238,7 @@ namespace SoDa {
     }
   
     /// Upsample the IQ audio (at 48KS/s) to the RF sample rate of 625 KS/s
-    interpolator->apply(audio_IQ_buf, txbuf->getComplexBuf()); 
+    interpolator->apply(audio_IQ_buf.data(), txbuf->getComplexBuf()); 
 
     /// pass the newly created and filled buffer back to the caller
     return txbuf; 
@@ -277,7 +277,7 @@ namespace SoDa {
       throw  Radio::Exception("FM: Transmit signal buffer was a bad size.",this);
     }
     // Upsample the IQ audio (at 48KS/s) to the RF sample rate of 625 KS/s
-    interpolator->apply(audio_IQ_buf, txbuf->getComplexBuf());
+    interpolator->apply(audio_IQ_buf.data(), txbuf->getComplexBuf());
 
     // Pass the newly created and filled buffer back to the caller
     return txbuf;

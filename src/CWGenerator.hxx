@@ -36,6 +36,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <map>
 
 namespace SoDa {
+  class CWGenerator;
+  typedef std::shared_ptr<CWGenerator> CWGeneratorPtr;
+  
   /**
    * A text to morse envelope converter
    *
@@ -52,6 +55,12 @@ namespace SoDa {
      */
     CWGenerator(DatMBoxPtr cw_env_stream, double _samp_rate, unsigned int _env_buf_len);
 
+    static CWGeneratorPtr make(DatMBoxPtr cw_env_stream, 
+			       double _samp_rate, 
+			       unsigned int _env_buf_len) {
+      return std::make_shared<CWGenerator>(cw_env_stream, _samp_rate, _env_buf_len);
+    }
+    
     /**
      * @brief set the speed of the cw stream in words per minute
      * @param wpm words per minute

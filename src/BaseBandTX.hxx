@@ -153,7 +153,7 @@ namespace SoDa {
 
     // we need some intermediate storage for things like
     // the IQ buffer
-    std::complex<float> * audio_IQ_buf; ///< temporary storage for outbound modulation envelope
+    std::vector<std::complex<float>> audio_IQ_buf; ///< temporary storage for outbound modulation envelope
 
     /**
      * SSB modulation requires that we upsample before

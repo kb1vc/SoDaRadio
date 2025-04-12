@@ -105,7 +105,7 @@ namespace SoDa {
 
     int sent_char_count; 
 
-    CWGenerator * cwgen; ///< Pointer to a text-to-morse translator
+    CWGeneratorPtr cwgen; ///< Pointer to a text-to-morse translator
     
     CmdMBoxPtr cwtxt_stream; ///< stream of characters to be encoded (from UI or elsewhere)
     CmdMBoxPtr cmd_stream; ///< stream of commands to modify radio state

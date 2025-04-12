@@ -224,6 +224,7 @@ namespace SoDa {
       amp_sum += abs(dbuf[i]);
     }
 
+    
     // now look at the magnitude and compare it to the threshold
 
     if(amp_sum > nbfm_squelch_level) {
@@ -234,7 +235,17 @@ namespace SoDa {
     }
   
     cur_audio_filter->apply(demod_out, demod_out, af_gain);
-  
+
+    float demod_sum = 0.0;
+    for(int i = 0; i < audio_buffer_size; i++) {
+      demod_sum += abs(demod_out[i]);
+    }
+    
+    // debugMsg(SoDa::Format("BaseBandRX::NBFM amplitude sum %0 demod sum %1\n")
+    // 	     .addF(amp_sum)
+    // 	     .addF(demod_sum)
+    // 	     .str());
+    
     if(audio_save_enable) {
       audio_file2.write((char*) demod_out, audio_buffer_size * sizeof(std::complex<float>));
     }
@@ -560,7 +571,8 @@ namespace SoDa {
   void BaseBandRX::pendAudioBuffer(FVecPtr b)
   {
     // no big deal here.  We're going to send it right to 
-    // the audio device. 
+    // the audio device.
+    //    std::cerr << SoDa::Format("BaseBandRX::pendAudioBuffer b size %0\n").addI(b->size());
     audio_ifc->send(b->data(), audio_buffer_size * sizeof(float));
 
     if(audio_save_enable) {
@@ -568,10 +580,11 @@ namespace SoDa {
     }
 
     float al = 1.0e-19; // really small...
-    std::vector<float> & bv = *b; 
+
     for(int i = 0; i < audio_buffer_size; i++) {
-      al += bv[i] * bv[i]; 
+      al += b->at(i) * b->at(i); 
     }
+    //    std::cerr << SoDa::Format("BaseBandRX::pendAudioBuffer average level %0\n").addF(al / b->size());
     audio_level = 10.0 * (log10(al / af_gain) - log_audio_buffer_size);
   
     b = nullptr; 

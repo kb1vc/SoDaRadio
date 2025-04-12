@@ -55,7 +55,7 @@ void SoDa::CWTX::run()
   }
 
   // setup the CW generator unit
-  cwgen = new SoDa::CWGenerator(cw_env_stream, rf_sample_rate, rf_buffer_size);
+  cwgen = SoDa::CWGenerator::make(cw_env_stream, rf_sample_rate, rf_buffer_size);
   
   while(!exitflag) {
     bool workdone = false; 

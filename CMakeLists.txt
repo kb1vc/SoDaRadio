@@ -49,6 +49,8 @@ IF(${BUILD_DEB})
   set(CPACK_GENERATOR "DEB")
 ENDIF()
 
+FIND_PACKAGE(SoDaUtils REQUIRED)
+
 # Find the platform release name
 FIND_PROGRAM(LSB_RELEASE lsb_release)
 EXECUTE_PROCESS(COMMAND ${LSB_RELEASE} -is

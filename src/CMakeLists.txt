@@ -64,12 +64,10 @@ include_directories(SYSTEM
 
 add_executable(SoDaServer ${SoDaServer_SRCS})
 
-
 target_link_libraries(SoDaServer ${RT_LIB}
   Threads::Threads
-  ${SoDaUtils_LIBRARIES}
-    ${Radio_LIBRARIES}  ${FFTW3F_LIBRARIES} ${CMAKE_DL_LIBS})
-
+  sodautils
+  ${Radio_LIBRARIES}  ${FFTW3F_LIBRARIES} ${CMAKE_DL_LIBS})
 
 install(TARGETS SoDaServer DESTINATION bin)
 

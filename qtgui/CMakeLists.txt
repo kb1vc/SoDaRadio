@@ -98,7 +98,7 @@ TARGET_LINK_LIBRARIES(SoDaRadio_Lib m ${RT_LIB}
   Qt5::Widgets Qt5::PrintSupport
   Qt5::Core Qt5::Gui Qt5::Network Qt5::Multimedia
   Threads::Threads
-  ${SoDaUtils_LIBRARIES}  
+  sodautils
   ${SNDFILE_LIBRARIES}  
   ${QWT_LIBRARIES} )
 

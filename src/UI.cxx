@@ -186,7 +186,7 @@ void SoDa::UI::run()
       debugMsg(SoDa::Format("UI got message [%0]\n").addS(net_cmd->toString()));
       std::shared_ptr<SoDa::Command> ncmd(net_cmd);
       cmd_stream->put(ncmd);
-      if((socket_read_count % 128) == 0) cmd_stream->dumpStatus(std::cerr);
+      //      if((socket_read_count % 128) == 0) cmd_stream->dumpStatus(std::cerr);
       
       didwork = true;
       if(net_cmd->target == SoDa::Command::TX_CW_EMPTY) {
