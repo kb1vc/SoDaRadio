@@ -60,7 +60,7 @@ SoDa::BaseBandRX::BaseBandRX(Params * params,
   buildFilterMap();
 
   // build the resamplers
-  rf_resampler = new SoDa::TDResampler625x48<std::complex<float> >(150000.0);
+  rf_resampler = std::make_shared<SoDa::ReSampler>(new SoDa::ReSampler(625, 48, ));
   wbfm_resampler = new SoDa::TDResampler625x48<float>(1.0);  
 
   af_filter_selection = SoDa::Command::BW_6000;
