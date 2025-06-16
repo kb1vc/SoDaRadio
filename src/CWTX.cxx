@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012, 2025 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -47,7 +47,7 @@ SoDa::CWTX::CWTX(Params * params) : SoDa::Thread("CWTX")
 void SoDa::CWTX::run()
 {
   bool exitflag = false;
-  Command * cmd, *txtcmd; 
+  CommandPtr cmd, txtcmd; 
 
   if((cmd_stream == NULL) || (cw_env_stream == NULL) || (cwtxt_stream == NULL)) {
     throw SoDa::Radio::Exception(std::string("Missing a stream connection.\n"), 
@@ -55,23 +55,23 @@ void SoDa::CWTX::run()
   }
 
   // setup the CW generator unit
-  cwgen = new SoDa::CWGenerator(cw_env_stream, rf_sample_rate, rf_buffer_size);
+  cwgen = std::make_shared<SoDa::CWGenerator>(cw_env_stream, rf_sample_rate, rf_buffer_size);
   
   while(!exitflag) {
     bool workdone = false; 
-    while((cmd = cmd_stream->get(cmd_subs)) != NULL) {
+    while(!cmd_stream->empty(cmd_subs)) {
+      cmd = cmd_stream->get(cmd_subs);
       // process the command.
       execCommand(cmd);
       exitflag |= (cmd->target == Command::STOP); 
-      cmd_stream->free(cmd);
       workdone = true; 
     }
 
-    while((txtcmd = cwtxt_stream->get(cwtxt_subs)) != NULL) {
+    while(!cwtxt_stream->empty(cwtxt_subs)) {
+      txtcmd = cwtxt_stream->get(cwtxt_subs);
       // pend the text to the text queue
       execCommand(txtcmd);
       exitflag |= (txtcmd->target == Command::STOP); 
-      cwtxt_stream->free(txtcmd);
       workdone = true; 
     }
 
@@ -114,12 +114,12 @@ bool SoDa::CWTX::sendAvailChar()
       cwgen->sendChar(outchar);
       sent_char = true;
       tbuf[0] = outchar; 
-      cmd_stream->put(new SoDa::Command(SoDa::Command::REP,
+      cmd_stream->put(SoDa::Command::make(SoDa::Command::REP,
 					SoDa::Command::CW_CHAR_SENT,
 					tbuf, sent_char_count++));
     }
     else {
-      cmd_stream->put(new SoDa::Command(SoDa::Command::SET,
+      cmd_stream->put(SoDa::Command::make(SoDa::Command::SET,
 					SoDa::Command::TX_CW_EMPTY,
 					0));
     }
@@ -128,7 +128,7 @@ bool SoDa::CWTX::sendAvailChar()
   return sent_char; 
 }
 
-void SoDa::CWTX::execGetCommand(Command * cmd)
+void SoDa::CWTX::execGetCommand(CommandPtr cmd)
 {
   switch(cmd->target) {
   case SoDa::Command::TX_STATE:
@@ -148,7 +148,7 @@ void SoDa::CWTX::execGetCommand(Command * cmd)
   }
 }
 
-void SoDa::CWTX::execSetCommand(Command * cmd)
+void SoDa::CWTX::execSetCommand(CommandPtr cmd)
 {
   SoDa::Command::ModulationType txmode;
   
@@ -225,14 +225,14 @@ void SoDa::CWTX::clearTextQueue()
     text_queue = std::queue<char>(); 
     sent_char_count += deleted_count; 
   }
-  SoDa::Command * ncmd = new SoDa::Command(SoDa::Command::REP,
+  SoDa::CommandPtr ncmd = SoDa::Command::make(SoDa::Command::REP,
 					   SoDa::Command::TX_CW_FLUSHTEXT,
 					   sent_char_count);
   cmd_stream->put(ncmd); 
   
 }
 
-void SoDa::CWTX::execRepCommand(Command * cmd)
+void SoDa::CWTX::execRepCommand(CommandPtr cmd)
 {
   switch(cmd->target) {
   case SoDa::Command::TX_CW_EMPTY:
@@ -243,7 +243,7 @@ void SoDa::CWTX::execRepCommand(Command * cmd)
       // the break queue and send it back in a REPORT
       if(!break_notification_id_queue.empty()) {
 	int bkid = break_notification_id_queue.front(); break_notification_id_queue.pop();
-	SoDa::Command * ncmd = new SoDa::Command(SoDa::Command::REP,
+	SoDa::CommandPtr ncmd = SoDa::Command::make(SoDa::Command::REP,
 						 SoDa::Command::TX_CW_MARKER,
 						 bkid);
 	cmd_stream->put(ncmd); 	  
@@ -257,15 +257,22 @@ void SoDa::CWTX::execRepCommand(Command * cmd)
 
 
 /// implement the subscription method
-void SoDa::CWTX::subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p)
+void SoDa::CWTX::subscribeToMailBox(const std::string & mbox_name, MailBoxBasePtr mbox_p)
 {
-  if(SoDa::connectMailBox<SoDa::CmdMBox>(this, cmd_stream, "CMD", mbox_name, mbox_p)) {
+  auto cmd_tmp = SoDa::MailBoxBase::convert<SoDa::MailBox<CommandPtr>>(mbox_p);
+  if(cmd_tmp != nullptr) {
+    cmd_stream = cmd_tmp;
     cmd_subs = cmd_stream->subscribe();
   }
-  if(SoDa::connectMailBox<SoDa::CmdMBox>(this, cwtxt_stream, "CW_TXT", mbox_name, mbox_p)) {
+
+  auto cwtxt_tmp = SoDa::MailBoxBase::convert<SoDa::MailBox<CommandPtr>>(mbox_p);
+  if(cwtxt_tmp != nullptr) {
+    cwtxt_stream = cwtxt_tmp;
     cwtxt_subs = cwtxt_stream->subscribe();
   }
-  if(SoDa::connectMailBox<SoDa::DatMBox>(this, cw_env_stream, "CW_ENV", mbox_name, mbox_p)) {
-    // we publish
+  
+  auto cw_env_tmp = SoDa::MailBoxBase::convert<SoDa::MailBox<BufPtr>>(mbox_p);
+  if(cw_env_tmp != nullptr) {
+    cw_env_stream = cw_env_tmp;
   }
 }

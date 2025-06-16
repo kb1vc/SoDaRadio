@@ -63,7 +63,7 @@
  * multiple threads of the SoDa application.  The threads communicate via
  * a simple mailbox-in-shared-memory communications scheme where each
  * thread can "subscribe" to one or more message streams, and place messages
- * into any message stream. (See SoDa::MultiMBox and SoDa::MBoxMessage)
+ * into any message stream. (See SoDa::MailBox from the SoDaUtils library.)
  *
  * The image below shows the thread objects that make up the SoDa
  * SDR radio, and the message streams that link them. 
@@ -131,7 +131,8 @@
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
 #include "SoDaThreadRegistry.hxx"
-#include "MultiMBox.hxx"
+
+#include <SoDa/MailBox.hxx>
 
 // Include functions to dynamically link any user supplied plugins
 #include <dlfcn.h>
@@ -200,12 +201,15 @@ int doWork(SoDa::Params & params)
   // the various widgets
   // the rx and tx streams are vectors of complex floats.
   // we don't declare the extent here, as it will be set
-  // by a negotiation.  
-  SoDa::DatMBox rx_stream, tx_stream, if_stream, cw_env_stream;
-  SoDa::CmdMBox cmd_stream(false);
-  // create a separate gps stream to avoid "leaks" and latency problems... 
-  SoDa::CmdMBox gps_stream(false);
-  SoDa::CmdMBox cwtxt_stream(false);
+  // by a negotiation.
+  auto rx_stream = SoDa::DatMBox::make("RXstream");
+  auto tx_stream = SoDa::DatMBox::make("TXstream");
+  auto if_stream = SoDa::DatMBox::make("IFstream");
+  auto cw_env_stream = SoDa::DatMBox::make("CWstream");
+
+  auto cmd_stream = SoDa::CmdMBox::make("CMDstream");
+  auto gps_stream = SoDa::CmdMBox::make("GPSstream");
+  auto cwtxt_stream = SoDa::CmdMBox::make("CWTXTstream");  
 
   SoDa::Thread * ctrl;
   SoDa::Thread * rx;
@@ -213,13 +217,13 @@ int doWork(SoDa::Params & params)
 
   SoDa::MailBoxMap mailbox_map;
 
-  mailbox_map["RX"] = &rx_stream;
-  mailbox_map["TX"] = &tx_stream;
-  mailbox_map["CMD"] = &cmd_stream;
-  mailbox_map["CW_TXT"] = &cwtxt_stream;
-  mailbox_map["CW_ENV"] = &cw_env_stream;  
-  mailbox_map["GPS"] = &gps_stream;
-  mailbox_map["IF"] = &if_stream;
+  mailbox_map["RX"] = rx_stream;
+  mailbox_map["TX"] = tx_stream;
+  mailbox_map["CMD"] = cmd_stream;
+  mailbox_map["CW_TXT"] = cwtxt_stream;
+  mailbox_map["CW_ENV"] = cw_env_stream;  
+  mailbox_map["GPS"] = gps_stream;
+  mailbox_map["IF"] = if_stream;
   
   if(params.isRadioType("USRP")) {
     /// create the USRP Control, RX Streamer, and TX Streamer threads

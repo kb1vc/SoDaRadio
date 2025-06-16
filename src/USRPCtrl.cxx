@@ -196,24 +196,16 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params) : SoDa::Thread("USRPCtrl")
 void SoDa::USRPCtrl::subscribeToMailBox(const std::string & mbox_name, 
 					SoDa::BaseMBox * mbox_p) {
   if(mbox_name == "CMD") {
-    SoDa::CmdMBox * _cmd_stream = dynamic_cast<SoDa::CmdMBox *>(mbox_p);
-    if(_cmd_stream != NULL) {
-      cmd_stream = _cmd_stream;
-
+    SoDa::CmdMBoxPtr cmd_stream = SoDa::MailBoxBase::convert<SoDa::CmdMBoxPtr>(mbox_p, true);
       // subscribe to the command stream.
-      subid = cmd_stream->subscribe();
-    }
-    else {
-      throw SoDa::Radio::Exception(SoDa::Format("Bad mailbox pointer for mailbox named = [%0]\n") 
-			     .addS(mbox_name) , this);	
-    }
+    subid = cmd_stream->subscribe();
   }
 }
 
 
 void SoDa::USRPCtrl::run()
 {
-  if(cmd_stream == NULL) {
+  if(cmd_stream == nullptr) {
       throw SoDa::Radio::Exception(SoDa::Format("Never got command stream subscription\n"), 
 			  this);	
   }

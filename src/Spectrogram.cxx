@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+Copyright (c) 2012, 2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -72,30 +72,28 @@ float * SoDa::Spectrogram::initBlackmanHarris()
   return w;
 }
 
-void SoDa::Spectrogram::apply_common(std::complex<float> * invec,
-				     unsigned int inveclen)
+void SoDa::Spectrogram::apply_common(std::vector<std::complex<float>> & invec)
 {
   unsigned int i, j;
   float repl_count;
 
-  repl_count = floor(((float) inveclen) / ((float) fft_len));
+  repl_count = floor(((float) invec.size()) / ((float) fft_len));
   float gain_adj = 1.0 / repl_count; 
 
   // zero the result accumulate buffer. 
   for(j = 0; j < fft_len; j++) result[j] = 0.0;
-  if(fft_len > inveclen) {
+  if(fft_len > invec.size()) {
     throw SoDa::Radio::Exception(SoDa::Format("inveclen %0 less than fftlen %1\n") 
-			  .addI(inveclen)
-			  .addI(fft_len), 
-			  this);
+				 .addI(invec.size())
+				 .addI(fft_len), 
+				 this);
   }
   // accumulate FFT results over the length of the buffer.
-  for(i = 0; i < (inveclen + 1 - fft_len); i += (fft_len / 2)) {
-    std::complex<float> *v = &(invec[i]);
+  for(i = 0; i < (invec.size() + 1 - fft_len); i += (fft_len / 2)) {
 
     // window the input
     for(j = 0; j < fft_len; j++) {
-      win_samp[j] = v[j] * window[j]; 
+      win_samp[j] = invec[i + j] * window[j]; 
     }  
 
     // do the fft
@@ -112,20 +110,24 @@ void SoDa::Spectrogram::apply_common(std::complex<float> * invec,
 }
 
 
-void SoDa::Spectrogram::apply_acc(std::complex<float> * invec,
-				  unsigned int inveclen, 
-				  float * outvec,
+void SoDa::Spectrogram::apply_acc(std::vector<std::complex<float>> & invec,
+				  std::vector<float> & outvec,
 				  float accumulation_gain)
 {
 
-  if(inveclen < fft_len) {
+  if(invec.size() < fft_len) {
     std::cerr << "Input vector is shorter than FFT buffer " <<
-      inveclen << " less than " << fft_len << std::endl;
+      invec.size() << " less than " << fft_len << std::endl;
+    return; 
+  }
+  if(outvec.size() < fft_len) {
+    std::cerr << "Output vector is shorter than FFT buffer " <<
+      outvec.size() << " less than " << fft_len << std::endl;
     return; 
   }
   
   // do the front end FFT
-  apply_common(invec, inveclen);
+  apply_common(invec);
   
   // now copy to the output buffer
   // this is mag^2 divided by the square of of the
@@ -143,13 +145,23 @@ void SoDa::Spectrogram::apply_acc(std::complex<float> * invec,
   }
 }
 
-void SoDa::Spectrogram::apply_max(std::complex<float> * invec,
-				  unsigned int inveclen, 
-				  float * outvec,
+void SoDa::Spectrogram::apply_max(std::vector<std::complex<float>> & invec,
+				  std::vector<float> & outvec,
 				  bool first)
 {
+  if(invec.size() < fft_len) {
+    std::cerr << "Input vector is shorter than FFT buffer " <<
+      invec.size() << " less than " << fft_len << std::endl;
+    return; 
+  }
+  if(outvec.size() < fft_len) {
+    std::cerr << "Output vector is shorter than FFT buffer " <<
+      outvec.size() << " less than " << fft_len << std::endl;
+    return; 
+  }
+
   // do the front end FFT
-  apply_common(invec, inveclen);
+  apply_common(invec);
   
   // now copy to the output buffer
   // this is mag^2 divided by the square of of the

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012,2013,2014 Matthew H. Reilly (kb1vc)
+Copyright (c) 2012,2013,2014,2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,18 +26,18 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef SODA_BASE_HDR
-#define SODA_BASE_HDR
+#pragma once
 
 #include "Command.hxx"
-#include "MultiMBox.hxx"
 #include "Debug.hxx"
 #include <complex>
 #include <string>
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/syscall.h>
+
 #include <SoDa/Format.hxx>
+#include <SoDa/MailBox.hxx>
 
 extern "C" {
 #include <signal.h>
@@ -56,6 +56,8 @@ extern "C" {
   */
 
 namespace SoDa {
+  class Buf;
+  typedef std::shared_ptr<Buf> BufPtr;
 
   /**
    * The Buffer Class
@@ -68,52 +70,42 @@ namespace SoDa {
    * can be allocated from the same storage pool.  
    *
    */
-  class Buf : public MBoxMessage {
+  class Buf {
   public:
     /**
      * constructor: Allocate a complex/real buffer of complex data values
      *
-     * @param _size the maximum number of single presion complex values the buffer can hold. 
+     * @param size the maximum number of single presion complex values the buffer can hold. 
      */
-    Buf(unsigned int _size) {
-      maxlen = _size;
-      len = maxlen;
-      dat = new std::complex<float>[_size];
-      // we also overlay a floating point buffer in the same space.
-      fdat = (float *) dat; 
-      maxflen = maxlen * 2;
-      flen = len * 2; 
+    Buf(unsigned int size) : r_size(size) {
+      cdat.resize(0); // both vectors are resized to 0 at the start.
+      fdat.resize(0); 
     }
 
-    bool copy(Buf * src) {
-      if(maxlen >= src->maxlen) {
-	flen = src->flen;
-	memcpy(fdat, src->fdat, sizeof(float) * flen);
-	return true; 
-      }
-      else {
-	return false; 
-      }
+  public:
+    static BufPtr make(unsigned int _size) {
+      return std::make_shared<Buf>(_size); 
+    }
+
+
+    unsigned int size() { return r_size; }
+      
+    void copy(BufPtr src) {
+      cdat = src->cdat;
+      fdat = src->fdat; 
+      r_size = src->r_size;
     }
     
-    //! Return the number of complex float values in this buffer
-    unsigned int getComplexLen() { return len; }
-    //! Return the maximum number of complex float values that this buffer can hold
-    unsigned int getComplexMaxLen() { return maxlen; }
-    
-    //! Return the number of float values in this buffer
-    unsigned int getFloatLen() { return flen; }
-    //! Return the maximum number of float values that this buffer can hold
-    unsigned int getFloatMaxLen() { return maxflen; }
-
     /**
      * set the length of the buffer (in number of complex floats.)
      * @param nl new length
      */
     bool setComplexLen(unsigned int nl) {
-      if(nl > maxlen) return false; 
-      len = nl;
-      return true; 
+      if(nl > r_size) {
+	cdat.resize(nl);
+	return true; 
+      }
+      else return false; 
     }
     
     /**
@@ -121,38 +113,69 @@ namespace SoDa {
      * @param nl new length
      */
     bool setFloatLen(unsigned int nl) {
-      if(nl > maxflen) return false; 
-      flen = nl;
-      return true; 
+      if(nl > r_size) {
+	r_size = nl; 
+	cdat.resize(nl);
+	return true; 
+      }
+      else return false; 
     }
 
     /**
-     * Return a pointer to the storage buffer of complex floats
+     * Return the reference to the storage buffer of complex floats
+     *
+     * Note that this is a reference.  Take care as to how it is consumed.
+     *
+     * ~~~~
+     *     std::vector<std::complex<float>> foo = bp->getComplexBuf();
+     * ~~~~
+     *
+     * will cause a *copy* to be made of the complex buffer. To get what you
+     * probably want, you should do this:
+     * ~~~~
+     *     std::vector<std::complex<float>> & foo = bp->getComplexBuf();
+     * ~~~~     
+     *     
+     * 
      */
-    std::complex<float> * getComplexBuf() { return dat; }
+    std::vector<std::complex<float>> & getComplexBuf() { 
+      if(cdat.size() == 0) cdat.resize(r_size);
+      return cdat; 
+    }
     /**
-     * Return a pointer to the storage buffer of floats
+     * Return the reference to the storage buffer of floats
+     * ~~~~
+     *     std::vector<float> foo = bp->getFloatBuf();
+     * ~~~~
+     *
+     * will cause a *copy* to be made of the complex buffer. To get what you
+     * probably want, you should do this:
+     * ~~~~
+     *     std::vector<float> & foo = bp->getFloatBuf();
+     * ~~~~     
      */
-    float * getFloatBuf() { return fdat; }
-    
+    std::vector<float> & getFloatBuf() { 
+      if(fdat.size() == 0) fdat.resize(r_size);    
+      return fdat;
+    }
+
   private:
-    std::complex<float> * dat; ///< the storage array (complex version) Storage is common to both types
-    float * fdat;              ///< the storage array (REAL version)  Storage is common to both types
-    unsigned int maxflen;      ///< the maximum length in terms of real floats
-    unsigned int flen;         ///< the current length of the buffer in REAL fp values
-    unsigned int maxlen;       ///< the maximum length in terms of complex floats
-    unsigned int len;          ///< the current length of the buffer in complex fp values
+    std::vector<std::complex<float>> cdat; 
+    std::vector<float> fdat;
+
+    unsigned int r_size; 
   };
 
   /**
    * Mailboxes that carry commands only are of type CmdMBox
    */
-  typedef MultiMBox<Command> CmdMBox;
+  typedef SoDa::MailBox<CommandPtr> CmdMBox;
+  typedef std::shared_ptr<CmdMBox> CmdMBoxPtr;
   /**
    * Mailboxes that carry float or complex data are of type DatMBox
    */ 
-  typedef MultiMBox<Buf> DatMBox;
-
+  typedef SoDa::MailBox<BufPtr> DatMBox;
+  typedef std::shared_ptr<DatMBox> DatMBoxPtr;
 
   /**
    * The SoDa Base class
@@ -285,5 +308,3 @@ namespace SoDa {
     };
   }
 }
-
-#endif

@@ -48,16 +48,6 @@ target_link_libraries(LineSockets_Test ${TEST_LIBS})
 #install(TARGETS Sockets_Test DESTINATION tests)
 
 
-########### next target ###############
-
-set(MultiMBox_Test_SRCS MultiMBox_Test.cxx ../src/SoDaBase.cxx ../src/Debug.cxx)
-
-add_executable(MultiMBox_Test EXCLUDE_FROM_ALL ${MultiMBox_Test_SRCS})
-
-target_link_libraries(MultiMBox_Test ${TEST_LIBS})
-
-#install(TARGETS MultiMBox_Test DESTINATION tests)
-
 
 ########### next target ###############
 
@@ -68,20 +58,6 @@ add_executable(SoDa_ThreadTest EXCLUDE_FROM_ALL ${SoDa_ThreadTest_SRCS})
 target_link_libraries(SoDa_ThreadTest ${TEST_LIBS})
 
 #install(TARGETS SoDa_ThreadTest DESTINATION tests)
-
-
-########### next target ###############
-
-set(OSFilter_Test_SRCS OSFilter_Test.cxx ../src/OSFilter.cxx)
-
-set(OSFILTER_LIBS ${Boost_LIBRARIES}  ${FFTW3F_LIBRARIES})
-
-add_executable(OSFilter_Test EXCLUDE_FROM_ALL ${OSFilter_Test_SRCS})
-
-target_link_libraries(OSFilter_Test ${OSFILTER_LIBS})
-
-#install(TARGETS OSFilter_Test DESTINATION tests)
-
 
 ########### next target ###############
 
@@ -103,18 +79,6 @@ target_link_libraries(TestServer  rt ${TEST_LIBS})
 
 
 ########### next target ###############
-
-set(ReSampler_Test_SRCS
-    ReSampler_Test.cxx
-    ../src/ReSampler.cxx
-    ../src/ReSamplers625x48.cxx
-    ../src/SoDaBase.cxx)
-
-add_executable(ReSampler_Test EXCLUDE_FROM_ALL ${ReSampler_Test_SRCS})
-
-target_link_libraries(ReSampler_Test ${TEST_LIBS})
-
-#install(TARGETS ReSampler_Test DESTINATION tests)
 
 
 ########### next target ###############
@@ -219,38 +183,9 @@ ENDIF()
 #install(TARGETS USRPFrontEnd_test DESTINATION tests)
 
 
-set(OneFilterTest_SRCS OneFilterTest.cxx ../src/OSFilter.cxx)
-
-set(OSFILTER_LIBS ${Boost_LIBRARIES}  ${FFTW3F_LIBRARIES})
-
-add_executable(OneFilterTest EXCLUDE_FROM_ALL ${OneFilterTest_SRCS})
-
-target_link_libraries(OneFilterTest ${OSFILTER_LIBS})
-
-
-
 add_executable(NCOexp EXCLUDE_FROM_ALL NCOexp.cxx)
 
 target_link_libraries(NCOexp ${Boost_LIBRARIES})
-
-set(TDResampler_Test_SRCS
-    TDResampler_Test.cxx
-    ../src/TDResamplerTables625x48.cxx
-    ../src/SoDaBase.cxx)
-
-add_executable(TDResampler_Test EXCLUDE_FROM_ALL ${TDResampler_Test_SRCS})
-
-target_link_libraries(TDResampler_Test ${TEST_LIBS})
-
-set(ResamplerSpeed_SRCS
-  ResamplerSpeed.cxx
-  ../src/ReSampler.cxx
-  ../src/ReSamplers625x48.cxx
-  ../src/TDResamplerTables625x48.cxx
-  ../src/SoDaBase.cxx)
-
-add_executable(ResamplerSpeed EXCLUDE_FROM_ALL ${ResamplerSpeed_SRCS})
-target_link_libraries(ResamplerSpeed ${TEST_LIBS})
 
 
 

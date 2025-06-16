@@ -69,7 +69,9 @@ namespace SoDa {
      * @param gain factor to apply to output buffer.
      * @return M -- length of input buffer.
      */
-    unsigned int applyIQ(std::complex<float> * inbuf, std::complex<float> * outbuf, float gain = 1.0);
+    unsigned int applyIQ(std::vector<std::complex<float>> & inbuf, 
+			 std::vector<std::complex<float>> & outbuf, 
+			 float gain = 1.0);
     
     /**
      * Perform a hilbert transform on the INPHASE signal in the input buffer.
@@ -81,7 +83,8 @@ namespace SoDa {
      * @param gain factor to apply to output buffer.
      * @return M -- length of input buffer.
      */
-    unsigned int apply(std::complex<float> * inbuf, std::complex<float> * outbuf, bool pos_sided = true, float gain = 1.0);
+    unsigned int apply(std::vector<std::complex<float>> & inbuf, 
+		       std::vector<std::complex<float>> & outbuf, bool pos_sided = true, float gain = 1.0);
 
     /**
      * Perform a hilbert transform on the signal in the floating point input buffer.
@@ -92,7 +95,9 @@ namespace SoDa {
      * @param gain factor to apply to output buffer.
      * @return M -- length of input buffer.
      */
-    unsigned int apply(float * inbuf, std::complex<float> * outbuf, bool pos_sided = true, float gain = 1.0);
+    unsigned int apply(std::vector<float> & inbuf,
+		       std::vector<std::complex<float>> & outbuf, 
+		       bool pos_sided = true, float gain = 1.0);
 
     std::ostream & dump(std::ostream & os); 
   private:

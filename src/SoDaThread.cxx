@@ -1,12 +1,12 @@
 #include "SoDaThread.hxx"
 #include "SoDaThreadRegistry.hxx"
 #include "Command.hxx"
-#include "MultiMBox.hxx"
 #include "Debug.hxx"
 #include "version.h"
 
 #include <string>
 #include <SoDa/Format.hxx>
+#include <SoDa/MailBox.hxx>
 
 #include <sys/types.h>
 #include <unistd.h>
@@ -25,7 +25,7 @@ SoDa::Thread::Thread(const std::string & oname, const std::string & version) : S
   thread_ptr = nullptr;
 }
 
-void SoDa::Thread::execCommand(Command * cmd) 
+void SoDa::Thread::execCommand(CommandPtr cmd) 
 {
   switch (cmd->cmd) {
   case Command::GET:

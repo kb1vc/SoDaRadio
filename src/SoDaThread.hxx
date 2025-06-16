@@ -30,6 +30,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define SODA_THREAD_HDR
 
 #include "SoDaBase.hxx"
+
 #include <string>
 #include "Debug.hxx"
 #include <thread>
@@ -37,6 +38,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <mutex>
 #include <memory>
 #include <condition_variable>
+
+#include <SoDa/MailBox.hxx>
 
 #include "version.h"
  /**
@@ -58,7 +61,7 @@ namespace SoDa {
   class BaseMBox; 
   class Command;
   
-  typedef std::map<std::string, BaseMBox *> MailBoxMap; 
+  typedef std::map<std::string, MailBoxBasePtr> MailBoxMap; 
   
   /**
    * The Thread baseclass for all SoDa thread objects.
@@ -101,7 +104,7 @@ namespace SoDa {
      * the actual MultiMBox<T> type from this identifying string. 
      * @param mbox_p a pointer to a multimbox.  This should be cast to the 
      */
-    virtual void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p) {
+    virtual void subscribeToMailBox(const std::string & mbox_name, SoDa::MailBoxBasePtr mbox_p) {
     }
 
     /**
@@ -160,22 +163,22 @@ namespace SoDa {
      * 
      * @param cmd the command message to be handled
      */
-    void execCommand(Command * cmd);
+    void execCommand(CommandPtr cmd);
     
     /**
      * optional method to handle "GET" commands -- commands that request a response
      */
-    virtual void execGetCommand(Command * cmd) { (void) cmd; }
+    virtual void execGetCommand(CommandPtr cmd) { (void) cmd; }
 
     /**
      * optional method to handle "SET" commands -- commands that set internal state in the object.
      */
-    virtual void execSetCommand(Command * cmd) { (void) cmd; }
+    virtual void execSetCommand(CommandPtr cmd) { (void) cmd; }
 
     /**
      * optional method that reports status or the result of some action. 
      */
-    virtual void execRepCommand(Command * cmd) { (void) cmd; } 
+    virtual void execRepCommand(CommandPtr cmd) { (void) cmd; } 
 
     /**
      * optional method that performs cleanup -- may not delete. 
@@ -226,21 +229,15 @@ namespace SoDa {
    *
    */
   template<class T> bool connectMailBox(SoDa::Base * obj, 
-					T * & current_ptr, 
+					T & current_ptr, 
 					const std::string & pattern,
 					const std::string & key, 
-					SoDa::BaseMBox * could_be_pointer) {
+					SoDa::MailBoxBasePtr could_be_pointer) {
     T * ret;
     if(pattern == key) {
-      ret = dynamic_cast<T *>(could_be_pointer);
-      if(ret == NULL) {
-	throw SoDa::Radio::Exception(SoDa::Format("Bad mailbox pointer for mailbox named = [%0]\n") 
-			      .addS(key), obj);
-      }
-      else {
-	current_ptr = ret; 
-	return true;
-      }
+      ret = SoDa::MailBoxBase::convert<T>(could_be_pointer, true);
+      current_ptr = ret; 
+      return true;
     }
     return false;
   }

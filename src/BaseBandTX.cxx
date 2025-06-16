@@ -36,10 +36,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdio.h>
-#include "OSFilter.hxx"
-#include "ReSamplers625x48.hxx"
 #include <cstdlib>
 #include <math.h>
+
 // MacOS doesn't provide "sincos" but it does provide something by another name.
 #if defined(__APPLE__)
 #define sincos(a, b, c) __sincos(a, b, c)
@@ -55,20 +54,17 @@ SoDa::BaseBandTX::BaseBandTX(Params * params,
 
   cmd_stream = NULL;
 
-  audio_buffer_size = params->getAFBufferSize();
-  tx_buffer_size = params->getRFBufferSize();
+  audio_sample_rate = params->getAudioSampleRate();
+  auto rf_sample_rate = params->getRXRate();
   
   // create the interpolator.
-  interpolator = new SoDa::ReSample48to625(audio_buffer_size);
+  interpolator = SoDa::ReSampler::make(rf_sample_rate, audio_sample_rate, 0.05);
 
-  // create the audio stream.
-  // borrow the stream from the BaseBandRX side. ? 
-  //   pa_stream = _pa_stream;
-  double srate = params->getAudioSampleRate();
+  audio_buffer_size = interpolator->getOutputBufferSize();
 
   // now setup the FM deviation
-  nbfm_deviation = 2.0 * M_PI * 2.5e3 / srate; // 2.5 kHz max deviation
-  wbfm_deviation = 2.0 * M_PI * 75.0e3 / srate; // 75 kHz max deviation
+  nbfm_deviation = 2.0 * M_PI * 2.5e3 / audio_sample_rate; // 2.5 kHz max deviation
+  wbfm_deviation = 2.0 * M_PI * 75.0e3 / audio_sample_rate; // 75 kHz max deviation
   fm_phase = 0.0; 
 
   audio_ifc = _audio_ifc; 
@@ -76,30 +72,30 @@ SoDa::BaseBandTX::BaseBandTX(Params * params,
   tx_stream_on = false;
 
   // create the IQ buffer.
-  audio_IQ_buf = new std::complex<float>[8*audio_buffer_size];
+  audio_IQ_buf.resize(8*audio_buffer_size);
 
   // create the Hilbert transformer
   hilbert = new SoDa::HilbertTransformer(audio_buffer_size);
 
   // create the noise buffer
-  noise_buffer = new float[audio_buffer_size]; 
+  noise_buffer.resize(audio_buffer_size);
   // and initialize it.
   // use the same random init every time -- counterintuitive, but 
   // I want this to be "repeatable" noise.
   srandom(0x92314159);
-  for(unsigned int i = 0; i < audio_buffer_size; i++) {
+  for(auto & nb : noise_buffer) {
     float rfl = ((float) random()) / ((float) RAND_MAX);
     rfl = rfl - 0.5; // make the mean 0
-    noise_buffer[i] = rfl * 0.5; 
+    nb = rfl * 0.5; 
   }
   
   // clear the noise enable 
   tx_noise_source_ena = false; 
 
   // setup the audio filter for the tx audio input...
-  tx_audio_filter = new SoDa::OSFilter(80.0, 150.0, 2300.0, 2400.0, 
-				       512, 1.0, 
-				       srate, audio_buffer_size);
+  tx_audio_filter = SoDa::OSFilter::make(150.0, 2300.0,
+					 100,
+					 audio_sample_rate, audio_buffer_size);
 
   // enable the audio filter by default.
   tx_audio_filter_ena = true; 
@@ -112,8 +108,8 @@ SoDa::BaseBandTX::BaseBandTX(Params * params,
 void SoDa::BaseBandTX::run()
 {
   bool exitflag = false;
-  Command * cmd; 
-  float audio_buf[audio_buffer_size];
+  CommandPtr cmd; 
+  std::vector<float> audio_buf(audio_buffer_size);
 
   if((cmd_stream == NULL) || (tx_stream == NULL)) {
     throw SoDa::Radio::Exception(std::string("Missing a stream connection.\n"),
@@ -141,26 +137,26 @@ void SoDa::BaseBandTX::run()
   audio_ifc->wakeIn();  
 
   while(!exitflag) {
-    if((cmd = cmd_stream->get(cmd_subs)) != NULL) {
+    if(!cmd_stream->empty(cmd_subs)) {
+      cmd = cmd_stream->get(cmd_subs);
       // process the command.
       execCommand(cmd);
       exitflag |= (cmd->target == Command::STOP); 
-      cmd_stream->free(cmd); 
     }
     else if (!tx_stream_on || cw_tx_mode) {
       // read audio information and throw it away. 
-      audio_ifc->recv(audio_buf, audio_buffer_size, true);
+      audio_ifc->recv(audio_buf.data(), audio_buf.size(), true);
       usleep(1000); 
     }
     else {
       // If we're in TX mode that isn't CW....
       // get an input audio buffer.
-      if (tx_stream_on && audio_ifc->recv(audio_buf, audio_buffer_size, true)) { 
-	SoDa::Buf * txbuf = NULL; 
-	float * audio_tx_buffer = audio_buf; 
+      if (tx_stream_on && audio_ifc->recv(audio_buf.data(), audio_buf.size(), true)) { 
+	SoDa::BufPtr txbuf = NULL; 
+	std::vector<float> * audio_tx_buffer = & audio_buf; 
 
 	if(tx_noise_source_ena) {
-	  audio_tx_buffer = noise_buffer; 	  
+	  audio_tx_buffer = &noise_buffer; 	  
 	}
 
 	// If we're using NOISE, we don't want to overwrite the 
@@ -172,24 +168,24 @@ void SoDa::BaseBandTX::run()
 	// If we're using NOISE and we aren't filtering, then audio_tx_buffer
 	// still points to the NOISE buffer. 
 	if(tx_audio_filter_ena) {
-	  tx_audio_filter->apply(audio_tx_buffer, audio_buf);
-	  audio_tx_buffer = audio_buf; 
+	  tx_audio_filter->apply(*audio_tx_buffer, audio_buf);
+	  audio_tx_buffer = & audio_buf; 
 	}
 	
 	if(tx_mode == SoDa::Command::USB) {
-	  txbuf = modulateAM(audio_tx_buffer, audio_buffer_size, true, false); 
+	  txbuf = modulateAM(*audio_tx_buffer, true, false); 
 	}
 	else if(tx_mode == SoDa::Command::LSB) {
-	  txbuf = modulateAM(audio_tx_buffer, audio_buffer_size, false, true); 
+	  txbuf = modulateAM(*audio_tx_buffer, false, true); 
 	}
 	else if(tx_mode == SoDa::Command::AM) {
-	  txbuf = modulateAM(audio_tx_buffer, audio_buffer_size, false, false); 
+	  txbuf = modulateAM(*audio_tx_buffer, false, false); 
 	}
 	else if(tx_mode == SoDa::Command::NBFM) {
-	  txbuf = modulateFM(audio_tx_buffer, audio_buffer_size, nbfm_deviation);
+	  txbuf = modulateFM(*audio_tx_buffer, nbfm_deviation);
 	}
 	else if(tx_mode == SoDa::Command::WBFM) {
-	  txbuf = modulateFM(audio_tx_buffer, audio_buffer_size, wbfm_deviation);
+	  txbuf = modulateFM(*audio_tx_buffer, wbfm_deviation);
 	}
 	if(txbuf != NULL) {
 	  tx_stream->put(txbuf); 
@@ -200,12 +196,10 @@ void SoDa::BaseBandTX::run()
   }
 }
 
-SoDa::Buf * SoDa::BaseBandTX::modulateAM(float * audio_buf,
-					  unsigned int len,
+SoDa::BufPtr SoDa::BaseBandTX::modulateAM(std::vector<float> & audio_buf,
 					  bool is_usb,
 					  bool is_lsb)
 {
-  (void) len; 
   /// If the modulation scheme is USB or SSB,
   /// we need to make an analytic signal from the scalar real audio_buf.
   
@@ -227,13 +221,7 @@ SoDa::Buf * SoDa::BaseBandTX::modulateAM(float * audio_buf,
 
   /// Now that the I/Q channels have been populated, get a transmit buffer. 
   /// and upsample the I/Q audio up to the RF rate.
-  SoDa::Buf * txbuf = tx_stream->alloc();
-  if(txbuf == NULL) {
-    txbuf = new SoDa::Buf(tx_buffer_size); 
-  }
-  if(txbuf->getComplexLen() < tx_buffer_size) {
-    throw SoDa::Radio::Exception("Transmit signal buffer was a bad size.", this);
-  }
+  SoDa::BufPtr txbuf = SoDa::Buf::make(tx_buffer_size);
   
   /// Upsample the IQ audio (at 48KS/s) to the RF sample rate of 625 KS/s
   interpolator->apply(audio_IQ_buf, txbuf->getComplexBuf()); 
@@ -243,9 +231,9 @@ SoDa::Buf * SoDa::BaseBandTX::modulateAM(float * audio_buf,
 }
 
 
-SoDa::Buf * SoDa::BaseBandTX::modulateFM(float *audio_buf, unsigned int len, double deviation)
+SoDa::BufPtr SoDa::BaseBandTX::modulateFM(std::vector<float> & audio_buf, 
+					 double deviation)
 {
-  (void) len; 
   unsigned int i;
   
   for(i=0; i < audio_buffer_size; i++) {
@@ -269,14 +257,8 @@ SoDa::Buf * SoDa::BaseBandTX::modulateFM(float *audio_buf, unsigned int len, dou
     audio_IQ_buf[i] = std::complex<float>(oi,oq);
   }
  
-  SoDa::Buf * txbuf = tx_stream->alloc();
-  if(txbuf == NULL){
-    txbuf = new SoDa::Buf(tx_buffer_size);
-  }
+  SoDa::BufPtr txbuf = SoDa::Buf::make(tx_buffer_size);
 
-  if(txbuf->getComplexLen() < tx_buffer_size){
-    throw  SoDa::Radio::Exception("FM: Transmit signal buffer was a bad size.",this);
-  }
   // Upsample the IQ audio (at 48KS/s) to the RF sample rate of 625 KS/s
   interpolator->apply(audio_IQ_buf, txbuf->getComplexBuf());
 
@@ -285,7 +267,7 @@ SoDa::Buf * SoDa::BaseBandTX::modulateFM(float *audio_buf, unsigned int len, dou
 }
 
 
-void SoDa::BaseBandTX::execSetCommand(SoDa::Command * cmd)
+void SoDa::BaseBandTX::execSetCommand(SoDa::CommandPtr cmd)
 {
 
   switch (cmd->target) {
@@ -328,8 +310,8 @@ void SoDa::BaseBandTX::execSetCommand(SoDa::Command * cmd)
     // audio gain is passed around as linear (in dB), but
     // gets converted before we set the envelope power.
     af_gain = powf(10.0, 0.1 * (cmd->dparms[0] - 50.0));
-    cmd_stream->put(new Command(Command::REP, Command::TX_AF_GAIN, 
-				50 + 10.0 * log10(af_gain)));
+    cmd_stream->put(Command::make(Command::REP, Command::TX_AF_GAIN, 
+				  50 + 10.0 * log10(af_gain)));
     break; 
   case SoDa::Command::TX_AUDIO_IN:
     if(cmd->iparms[0] == Command::NOISE) {
@@ -357,23 +339,28 @@ void SoDa::BaseBandTX::execSetCommand(SoDa::Command * cmd)
   }
 }
 
-void SoDa::BaseBandTX::execGetCommand(SoDa::Command * cmd)
+void SoDa::BaseBandTX::execGetCommand(SoDa::CommandPtr cmd)
 {
   (void) cmd; 
 }
 
-void SoDa::BaseBandTX::execRepCommand(SoDa::Command * cmd)
+void SoDa::BaseBandTX::execRepCommand(SoDa::CommandPtr cmd)
 {
   (void) cmd; 
 }
 
 /// implement the subscription method
-void SoDa::BaseBandTX::subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p)
+void SoDa::BaseBandTX::subscribeToMailBox(const std::string & mbox_name, MailBoxBasePtr mbox_p)
 {
-  if(SoDa::connectMailBox<SoDa::CmdMBox>(this, cmd_stream, "CMD", mbox_name, mbox_p)) {
+  auto cmd_tmp = SoDa::MailBoxBase::convert<SoDa::MailBox<CommandPtr>>(mbox_p);
+  if(cmd_tmp != nullptr) {
+    cmd_stream = cmd_tmp;
     cmd_subs = cmd_stream->subscribe();
   }
-  if(SoDa::connectMailBox<SoDa::DatMBox>(this, tx_stream, "TX", mbox_name, mbox_p)) {
-    // we subscribe
+
+  auto tx_tmp = SoDa::MailBoxBase::convert<SoDa::MailBox<BufPtr>>(mbox_p);
+  // publish only
+  if(tx_tmp != nullptr) {
+    tx_stream = tx_tmp;
   }
 }

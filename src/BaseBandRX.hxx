@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012,2013,2014 Matthew H. Reilly (kb1vc)
+Copyright (c) 2012,2013,2014,2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,20 +25,20 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-
-#ifndef BASEBANDRX_HDR
-#define BASEBANDRX_HDR
+#pragma once
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
 #include "Params.hxx"
-#include "MultiMBox.hxx"
+
 #include "Command.hxx"
-#include "OSFilter.hxx"
 #include "HilbertTransformer.hxx"
-#include <SoDa/ReSampler.hxx>
 #include "AudioIfc.hxx"
 #include "MedianFilter.hxx"
 #include "BufferPool.hxx"
+
+#include <SoDa/ReSampler.hxx>
+#include <SoDa/OSFilter.hxx>
+#include <SoDa/MailBox.hxx>
 
 #include <queue>
 #include <mutex>
@@ -56,7 +56,12 @@ namespace SoDa {
    *
    * In most cases (all but Wide Band FM) the rx stream is downselected
    * by a 625 to 48 resampler before being passed through an audio filter
-   * and finally demodulated.
+   * and finally demodulated.  (Some radios require a different RF sample
+   * rate -- Ettus N3xx for instance can't go that low, and some non USRP
+   * radios use sample rates that have nothing to do with 10 MHz. In all
+   * cases, we ask the parameter unit for the RF sample rate, and
+   * setup about 50 ms of buffer space. 
+   * 
    *
    * As each buffer/timeslice is demodulated, it
    * is placed on a queue of outbound audio blocks for the host processor's
@@ -83,7 +88,7 @@ namespace SoDa {
 	       AudioIfc * audio_ifc);
 
     /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
+    void subscribeToMailBox(const std::string & mbox_name, MailBoxBasePtr mbox_p);
     
     /**
      * @brief the run method -- does the work of the audio receiver process
@@ -95,17 +100,17 @@ namespace SoDa {
      * @brief execute GET commands from the command channel
      * @param cmd the incoming command
      */
-    void execGetCommand(Command * cmd); 
+    void execGetCommand(CommandPtr cmd); 
     /**
      * @brief handle SET commands from the command channel
      * @param cmd the incoming command
      */
-    void execSetCommand(Command * cmd); 
+    void execSetCommand(CommandPtr cmd); 
     /**
      * @brief handle Report commands from the command channel
      * @param cmd the incoming command
      */
-    void execRepCommand(Command * cmd); 
+    void execRepCommand(CommandPtr cmd); 
 
     /**
      * @brief demodulate the input stream as an SSB signal
@@ -114,7 +119,7 @@ namespace SoDa {
      * @param drxbuf downsampled  RF input buffer
      * @param mod modulation type -- LSB, USB, CW_U, or CW_R
      */
-    void demodulateSSB(std::complex<float> * drxbuf,
+    void demodulateSSB(SoDa::BufPtr drxbuf,
 		       SoDa::Command::ModulationType mod); 
 
     /**
@@ -123,7 +128,7 @@ namespace SoDa {
      *
      * @param drxbuf downsampled  RF input buffer
      */
-    void demodulateAM(std::complex<float> * drxbuf);
+    void demodulateAM(SoDa::BufPtr drxbuf);
 
     /**
      * @brief demodulate the input stream as a narrowband frequency modulated signal
@@ -133,7 +138,7 @@ namespace SoDa {
      * @param mod modulation type -- NBFM
      * @param af_gain factor to goose the audio output
      */
-    void demodulateNBFM(std::complex<float> * drxbuf,
+    void demodulateNBFM(SoDa::BufPtr drxbuf,
 			SoDa::Command::ModulationType mod,
 			float af_gain); 
 
@@ -148,7 +153,7 @@ namespace SoDa {
      * @param mod modulation type -- WBFM
      * @param af_gain factor to goose the audio output
      */
-    void demodulateWBFM(SoDa::Buf * rxbuf,
+    void demodulateWBFM(SoDa::BufPtr rxbuf,
 			SoDa::Command::ModulationType mod,
 			float af_gain);
 
@@ -159,7 +164,7 @@ namespace SoDa {
      *
      * @param rxbuf RF input buffer
      */
-    void demodulate(SoDa::Buf * rxbuf);
+    void demodulate(SoDa::BufPtr rxbuf);
 
     /**
      * @brief send a report of the lower and upper edges of the IF passband
@@ -178,10 +183,10 @@ namespace SoDa {
 
     SoDa::Command::ModulationType rx_modulation; ///< current receive modulation mode (USB,LSB,CW_U,CW_L,NBFM,WBFM,AM,...)
     
-    DatMBox * rx_stream; ///< mailbox producing rx sample stream from USRP
-    CmdMBox * cmd_stream; ///< mailbox producing command stream from user
-    unsigned int rx_subs; ///< mailbox subscription ID for rx data stream
-    unsigned int cmd_subs; ///< mailbox subscription ID for command stream
+    DatMBoxPtr rx_stream; ///< mailbox producing rx sample stream from USRP
+    CmdMBoxPtr cmd_stream; ///< mailbox producing command stream from user
+    DatMBox::Subscription rx_subs; ///< mailbox subscription ID for rx data stream
+    CmdMBox::Subscription cmd_subs; ///< mailbox subscription ID for command stream
 
     AudioIfc * audio_ifc; ///< pointer to the audio interface (output) object
     
@@ -193,7 +198,7 @@ namespace SoDa {
      * @param b pointer to an audio buffer
      *
      */
-    void pendAudioBuffer(float * b); 
+    void pendAudioBuffer(SoDa::BufPtr b); 
     
     /**
      * @brief put an empty (zero signal) audio buffer on the pending for output list
@@ -232,12 +237,12 @@ namespace SoDa {
     std::mutex free_mutex; ///< lock for the free_buffers pool
     std::mutex ready_mutex; ///< lock for the ready_buffers_pool
 
-    float * sidetone_silence;  ///< a sequence of zero samples to stuff silence into the audio
+    SoDa::BufPtr sidetone_silence;  ///< a sequence of zero samples to stuff silence into the audio
 
     // resampler -- downsample from 625K samples / sec to 48K samples/sec
-    std::shared_ptr<SoDa::ReSampler> rf_resampler; ///< downsample the RF input to 48KS/s
+    SoDa::ReSamplerPtr rf_resampler; ///< downsample the RF input to 48KS/s
     // a second resampler for wideband fm    
-    std::shared_ptr<SoDa::ReSampler> wbfm_resampler; ///< downsample the RF input to 48KS/s for WBFM unit 
+    SoDa::ReSamplerPtr wbfm_resampler; ///< downsample the RF input to 48KS/s for WBFM unit 
 
     /**
      * @brief build the audio filter map for selected bandwidths
@@ -245,15 +250,15 @@ namespace SoDa {
     void buildFilterMap();
     
     SoDa::Command::AudioFilterBW af_filter_selection; ///< currently audio filter selector
-    SoDa::OSFilter * cur_audio_filter; ///< currently selected audio filter
-    SoDa::OSFilter * fm_audio_filter; ///< audio filter for FM (wider passband)
-    SoDa::OSFilter * am_pre_filter; ///< Before AM demod, we do some (6KHz) prefilter
-    SoDa::OSFilter * nbfm_pre_filter; ///< Before NBFM demod, we do some (15KHz) prefilter -- rf rate
-    SoDa::OSFilter * am_audio_filter; ///< After AM demod, we do a second filter
+    SoDa::OSFilterPtr cur_audio_filter; ///< currently selected audio filter
+    SoDa::OSFilterPtr fm_audio_filter; ///< audio filter for FM (wider passband)
+    SoDa::OSFilterPtr am_pre_filter; ///< Before AM demod, we do some (6KHz) prefilter
+    SoDa::OSFilterPtr nbfm_pre_filter; ///< Before NBFM demod, we do some (15KHz) prefilter -- rf rate
+    SoDa::OSFilterPtr am_audio_filter; ///< After AM demod, we do a second filter
 
     
     
-    std::map<SoDa::Command::AudioFilterBW, SoDa::OSFilter *> filter_map; ///< map filter selectors to the filter objects
+    std::map<SoDa::Command::AudioFilterBW, SoDa::OSFilterPtr> filter_map; ///< map filter selectors to the filter objects
 
     // hilbert transformer
     SoDa::HilbertTransformer * hilbert; ///< hilbert transform object for SSB/CW widgets
@@ -288,5 +293,3 @@ namespace SoDa {
   };
 }
 
-
-#endif

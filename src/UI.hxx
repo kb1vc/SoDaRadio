@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+Copyright (c) 2012, 2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,17 +25,18 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+#pragma once
 
-#ifndef UI_HDR
-#define UI_HDR
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
-#include "MultiMBox.hxx"
+
 #include "Command.hxx"
 #include "Params.hxx"
 #include "UI.hxx"
 #include "UDSockets.hxx"
 #include "Spectrogram.hxx"
+
+#include <SoDa/MailBox.hxx>
 
 namespace SoDa {
   class UI : public SoDa::Thread {
@@ -44,19 +45,20 @@ namespace SoDa {
     ~UI();
 
     /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
+    void subscribeToMailBox(const std::string & mbox_name, MailBoxBasePtr mbox_p);
     
     void run();
 
   private:
     // Do an FFT on an rx buffer and send the positive
     // frequencies to any network listeners. 
-    void sendFFT(SoDa::Buf * buf);
+    void sendFFT(SoDa::BufPtr buf);
 
     // the internal communications paths -- between the SoDa threads. 
-    CmdMBox * cwtxt_stream, * cmd_stream, * gps_stream;
-    DatMBox * if_stream; 
-    unsigned int if_subs, cmd_subs, gps_subs;
+    CmdMBoxPtr cwtxt_stream, cmd_stream, gps_stream;
+    DatMBoxPtr if_stream; 
+    CmdMBox::Subscription cmd_subs, gps_subs;
+    DatMBox::Subscription if_subs;
 
 
     // these are the pieces of the posix message queue interface to the GUI or whatever.
@@ -69,7 +71,7 @@ namespace SoDa {
     Spectrogram * lo_spectrogram; 
     unsigned int lo_spectrogram_buckets;
     double lo_hz_per_bucket;
-    float * lo_spectrum; 
+    std::vector<float> lo_spectrum; 
 
     // the spectrum runs from -100kHz below to 100kHz above the center freq. 
     static const double spectrum_span; // = 200e3; 
@@ -79,7 +81,7 @@ namespace SoDa {
     double hz_per_bucket; 
     int required_spect_buckets;
 
-    float * spectrum, * log_spectrum;
+    std::vector<float> spectrum, log_spectrum;
     bool new_spectrum_setting;
 
     float fft_acc_gain;
@@ -91,13 +93,12 @@ namespace SoDa {
     bool lo_check_mode;
 
     void updateSpectrumState();
-    void execSetCommand(Command * cmd);
-    void execGetCommand(Command * cmd);
-    void execRepCommand(Command * cmd);
+    void execSetCommand(CommandPtr cmd);
+    void execGetCommand(CommandPtr cmd);
+    void execRepCommand(CommandPtr cmd);
 
     void reportSpectrumCenterFreq();
   }; 
 }
 
 
-#endif

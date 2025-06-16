@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012,2013,2014 Matthew H. Reilly (kb1vc)
+Copyright (c) 2012,2013,2014,2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,8 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef SPECTROGRAM_HDR
-#define SPECTROGRAM_HDR
+#pragma once
+
 #include <fstream>
 #include <complex>
 #include <fftw3.h>
@@ -51,25 +51,23 @@ namespace SoDa {
      * an accumulation buffer.
      *
      * @param invec the input sample buffer
-     * @param inveclen the length of the buffer
      * @param outvec the result buffer
      * @param accumulation_gain (out = result + out * acc_gain)
      */
-    void apply_acc(std::complex<float> * invec, unsigned int inveclen,
-	       float * outvec, 
-	       float accumulation_gain = 0.0); 
+    void apply_acc(std::vector<std::complex<float>> & invec,
+		   std::vector<float> & outvec, 
+		   float accumulation_gain = 0.0); 
     
     /**
      * @brief Calculate the spectrogram from an input vector -- add it to
      * an accumulation buffer.
      *
      * @param invec the input sample buffer
-     * @param inveclen the length of the buffer
      * @param outvec the result buffer (out = max(result, out))
      * @param first if true, ignore contents of outvec... 
      */
-    void apply_max(std::complex<float> * invec, unsigned int inveclen,
-		   float * outvec, bool first = true);
+    void apply_max(std::vector<std::complex<float>> & invec,
+		   std::vector<float> & outvec, bool first = true);
 
     
   private:
@@ -82,10 +80,9 @@ namespace SoDa {
     /**
      * @brief this is the common spectrogram calculation (window + fft + mag)
      *
-     * @param invec the input sample buffer
-     * @param inveclen the length of the buffer
+     * @param invec the buffer we're going to operate on
      */
-    void apply_common(std::complex<float> * invec, unsigned int inveclen);
+    void apply_common(std::vector<std::complex<float>> & invec);
     
     fftwf_plan fftplan;
     float * window;
@@ -96,4 +93,3 @@ namespace SoDa {
   }; 
 }
 
-#endif

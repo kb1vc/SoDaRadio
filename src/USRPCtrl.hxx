@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+Copyright (c) 2012, 2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -34,23 +34,19 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ///  @author M. H. Reilly (kb1vc)
  ///  @date   July 2013
  ///
+#pragma once
 
-#ifndef USRPCTRL_HDR
-#define USRPCTRL_HDR
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
-#include "MultiMBox.hxx"
 #include "Command.hxx"
 #include "Params.hxx"
 #include "TRControl.hxx"
 #include "PropTree.hxx"
 #include <uhd/version.hpp>
-#if UHD_VERSION < 3110000
-#  include <uhd/utils/msg.hpp>
-#  include <uhd/utils/thread_priority.hpp>
-#else
-#  include <uhd/utils/thread.hpp>
-#endif
+
+#include <SoDa/MailBox.hxx>
+
+#include <uhd/utils/thread.hpp>
 
 
 #include <uhd/utils/safe_main.hpp>
@@ -294,4 +290,3 @@ namespace SoDa {
 }
 
 
-#endif

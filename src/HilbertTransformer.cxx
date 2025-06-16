@@ -68,7 +68,7 @@ SoDa::HilbertTransformer::HilbertTransformer(unsigned int inout_buffer_length,
   //  std::cerr << "\n\nHILBERT picked N = " << N << " Q = " << Q << " M = " << M << std::endl;
 
 
-  std::complex<float> htu[N], htl[N]; 
+  std::vector<std::complex<float>> htu(N), htl(N); 
 
   // create the impulse response images
   // There is probably a simpler way, but the obvious real/imag swap
@@ -78,13 +78,13 @@ SoDa::HilbertTransformer::HilbertTransformer(unsigned int inout_buffer_length,
   Pass_U_filter = (std::complex<float> *) fftwf_malloc(sizeof(std::complex<float>) * N);
   Pass_L_filter = (std::complex<float> *) fftwf_malloc(sizeof(std::complex<float>) * N);
   fftwf_plan HTu_plan = fftwf_plan_dft_1d(N,
-					 (fftwf_complex *) htu, (fftwf_complex *) HTu_filter, 
+					  (fftwf_complex *) htu.data(), (fftwf_complex *) HTu_filter, 
 					 FFTW_FORWARD, FFTW_ESTIMATE);
   if(HTu_plan == NULL) {
     throw SoDa::Radio::Exception("Hilbert had trouble creating HT upper plan...\n");
   }
   fftwf_plan HTl_plan = fftwf_plan_dft_1d(N,
-					 (fftwf_complex *) htl, (fftwf_complex *) HTl_filter, 
+					  (fftwf_complex *) htl.data(), (fftwf_complex *) HTl_filter, 
 					 FFTW_FORWARD, FFTW_ESTIMATE);
   if(HTl_plan == NULL) {
     throw SoDa::Radio::Exception("Hilbert had trouble creating HT lower plan...\n");
@@ -92,7 +92,7 @@ SoDa::HilbertTransformer::HilbertTransformer(unsigned int inout_buffer_length,
 
   // now build the time domain image of the filter.
   unsigned int i, j;
-  for(i = 0; i < N; i++) {
+  for(i = 0; i < htu.size(); i++) {
     htu[i] = htl[i] = std::complex<float>(0.0, 0.0);
   }
   // this is actually a scaled ht -- removing the Fs * 2 / pi scaling factor.
@@ -112,7 +112,7 @@ SoDa::HilbertTransformer::HilbertTransformer(unsigned int inout_buffer_length,
 
   // now do the delay filter
   fftwf_plan dly_plan = fftwf_plan_dft_1d(N,
-					 (fftwf_complex *) htu, (fftwf_complex *) Pass_U_filter, 
+					  (fftwf_complex *) htu.data(), (fftwf_complex *) Pass_U_filter, 
 					 FFTW_FORWARD, FFTW_ESTIMATE);
   // load up a new impulse response
   for(i = 0; i < N; i++) htu[i] = std::complex<float>(0.0, 0.0);
@@ -202,8 +202,8 @@ SoDa::HilbertTransformer::HilbertTransformer(unsigned int inout_buffer_length,
   passthrough_gain = H_transform_gain;
 }
 
-unsigned int SoDa::HilbertTransformer::apply(std::complex<float> * inbuf,
-					     std::complex<float> * outbuf,
+unsigned int SoDa::HilbertTransformer::apply(std::vector<std::complex<float>> & inbuf,
+					     std::vector<std::complex<float>> & outbuf,
 					     bool pos_sided, float gain)
 {
   unsigned int i, j;
@@ -222,7 +222,7 @@ unsigned int SoDa::HilbertTransformer::apply(std::complex<float> * inbuf,
   // Note we're using overlap-and-save  see the OSFilter implementation
   // or Lyons pages 719ff
   // copy the I channel to the tail of the input buffer.
-  memcpy(&(fft_I_input[Q-1]), inbuf, sizeof(std::complex<float>) * M);
+  memcpy(&(fft_I_input[Q-1]), inbuf.data(), sizeof(std::complex<float>) * M);
 
   // do a pass through
   fftwf_execute(forward_I_plan); 
@@ -256,8 +256,8 @@ unsigned int SoDa::HilbertTransformer::apply(std::complex<float> * inbuf,
 }
 
 
-unsigned int SoDa::HilbertTransformer::apply(float * inbuf,
-					     std::complex<float> * outbuf,
+unsigned int SoDa::HilbertTransformer::apply(std::vector<float> & inbuf,
+					     std::vector<std::complex<float>> & outbuf,
 					     bool pos_sided, float gain)
 {
   unsigned int i;
@@ -265,7 +265,7 @@ unsigned int SoDa::HilbertTransformer::apply(float * inbuf,
 
   // Note we're using overlap-and-save  see the OSFilter implementation
   // or Lyons pages 719ff
-  std::complex<float> cinbuf[M];
+  std::vector<std::complex<float>> cinbuf(M);
 
 
   // copy the I channel to the tail of the input buffer.
@@ -281,8 +281,8 @@ unsigned int SoDa::HilbertTransformer::apply(float * inbuf,
 }
 
 
-unsigned int SoDa::HilbertTransformer::applyIQ(std::complex<float> * inbuf,
-					       std::complex<float> * outbuf,
+unsigned int SoDa::HilbertTransformer::applyIQ(std::vector<std::complex<float>> & inbuf,
+					       std::vector<std::complex<float>> & outbuf,
 					       float gain)
 {
   unsigned int i, j;

@@ -28,6 +28,8 @@
 
 #include "MultiMBox.hxx"
 #include "SoDaBase.hxx"
+#include "SoDaThread.hxx"
+#include <memory>
 #include <iostream>
 #include <string>
 #include <boost/thread/mutex.hpp>
@@ -43,9 +45,13 @@ namespace SoDaTest {
       s = ss;
       cmd = _c;
       {
-	boost::mutex::scoped_lock lock(iomutex);
 	std::cerr << "Creating message [" << s << "," << cmd << "]" << std::endl;
       }
+    }
+
+    MyMsg(const MyMsg & other) {
+      s = other.s;
+      cmd = other.cmd;
     }
 
     MyMsg() {
@@ -53,45 +59,46 @@ namespace SoDaTest {
     }
 
     ~MyMsg() {
-      boost::mutex::scoped_lock lock(iomutex);
       std::cerr << "Destroying message [" << s << "," << cmd << "]" << std::endl;
     }
     std::string s;
     CMD cmd; 
   };
 
-  class MultiMBox_Test_Thread: public SoDa::SoDaThread {
+  typedef std::shared_ptr<MyMsg> MyMsgPtr; 
+
+  MyMsgPtr makeMsg(const std::string ss, MyMsg::CMD _c) {
+    return std::make_shared<MyMsg>(ss, _c);
+  }
+  
+  class MultiMBox_Test_Thread: public SoDa::Thread {
   public:
-    MultiMBox_Test_Thread(const std::string & n) : SoDaThread(n) {
+    MultiMBox_Test_Thread(const std::string & n) : SoDa::Thread(n) {
       name = n;
-      sub_count = 0; 
     }
 
-    void subscribe(SoDa::MultiMBox<MyMsg> * mbox) {
-      if(sub_count < 10) {
-	subscriptions[sub_count] = mbox->subscribe();
-	mboxes[sub_count] = mbox;
-	sub_count++; 
-      }
+    void subscribe(std::shared_ptr<SoDa::MultiMBox<MyMsgPtr>> mbox) {
+      subscriptions.push_back(mbox->subscribe());
+      mboxes.push_back(mbox);
     }
 
-    void execute(MyMsg * msg, int i) {
+    void execute(MyMsgPtr msg, int i) {
       {
 	boost::mutex::scoped_lock lock(iomutex);
-	std::cerr << "Process " << name << "got message " << msg->cmd << " " << msg->s << " subcount = " << sub_count << " i = " << i << std::endl;
+	std::cerr << "Process " << name << "got message " << msg->cmd << " " << msg->s << " subcount = " << mboxes.size() << " i = " << i << std::endl;
       }
       switch (msg->cmd) {
       case MyMsg::START:
-	if((i + 1) < sub_count) {
-	  mboxes[i+1]->put(new MyMsg("from" + name, MyMsg::KILL));
+	if((i + 1) < mboxes.size()) {
+	  mboxes[i+1]->put(makeMsg("from" + name, MyMsg::KILL));
 	  name = name + ".";
 	}
 	break;
       case MyMsg::BCAST:
 	break;
       case MyMsg::KILL:
-	if((i + 1) < sub_count) {
-	  mboxes[i+1]->put(new MyMsg("from" + name, MyMsg::KILL));
+	if((i + 1) < mboxes.size()) {
+	  mboxes[i+1]->put(makeMsg("from" + name, MyMsg::KILL));
 	  name = name + ".";
 	}
 	break;
@@ -108,14 +115,13 @@ namespace SoDaTest {
       // iterate through our subscriptions and print out the
       // contents of each one.
       int i;
-      MyMsg * msg;
+      MyMsgPtr msg;
       while(1) {
 	bool flag = false; 
-	for(i = 0; i < sub_count; i++) {
+	for(i = 0; i < mboxes.size(); i++) {
 	  // check to see if there is a message on the mailbox.
 	  if((msg = (mboxes[i]->get(subscriptions[i])))) {
 	    execute(msg, i);
-	    mboxes[i]->free(msg);
 	    flag = true; 
 	  }
 	}
@@ -127,9 +133,8 @@ namespace SoDaTest {
   
     std::string name;
 
-    int subscriptions[10];
-    SoDa::MultiMBox<MyMsg> * mboxes[10];
-    int sub_count;
+    std::vector<int> subscriptions;
+    std::vector<std::shared_ptr<SoDa::MultiMBox<MyMsgPtr>>> mboxes;
   }; 
 }
 
@@ -137,10 +142,10 @@ int main(int argc, char * argv[])
 {
   (void) argc; (void) argv; 
   
-  SoDa::MultiMBox<SoDaTest::MyMsg> * mbox[5];
+  std::shared_ptr<SoDa::MultiMBox<SoDaTest::MyMsgPtr>> mbox[5];
 
   int i;
-  for(i = 0; i < 5; i++) mbox[i] = new SoDa::MultiMBox<SoDaTest::MyMsg>(false); 
+  for(i = 0; i < 5; i++) mbox[i] = std::make_shared<SoDa::MultiMBox<SoDaTest::MyMsgPtr>>();
 
   SoDaTest::MultiMBox_Test_Thread a(std::string("A"));
   SoDaTest::MultiMBox_Test_Thread b(std::string("B"));
@@ -160,7 +165,7 @@ int main(int argc, char * argv[])
 
   for(i = 0; i < 5; i++) v[i]->start();
 
-  mbox[0]->put(new SoDaTest::MyMsg("first_toall", SoDaTest::MyMsg::START));
+  mbox[0]->put(makeMsg("first_toall", SoDaTest::MyMsg::START));
   while(1) {
     usleep(10000);
   }

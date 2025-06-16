@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012,2013,2014 Matthew H. Reilly (kb1vc)
+Copyright (c) 2012,2013,2014, 2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,11 +25,9 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef CW_GENERATOR_HDR
-#define CW_GENERATOR_HDR
+#pragma once
 
 #include "SoDaBase.hxx"
-#include "MultiMBox.hxx"
 #include "Command.hxx"
 #include "Params.hxx"
 #include <map>
@@ -49,7 +47,7 @@ namespace SoDa {
      * @param _samp_rate sample rate for outbound envelope
      * @param _env_buf_len length of outbound buffer
      */
-    CWGenerator(DatMBox * cw_env_stream, double _samp_rate, unsigned int _env_buf_len);
+    CWGenerator(DatMBoxPtr cw_env_stream, double _samp_rate, unsigned int _env_buf_len);
 
     /**
      * @brief set the speed of the cw stream in words per minute
@@ -81,9 +79,8 @@ namespace SoDa {
     /**
      * @brief add a buffer of envelope pieces to the outgoing envelope buffer
      * @param v vector of floating point envelope amplitudes
-     * @param vlen length of envelope segment
      */
-    void appendToOut(const float * v, unsigned int vlen);
+    void appendToOut(std::vector<float> & v);
 
     /**
      * @brief push the current buffer out to the transmitter, filling it with zeros
@@ -96,27 +93,12 @@ namespace SoDa {
     void clearBuffer();
 
     /**
-     * @brief get an envelope that we can fill in
-     * @return a pointer to a floating point envelope buffer
-     */
-    SoDa::Buf * getFreeSoDaBuf() {
-      SoDa::Buf * sb = NULL;
-      if(env_stream != NULL) {
-	sb = env_stream->alloc();
-      }
-      if(sb == NULL) {
-	sb = new SoDa::Buf(env_buf_len); 
-      }
-      return sb; 
-    }
-
-    /**
      * @brief setup the mapping from ascii character to morse sequence
      */
     void initMorseMap();
     
     // configuration params. 
-    DatMBox * env_stream;  ///< this is the stream we send envelope buffers into. 
+    DatMBoxPtr env_stream;  ///< this is the stream we send envelope buffers into. 
     double sample_rate;  ///< we need to know how long a sample is (in time)
     unsigned int env_buf_len; ///< the length of an envelope buffer 
 
@@ -127,26 +109,20 @@ namespace SoDa {
     unsigned int bufs_per_sec; ///< number of envelope buffers required per second.
 
     // envelopes are float buffers.
-    float * dit; ///< prototype dit buffer
-    unsigned int dit_len; ///< number of samples in  prototype dit
-    float * dah; ///< prototype dah buffer
-    unsigned int dah_len; ///< number of samples in prototype dah
-    float * inter_char_space; ///< prototype space between characters
-    unsigned int ics_len; ///< number of samples in prototype space between characters
-    float * inter_word_space; ///< prototype space between words
-    unsigned int first_iws_len; ///< number of samples in prototype space between words
-    unsigned int iws_len; ///< if space is repeated, number of samples in prototype space between words
+    std::vector<float> dit; ///< prototype dit buffer
+    std::vector<float> dah; ///< prototype dah buffer
+    std::vector<float> inter_char_space; ///< prototype space between characters
+    std::vector<float> inter_word_space; ///< prototype space between words
     
     // edges are float buffers too
-    float * rising_edge; ///< a gentle shape for the leading edge of a pulse
-    float * falling_edge; ///< a gentle shape for the trailing edge of a pulse
+    std::vector<float> rising_edge; ///< a gentle shape for the leading edge of a pulse
+    std::vector<float> falling_edge; ///< a gentle shape for the trailing edge of a pulse
 
     static std::map<char, std::string> morse_map; ///< map from ascii character to dits-and-dahs
 
     // current output buffer
-    SoDa::Buf * cur_buf; ///< the current envelope to be filled in
+    SoDa::BufPtr cur_buf; ///< the current envelope to be filled in
     unsigned int cur_buf_idx; ///< where are we in the buffer? 
-    unsigned int cur_buf_len; ///< how much of the buffer is unfilled? 
     
     // state of the translator
     bool in_digraph; ///< if true, we're sending a two-character (no inter-char space) sequence (like _AR)
@@ -154,4 +130,3 @@ namespace SoDa {
   }; 
 }
 
-#endif

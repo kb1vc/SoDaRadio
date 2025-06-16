@@ -30,13 +30,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define USRPRX_HDR
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
-#include "MultiMBox.hxx"
+
 #include "Command.hxx"
 #include "Params.hxx"
 #include "UI.hxx"
 #include "QuadratureOscillator.hxx"
 #include <uhd/usrp/multi_usrp.hpp>
 #include <uhd/stream.hpp>
+
+#include <SoDa/MailBox.hxx>
 
 namespace SoDa {
   /**

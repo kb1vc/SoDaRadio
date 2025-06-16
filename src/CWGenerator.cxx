@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+Copyright (c) 2012, 2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -38,7 +38,7 @@ using namespace SoDa;
 
 std::map<char, std::string> CWGenerator::morse_map; 
 
-CWGenerator::CWGenerator(DatMBox * cw_env_stream, double _samp_rate, unsigned int _env_buf_len)
+CWGenerator::CWGenerator(DatMBoxPtr cw_env_stream, double _samp_rate, unsigned int _env_buf_len)
 {
   env_stream = cw_env_stream;
   sample_rate = _samp_rate;
@@ -51,8 +51,8 @@ CWGenerator::CWGenerator(DatMBox * cw_env_stream, double _samp_rate, unsigned in
   // Thats
   edge_sample_count = (int) round(0.005 * sample_rate);
 
-  rising_edge = new float[edge_sample_count];
-  falling_edge = new float[edge_sample_count];
+  rising_edge.resize(edge_sample_count);
+  falling_edge.resize(edge_sample_count);
   
   // make a soft rising edge
   // and a soft falling edge
@@ -64,25 +64,17 @@ CWGenerator::CWGenerator(DatMBox * cw_env_stream, double _samp_rate, unsigned in
     ang += ang_incr; 
   }
 
-  // now allocate the worst case dit and dah buffers.
-  unsigned int dit_samples = (unsigned int) (round(sample_rate * 2.6)); 
-  dit = new float[dit_samples];  // "dit is mark + space"
-  dah = new float[dit_samples * 2]; // "dah is mark mark mark + space"
-  inter_word_space = new float[dit_samples * 3];
-  inter_char_space = inter_word_space; 
 
   // and set a default speed
   setCWSpeed(10);
 
   // allocate our first outbound buffer
-  cur_buf = getFreeSoDaBuf();
+  cur_buf = SoDa::Buf::make(env_buf_len);
   cur_buf_idx = 0; 
   // we really want a buffer that is the complex length. 
-  cur_buf_len = cur_buf->getComplexMaxLen(); 
 
   // how big is this buffer, and how many of them do I need for 1 second of TX time.
-  unsigned int blen = cur_buf->getComplexMaxLen();
-  bufs_per_sec = (unsigned int) (sample_rate / ((double) blen));
+  bufs_per_sec = (unsigned int) (sample_rate / ((double) env_buf_len));
 
   // we aren't in the middle of a digraph right now. 
   in_digraph = false; 
@@ -93,7 +85,7 @@ bool CWGenerator::readyForMore()
 {
   // if we've got less than 1 second's worth of
   // elements buffered up, then return true;
-  unsigned int ifc = env_stream->inFlightCount();
+  unsigned int ifc = env_stream->minReadyCount();
 
   return (ifc < bufs_per_sec); 
 }
@@ -153,72 +145,71 @@ void CWGenerator::setCWSpeed(unsigned int wpm)
   unsigned int dot_samples = (int) round(sample_rate * dot_time_s);
   unsigned int dah_samples = dot_samples * 3; 
 
+  // clear out the vectors
+  dit.clear();
+  dah.clear();
+  inter_word_space.clear();
+  inter_char_space.clear();
+    
+  
   // now create the dit, dah, and space pattern.
   unsigned int i, j;
   for(i = 0; i < edge_sample_count; i++) {
-    dit[i] = rising_edge[i]; 
+    dit.push_back(rising_edge[i]);
   }
   for(; i < (dot_samples - edge_sample_count); i++) {
-    dit[i] = 1.0; 
+    dit.push_back(1.0); 
   }
   for(j = 0; i < dot_samples; i++, j++) {
-    dit[i] = falling_edge[j]; 
+    dit.push_back(falling_edge[j]); 
   }
   for(; i < dot_samples * 2; i++) {
-    dit[i] = 0.0; 
+    dit.push_back(0.0); 
   }
-  dit_len = i; 
 
   for(i = 0; i < edge_sample_count; i++) {
-    dah[i] = rising_edge[i]; 
+    dah.push_back(rising_edge[i]);
   }
   for(; i < (dah_samples - edge_sample_count); i++) {
-    dah[i] = 1.0; 
+    dah.push_back(1.0); 
   }
   for(j = 0; i < dah_samples; i++, j++) {
-    dah[i] = falling_edge[j]; 
+    dah.push_back(falling_edge[j]); 
   }
   for(; i < dah_samples + dot_samples; i++) {
-    dah[i] = 0.0; 
+    dah.push_back(0.0); 
   }
-  dah_len = i;
 
-  ics_len = dit_len;
-  iws_len = dit_len * 3;
-  first_iws_len = iws_len - (ics_len / 2); 
-
-  for(i = 0; i < iws_len; i++) {
-    inter_word_space[i] = 0.0; 
+  for(i = 0; i < dit.size(); i++) {
+    inter_char_space.push_back(0.0);
+  }
+  for(i = 0; i < dit.size() * 3; i++) {
+    inter_word_space.push_back(0.0); 
   }
 }
 
-void CWGenerator::appendToOut(const float * v, unsigned int vlen)
+void CWGenerator::appendToOut(std::vector<float> & v)
 {
-  int svlen = vlen; 
-  while(svlen != 0) {
-    int left = cur_buf_len - (cur_buf_idx + 1);
-    float *dbuf = cur_buf->getFloatBuf();
+  // ok.  What we're trying to do here is to fill "cur_buf" with
+  // the samples in v.  Once cur_buf is filled, we'll put it on
+  // the message ring, and create a new buffer.
 
-    if(svlen <= left) {
-      memcpy(&(dbuf[cur_buf_idx]), v, svlen * sizeof(float));
-      cur_buf_idx += svlen;
-      svlen = 0; 
-    }
-    else {
-      // fill up the remainder of this buffer.
-      int remlen = cur_buf_len - cur_buf_idx;
-      memcpy(&(dbuf[cur_buf_idx]), v, remlen * sizeof(float));
-      v += remlen;
-      svlen -= remlen;
-      cur_buf_idx += remlen; 
-    }
-  
-    if(cur_buf_idx >= cur_buf_len) {
-      // post the buffer.
+  // because of the way the messaging works, cur_buf is really
+  // a pointer to a buffer message object. It contains an actual
+  // vector of floats (or complex floats).  That's the thing
+  // that we're filling up.
+
+  // We'll do this the simplest way possible first.
+  std::vector<float> & curvec = cur_buf->getFloatBuf();
+  for(auto vv : v) {
+    curvec[cur_buf_idx] = vv;
+    cur_buf_idx++;
+    if(cur_buf_idx == env_buf_len) {
+      // send the buffer
       env_stream->put(cur_buf);
-      cur_buf = getFreeSoDaBuf(); 
+      cur_buf = SoDa::Buf::make(env_buf_len);
       cur_buf_idx = 0;
-      cur_buf_len = cur_buf->getComplexMaxLen(); 
+      curvec = cur_buf->getFloatBuf();
     }
   }
 }
@@ -226,25 +217,23 @@ void CWGenerator::appendToOut(const float * v, unsigned int vlen)
 void CWGenerator::flushBuffer()
 {
   if(cur_buf_idx > 0) {
-    float *dbuf = cur_buf->getFloatBuf();
-    for(; cur_buf_idx < cur_buf_len; cur_buf_idx++) {
+    auto & dbuf = cur_buf->getFloatBuf();
+    for(; cur_buf_idx < env_buf_len; cur_buf_idx++) {
       // fill the rest with zeros
       dbuf[cur_buf_idx] = 0.0; 
     }
     // post the buffer.
     env_stream->put(cur_buf);
-    cur_buf = getFreeSoDaBuf();
+    cur_buf = SoDa::Buf::make(env_buf_len);    
     cur_buf_idx = 0;
-    cur_buf_len = cur_buf->getComplexMaxLen(); 
   }
 }
 
 void CWGenerator::clearBuffer()
 {
   if(cur_buf != NULL) {
+    cur_buf = SoDa::Buf::make(env_buf_len);
     cur_buf_idx = 0;
-    cur_buf_len = cur_buf->getComplexMaxLen();
-    cur_buf->setFloatLen(cur_buf_len); 
   }
 }
 
@@ -261,10 +250,10 @@ bool CWGenerator::sendChar(char c)
   if(c == ' ') {
     in_digraph = false;
     if(last_was_space) {
-      appendToOut(inter_word_space, iws_len);       
+      appendToOut(inter_word_space);
     }
     else {
-      appendToOut(inter_word_space, first_iws_len);       
+      appendToOut(inter_word_space);
     }
     last_was_space = true;
     return true; 
@@ -279,14 +268,14 @@ bool CWGenerator::sendChar(char c)
 
   for(auto si : symb) {
     if(si == '.') {
-      appendToOut(dit, dit_len); 
+      appendToOut(dit);
     }
     else if(si == '-') {
-      appendToOut(dah, dah_len); 
+      appendToOut(dah);
     }
   }
 
-  if(!in_digraph) appendToOut(inter_char_space, ics_len);
+  if(!in_digraph) appendToOut(inter_char_space);
   else in_digraph = false; 
   
   return true; 

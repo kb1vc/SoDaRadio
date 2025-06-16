@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012,2013,2014 Matthew H. Reilly (kb1vc)
+Copyright (c) 2012,2013,2014, 2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,16 +26,15 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef USRPTX_HDR
-#define USRPTX_HDR
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
-#include "MultiMBox.hxx"
 #include "Command.hxx"
 #include "Params.hxx"
 #include "QuadratureOscillator.hxx"
 #include <uhd/usrp/multi_usrp.hpp>
 #include <uhd/stream.hpp>
+
+#include <SoDa/MailBox.hxx>
 
 namespace SoDa {
   /**
@@ -162,4 +161,3 @@ namespace SoDa {
 }
 
 
-#endif

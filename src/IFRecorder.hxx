@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2018 Matthew H. Reilly (kb1vc)
+Copyright (c) 2018, 2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,12 +26,9 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef IFRECORDER_HDR
-#define IFRECORDER_HDR
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
 #include "Params.hxx"
-#include "MultiMBox.hxx"
 #include "Command.hxx"
 
 #include <queue>
@@ -40,6 +37,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string>
 #include <fstream>
 
+#include <SoDa/MailBox.hxx>
 
 namespace SoDa {
   /**
@@ -118,8 +116,8 @@ namespace SoDa {
 
     double current_rx_center_freq; 
 
-    DatMBox * rx_stream; ///< mailbox producing rx sample stream from USRP
-    CmdMBox * cmd_stream; ///< mailbox producing command stream from user
+    DatMBoxPtr rx_stream; ///< mailbox producing rx sample stream from USRP
+    CmdMBoxPtr cmd_stream; ///< mailbox producing command stream from user
     unsigned int rx_subs; ///< mailbox subscription ID for rx data stream
     unsigned int cmd_subs; ///< mailbox subscription ID for command stream
 
@@ -127,6 +125,3 @@ namespace SoDa {
     bool write_stream_on; ///< when true, write each incoming buffer to the output stream. 
   };
 }
-
-
-#endif

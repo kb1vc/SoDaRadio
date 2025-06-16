@@ -13,11 +13,7 @@ set(SoDaServer_SRCS
     BaseBandTX.cxx
     UI.cxx
     Command.cxx
-    OSFilter.cxx
     HilbertTransformer.cxx
-    TDResamplerTables625x48.cxx
-    ReSampler.cxx
-    ReSamplers625x48.cxx
     Spectrogram.cxx
     CWGenerator.cxx
     GPSmon.cxx
@@ -102,7 +98,6 @@ set(Loadable_INCLS
   UDSockets.hxx
   IPSockets.hxx  
   Command.hxx
-  MultiMBox.hxx
   Debug.hxx
   )
 

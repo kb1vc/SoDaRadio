@@ -57,9 +57,10 @@ SoDa::UI::UI(Params * params) : SoDa::Thread("UI")
   // something with really bodacious resolution.
   lo_spectrogram_buckets = 16384;
   lo_spectrogram = new Spectrogram(lo_spectrogram_buckets);
-  lo_spectrum = new float[lo_spectrogram_buckets * 4];
-  for(unsigned int i = 0; i < lo_spectrogram_buckets; i++) {
-    lo_spectrum[i] = 0.0; 
+  lo_spectrum.resize(lo_spectrogram_buckets * 4);
+  
+  for(auto & ls : lo_spectrum) {
+    ls = 0.0;
   }
 
   // Now  how wide is a 200KHz wide chunk of spectrum, given
@@ -70,8 +71,8 @@ SoDa::UI::UI(Params * params) : SoDa::Thread("UI")
   lo_hz_per_bucket = rxrate / ((float) lo_spectrogram_buckets);
   
   // now allocate the buffer that we'll send to the UI
-  spectrum = new float[spectrogram_buckets * 4];
-  log_spectrum = new float[spectrogram_buckets * 4];
+  spectrum.resize(spectrogram_buckets * 4);
+  log_spectrum.resize(spectrogram_buckets * 4);
   // make it a little large, and "zero" it out to account for walking off the end...
   for(unsigned int i = 0; i < spectrogram_buckets * 4; i++) {
     spectrum[i] = 1e-20; 
@@ -88,15 +89,15 @@ SoDa::UI::UI(Params * params) : SoDa::Thread("UI")
 
 void SoDa::UI::updateSpectrumState()
 {
-  cmd_stream->put(new SoDa::Command(Command::REP, Command::SPEC_STEP,
+  cmd_stream->put(SoDa::Command::make(Command::REP, Command::SPEC_STEP,
 				    hz_per_bucket));
-  cmd_stream->put(new SoDa::Command(Command::REP, Command::SPEC_BUF_LEN,
+  cmd_stream->put(SoDa::Command::make(Command::REP, Command::SPEC_BUF_LEN,
 				    required_spect_buckets));
-  cmd_stream->put(new SoDa::Command(Command::REP, Command::SPEC_RANGE_LOW,
+  cmd_stream->put(SoDa::Command::make(Command::REP, Command::SPEC_RANGE_LOW,
 				    spectrum_center_freq - 0.5 * spectrum_span));
-  cmd_stream->put(new SoDa::Command(Command::REP, Command::SPEC_RANGE_HI,
+  cmd_stream->put(SoDa::Command::make(Command::REP, Command::SPEC_RANGE_HI,
 				    spectrum_center_freq + 0.5 * spectrum_span));
-  cmd_stream->put(new SoDa::Command(Command::REP, Command::SPEC_DIMS, 
+  cmd_stream->put(SoDa::Command::make(Command::REP, Command::SPEC_DIMS, 
 				    spectrum_center_freq, 
 				    spectrum_span, 
 				    ((double) required_spect_buckets)));
@@ -110,7 +111,7 @@ SoDa::UI::~UI()
 
 void SoDa::UI::run()
 {
-  SoDa::Command * net_cmd, * ring_cmd;
+  SoDa::CommandPtr net_cmd, ring_cmd;
 
   if((cwtxt_stream == NULL) || 
      (if_stream == NULL) || 
@@ -118,22 +119,22 @@ void SoDa::UI::run()
      (gps_stream == NULL)) {
     
       throw SoDa::Radio::Exception(SoDa::Format("Missing a stream connection %0 %1 %2 %3.\n") 
-			    .addU((unsigned long) cwtxt_stream, 'x')
-			    .addU((unsigned long) if_stream, 'x')
-			    .addU((unsigned long) cmd_stream, 'x')
-			    .addU((unsigned long) gps_stream, 'x'),
-			    this);	
+				   .addS(cwtxt_stream == nullptr ? "cwtxt_stream" : "")
+				   .addS(if_stream == nullptr ? "if_stream" : "")
+				   .addS(cmd_stream == nullptr ? "cmd_stream" : "")
+				   .addS(gps_stream == nullptr ? "gps_stream" : ""),
+				   this);
   }
   
   net_cmd = NULL;
   ring_cmd = NULL;
   
-  cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_FE_FREQ, 144.2e6));
-  cmd_stream->put(new SoDa::Command(Command::SET, Command::TX_FE_FREQ, 144.2e6));
-  cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_LO3_FREQ, 100e3));
-  cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_AF_FILTER, 1));
+  cmd_stream->put(SoDa::Command::make(Command::SET, Command::RX_FE_FREQ, 144.2e6));
+  cmd_stream->put(SoDa::Command::make(Command::SET, Command::TX_FE_FREQ, 144.2e6));
+  cmd_stream->put(SoDa::Command::make(Command::SET, Command::RX_LO3_FREQ, 100e3));
+  cmd_stream->put(SoDa::Command::make(Command::SET, Command::RX_AF_FILTER, 1));
   sleep_ms(100);
-  cmd_stream->put(new SoDa::Command(Command::SET, Command::TX_STATE, 0));
+  cmd_stream->put(SoDa::Command::make(Command::SET, Command::TX_STATE, 0));
 
   updateSpectrumState(); 
 
@@ -155,17 +156,17 @@ void SoDa::UI::run()
 	  .addS(SoDaRadio_VERSION)
 	  .addS(SoDaRadio_GIT_ID).str();
 	
-	SoDa::Command * vers_cmd = new SoDa::Command(Command::REP,
+	SoDa::CommandPtr vers_cmd = SoDa::Command::make(Command::REP,
 						     Command::SDR_VERSION,
 						     vers.c_str());
-	server_socket->put(vers_cmd, sizeof(SoDa::Command));
+	server_socket->put(vers_cmd.get(), sizeof(SoDa::Command));
 	new_connection = false; 
       }
       
       if(net_cmd == NULL) {
-	net_cmd = new SoDa::Command();
+	net_cmd = SoDa::Command::make();
       }
-      int stat = server_socket->get(net_cmd, sizeof(SoDa::Command));
+      int stat = server_socket->get(net_cmd.get(), sizeof(SoDa::Command));
       if(stat <= 0) {
 	socket_empty_count++; 
       }
@@ -188,43 +189,43 @@ void SoDa::UI::run()
       }
       if(net_cmd->target == SoDa::Command::STOP) {
 	// relay "stop" commands to the GPS unit. 
-	gps_stream->put(new SoDa::Command(Command::SET, Command::STOP, 0));
+	gps_stream->put(SoDa::Command::make(Command::SET, Command::STOP, 0));
 	break;
       }
       net_cmd = NULL; 
     }
 
-    while((ring_cmd = cmd_stream->get(cmd_subs)) != NULL) {
+    while(!cmd_stream->empty(cmd_subs)) {
+      ring_cmd = cmd_stream->get(cmd_subs);
       if(ring_cmd->cmd == SoDa::Command::REP) {
-	server_socket->put(ring_cmd, sizeof(SoDa::Command));
+	server_socket->put(ring_cmd.get(), sizeof(SoDa::Command));
       }
       // if(net_cmd->target == SoDa::Command::TX_CW_EMPTY) {
       // 	debugMsg("send TX_CW_EMPTY report to socket.\n"); 
       // }
       
       execCommand(ring_cmd); 
-      cmd_stream->free(ring_cmd);
       didwork = true; 
     }
 
-    while((ring_cmd = gps_stream->get(gps_subs)) != NULL) {
+    while(!gps_stream->empty(gps_subs)) {
+      ring_cmd = gps_stream->get(gps_subs);
       if(ring_cmd->cmd == SoDa::Command::REP) {
-	server_socket->put(ring_cmd, sizeof(SoDa::Command));
+	server_socket->put(ring_cmd.get(), sizeof(SoDa::Command));
       }
       execCommand(ring_cmd); 
-      gps_stream->free(ring_cmd);
       didwork = true; 
     }
       
     
     // listen ont the IF stream
     int bcount;
-    SoDa::Buf * if_buf; 
+    SoDa::BufPtr if_buf; 
     for(bcount = 0;
-	(bcount < 4) && ((if_buf = if_stream->get(if_subs)) != NULL);
+	(bcount < 4) && !if_stream->empty(if_subs);
 	bcount++) {
+      if_buf = if_stream->get(if_subs);
       sendFFT(if_buf);
-      if_stream->free(if_buf); 
     }
 
     // 
@@ -246,10 +247,10 @@ void SoDa::UI::run()
 void SoDa::UI::reportSpectrumCenterFreq()
 {
     server_socket->put(new SoDa::Command(Command::REP, Command::SPEC_RANGE_LOW,
-					 spectrum_center_freq - 0.5 * spectrum_span),
+					   spectrum_center_freq - 0.5 * spectrum_span),
 		       sizeof(SoDa::Command));
     server_socket->put(new SoDa::Command(Command::REP, Command::SPEC_RANGE_HI,
-					 spectrum_center_freq + 0.5 * spectrum_span),
+					   spectrum_center_freq + 0.5 * spectrum_span),
 		       sizeof(SoDa::Command));
     server_socket->put(new SoDa::Command(Command::REP, Command::SPEC_STEP,
 					 hz_per_bucket),
@@ -266,7 +267,7 @@ void SoDa::UI::reportSpectrumCenterFreq()
 }
 
 
-void SoDa::UI::execSetCommand(Command * cmd)
+void SoDa::UI::execSetCommand(CommandPtr cmd)
 {
   // when we get a SET SPEC_CENTER_FREQ
   switch(cmd->target) {
@@ -293,7 +294,7 @@ void SoDa::UI::execSetCommand(Command * cmd)
   }
 }
 
-void SoDa::UI::execGetCommand(Command * cmd)
+void SoDa::UI::execGetCommand(CommandPtr cmd)
 {
   switch(cmd->target) {
   case SoDa::Command::LO_OFFSET: // remember that we want to report
@@ -306,7 +307,7 @@ void SoDa::UI::execGetCommand(Command * cmd)
   }
 }
 
-void SoDa::UI::execRepCommand(Command * cmd)
+void SoDa::UI::execRepCommand(CommandPtr cmd)
 {
   switch(cmd->target) {
   case SoDa::Command::RX_FE_FREQ:
@@ -323,7 +324,7 @@ static unsigned int dbgctrfft = 0;
 static bool first_ready = true;
 static bool calc_max_first = true;
 
-void SoDa::UI::sendFFT(SoDa::Buf * buf)
+void SoDa::UI::sendFFT(SoDa::BufPtr buf)
 {
   fft_send_counter++; 
   dbgctrfft++; 
@@ -339,16 +340,18 @@ void SoDa::UI::sendFFT(SoDa::Buf * buf)
   // fft_update_interval times that we're called -- this will keep
   // the IP traffic to something reasonable. 
   if(lo_check_mode) {
-    lo_spectrogram->apply_acc(buf->getComplexBuf(), buf->getComplexLen(), lo_spectrum, (fft_send_counter == 0) ? 0.0 : 0.1);
+    lo_spectrogram->apply_acc(buf->getComplexBuf(), 
+			      lo_spectrum, (fft_send_counter == 0) ? 0.0 : 0.1);
   }
   else {
-    spectrogram->apply_acc(buf->getComplexBuf(), buf->getComplexLen(), spectrum,
+    spectrogram->apply_acc(buf->getComplexBuf(), 
+			   spectrum,
 			   (new_spectrum_setting) ? 0.0 : fft_acc_gain);
   }
   new_spectrum_setting = false; 
   calc_max_first = false; 
 
-  float * slice = spectrum;
+  float * slice = &(spectrum[0]);
   
   if(!lo_check_mode) {
     // find the right slice
@@ -388,18 +391,18 @@ void SoDa::UI::sendFFT(SoDa::Buf * buf)
     // send the report
     double freq = ((float) maxi) * lo_hz_per_bucket;
     debugMsg(SoDa::Format("offset = %0\n").addF(freq, 10, 6, 'e')); 
-    cmd_stream->put(new SoDa::Command(Command::REP, Command::LO_OFFSET,
+    cmd_stream->put(SoDa::Command::make(Command::REP, Command::LO_OFFSET,
 				      freq)); 
-    cmd_stream->put(new SoDa::Command(Command::REP, Command::SPEC_RANGE_LOW,
+    cmd_stream->put(SoDa::Command::make(Command::REP, Command::SPEC_RANGE_LOW,
 				      spectrum_center_freq - 0.5 * spectrum_span));
-    cmd_stream->put(new SoDa::Command(Command::REP, Command::SPEC_RANGE_HI,
+    cmd_stream->put(SoDa::Command::make(Command::REP, Command::SPEC_RANGE_HI,
 				      spectrum_center_freq + 0.5 * spectrum_span));
-    cmd_stream->put(new SoDa::Command(Command::REP, Command::SPEC_DIMS, 
+    cmd_stream->put(SoDa::Command::make(Command::REP, Command::SPEC_DIMS, 
 				      spectrum_center_freq, 
 				      spectrum_span, 
 				      ((double) required_spect_buckets)));
     // send the end-of-calib command
-    cmd_stream->put(new SoDa::Command(Command::SET, Command::LO_CHECK,
+    cmd_stream->put(SoDa::Command::make(Command::SET, Command::LO_CHECK,
 				      0.0)); 
   }
   else if((fft_send_counter >= fft_update_interval) && (slice != NULL)) {
@@ -407,7 +410,7 @@ void SoDa::UI::sendFFT(SoDa::Buf * buf)
     for(int i = 0; i < required_spect_buckets; i++) {
       log_spectrum[i] = 10.0 * log10(slice[i] * 0.05); 
     }
-    wfall_socket->put(log_spectrum, sizeof(float) * required_spect_buckets);
+    wfall_socket->put(log_spectrum.data(), sizeof(float) * required_spect_buckets);
     fft_send_counter = 0;
     calc_max_first = true; 
     float maxmag = 0.0;
@@ -421,18 +424,32 @@ void SoDa::UI::sendFFT(SoDa::Buf * buf)
 }
 
 /// implement the subscription method
-void SoDa::UI::subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p)
+void SoDa::UI::subscribeToMailBox(const std::string & mbox_name, MailBoxBasePtr mbox_p)
 {
-  if(SoDa::connectMailBox<SoDa::CmdMBox>(this, cmd_stream, "CMD", mbox_name, mbox_p)) {
+
+  auto cmd_tmp = SoDa::MailBoxBase::convert<SoDa::MailBox<CommandPtr>>(mbox_p);
+  if(cmd_tmp != nullptr) {
+    cmd_stream = cmd_tmp;
     cmd_subs = cmd_stream->subscribe();
   }
-  if(SoDa::connectMailBox<SoDa::CmdMBox>(this, cwtxt_stream, "CW_TXT", mbox_name, mbox_p)) {
-    // we publish here. 
-  }
-  if(SoDa::connectMailBox<SoDa::DatMBox>(this, if_stream, "IF", mbox_name, mbox_p)) {
-    if_subs = if_stream->subscribe();
-  }
-  if(SoDa::connectMailBox<SoDa::CmdMBox>(this, gps_stream, "GPS", mbox_name, mbox_p)) {
+
+  auto gps_tmp = SoDa::MailBoxBase::convert<SoDa::MailBox<CommandPtr>>(mbox_p);
+  if(gps_tmp != nullptr) {
+    gps_stream = gps_tmp;
     gps_subs = gps_stream->subscribe();
   }
+
+  auto if_tmp = SoDa::MailBoxBase::convert<SoDa::MailBox<BufPtr>>(mbox_p);
+  if(if_tmp != nullptr) {
+    if_stream = if_tmp;
+    if_subs = if_stream->subscribe();
+  }
+
+  
+  auto cwtxt_tmp = SoDa::MailBoxBase::convert<SoDa::MailBox<CommandPtr>>(mbox_p);
+  // publish only
+  if(cwtxt_tmp != nullptr) {
+    cwtxt_stream = cwtxt_tmp;
+  }
+  
 }
