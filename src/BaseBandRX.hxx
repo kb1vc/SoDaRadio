@@ -76,19 +76,39 @@ namespace SoDa {
    * USB, and LSB modulation via the phasing method, since both I and Q
    * channels are available. AM is performed with a simple magnitude detector.
    */
+
+  class BaseBandRX
+  typedef std::shared_ptr<BaseBandRX> BaseBandRXPtr;
+  typedef std::weak_ptr<BaseBandRX> BaseBandRXWeakPtr;
+  
   class BaseBandRX : public SoDa::Thread {
-  public:
+  private:
+    
     /**
      * @brief the constructor
      *
      * @param params command line parameter object
      * @param audio_ifc pointer to the audio output handler
      **/
-    BaseBandRX(Params * params,
-	       AudioIfc * audio_ifc);
+    BaseBandRX(ParamsPtr params,
+	       AudioIfcPtr audio_ifc);
 
+  public:
+    /**
+     * @brief the maker -- produces a shared pointer
+     *
+     * @param params command line parameter object
+     * @param audio_ifc pointer to the audio output handler
+     **/
+    static BaseBandRXPtr make(ParamsPtr params, AudioIfcPtr audio_ifc) {
+      auto ret = std::shared_ptr<BaseBandTX>(new BaseBandRX(params, audio_ifc));
+      ret->self = ret; 
+      return ret; 
+    }
+
+    
     /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, MailBoxBasePtr mbox_p);
+    void subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes);
     
     /**
      * @brief the run method -- does the work of the audio receiver process

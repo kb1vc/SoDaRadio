@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012, 2025 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -194,10 +194,9 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params) : SoDa::Thread("USRPCtrl")
 
 /// implement the subscription method
 void SoDa::USRPCtrl::subscribeToMailBox(const std::string & mbox_name, 
-					SoDa::BaseMBox * mbox_p) {
-  if(mbox_name == "CMD") {
-    SoDa::CmdMBoxPtr cmd_stream = SoDa::MailBoxBase::convert<SoDa::CmdMBoxPtr>(mbox_p, true);
-      // subscribe to the command stream.
+					SoDa::MailBoxBasePtr mbox_p) {
+  cmd_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<CommandPtr>>(mbox_p, "CMDstream");
+  if(cmd_stream != nullptr) {
     subid = cmd_stream->subscribe();
   }
 }
@@ -215,35 +214,35 @@ void SoDa::USRPCtrl::run()
   // for commands and responses on the command stream.
   
   // do the initial commands
-  cmd_stream->put(new Command(Command::SET, Command::RX_SAMP_RATE,
+  cmd_stream->put(Command::make(Command::SET, Command::RX_SAMP_RATE,
 			     params->getRXRate())); 
-  cmd_stream->put(new Command(Command::SET, Command::TX_SAMP_RATE,
+  cmd_stream->put(Command::make(Command::SET, Command::TX_SAMP_RATE,
 			     params->getTXRate()));
 
-  cmd_stream->put(new Command(Command::SET, Command::RX_ANT, 
+  cmd_stream->put(Command::make(Command::SET, Command::RX_ANT, 
 			     params->getRXAnt())); 
   debugMsg(SoDa::Format("Sending TX_ANT as [%0]\n").addS(params->getTXAnt()));
-  cmd_stream->put(new Command(Command::SET, Command::TX_ANT,
+  cmd_stream->put(Command::make(Command::SET, Command::TX_ANT,
 			     params->getTXAnt()));
-  cmd_stream->put(new Command(Command::SET, Command::CLOCK_SOURCE,
+  cmd_stream->put(Command::make(Command::SET, Command::CLOCK_SOURCE,
 			     params->getClockSource())); 
 
-  cmd_stream->put(new Command(Command::SET, Command::TX_RF_GAIN, 0.0)); 
-  cmd_stream->put(new Command(Command::SET, Command::RX_RF_GAIN, 0.0));
+  cmd_stream->put(Command::make(Command::SET, Command::TX_RF_GAIN, 0.0)); 
+  cmd_stream->put(Command::make(Command::SET, Command::RX_RF_GAIN, 0.0));
 
-  cmd_stream->put(new Command(Command::SET, Command::RX_AF_GAIN, 0.0));
+  cmd_stream->put(Command::make(Command::SET, Command::RX_AF_GAIN, 0.0));
 
   // transmitter is off
   tx_on = false; 
-  cmd_stream->put(new Command(Command::SET, Command::TX_STATE, 0)); 
+  cmd_stream->put(Command::make(Command::SET, Command::TX_STATE, 0)); 
   
   bool exitflag = false;
   unsigned int cmds_processed = 0;
   unsigned int loopcount = 0; 
   while(!exitflag) {
     loopcount++; 
-    Command * cmd = cmd_stream->get(subid);
-    if(cmd == NULL) {
+    CommandPtr cmd;
+    if(!cmd_stream->get(subid, cmd)) {
       sleep_ms(50);
     }
     else {
@@ -254,7 +253,6 @@ void SoDa::USRPCtrl::run()
       cmds_processed++; 
       execCommand(cmd);
       exitflag |= (cmd->target == Command::STOP); 
-      cmd_stream->free(cmd); 
     }
   }
 }
@@ -268,7 +266,7 @@ double SoDa::USRPCtrl::getTime()
   return ret; 
 }
 
-void SoDa::USRPCtrl::execCommand(Command * cmd)
+void SoDa::USRPCtrl::execCommand(CommandPtr cmd)
 {
   switch (cmd->cmd) {
   case Command::GET:
@@ -447,7 +445,7 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
   // If we are setting the RX mode, then we need to send
   // a message to the USRPRX to tell it what its IF freq should be.
   if((sel == 'r') && set_if_freq) {
-    cmd_stream->put(new Command(Command::SET, Command::RX_LO3_FREQ,
+    cmd_stream->put(Command::make(Command::SET, Command::RX_LO3_FREQ,
 				freq - target_rx_freq)); 
   }
 }
@@ -474,7 +472,7 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
  * @li RX_ANT set the receive antenna port
  * @li TX_ANT set the transmit antenna port
  */
-void SoDa::USRPCtrl::execSetCommand(Command * cmd)
+void SoDa::USRPCtrl::execSetCommand(CommandPtr cmd)
 {
   double freq, fdiff; 
   if(cmd->cmd != Command::SET) {
@@ -495,10 +493,10 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
 	     .addF(last_rx_tune_result.actual_dsp_freq, 10, 6, 'e'));
 
     if((fdiff < 200e3) && (fdiff > 100e3)) {
-      cmd_stream->put(new Command(Command::SET, Command::RX_LO3_FREQ, fdiff)); 
-      cmd_stream->put(new Command(Command::REP, Command::RX_FE_FREQ, 
+      cmd_stream->put(Command::make(Command::SET, Command::RX_LO3_FREQ, fdiff)); 
+      cmd_stream->put(Command::make(Command::REP, Command::RX_FE_FREQ, 
 				  last_rx_tune_result.actual_rf_freq - last_rx_tune_result.actual_dsp_freq));
-      cmd_stream->put(new Command(Command::REP, Command::RX_CENTER_FREQ, last_rx_tune_result.actual_rf_freq));
+      cmd_stream->put(Command::make(Command::REP, Command::RX_CENTER_FREQ, last_rx_tune_result.actual_rf_freq));
       
       break; 
     }
@@ -509,10 +507,10 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
     set1stLOFreq(cmd->dparms[0], 'r', cmd->target != Command::RX_TUNE_FREQ);
     // now adjust the 3rd lo (missing in int-N mode redo....)
     fdiff = freq - (last_rx_tune_result.actual_rf_freq - last_rx_tune_result.actual_dsp_freq);    
-    cmd_stream->put(new Command(Command::SET, Command::RX_LO3_FREQ, fdiff));     
-    cmd_stream->put(new Command(Command::REP, Command::RX_FE_FREQ, 
+    cmd_stream->put(Command::make(Command::SET, Command::RX_LO3_FREQ, fdiff));     
+    cmd_stream->put(Command::make(Command::REP, Command::RX_FE_FREQ, 
 			       last_rx_tune_result.actual_rf_freq - last_rx_tune_result.actual_dsp_freq)); 
-    cmd_stream->put(new Command(Command::REP, Command::RX_CENTER_FREQ, last_rx_tune_result.actual_rf_freq));
+    cmd_stream->put(Command::make(Command::REP, Command::RX_CENTER_FREQ, last_rx_tune_result.actual_rf_freq));
     break;
 
   case Command::LO_CHECK:
@@ -523,7 +521,7 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
       debugMsg(SoDa::Format("setting lo check freq to %0\n") .addF(cmd->dparms[0], 10, 6, 'e'));
       usrp->set_rx_freq(cmd->dparms[0]);
       // now send a GET lo offset command
-      cmd_stream->put(new Command(Command::GET, Command::LO_OFFSET, 0));
+      cmd_stream->put(Command::make(Command::GET, Command::LO_OFFSET, 0));
     }
     break;
 
@@ -532,19 +530,19 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
   case Command::TX_FE_FREQ:
     set1stLOFreq(cmd->dparms[0] + tx_freq_rxmode_offset, 't', false);
     tx_freq = cmd->dparms[0]; 
-    cmd_stream->put(new Command(Command::REP, Command::TX_FE_FREQ, 
+    cmd_stream->put(Command::make(Command::REP, Command::TX_FE_FREQ, 
 			       last_tx_tune_result.actual_rf_freq + last_tx_tune_result.actual_dsp_freq)); 
     break; 
 
   case Command::RX_SAMP_RATE:
     usrp->set_rx_rate(cmd->dparms[0]);
-    cmd_stream->put(new Command(Command::REP, Command::RX_SAMP_RATE, 
+    cmd_stream->put(Command::make(Command::REP, Command::RX_SAMP_RATE, 
 			       usrp->get_rx_rate())); 
     break; 
   case Command::TX_SAMP_RATE:
     tx_samp_rate = cmd->dparms[0]; 
     usrp->set_tx_rate(cmd->dparms[0]); 
-    cmd_stream->put(new Command(Command::REP, Command::TX_SAMP_RATE, 
+    cmd_stream->put(Command::make(Command::REP, Command::TX_SAMP_RATE, 
 			       usrp->get_tx_rate())); 
     break;
     
@@ -556,7 +554,7 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
     if(rx_rf_gain < rx_rf_gain_range.start()) rx_rf_gain = rx_rf_gain_range.start();
     if(!tx_on) {
       usrp->set_rx_gain(rx_rf_gain);
-      cmd_stream->put(new Command(Command::REP, Command::RX_RF_GAIN, 
+      cmd_stream->put(Command::make(Command::REP, Command::RX_RF_GAIN, 
 				  usrp->get_rx_gain()));
     }
     break; 
@@ -572,7 +570,7 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
 	     .addF(tx_rf_gain_range.stop(), 'e'));
     if(tx_on) {
       usrp->set_tx_gain(tx_rf_gain);
-      cmd_stream->put(new Command(Command::REP, Command::TX_RF_GAIN, 
+      cmd_stream->put(Command::make(Command::REP, Command::TX_RF_GAIN, 
 				  usrp->get_tx_gain())); 
     }
     break; 
@@ -584,7 +582,7 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
       bool full_duplex = cmd->iparms[1] != 0;
       if(!full_duplex) usrp->set_rx_gain(0.0); 
       usrp->set_tx_gain(tx_rf_gain); 
-      cmd_stream->put(new Command(Command::REP, Command::TX_RF_GAIN, 
+      cmd_stream->put(Command::make(Command::REP, Command::TX_RF_GAIN, 
 				  usrp->get_tx_gain()));
       // to move a birdie away, we bumped the TX LO,, move it back. 
       tx_freq_rxmode_offset = 0.0; // so tuning works.
@@ -605,7 +603,7 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
       }
       // and tell the TX unit to turn on the TX
       // This avoids the race between CTRL and TX/RX units for setup and teardown.... 
-      cmd_stream->put(new Command(Command::SET, Command::TX_STATE, 
+      cmd_stream->put(Command::make(Command::SET, Command::TX_STATE, 
 				  3, cmd->iparms[1]));
     }
     if(cmd->iparms[0] == 0) {
@@ -631,7 +629,7 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
       }
       // and tell the RX unit to turn on the RX
       // This avoids the race between CTRL and TX/RX units for setup and teardown.... 
-      cmd_stream->put(new Command(Command::SET, Command::TX_STATE, 
+      cmd_stream->put(Command::make(Command::SET, Command::TX_STATE, 
 				  2));
     }
     break; 
@@ -650,14 +648,14 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
   case Command::RX_ANT:
     setAntenna(cmd->sparm, 'r');
     debugMsg(SoDa::Format("Got RX antenna as [%0]\n").addS(usrp->get_rx_antenna()));
-    cmd_stream->put(new Command(Command::REP, Command::RX_ANT, usrp->get_rx_antenna()));
+    cmd_stream->put(Command::make(Command::REP, Command::RX_ANT, usrp->get_rx_antenna()));
     break; 
 
   case Command::TX_ANT:
     tx_ant = cmd->sparm; 
     setAntenna(cmd->sparm, 't');
     debugMsg(SoDa::Format("Got TX antenna as [%0]\n").addS(usrp->get_tx_antenna()));    
-    cmd_stream->put(new Command(Command::REP, Command::TX_ANT, usrp->get_tx_antenna()));
+    cmd_stream->put(Command::make(Command::REP, Command::TX_ANT, usrp->get_tx_antenna()));
     break;
 
   case Command::TVRT_LO_CONFIG:
@@ -679,34 +677,34 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
   }
 }
 
-void SoDa::USRPCtrl::execGetCommand(Command * cmd)
+void SoDa::USRPCtrl::execGetCommand(CommandPtr cmd)
 {
   int res;
 
   
   switch (cmd->target) {
   case Command::RX_FE_FREQ:
-    cmd_stream->put(new Command(Command::REP, Command::RX_FE_FREQ, 
+    cmd_stream->put(Command::make(Command::REP, Command::RX_FE_FREQ, 
 				last_rx_tune_result.actual_rf_freq,
 				last_rx_tune_result.actual_dsp_freq)); 
     break; 
   case Command::TX_FE_FREQ:
-    cmd_stream->put(new Command(Command::REP, Command::TX_FE_FREQ, 
+    cmd_stream->put(Command::make(Command::REP, Command::TX_FE_FREQ, 
 				last_tx_tune_result.actual_rf_freq,
 				last_tx_tune_result.actual_dsp_freq)); 
     break; 
 
   case Command::RX_SAMP_RATE:
-    cmd_stream->put(new Command(Command::REP, Command::RX_SAMP_RATE, 
+    cmd_stream->put(Command::make(Command::REP, Command::RX_SAMP_RATE, 
 			       usrp->get_rx_rate())); 
     break; 
   case Command::TX_SAMP_RATE:
-    cmd_stream->put(new Command(Command::REP, Command::TX_SAMP_RATE, 
+    cmd_stream->put(Command::make(Command::REP, Command::TX_SAMP_RATE, 
 			       usrp->get_tx_rate())); 
     break;
 
   case Command::TX_GAIN_RANGE:
-    cmd_stream->put(new Command(Command::REP, Command::TX_GAIN_RANGE,
+    cmd_stream->put(Command::make(Command::REP, Command::TX_GAIN_RANGE,
 				tx_rf_gain_range.start(), 
 				tx_rf_gain_range.stop()));
     break; 
@@ -725,12 +723,12 @@ void SoDa::USRPCtrl::execGetCommand(Command * cmd)
       }
     }
        
-    cmd_stream->put(new Command(Command::REP, Command::CLOCK_SOURCE,
+    cmd_stream->put(Command::make(Command::REP, Command::CLOCK_SOURCE,
 				res));
     break;
 
   case Command::HWMB_REP:
-    cmd_stream->put(new Command(Command::REP, Command::HWMB_REP,
+    cmd_stream->put(Command::make(Command::REP, Command::HWMB_REP,
 				SoDa::Format("%0\t%1 to %2 MHz")
 				.addS(motherboard_name)
 				.addF((rx_rf_freq_range.start() * 1e-6), 10, 6, 'e')
@@ -738,14 +736,14 @@ void SoDa::USRPCtrl::execGetCommand(Command * cmd)
     reportAntennas(); 
     reportModes();
     reportAFFilters();
-    cmd_stream->put(new Command(Command::REP, Command::INIT_SETUP_COMPLETE, 0));
+    cmd_stream->put(Command::make(Command::REP, Command::INIT_SETUP_COMPLETE, 0));
     break; 
   default:
     break; 
   }
 }
 
-void SoDa::USRPCtrl::execRepCommand(Command * cmd)
+void SoDa::USRPCtrl::execRepCommand(CommandPtr cmd)
 {
   switch (cmd->target) {
   default:
@@ -889,7 +887,7 @@ void SoDa::USRPCtrl::setTransverterLOFreqPower(double freq, double power)
 	   .addF(tvrt_lo_gain, 'e'));
   
   debugMsg("About to report Transverter LO setting.");
-  cmd_stream->put(new Command(Command::REP, Command::TVRT_LO_CONFIG, tvrt_lo_freq, power));  
+  cmd_stream->put(Command::make(Command::REP, Command::TVRT_LO_CONFIG, tvrt_lo_freq, power));  
 
 }
 
@@ -1081,35 +1079,35 @@ void SoDa::USRPCtrl::testIntNMode(bool force_int_N, bool force_frac_N)
 
 void SoDa::USRPCtrl::reportModes()
 {
-    cmd_stream->put(new Command(Command::REP, Command::MOD_SEL_ENTRY, 
+    cmd_stream->put(Command::make(Command::REP, Command::MOD_SEL_ENTRY, 
 				"CW_U", ((int) SoDa::Command::CW_U)));
-    cmd_stream->put(new Command(Command::REP, Command::MOD_SEL_ENTRY, 
+    cmd_stream->put(Command::make(Command::REP, Command::MOD_SEL_ENTRY, 
 				"USB", ((int) SoDa::Command::USB)));
-    cmd_stream->put(new Command(Command::REP, Command::MOD_SEL_ENTRY, 
+    cmd_stream->put(Command::make(Command::REP, Command::MOD_SEL_ENTRY, 
 				"CW_L", ((int) SoDa::Command::CW_L)));
-    cmd_stream->put(new Command(Command::REP, Command::MOD_SEL_ENTRY, 
+    cmd_stream->put(Command::make(Command::REP, Command::MOD_SEL_ENTRY, 
 				"LSB", ((int) SoDa::Command::LSB)));
-    cmd_stream->put(new Command(Command::REP, Command::MOD_SEL_ENTRY, 
+    cmd_stream->put(Command::make(Command::REP, Command::MOD_SEL_ENTRY, 
 				"AM", ((int) SoDa::Command::AM)));
-    cmd_stream->put(new Command(Command::REP, Command::MOD_SEL_ENTRY, 
+    cmd_stream->put(Command::make(Command::REP, Command::MOD_SEL_ENTRY, 
 				"WBFM", ((int) SoDa::Command::WBFM)));
-    cmd_stream->put(new Command(Command::REP, Command::MOD_SEL_ENTRY, 
+    cmd_stream->put(Command::make(Command::REP, Command::MOD_SEL_ENTRY, 
 				"NBFM", ((int) SoDa::Command::NBFM)));
 }
 
 void SoDa::USRPCtrl::reportAFFilters()
 {
-    cmd_stream->put(new Command(Command::REP, Command::AF_FILT_ENTRY,
+    cmd_stream->put(Command::make(Command::REP, Command::AF_FILT_ENTRY,
 				"100", ((int) SoDa::Command::BW_100)));
-    cmd_stream->put(new Command(Command::REP, Command::AF_FILT_ENTRY,
+    cmd_stream->put(Command::make(Command::REP, Command::AF_FILT_ENTRY,
 				"500", ((int) SoDa::Command::BW_500)));
-    cmd_stream->put(new Command(Command::REP, Command::AF_FILT_ENTRY,
+    cmd_stream->put(Command::make(Command::REP, Command::AF_FILT_ENTRY,
 				"2000", ((int) SoDa::Command::BW_2000)));
-    cmd_stream->put(new Command(Command::REP, Command::AF_FILT_ENTRY,
+    cmd_stream->put(Command::make(Command::REP, Command::AF_FILT_ENTRY,
 				"6000", ((int) SoDa::Command::BW_6000)));
-    cmd_stream->put(new Command(Command::REP, Command::AF_FILT_ENTRY,
+    cmd_stream->put(Command::make(Command::REP, Command::AF_FILT_ENTRY,
 				"WSPR", ((int) SoDa::Command::BW_WSPR)));
-    cmd_stream->put(new Command(Command::REP, Command::AF_FILT_ENTRY,
+    cmd_stream->put(Command::make(Command::REP, Command::AF_FILT_ENTRY,
 				"PASS", ((int) SoDa::Command::BW_PASS)));
 }
 
@@ -1119,14 +1117,14 @@ void SoDa::USRPCtrl::reportAntennas()
   for(auto ant: rx_ants) {
     debugMsg(SoDa::Format("Sending RX antenna list element [%0]\n")
 	     .addS(ant));
-    cmd_stream->put(new Command(Command::REP, Command::RX_ANT_NAME, 
+    cmd_stream->put(Command::make(Command::REP, Command::RX_ANT_NAME, 
 				ant)); 
   }
   std::vector<std::string> tx_ants = usrp->get_tx_antennas();
   for(auto ant: tx_ants) {
     debugMsg(SoDa::Format("Sending TX antenna list element [%0]\n")
 	     .addS(ant));
-    cmd_stream->put(new Command(Command::REP, Command::TX_ANT_NAME, 
+    cmd_stream->put(Command::make(Command::REP, Command::TX_ANT_NAME, 
 				ant)); 
 
   }

@@ -75,7 +75,7 @@ namespace SoDa {
     IFRecorder(Params * params);
 
     /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
+    void subscribeToMailBox(const std::string & mbox_name, SoDa::MailBoxBasePtr mbox_p);
     
     /**
      * @brief the run method -- does the work of the audio receiver process
@@ -87,17 +87,17 @@ namespace SoDa {
      * @brief execute GET commands from the command channel
      * @param cmd the incoming command
      */
-    void execGetCommand(Command * cmd); 
+    void execGetCommand(CommandPtr cmd); 
     /**
      * @brief handle SET commands from the command channel
      * @param cmd the incoming command
      */
-    void execSetCommand(Command * cmd); 
+    void execSetCommand(CommandPtr cmd); 
     /**
      * @brief handle Report commands from the command channel
      * @param cmd the incoming command
      */
-    void execRepCommand(Command * cmd); 
+    void execRepCommand(CommandPtr cmd); 
 
     /**
      * @brief open an output stream to receive the RF samples
@@ -118,8 +118,8 @@ namespace SoDa {
 
     DatMBoxPtr rx_stream; ///< mailbox producing rx sample stream from USRP
     CmdMBoxPtr cmd_stream; ///< mailbox producing command stream from user
-    unsigned int rx_subs; ///< mailbox subscription ID for rx data stream
-    unsigned int cmd_subs; ///< mailbox subscription ID for command stream
+    DatMBox::Subscription rx_subs; ///< mailbox subscription ID for rx data stream
+    CmdMBox::Subscription cmd_subs; ///< mailbox subscription ID for command stream
 
     std::ofstream ostr; ///< raw (binary) output stream.
     bool write_stream_on; ///< when true, write each incoming buffer to the output stream. 

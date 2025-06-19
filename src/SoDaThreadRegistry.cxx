@@ -19,19 +19,19 @@ void SoDa::ThreadRegistry::addThread(SoDa::Thread * thread, const std::string & 
 			  .addS(version)
 			  .addS(SoDaRadio_VERSION), thread);
   }
-  push_back(thread);
+  thread_list.push_back(thread);
 }
 
-void SoDa::ThreadRegistry::apply(std::function<bool(SoDa::Thread*)> f) {
-  for(auto el : *this) {
+void SoDa::ThreadRegistry::apply(std::function<bool(SoDa::ThreadPtr)> f) {
+  for(auto el : thread_list) {
     f(el);
   }
 }
 
-void SoDa::ThreadRegistry::subscribeThreads(const SoDa::MailBoxMap & mailbox_map) {
-  apply([mailbox_map](SoDa::Thread * el) ->
+void SoDa::ThreadRegistry::subscribeThreads(const std::vector<SoDa::MailBoxBasePtr> & mailboxes); 
+  apply([mailboxes](SoDa::ThreadPtr el) ->
 	bool { 
-	  el->subscribeToMailBoxList(mailbox_map); 
+	  el->subscribeToMailes(mailboxes); 
 	  return true;
 	});
 

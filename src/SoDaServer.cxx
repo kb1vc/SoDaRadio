@@ -281,7 +281,7 @@ int doWork(SoDa::Params & params)
   auto registrar = SoDa::ThreadRegistry::getRegistrar();  
 
   // hook everyone up to the mailboxes. 
-  registrar->subscribeThreads(mailbox_map);
+  registrar->subscribeThreads(mailboxes);
   
   // Now start each of the activities -- they may or may not
   // implement the "start" method -- not all objects need to be threads.

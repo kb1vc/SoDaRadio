@@ -45,16 +45,16 @@ namespace SoDa {
     GPSmon(Params * params);
 
     /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
+    void subscribeToMailBox(const std::string & mbox_name, MailBoxBasePtr mbox_p);
     
     void run();
   private:
-    void execGetCommand(Command * cmd); 
-    void execSetCommand(Command * cmd); 
-    void execRepCommand(Command * cmd); 
+    void execGetCommand(CommandPtr cmd); 
+    void execSetCommand(CommandPtr cmd); 
+    void execRepCommand(CommandPtr cmd); 
 
-    CmdMBox *cmd_stream;
-    unsigned int cmd_subs;
+    CmdMBoxPtr cmd_stream;
+    CmdMBox::Subscription cmd_subs;
 
     GPSDShim * gps_shim; 
   }; 

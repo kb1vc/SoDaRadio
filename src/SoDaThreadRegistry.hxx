@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019 Matthew H. Reilly (kb1vc)
+Copyright (c) 2019, 2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,9 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-
-#ifndef SODA_THREAD_REGISTRY_HDR
-#define SODA_THREAD_REGISTRY_HDR
+#pragma once
 
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
@@ -67,7 +65,7 @@ namespace SoDa {
     
     void apply(std::function<bool(SoDa::Thread *)> f);
 
-    void subscribeThreads(const SoDa::MailBoxMap & mailbox_map);
+    void subscribeThreads(const std::vector<SoDa::MailBoxBasePtr> & mailboxes); 
     void startThreads();
     void joinThreads();
     void shutDownThreads();
@@ -75,9 +73,9 @@ namespace SoDa {
   private:
     ThreadRegistry() { }    
 
+    std::vector<SoDaThreadPtr> thread_list;
     static ThreadRegistry * registrar; 
   };
 }
 
 
-#endif

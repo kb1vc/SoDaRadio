@@ -513,8 +513,7 @@ void SoDa::BaseBandRX::run()
     bool did_work = false;
     bool did_audio_work = false; 
 
-    if(!cmd_stream->empty(cmd_subs)) {
-      cmd = cmd_stream->get(cmd_subs); 
+    if(cmd_stream->get(cmd_subs, cmd)) {
       // process the command.
       execCommand(cmd);
       did_work = true; 
@@ -524,8 +523,7 @@ void SoDa::BaseBandRX::run()
 
     // now look for incoming buffers from the rx_stream. 
     int bcount = 0; 
-    for(bcount = 0; (bcount < 5) && !rx_stream->empty(rx_subs); bcount++) {
-      rxbuf = rx_stream->get(rx_subs);
+    for(bcount = 0; (bcount < 5) && rx_stream->get(rx_subs, rxbuf); bcount++) {
       if(rxbuf == NULL) break; 
       did_work = true; 
       // if we're in TX mode, we should just pend silence and ignore the incoming buffer
@@ -647,14 +645,12 @@ void SoDa::BaseBandRX::buildFilterMap()
 /// implement the subscription method
 void SoDa::BaseBandRX::subscribeToMailBox(const std::string & mbox_name, MailBoxBasePtr mbox_p)
 {
-  auto cmd_tmp = SoDa::MailBoxBase::convert<SoDa::MailBox<CommandPtr>>(mbox_p);
-  if(cmd_tmp != nullptr) {
-    cmd_stream = cmd_tmp;
+  cmd_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<CommandPtr>>(mbox_p, "CMD");
+  if(cmd_stream != nullptr) {
     cmd_subs = cmd_stream->subscribe();
   }
-  auto rx_tmp = SoDa::MailBoxBase::convert<SoDa::MailBox<BufPtr>>(mbox_p);
-  if(rx_tmp != nullptr) {
-    rx_stream = rx_tmp;
+  rx_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<BufPtr>>(mbox_p, "RX");
+  if(rx_stream != nullptr) {
     rx_subs = rx_stream->subscribe();
   }
 }

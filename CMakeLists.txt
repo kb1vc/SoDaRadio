@@ -30,10 +30,11 @@ ENDIF()
 
   
 PROJECT(SoDaRadio)
-
-SET(SoDaRadio_VERSION_MAJOR 8)
+# Huge bump in version -- replacing crufty stuff with new SoDaLibs
+# implementations of filters, resamplers, mailboxes, ....
+SET(SoDaRadio_VERSION_MAJOR 9)
 SET(SoDaRadio_VERSION_MINOR 0)
-SET(SoDaRadio_VERSION_PATCH 1)
+SET(SoDaRadio_VERSION_PATCH 0)
 SET(SoDaRadio_VERSION "${SoDaRadio_VERSION_MAJOR}.${SoDaRadio_VERSION_MINOR}.${SoDaRadio_VERSION_PATCH}")
 
 set(SoDaRadio_PACKAGE_DESCRIPTION 

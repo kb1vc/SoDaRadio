@@ -325,15 +325,21 @@ void SoDa::USRPTX::execRepCommand(Command * cmd)
 }
 
 /// implement the subscription method
-void SoDa::USRPTX::subscribeToMailBox(const std::string & mbox_name, 
-					SoDa::BaseMBox * mbox_p) {
-  if(SoDa::connectMailBox<SoDa::CmdMBox>(this, cmd_stream, "CMD", mbox_name, mbox_p)) {
+void SoDa::USRPTX::subscribeToMailBox(const std::string & mbox_name,
+					MailBoxBasePtr mbox_p) {
+
+  cmd_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<CommandPtr>>(mbox_p, "CMDstream");
+  if(cmd_stream != nullptr) {
     cmd_subs = cmd_stream->subscribe();
   }
-  if(SoDa::connectMailBox<SoDa::DatMBox>(this, tx_stream, "TX", mbox_name, mbox_p)) {
+  tx_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<BufPtr>>(mbox_p, "TXstream");
+  if(tx_stream != nullptr) {
     tx_subs = tx_stream->subscribe();
   }
-  if(SoDa::connectMailBox<SoDa::DatMBox>(this, cw_env_stream, "CW_ENV", mbox_name, mbox_p)) {
-    cw_subs = cw_env_stream->subscribe();
+    
+  
+  cw_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<BufPtr>>(mbox_p, "CWstream");
+  if(cw_stream != nullptr) {
+    cw_subs = cw_stream->subscribe();
   }
 }

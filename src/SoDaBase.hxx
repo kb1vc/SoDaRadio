@@ -55,6 +55,7 @@ extern "C" {
   *
   */
 
+
 namespace SoDa {
   class Buf;
   typedef std::shared_ptr<Buf> BufPtr;

@@ -137,8 +137,7 @@ void SoDa::BaseBandTX::run()
   audio_ifc->wakeIn();  
 
   while(!exitflag) {
-    if(!cmd_stream->empty(cmd_subs)) {
-      cmd = cmd_stream->get(cmd_subs);
+    if(cmd_stream->get(cmd_subs, cmd)) {
       // process the command.
       execCommand(cmd);
       exitflag |= (cmd->target == Command::STOP); 
@@ -352,15 +351,12 @@ void SoDa::BaseBandTX::execRepCommand(SoDa::CommandPtr cmd)
 /// implement the subscription method
 void SoDa::BaseBandTX::subscribeToMailBox(const std::string & mbox_name, MailBoxBasePtr mbox_p)
 {
-  auto cmd_tmp = SoDa::MailBoxBase::convert<SoDa::MailBox<CommandPtr>>(mbox_p);
-  if(cmd_tmp != nullptr) {
-    cmd_stream = cmd_tmp;
+  cmd_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<CommandPtr>>(mbox_p, "CMDstream");
+  if(cmd_stream != nullptr) {
     cmd_subs = cmd_stream->subscribe();
   }
 
-  auto tx_tmp = SoDa::MailBoxBase::convert<SoDa::MailBox<BufPtr>>(mbox_p);
-  // publish only
-  if(tx_tmp != nullptr) {
-    tx_stream = tx_tmp;
-  }
+  // publish only  
+  tx_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<BufPtr>>(mbox_p, "TXstream");
+
 }

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012,2013,2014,2019 Matthew H. Reilly (kb1vc)
+Copyright (c) 2012,2013,2014,2019, 2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef SODA_THREAD_HDR
-#define SODA_THREAD_HDR
+#pragma once
 
 #include "SoDaBase.hxx"
 
@@ -49,7 +48,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   * them.  A SoDaThread subscribes to message rings, and exports 
   * a "run" method.
   *
-  * @brief SoDa base and commonly used classes
   *
   * @author Matt Reilly (kb1vc)
   *
@@ -60,8 +58,10 @@ namespace SoDa {
   
   class BaseMBox; 
   class Command;
-  
-  typedef std::map<std::string, MailBoxBasePtr> MailBoxMap; 
+
+  class Thread;
+  typedef std::shared_ptr<Thread> ThreadPtr;
+  typedef std::weak_ptr<Thread> ThreadWeakPtr;
   
   /**
    * The Thread baseclass for all SoDa thread objects.
@@ -77,7 +77,7 @@ namespace SoDa {
    * for three types of SoDa::Command objects (GET, SET, and REPort)
    */
   class Thread : public Base, public Debug {
-  public:
+  protected:
     
     /** 
      * @brief make the thread object.  Register it by name and
@@ -91,6 +91,8 @@ namespace SoDa {
      * the default.  This is a hack to get the actual version information from
      * the included file (used for the build) rather than from the shared 
      * library.
+     *
+     * This constructor is only called by derived types.
      */
     Thread(const std::string & oname, const std::string & version = std::string(SoDaRadio_VERSION));
 
@@ -99,30 +101,9 @@ namespace SoDa {
      * to this object.  The thread may "subscribe" to the mailboxes as it
      * chooses.  
      * 
-     * @param mbox_name The name of the mailbox.  This identifies the purpose
-     * of the mailbox, and the thread should be able to infer the the "T" in 
-     * the actual MultiMBox<T> type from this identifying string. 
-     * @param mbox_p a pointer to a multimbox.  This should be cast to the 
+     * @param mailboxes A list of all mailboxes that we know about.
      */
-    virtual void subscribeToMailBox(const std::string & mbox_name, SoDa::MailBoxBasePtr mbox_p) {
-    }
-
-    /**
-     * @brief the creator of this thread may offer one or more mailboxes
-     * to this object.  The thread may "subscribe" to the mailboxes as it
-     * chooses.  offerSubscriptionList is a convenience function that allows
-     * a thread creator to present a list of mailboxes to which the thread
-     * may subscribe. 
-     * 
-     * @param subscription_map The name/mailbox pairs. The name identifies the purpose
-     * of the mailbox, and the thread should be able to infer the the "T" in 
-     * the actual MultiMBox<T> type from this identifying string. 
-     */
-    void subscribeToMailBoxList(const MailBoxMap & subscription_map) {
-      for(auto p : subscription_map) {
-	subscribeToMailBox(p.first, p.second);
-      }
-    }
+    virtual void subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes) = 0;
 
     void operator() () {
       // we woke up with a "start" or "join" call
@@ -134,7 +115,6 @@ namespace SoDa {
      */
     void start() {
       thread_ptr = std::unique_ptr<std::thread>(new std::thread(&SoDa::Thread::outerRun, this));
-      //      thread_ptr = std::unique_ptr<std::thread>(new std::thread(*this));
     }
 
     /**
@@ -193,12 +173,19 @@ namespace SoDa {
     void sleep_us(unsigned int microseconds) {
       std::this_thread::sleep_for(std::chrono::microseconds(microseconds));
     }
+
+  protected:
+    /**
+     * A pointer to ourself
+     */
+    std::weak_ptr<Thread> self;
     
   private:
     /**
      * This is the actual thread object -- 
      */
     std::unique_ptr<std::thread> thread_ptr;
+
     
     /**
      * the run method that is called by the thread handler.

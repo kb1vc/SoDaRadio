@@ -58,7 +58,7 @@ namespace SoDa {
     USRPRX(Params * params, uhd::usrp::multi_usrp::sptr usrp);
 
     /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
+    void subscribeToMailBox(const std::string & mbox_name, MailBoxBasePtr mbox_p);
     
     /**
      * USRPRX is a thread -- this is its run loop. 
@@ -66,10 +66,10 @@ namespace SoDa {
     void run();
     
   private:   
-    void execCommand(Command * cmd); 
-    void execGetCommand(Command * cmd); 
-    void execSetCommand(Command * cmd); 
-    void execRepCommand(Command * cmd);
+    void execCommand(CommandPtr cmd); 
+    void execGetCommand(CommandPtr cmd); 
+    void execSetCommand(CommandPtr cmd); 
+    void execRepCommand(CommandPtr cmd);
 
     void startStream();
     void stopStream(); 
@@ -81,13 +81,13 @@ namespace SoDa {
      *
      * @param inout the input/output RF buffer
      */
-    void doMixer(SoDa::Buf * inout);
+    void doMixer(SoDa::BufPtr inout);
     void set3rdLOFreq(double IF_tuning);
 
-    DatMBox * rx_stream;
-    DatMBox * if_stream; 
-    CmdMBox * cmd_stream;
-    unsigned int cmd_subs; 
+    DatMBoxPtr rx_stream;
+    DatMBoxPtr if_stream; 
+    CmdMBoxPtr cmd_stream;
+    CmdMBox::Subscription cmd_subs; 
 
     // state for the USRP widget
     uhd::rx_streamer::sptr rx_bits;

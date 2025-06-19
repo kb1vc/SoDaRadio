@@ -51,7 +51,12 @@ namespace SoDa {
    * CW (CW_L and CW_U) modes are implemented in the USRPTX module and the CW unit.
    *
    */
-  class BaseBandRX;  
+  class BaseBandRX;
+
+  class BaseBandTX
+  typedef std::shared_ptr<BaseBandTX> BaseBandTXPtr;
+  typedef std::weak_ptr<BaseBandTX> BaseBandTXWeakPtr;
+  
   class BaseBandTX : public SoDa::Thread {
   public:
     /**

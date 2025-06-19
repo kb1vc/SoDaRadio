@@ -124,30 +124,26 @@ void SoDa::USRPRX::run()
   bool exitflag = false;
 
   while(!exitflag) {
-    Command * cmd = cmd_stream->get(cmd_subs);
-    if(cmd != NULL) {
+    CommandPtr cmd;
+    if(cmd_stream->get(cmd_subs, cmd)) {
       // process the command.
       execCommand(cmd);
       exitflag |= (cmd->target == Command::STOP); 
-      cmd_stream->free(cmd); 
     }
     else if(audio_rx_stream_enabled) {
       // go get some data
       // get a free buffer.
-      SoDa::Buf * buf = rx_stream->alloc();
-      if(buf == NULL) {
-	buf = new SoDa::Buf(rx_buffer_size); 
-      }
+      SoDa::BufPtr buf = SoDa::Buf::make(rx_buffer_size);
 
-      if(buf == NULL) throw SoDa::Radio::Exception("USRPRX couldn't allocate SoDa::Buf object", this); 
-      if(buf->getComplexBuf() == NULL) throw SoDa::Radio::Exception("USRPRX allocated empty SoDa::Buf object", this);
+      if(buf == nullptr) throw SoDa::Radio::Exception("USRPRX couldn't allocate SoDa::Buf object", this); 
+      if(buf->getComplexBuf().size() == 0) throw SoDa::Radio::Exception("USRPRX allocated empty SoDa::Buf object", this);
       
       unsigned int left = rx_buffer_size;
       unsigned int coll_so_far = 0;
       uhd::rx_metadata_t md;
-      std::complex<float> *dbuf = buf->getComplexBuf();
+      std::vector<std::complex<float>> dbuf = buf->getComplexBuf();
       while(left != 0) {
-	unsigned int got = rx_bits->recv(&(dbuf[coll_so_far]), left, md);
+	unsigned int got = rx_bits->recv(&(dbuf.data()[coll_so_far]), left, md);
 	if(got == 0) {
 	  debugMsg("****************************************");
 	  debugMsg(SoDa::Format("RECV got error -- md = [%0]\n").addS(md.to_pp_string()));
@@ -161,13 +157,10 @@ void SoDa::USRPRX::run()
       // If the UI is listening, it will do an FFT on the buffer
       // and send the positive spectrum via the UI to any listener.
       // the UI does the FFT then puts it on its own ring.
-      if(enable_spectrum_report && (if_stream->getSubscriberCount() > 0)) {
+      if(enable_spectrum_report && (if_stream->subscriberCount() > 0)) {
 	// clone a buffer, cause we're going to modify
 	// it before the send is complete. 
-	SoDa::Buf * if_buf = if_stream->alloc();
-	if(if_buf == NULL) {
-	  if_buf = new SoDa::Buf(rx_buffer_size); 
-	}
+	SoDa::BufPtr if_buf = SoDa::Buf::make(rx_buffer_size);
 
 	if(if_buf->copy(buf)) {
 	  if_stream->put(if_buf);
@@ -196,7 +189,7 @@ void SoDa::USRPRX::run()
   stopStream(); 
 }
 
-void SoDa::USRPRX::doMixer(SoDa::Buf * inout)
+void SoDa::USRPRX::doMixer(SoDa::BufPtr inout)
 {
   unsigned int i;
   std::complex<float> o;
@@ -216,7 +209,7 @@ void SoDa::USRPRX::set3rdLOFreq(double IF_tuning)
 	   .addF(IF_tuning, 10, 6, 'e'));
 }
 
-void SoDa::USRPRX::execCommand(Command * cmd)
+void SoDa::USRPRX::execCommand(CommandPtr cmd)
 {
   switch (cmd->cmd) {
   case Command::GET:
@@ -247,7 +240,7 @@ void SoDa::USRPRX::stopStream()
   audio_rx_stream_enabled = false;
 }
 
-void SoDa::USRPRX::execSetCommand(Command * cmd)
+void SoDa::USRPRX::execSetCommand(CommandPtr cmd)
 {
   switch(cmd->target) {
   case SoDa::Command::RX_MODE:
@@ -281,7 +274,7 @@ void SoDa::USRPRX::execSetCommand(Command * cmd)
       startStream();
       enable_spectrum_report = true;
       // tell the baseband unit that it is ready to start. 
-      cmd_stream->put(new Command(Command::SET, Command::TX_STATE, 
+      cmd_stream->put(Command::make(Command::SET, Command::TX_STATE, 
 				  4));
     }
     break; 
@@ -290,26 +283,25 @@ void SoDa::USRPRX::execSetCommand(Command * cmd)
   }
 }
 
-void SoDa::USRPRX::execGetCommand(Command * cmd)
+void SoDa::USRPRX::execGetCommand(CommandPtr cmd)
 {
   (void) cmd; 
 }
 
-void SoDa::USRPRX::execRepCommand(Command * cmd)
+void SoDa::USRPRX::execRepCommand(CommandPtr cmd)
 {
   (void) cmd; 
 }
 
 /// implement the subscription method
 void SoDa::USRPRX::subscribeToMailBox(const std::string & mbox_name, 
-					SoDa::BaseMBox * mbox_p) {
-  if(SoDa::connectMailBox<SoDa::CmdMBox>(this, cmd_stream, "CMD", mbox_name, mbox_p)) {
+					MailBoxBasePtr mbox_p) {
+
+  cmd_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<CommandPtr>>(mbox_p, "CMDstream");
+  if(cmd_stream != nullptr) {
     cmd_subs = cmd_stream->subscribe();
   }
-  if(SoDa::connectMailBox<SoDa::DatMBox>(this, rx_stream, "RX", mbox_name, mbox_p)) {
-    // we don't subscribe -- we publish
-  }
-  if(SoDa::connectMailBox<SoDa::DatMBox>(this, if_stream, "IF", mbox_name, mbox_p)) {
-    // we don't subscribe -- we publish
-  }
+  rx_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<BufPtr>>(mbox_p, "RXstream");
+  if_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<BufPtr>>(mbox_p, "IFstream");
+  
 }

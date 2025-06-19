@@ -59,16 +59,14 @@ void SoDa::CWTX::run()
   
   while(!exitflag) {
     bool workdone = false; 
-    while(!cmd_stream->empty(cmd_subs)) {
-      cmd = cmd_stream->get(cmd_subs);
+    while(cmd_stream->get(cmd_subs, cmd)) {
       // process the command.
       execCommand(cmd);
       exitflag |= (cmd->target == Command::STOP); 
       workdone = true; 
     }
 
-    while(!cwtxt_stream->empty(cwtxt_subs)) {
-      txtcmd = cwtxt_stream->get(cwtxt_subs);
+    while(cwtxt_stream->get(cwtxt_subs, txtcmd)) {
       // pend the text to the text queue
       execCommand(txtcmd);
       exitflag |= (txtcmd->target == Command::STOP); 
@@ -259,20 +257,18 @@ void SoDa::CWTX::execRepCommand(CommandPtr cmd)
 /// implement the subscription method
 void SoDa::CWTX::subscribeToMailBox(const std::string & mbox_name, MailBoxBasePtr mbox_p)
 {
-  auto cmd_tmp = SoDa::MailBoxBase::convert<SoDa::MailBox<CommandPtr>>(mbox_p);
-  if(cmd_tmp != nullptr) {
-    cmd_stream = cmd_tmp;
+  cmd_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<CommandPtr>>(mbox_p, "CMDstream");
+  if(cmd_stream != nullptr) {
     cmd_subs = cmd_stream->subscribe();
   }
 
-  auto cwtxt_tmp = SoDa::MailBoxBase::convert<SoDa::MailBox<CommandPtr>>(mbox_p);
-  if(cwtxt_tmp != nullptr) {
-    cwtxt_stream = cwtxt_tmp;
+  cwtxt_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<CommandPtr>>(mbox_p, "CWTXTstream");
+  if(cwtxt_stream != nullptr) {
     cwtxt_subs = cwtxt_stream->subscribe();
   }
   
-  auto cw_env_tmp = SoDa::MailBoxBase::convert<SoDa::MailBox<BufPtr>>(mbox_p);
-  if(cw_env_tmp != nullptr) {
-    cw_env_stream = cw_env_tmp;
+  cw_env_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<BufPtr>>(mbox_p, "CWstream");
+  if(cw_env_stream != nullptr) {
+    cw_env_stream = cw_env_stream;
   }
 }

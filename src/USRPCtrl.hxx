@@ -84,7 +84,7 @@ namespace SoDa {
     uhd::usrp::multi_usrp::sptr getUSRP() { return usrp; }
 
     /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
+    void subscribeToMailBox(const std::string & mbox_name, MailBoxBasePtr mbox_p);
 
 #if UHD_VERSION < 3110000
     /// This is the more permanent message handler used before the elimination of the msg class    
@@ -107,16 +107,16 @@ namespace SoDa {
 
     /// Parse an incoming command and dispatch.
     /// @param cmd a command record
-    void execCommand(Command * cmd);
+    void execCommand(CommandPtr cmd);
     /// Dispatch an incoming GET command
     /// @param cmd a command record
-    void execGetCommand(Command * cmd); 
+    void execGetCommand(CommandPtr cmd); 
     /// Dispatch an incoming SET command
     /// @param cmd a command record
-    void execSetCommand(Command * cmd); 
+    void execSetCommand(CommandPtr cmd); 
     /// Dispatch an incoming REPort command
     /// @param cmd a command record
-    void execRepCommand(Command * cmd); 
+    void execRepCommand(CommandPtr cmd); 
 
     /// get the number of seconds since the "Epoch"
     /// @return relative time in seconds
@@ -164,8 +164,8 @@ namespace SoDa {
     void set1stLOFreq(double freq, char sel, bool set_if_freq = false);
 
     
-    CmdMBox * cmd_stream; ///< command stream channel
-    unsigned int subid;   ///< subscriber ID for this thread's connection to the command channel
+    CmdMBoxPtr cmd_stream; ///< command stream channel
+    CmdMBox::Subscription subid;   ///< subscriber ID for this thread's connection to the command channel
 
     // USRP stuff.
     uhd::usrp::multi_usrp::sptr usrp; ///< to which USRP unit is this connected?

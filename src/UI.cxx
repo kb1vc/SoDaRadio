@@ -195,8 +195,7 @@ void SoDa::UI::run()
       net_cmd = NULL; 
     }
 
-    while(!cmd_stream->empty(cmd_subs)) {
-      ring_cmd = cmd_stream->get(cmd_subs);
+    while(cmd_stream->get(cmd_subs, ring_cmd)) {
       if(ring_cmd->cmd == SoDa::Command::REP) {
 	server_socket->put(ring_cmd.get(), sizeof(SoDa::Command));
       }
@@ -208,8 +207,7 @@ void SoDa::UI::run()
       didwork = true; 
     }
 
-    while(!gps_stream->empty(gps_subs)) {
-      ring_cmd = gps_stream->get(gps_subs);
+    while(gps_stream->get(gps_subs, ring_cmd)) {
       if(ring_cmd->cmd == SoDa::Command::REP) {
 	server_socket->put(ring_cmd.get(), sizeof(SoDa::Command));
       }
@@ -222,9 +220,8 @@ void SoDa::UI::run()
     int bcount;
     SoDa::BufPtr if_buf; 
     for(bcount = 0;
-	(bcount < 4) && !if_stream->empty(if_subs);
+	(bcount < 4) && if_stream->get(if_subs, if_buf);
 	bcount++) {
-      if_buf = if_stream->get(if_subs);
       sendFFT(if_buf);
     }
 
@@ -427,29 +424,23 @@ void SoDa::UI::sendFFT(SoDa::BufPtr buf)
 void SoDa::UI::subscribeToMailBox(const std::string & mbox_name, MailBoxBasePtr mbox_p)
 {
 
-  auto cmd_tmp = SoDa::MailBoxBase::convert<SoDa::MailBox<CommandPtr>>(mbox_p);
-  if(cmd_tmp != nullptr) {
-    cmd_stream = cmd_tmp;
+  cmd_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<CommandPtr>>(mbox_p, "CMDstream");
+  if(cmd_stream != nullptr) {
     cmd_subs = cmd_stream->subscribe();
   }
 
-  auto gps_tmp = SoDa::MailBoxBase::convert<SoDa::MailBox<CommandPtr>>(mbox_p);
-  if(gps_tmp != nullptr) {
-    gps_stream = gps_tmp;
+  gps_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<CommandPtr>>(mbox_p, "GPSstream");
+  if(gps_stream != nullptr) {
     gps_subs = gps_stream->subscribe();
   }
 
-  auto if_tmp = SoDa::MailBoxBase::convert<SoDa::MailBox<BufPtr>>(mbox_p);
-  if(if_tmp != nullptr) {
-    if_stream = if_tmp;
+  if_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<BufPtr>>(mbox_p, "IFstream");
+  if(if_stream != nullptr) {
     if_subs = if_stream->subscribe();
   }
 
   
-  auto cwtxt_tmp = SoDa::MailBoxBase::convert<SoDa::MailBox<CommandPtr>>(mbox_p);
+  cwtxt_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<CommandPtr>>(mbox_p, "CWTXTstream");
   // publish only
-  if(cwtxt_tmp != nullptr) {
-    cwtxt_stream = cwtxt_tmp;
-  }
   
 }

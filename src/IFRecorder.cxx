@@ -54,7 +54,7 @@ SoDa::IFRecorder::IFRecorder(Params * params) : SoDa::Thread("IFRecorder")
 
 
 
-void SoDa::IFRecorder::execSetCommand(SoDa::Command * cmd)
+void SoDa::IFRecorder::execSetCommand(SoDa::CommandPtr cmd)
 {
   SoDa::Command::AudioFilterBW fbw;
   SoDa::Command::ModulationType txmod; 
@@ -70,12 +70,12 @@ void SoDa::IFRecorder::execSetCommand(SoDa::Command * cmd)
   }
 }
 
-void SoDa::IFRecorder::execGetCommand(SoDa::Command * cmd)
+void SoDa::IFRecorder::execGetCommand(SoDa::CommandPtr cmd)
 {
   (void) cmd;
 }
 
-void SoDa::IFRecorder::execRepCommand(SoDa::Command * cmd)
+void SoDa::IFRecorder::execRepCommand(SoDa::CommandPtr cmd)
 {
   switch (cmd->target) {
   case SoDa::Command::RX_FE_FREQ:
@@ -90,8 +90,8 @@ void SoDa::IFRecorder::execRepCommand(SoDa::Command * cmd)
 void SoDa::IFRecorder::run()
 {
   bool exitflag = false;
-  SoDa::Buf * rxbuf;
-  Command * cmd; 
+  SoDa::BufPtr rxbuf;
+  CommandPtr cmd; 
 
   if((cmd_stream == NULL) || (rx_stream == NULL)) {
     throw SoDa::Radio::Exception(std::string("Missing a stream connection.\n"), 
@@ -102,26 +102,24 @@ void SoDa::IFRecorder::run()
   while(!exitflag) {
     bool did_work = false;
 
-    if((cmd = cmd_stream->get(cmd_subs)) != NULL) {
+    if(cmd_stream->get(cmd_subs, cmd)) {
       // process the command.
       execCommand(cmd);
       did_work = true; 
       exitflag |= (cmd->target == Command::STOP); 
-      cmd_stream->free(cmd); 
     }
 
     // now look for incoming buffers from the rx_stream.
     // but keep it to two buffers before we look back at the cmd stream 
     int bcount = 0; 
-    for(bcount = 0; (bcount < 2) && ((rxbuf = rx_stream->get(rx_subs)) != NULL); bcount++) {
+    for(bcount = 0; (bcount < 2) && rx_stream->get(rx_subs, rxbuf); bcount++) {
       if(rxbuf == NULL) break; 
       did_work = true; 
       
       if(write_stream_on) {
-	ostr.write((char*) rxbuf->getComplexBuf(), rxbuf->getComplexLen() * sizeof(std::complex<float>));
+	auto cbuf = rxbuf->getComplexBuf(); 
+	ostr.write((char*) cbuf.data(), cbuf.size() * sizeof(std::complex<float>));
       }
-      // now free the buffer up.
-      rx_stream->free(rxbuf); 
     }
 
     if(!did_work) {
@@ -159,12 +157,14 @@ void SoDa::IFRecorder::closeOutStream()
 }
 
 /// implement the subscription method
-void SoDa::IFRecorder::subscribeToMailBox(const std::string & mbox_name, SoDa::BaseMBox * mbox_p)
+void SoDa::IFRecorder::subscribeToMailBox(const std::string & mbox_name, SoDa::MailBoxBasePtr mbox_p)
 {
-  if(SoDa::connectMailBox<SoDa::CmdMBox>(this, cmd_stream, "CMD", mbox_name, mbox_p)) {
+  cmd_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<CommandPtr>>(mbox_p, "CMDstream");
+  if(cmd_stream != nullptr) {
     cmd_subs = cmd_stream->subscribe();
   }
-  if(SoDa::connectMailBox<SoDa::DatMBox>(this, rx_stream, "RX", mbox_name, mbox_p)) {
+  rx_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<BufPtr>>(mbox_p, "RXstream");
+  if(rx_stream != nullptr) {
     rx_subs = rx_stream->subscribe();
   }
 }

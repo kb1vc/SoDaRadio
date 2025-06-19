@@ -39,7 +39,7 @@ SoDa::GPSmon::GPSmon(Params * params) : SoDa::Thread("GPSmon")
 void SoDa::GPSmon::run()
 {
   bool exitflag = false;
-  Command * cmd;
+  CommandPtr cmd;
 
   if(cmd_stream == NULL) {
     throw SoDa::Radio::Exception(std::string("Missing a stream connection.\n"),
@@ -47,12 +47,11 @@ void SoDa::GPSmon::run()
   }
   
   while(!exitflag) {
-    while((cmd = cmd_stream->get(cmd_subs)) != NULL) {
+    while(cmd_stream->get(cmd_subs, cmd)) {
       // process the command.
       execCommand(cmd);
       exitflag |= (cmd->target == Command::STOP);
       //      std::cerr << "GPSmon got a message. target = " << cmd->target << std::endl; 
-      cmd_stream->free(cmd);
     }
 
     double lat, lon;
@@ -60,12 +59,12 @@ void SoDa::GPSmon::run()
     // this could block for 0.1 seconds
     if(gps_shim->getFix(100000, utc_time, lat, lon)) {
 	  
-      cmd_stream->put(new SoDa::Command(Command::REP, Command::GPS_UTC, 
+      cmd_stream->put(SoDa::Command::make(Command::REP, Command::GPS_UTC, 
 					(int) utc_time.tm_hour,
 					(int) utc_time.tm_min, 
 					(int) utc_time.tm_sec));
 
-      cmd_stream->put(new SoDa::Command(Command::REP, Command::GPS_LATLON, 
+      cmd_stream->put(SoDa::Command::make(Command::REP, Command::GPS_LATLON, 
 					lat, lon)); 
     }	
     else if(!gps_shim->isEnabled()) {
@@ -77,28 +76,29 @@ void SoDa::GPSmon::run()
   }
 }
 
-void SoDa::GPSmon::execGetCommand(Command * cmd)
+void SoDa::GPSmon::execGetCommand(CommandPtr cmd)
 {
   (void) cmd; 
   return; 
 }
 
-void SoDa::GPSmon::execSetCommand(Command * cmd)
+void SoDa::GPSmon::execSetCommand(CommandPtr cmd)
 {
   (void) cmd; 
   return; 
 }
 
-void SoDa::GPSmon::execRepCommand(Command * cmd)
+void SoDa::GPSmon::execRepCommand(CommandPtr cmd)
 {
   (void) cmd;
   return;
 }
 
 /// implement the subscription method
-void SoDa::GPSmon::subscribeToMailBox(const std::string & mbox_name, SoDa::BaseMBox * mbox_p)
+void SoDa::GPSmon::subscribeToMailBox(const std::string & mbox_name, MailBoxBasePtr mbox_p)
 {
-  if(SoDa::connectMailBox<SoDa::CmdMBox>(this, cmd_stream, "GPS", mbox_name, mbox_p)) {
-    cmd_subs = cmd_stream->subscribe();    
+  cmd_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<CommandPtr>>(mbox_p, "CMDstream");
+  if(cmd_stream != nullptr) {
+    cmd_subs = cmd_stream->subscribe();
   }
 }
