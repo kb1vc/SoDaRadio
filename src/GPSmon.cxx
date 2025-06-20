@@ -29,7 +29,7 @@
 #include "GPSmon.hxx"
 #include <list>
 
-SoDa::GPSmon::GPSmon(Params * params) : SoDa::Thread("GPSmon")
+SoDa::GPSmon::GPSmon(ParamsPtr params) : SoDa::Thread("GPSmon")
 {
   cmd_stream = NULL;
 
@@ -43,7 +43,7 @@ void SoDa::GPSmon::run()
 
   if(cmd_stream == NULL) {
     throw SoDa::Radio::Exception(std::string("Missing a stream connection.\n"),
-			  this);	
+				 getSelfPtr());	
   }
   
   while(!exitflag) {
@@ -95,10 +95,17 @@ void SoDa::GPSmon::execRepCommand(CommandPtr cmd)
 }
 
 /// implement the subscription method
-void SoDa::GPSmon::subscribeToMailBox(const std::string & mbox_name, MailBoxBasePtr mbox_p)
+
+void SoDa::GPSmon::subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes)
 {
-  cmd_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<CommandPtr>>(mbox_p, "CMDstream");
-  if(cmd_stream != nullptr) {
-    cmd_subs = cmd_stream->subscribe();
+  for(auto mbox_p : mailboxes) {
+    cmd_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<CommandPtr>>(mbox_p, "CMDstream");
+    if(cmd_stream != nullptr) {
+      cmd_subs = cmd_stream->subscribe();
+    }
+  }
+
+  if(cmd_stream == nullptr) {
+    throw SoDa::MissingMailBox("CMD", getSelfPtr());
   }
 }

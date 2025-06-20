@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2019 Matthew H. Reilly (kb1vc)
+  Copyright (c) 2019, 2025 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,7 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef SODA_SIMPLE_ACC_HDR
-#define SODA_SIMPLE_ACC_HDR
+#pragma once
 
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
@@ -43,18 +42,28 @@
  *
  */
 
-// namespace doesn't matter here... let's do without. 
+// namespace doesn't matter here... let's do without.
+class SimpleAccessory;
+typedef std::shared_ptr<SimpleAccessory> SimpleAccessoryPtr;
+
 class SimpleAccessory : public SoDa::Thread {
-public:
+private:
+  // gotta do this to make the base object directory work... sigh. 
   SimpleAccessory(const std::string & name);
 
+public:
+  static SimpleAccessoryPtr make(const std::string & name) {
+    auto ret = std::shared_ptr<SimpleAccessory>(new SimpleAccessory(name));
+    ret->registerThread(ret);
+    return ret; 
+  }
+  
   /**
    * @brief connect to useful mailboxes. 
    * 
-   * @param mbox_name which mailbox are we being offered? 
-   * @param mbox_p a pointer to the mailbox we are being offered. 
+   * @param mailboxes list of mailboxes to which we might subscribe.
    */
-  void subscribeToMailBox(const std::string & mbox_name, SoDa::BaseMBox * mbox_p);
+  void subscribeToMailBoxes(const std::vector<SoDa::MailBoxBasePtr> & mailboxes);  
 
   void run();
 
@@ -62,21 +71,21 @@ public:
    * @brief execute GET commands from the command channel
    * @param cmd the incoming command
    */
-  void execGetCommand(SoDa::Command * cmd) {
+  void execGetCommand(SoDa::CommandPtr cmd) {
     get_count++; 
   }
   /**
    * @brief handle SET commands from the command channel
    * @param cmd the incoming command
    */
-  void execSetCommand(SoDa::Command * cmd) {
+  void execSetCommand(SoDa::CommandPtr cmd) {
     set_count++;
   }
   /**
    * @brief handle Report commands from the command channel
    * @param cmd the incoming command
    */
-  void execRepCommand(SoDa::Command * cmd) {
+  void execRepCommand(SoDa::CommandPtr cmd) {
     rep_count++;
   }
 
@@ -86,10 +95,9 @@ public:
 
   void printReport();
 
-  unsigned int cmd_subs; ///< mailbox subscription ID for command stream
-  SoDa::CmdMBox * cmd_stream; ///< mailbox producing command stream from user
+  SoDa::CmdMBox::Subscription cmd_subs; ///< mailbox subscription ID for command stream
+  SoDa::CmdMBoxPtr cmd_stream; ///< mailbox producing command stream from user
     
   unsigned int get_count, set_count, rep_count; 
 };
 
-#endif

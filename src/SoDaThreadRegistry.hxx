@@ -47,11 +47,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <list>
 
 namespace SoDa { 
+  class ThreadRegistry;
+  typedef std::shared_ptr<ThreadRegistry> ThreadRegistryPtr;
   
-  class ThreadRegistry : public std::list<SoDa::Thread *> {
+  class ThreadRegistry  {
   public:
 
-    static ThreadRegistry * getRegistrar();
+    static ThreadRegistryPtr getRegistrar();
 
     /**
      * @brief register a thread so that it can be connected and started
@@ -61,20 +63,38 @@ namespace SoDa {
      * (This must match the version the registry was built with.)
      *
      */
-    void addThread(SoDa::Thread * thread, const std::string & version);
+    static void addThread(SoDa::ThreadPtr thread, const std::string & version);
     
-    void apply(std::function<bool(SoDa::Thread *)> f);
+    static void apply(std::function<bool(SoDa::ThreadPtr)> f);
 
-    void subscribeThreads(const std::vector<SoDa::MailBoxBasePtr> & mailboxes); 
-    void startThreads();
-    void joinThreads();
-    void shutDownThreads();
+    static void subscribeThreads(const std::vector<SoDa::MailBoxBasePtr> & mailboxes); 
+    static void startThreads();
+    static void joinThreads();
+    static void shutDownThreads();
+    
+  private:
+    /**
+     * @brief register a thread so that it can be connected and started
+     * 
+     * @param thread a thread object
+     * @param version the SoDaRadio version the thread object was built with
+     * (This must match the version the registry was built with.)
+     *
+     */
+    void priv_addThread(SoDa::ThreadPtr thread, const std::string & version);
+    
+    void priv_apply(std::function<bool(SoDa::ThreadPtr)> f);
+
+    void priv_subscribeThreads(const std::vector<SoDa::MailBoxBasePtr> & mailboxes); 
+    void priv_startThreads();
+    void priv_joinThreads();
+    void priv_shutDownThreads();
 
   private:
     ThreadRegistry() { }    
 
-    std::vector<SoDaThreadPtr> thread_list;
-    static ThreadRegistry * registrar; 
+    std::vector<SoDa::ThreadPtr> thread_list;
+    static ThreadRegistryPtr registrar; 
   };
 }
 

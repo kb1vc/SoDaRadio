@@ -34,7 +34,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "HilbertTransformer.hxx"
 #include "AudioIfc.hxx"
 #include "MedianFilter.hxx"
-#include "BufferPool.hxx"
 
 #include <SoDa/ReSampler.hxx>
 #include <SoDa/OSFilter.hxx>
@@ -44,6 +43,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <mutex>
 #include <fstream>
 #include <string>
+#include <memory>
 
 namespace SoDa {
   /**
@@ -77,7 +77,7 @@ namespace SoDa {
    * channels are available. AM is performed with a simple magnitude detector.
    */
 
-  class BaseBandRX
+  class BaseBandRX;
   typedef std::shared_ptr<BaseBandRX> BaseBandRXPtr;
   typedef std::weak_ptr<BaseBandRX> BaseBandRXWeakPtr;
   
@@ -96,13 +96,14 @@ namespace SoDa {
   public:
     /**
      * @brief the maker -- produces a shared pointer
-     *
+     *p
      * @param params command line parameter object
      * @param audio_ifc pointer to the audio output handler
      **/
     static BaseBandRXPtr make(ParamsPtr params, AudioIfcPtr audio_ifc) {
-      auto ret = std::shared_ptr<BaseBandTX>(new BaseBandRX(params, audio_ifc));
+      auto ret = std::shared_ptr<BaseBandRX>(new BaseBandRX(params, audio_ifc));
       ret->self = ret; 
+      ret->registerThread(ret);
       return ret; 
     }
 
@@ -208,7 +209,7 @@ namespace SoDa {
     DatMBox::Subscription rx_subs; ///< mailbox subscription ID for rx data stream
     CmdMBox::Subscription cmd_subs; ///< mailbox subscription ID for command stream
 
-    AudioIfc * audio_ifc; ///< pointer to the audio interface (output) object
+    AudioIfcPtr audio_ifc; ///< pointer to the audio interface (output) object
     
     // buffer pool management
 
@@ -237,25 +238,11 @@ namespace SoDa {
      * @brief empty the queue of pending audio buffers, we're going into TX mode.
      */
     void flushAudioBuffers();
-
-    /**
-     * @brief return number audio buffers available
-     */
-    int readyAudioBuffers(); 
-
-
+    
     // flow timing management
     bool in_catchup;  ///< when true, the audio server has fallen behind...
     bool in_fallback;  ///< when true, the audio server has gotten ahead...
     unsigned int catchup_rand_mask; ///< a mask to use for fast selection of a random index into an audio buffer. 
-
-    BufferPool<float> * bpool;
-    
-    std::queue<float *> free_buffers; ///< a pool of free audio buffers
-    std::queue<float *> ready_buffers; ///< a list of audio buffers ready to send to the output
-
-    std::mutex free_mutex; ///< lock for the free_buffers pool
-    std::mutex ready_mutex; ///< lock for the ready_buffers_pool
 
     SoDa::BufPtr sidetone_silence;  ///< a sequence of zero samples to stuff silence into the audio
 
@@ -281,7 +268,7 @@ namespace SoDa {
     std::map<SoDa::Command::AudioFilterBW, SoDa::OSFilterPtr> filter_map; ///< map filter selectors to the filter objects
 
     // hilbert transformer
-    SoDa::HilbertTransformer * hilbert; ///< hilbert transform object for SSB/CW widgets
+    SoDa::HilbertTransformerPtr hilbert; ///< hilbert transform object for SSB/CW widgets
     
     // audio gain
     float af_gain;   ///< audio gain setting for RX mode

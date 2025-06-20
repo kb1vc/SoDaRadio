@@ -37,14 +37,27 @@ namespace SoDa {
   /**
    * Spectrogram generates magnitude buffers from input sample stream. 
    */
+
+  class Spectrogram;
+  typedef std::shared_ptr<Spectrogram> SpectrogramPtr;
+
+
+  
   class Spectrogram : public Base {
-  public:
+  protected:
     /**
      * @brief Constructor
      *
      * @param fftlen how many frequency points in the spectrogram buffer
      */
     Spectrogram(unsigned int fftlen);
+
+  public:
+    static SpectrogramPtr make(unsigned int fftlen) {
+      auto ret = std::shared_ptr<Spectrogram>(new Spectrogram(fftlen));
+      ret->registerSelf(ret);
+      return ret; 
+    }
 
     /**
      * @brief Calculate the spectrogram from an input vector -- add it to

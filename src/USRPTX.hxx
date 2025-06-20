@@ -31,6 +31,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Command.hxx"
 #include "Params.hxx"
 #include "QuadratureOscillator.hxx"
+
+#include <memory>
+
 #include <uhd/usrp/multi_usrp.hpp>
 #include <uhd/stream.hpp>
 
@@ -48,8 +51,11 @@ namespace SoDa {
    * from the CW unit) onto a carrier and passes this to the USRP. 
    *
    */
+  class USRPTX;
+  typedef std::shared_ptr<USRPTX> USRPTXPtr;
+
   class USRPTX : public SoDa::Thread {
-  public:
+  private:
     /**
      * @brief Constructor for RF Transmit/modulator process
      *
@@ -57,10 +63,23 @@ namespace SoDa {
      * @param _usrp libuhd handle for the USRP radio
      *
      */
-    USRPTX(Params * params, uhd::usrp::multi_usrp::sptr _usrp);
+    USRPTX(ParamsPtr params, uhd::usrp::multi_usrp::sptr _usrp);
 
-    /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
+  public:
+    static USRPTXPtr make(ParamsPtr params, uhd::usrp::multi_usrp::sptr _usrp) {
+      auto ret = std::shared_ptr<USRPTX>(new USRPTX(params, _usrp));
+      ret->registerThread(ret);
+      return ret; 
+    }
+
+
+  /**
+   * @brief connect to useful mailboxes. 
+   * 
+   * @param mailboxes list of mailboxes to which we might subscribe.
+   */
+  void subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes);  
+
     
     /**
      * @brief USRPTX run loop: handle commands, and modulate the tx carrier
@@ -118,13 +137,13 @@ namespace SoDa {
      */
     void doCW(std::complex<float> * out, float * envelope, unsigned int env_len);
     
-    unsigned int tx_subs;  ///< subscription handle for transmit audio stream (from BaseBandTX)
-    unsigned int cmd_subs; ///< subscription handle for command stream
-    unsigned int cw_subs;  ///< subscription handle for cw envelope stream (from CW unit)
+    DatMBox::Subscription tx_subs;  ///< subscription handle for transmit audio stream (from BaseBandTX)
+    CmdMBox::Subscription cmd_subs; ///< subscription handle for command stream
+    DatMBox::Subscription cw_subs;  ///< subscription handle for cw envelope stream (from CW unit)
 
-    DatMBox * tx_stream;  ///< transmit audio stream 
-    DatMBox * cw_env_stream; ///< envelope stream from text-to-CW converter (CW unit)
-    CmdMBox * cmd_stream; ///< command stream
+    DatMBoxPtr tx_stream;  ///< transmit audio stream 
+    DatMBoxPtr cw_env_stream; ///< envelope stream from text-to-CW converter (CW unit)
+    CmdMBoxPtr cmd_stream; ///< command stream
     
     bool tx_enabled; ///< if true, we're transmitting. 
     SoDa::Command::ModulationType tx_modulation; ///< type of transmit modulation (CW_U,CW_L,USB,LSB...)

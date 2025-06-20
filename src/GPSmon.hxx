@@ -40,12 +40,25 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <SoDa/MailBox.hxx>
 
 namespace SoDa {
-  class GPSmon : public SoDa::Thread {
-  public:
-    GPSmon(Params * params);
+  class GPSmon;
+  typedef std::shared_ptr<GPSmon> GPSmonPtr;
 
+
+
+  
+  class GPSmon : public SoDa::Thread {
+  protected:
+    GPSmon(ParamsPtr params);
+
+  public:
+    static GPSmonPtr make(ParamsPtr params) {
+      auto ret = std::shared_ptr<GPSmon>(new GPSmon(params));
+      ret->registerThread(ret);
+      return ret;
+    }
+    
     /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, MailBoxBasePtr mbox_p);
+    void subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes);
     
     void run();
   private:

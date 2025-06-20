@@ -37,19 +37,40 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Spectrogram.hxx"
 
 #include <SoDa/MailBox.hxx>
+#include <memory>
+
 
 namespace SoDa {
+  class UI;
+  typedef std::shared_ptr<UI> UIPtr;
+
+  
   class UI : public SoDa::Thread {
+  private:
+    UI(ParamsPtr params);
+
   public:
-    UI(Params * params);
+    static UIPtr make(ParamsPtr params) {
+      auto ret = std::shared_ptr<UI>(new UI(params));
+      ret->registerThread(ret);
+      return ret; 
+    }
+
+
     ~UI();
 
-    /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, MailBoxBasePtr mbox_p);
+    /**
+     * @brief connect to useful mailboxes. 
+     * 
+     * @param mailboxes list of mailboxes to which we might subscribe.
+     */
+    void subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes);  
     
     void run();
 
   private:
+    void sendCommandSocket(CommandPtr ptr);
+    
     // Do an FFT on an rx buffer and send the positive
     // frequencies to any network listeners. 
     void sendFFT(SoDa::BufPtr buf);
@@ -65,10 +86,10 @@ namespace SoDa {
     SoDa::UD::ServerSocket * server_socket, * wfall_socket; 
 
     // we ship a spectrogram of the RX IF stream to the GUI
-    Spectrogram * spectrogram;
+    SpectrogramPtr spectrogram;
     unsigned int spectrogram_buckets; 
 
-    Spectrogram * lo_spectrogram; 
+    SpectrogramPtr lo_spectrogram; 
     unsigned int lo_spectrogram_buckets;
     double lo_hz_per_bucket;
     std::vector<float> lo_spectrum; 

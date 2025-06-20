@@ -19,10 +19,15 @@ extern "C" {
 }
 
 
-SoDa::Thread::Thread(const std::string & oname, const std::string & version) : SoDa::Base(oname), Debug(oname) {
-  
-  SoDa::ThreadRegistry::getRegistrar()->addThread(this, version);
-  thread_ptr = nullptr;
+SoDa::Thread::Thread(const std::string & oname, const std::string & version) : SoDa::Base(oname), Debug(oname), version(version) {
+  thread_ptr = nullptr;  
+
+}
+
+void SoDa::Thread::registerThread(SoDa::ThreadPtr me) {
+  me->registerSelf(me);
+  SoDa::ThreadRegistry::addThread(me, version);
+
 }
 
 void SoDa::Thread::execCommand(CommandPtr cmd) 

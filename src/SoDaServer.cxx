@@ -44,7 +44,7 @@
  *
  * SoDa was written and is maintained by Matt Reilly, kb1vc.
  *
- * @section structure Structure of the Radio
+ * @section radio_structure Structure of the Radio
  *
  * The SoDa program is partitioned into two parts:
  *
@@ -189,13 +189,13 @@ int loadAccessories(const std::vector<std::string> & libs, SoDa::Debug & d) {
 
 /// do the work of creating the SoDa threads
 /// @param params command line parameter parser object
-int doWork(SoDa::Params & params)
+int doWork(SoDa::ParamsPtr params)
 {
   /// create the components of the radio
-  SoDa::Debug d(params.getDebugLevel(), "SoDaServer");
-  d.setDefaultLevel(params.getDebugLevel());
+  SoDa::Debug d(params->getDebugLevel(), "SoDaServer");
+  d.setDefaultLevel(params->getDebugLevel());
   
-  loadAccessories(params.getLibs(), d);
+  loadAccessories(params->getLibs(), d);
   
   // These are the mailboxes that connect
   // the various widgets
@@ -211,30 +211,31 @@ int doWork(SoDa::Params & params)
   auto gps_stream = SoDa::CmdMBox::make("GPSstream");
   auto cwtxt_stream = SoDa::CmdMBox::make("CWTXTstream");  
 
-  SoDa::Thread * ctrl;
-  SoDa::Thread * rx;
-  SoDa::Thread * tx;
+  SoDa::ThreadPtr ctrl;
+  SoDa::ThreadPtr rx;
+  SoDa::ThreadPtr tx;
 
-  SoDa::MailBoxMap mailbox_map;
+  std::vector<SoDa::MailBoxBasePtr> mailboxes;
 
-  mailbox_map["RX"] = rx_stream;
-  mailbox_map["TX"] = tx_stream;
-  mailbox_map["CMD"] = cmd_stream;
-  mailbox_map["CW_TXT"] = cwtxt_stream;
-  mailbox_map["CW_ENV"] = cw_env_stream;  
-  mailbox_map["GPS"] = gps_stream;
-  mailbox_map["IF"] = if_stream;
+  mailboxes.push_back(rx_stream);
+  mailboxes.push_back(tx_stream);
+  mailboxes.push_back(cmd_stream);
+  mailboxes.push_back(cwtxt_stream);
+  mailboxes.push_back(cw_env_stream);  
+  mailboxes.push_back(gps_stream);
+  mailboxes.push_back(if_stream);
   
-  if(params.isRadioType("USRP")) {
+  if(params->isRadioType("USRP")) {
     /// create the USRP Control, RX Streamer, and TX Streamer threads
     /// @see SoDa::USRPCtrl @see SoDa::USRPRX @see SoDa::USRPTX
-    ctrl = new SoDa::USRPCtrl(&params);
-    rx = new SoDa::USRPRX(&params, ((SoDa::USRPCtrl *)ctrl)->getUSRP());
-    tx = new SoDa::USRPTX(&params, ((SoDa::USRPCtrl *)ctrl)->getUSRP());
+    ctrl = SoDa::USRPCtrl::make(params);
+    auto usrp_ctrl_ptr = SoDa::USRPCtrl::convert(ctrl);
+    rx = SoDa::USRPRX::make(params, usrp_ctrl_ptr->getUSRP());
+    tx = SoDa::USRPTX::make(params, usrp_ctrl_ptr->getUSRP());
   }
   else {
     std::cerr << SoDa::Format("Radio type [%0] is not yet supported\nHit ^C to exit.\n")
-      .addS(params.getRadioType()); 
+      .addS(params->getRadioType()); 
     exit(-1);
   }
 
@@ -244,34 +245,34 @@ int doWork(SoDa::Params & params)
   /// These are subclasses of the more generic SoDa::AudioIfc class
   //
   
-  AudioQt audio_ifc(params.getAudioSampleRate(),
-			  params.getAFBufferSize(),
-			  params.getServerSocketBasename(),
-			  params.getAudioPortName());
+  auto audio_ifc = AudioQt::make(params->getAudioSampleRate(),
+				 params->getAFBufferSize(),
+				 params->getServerSocketBasename(),
+				 params->getAudioPortName());
   /// Create the audio RX and audio TX unit threads
   /// These are also responsible for implementing IF tuning and modulation. 
   /// @see SoDa::BaseBandRX @see SoDa::BaseBandTX
   std::cerr << "About to create baseband rx\n";
-  SoDa::BaseBandRX bbrx(&params, &audio_ifc);
+  auto bbrx = SoDa::BaseBandRX::make(params, audio_ifc);
 
   std::cerr << "About to create baseband tx\n";  
-  SoDa::BaseBandTX bbtx(&params, &audio_ifc);
+  auto bbtx = SoDa::BaseBandTX::make(params, audio_ifc);
 
   /// Create the morse code (CW) tx handler thread @see SoDa::CWTX
   std::cerr << "About to create cwtx\n";  
-  SoDa::CWTX cwtx(&params);
+  auto cwtx = SoDa::CWTX::make(params);
     
   /// Create the user interface (UI) thread @see SoDa::UI
   std::cerr << "About to create UI listener\n";    
-  SoDa::UI ui(&params);
+  auto ui = SoDa::UI::make(params);
 
   /// Create an IF listener process that copies the IF stream to an output file
   /// when requested.
   std::cerr << "About to create if recorder\n";
-  SoDa::IFRecorder ifrec(&params);
+  auto ifrec = SoDa::IFRecorder::make(params);
 
 #if HAVE_GPSLIB    
-  SoDa::GPSmon gps(&params);
+  auto gps = SoDa::GPSmon::make(params);
 #endif
   
   d.debugMsg("Created units.");
@@ -314,10 +315,10 @@ int main(int argc, char * argv[])
   /// information from the command line and from
   /// the stored configuration files.
   /// @see SoDa::Params
-  SoDa::Params params(argc, argv);
+  SoDa::ParamsPtr params = SoDa::Params::make(argc, argv);
 
   /// create a lock file to signal that we're alive. 
-  createLockFile(params.getLockFileName()); 
+  createLockFile(params->getLockFileName()); 
 
   try {
     doWork(params); 
@@ -327,5 +328,5 @@ int main(int argc, char * argv[])
     std::cerr << "\t" << exc.toString() << std::endl; 
   }
 
-  deleteLockFile(params.getLockFileName());   
+  deleteLockFile(params->getLockFileName());   
 }

@@ -53,24 +53,33 @@ namespace SoDa {
    */
   class BaseBandRX;
 
-  class BaseBandTX
+  class BaseBandTX;
   typedef std::shared_ptr<BaseBandTX> BaseBandTXPtr;
   typedef std::weak_ptr<BaseBandTX> BaseBandTXWeakPtr;
   
   class BaseBandTX : public SoDa::Thread {
-  public:
+  protected:
     /**
      * constructor
      *
      * @param params command line parameter object
      * @param audio_ifc pointer to the audio output handler
      */
-    BaseBandTX(Params * params,
-	       AudioIfc * audio_ifc
+    BaseBandTX(ParamsPtr params,
+	       AudioIfcPtr audio_ifc
 	       );
 
+  public:
+    static BaseBandTXPtr make(ParamsPtr params,
+	       AudioIfcPtr audio_ifc
+			      ) {
+      auto ret = std::shared_ptr<BaseBandTX>(new BaseBandTX(params, audio_ifc));
+      ret->registerThread(ret);      
+      return ret; 
+    }
+    
     /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, MailBoxBasePtr mbox_p);
+    void subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes);    
     
 
     /**
@@ -143,7 +152,7 @@ namespace SoDa {
     float af_gain; ///< local microphone gain. 
 
     // audio server state
-    AudioIfc * audio_ifc; ///< pointer to an AudioIfc object for the microphone input
+    AudioIfcPtr audio_ifc; ///< pointer to an AudioIfc object for the microphone input
 
     bool tx_stream_on; ///< if true, we are transmitting. 
 
@@ -176,7 +185,7 @@ namespace SoDa {
     /**
      *The hilbert transformer to create an analytic (I/Q) signal.
      */
-    SoDa::HilbertTransformer * hilbert;
+    SoDa::HilbertTransformerPtr hilbert;
 
     /**
      * mic gain is adjustable, to make sure we aren't noxious.

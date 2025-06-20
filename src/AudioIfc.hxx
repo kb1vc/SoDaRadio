@@ -1,9 +1,7 @@
-#ifndef AUDIO_PCM_HDR
-#define AUDIO_PCM_HDR
-
+#pragma once
 
 /*
-  Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2025 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -31,9 +29,12 @@
 */
 
 #include "SoDaBase.hxx"
-#include "BufferPool.hxx"
+#include <memory>
 
 namespace SoDa {
+  class AudioIfc;
+  typedef std::shared_ptr<AudioIfc> AudioIfcPtr;
+  
   /**
    * @brief Generic Audio Interface Class
    *
@@ -48,7 +49,7 @@ namespace SoDa {
    * captured from an AudioALSA object. 
    */
   class AudioIfc : public SoDa::Base {
-  public:
+  protected:
     /*
      * constructor
      * @param sample_rate in Hz -- 48000 is a good choice
@@ -58,21 +59,12 @@ namespace SoDa {
     AudioIfc(unsigned int _sample_rate,
 	     unsigned int _sample_count_hint,
 	     const std::string & name = "AudioIfc") : SoDa::Base(name) {
-      rx_buffer_pool = NULL;
-      tx_buffer_pool = NULL;      
       sample_rate = _sample_rate;
       sample_count_hint = _sample_count_hint;
       datatype_size = sizeof(float);
     }
 
-    void setRXBufferPool(BufferPool<float> * bp) {
-      rx_buffer_pool = bp; 
-    }
-
-    void setTXBufferPool(BufferPool<float> * bp) {
-      tx_buffer_pool = bp; 
-    }
-    
+  public:    
     /**
      * send -- send a buffer to the audio output
      * @param buf buffer of type described by the DataFormat selected at init
@@ -177,11 +169,6 @@ namespace SoDa {
     float out_gain; 
 
     int datatype_size; 
-
-    BufferPool<float> * rx_buffer_pool;
-    BufferPool<float> * tx_buffer_pool;     
   };
 }
 
-
-#endif

@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-  Copyright (c) 2020, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2020, 2025 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,8 @@
 #include "AudioIfc.hxx"
 #include "UDSockets.hxx"
 #include <string>
+#include <memory>
+
 #include <mutex>
 // Only works if we have ALSA
 #include <alsa/asoundlib.h>
@@ -57,8 +59,11 @@ namespace SoDa {
    *
    * 
    */
+  class AudioQtRXTX;
+  typedef std::shared_ptr<AudioQtRXTX> AudioQtRXTXPtr;
+  
   class AudioQtRXTX : public AudioQtRX {
-  public:
+  protected:
     /**
      * constructor
      * @param _sample_rate in Hz  48000 is a good choice
@@ -73,8 +78,22 @@ namespace SoDa {
 	    std::string audio_sock_basename = std::string("soda_"),
 	    std::string audio_port_name = std::string("default"));
 
+  public:
+    static AudioQtRXTXPtr make(unsigned int _sample_rate,
+			       unsigned int _sample_count_hint = 1024,
+			       std::string audio_sock_basename = std::string("soda_"),
+			       std::string audio_port_name = std::string("default")) {
+      auto ret = std::shared_ptr<AudioQtRXTX>(new AudioQtRXTX(_sample_rate,
+							      _sample_count_hint,
+							      audio_sock_basename,
+							      audio_port_name));
+      ret->registerSelf(ret);
+      return ret; 
+    }
+  
     ~AudioQtRXTX() {
     }
+
     
     /**
      * recv -- get a buffer of data from the audio input
@@ -136,8 +155,8 @@ namespace SoDa {
     void checkStatus(int err, const std::string & exp, bool fatal = false) {
       if (err < 0) {
 	if(fatal) throw SoDa::Radio::Exception(SoDa::Format("%0 %1")
-					.addS(exp)
-					.addS(snd_strerror(err)), this);
+					       .addS(exp)
+					       .addS(snd_strerror(err)), getSelfPtr());
 	else std::cerr << SoDa::Format("%0 %1 %2\n")
 	       .addS(getObjName())
 	       .addS(exp)

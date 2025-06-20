@@ -187,6 +187,9 @@ namespace SoDa {
    * the SoDa::Exception class can show who is complaining for a given
    * exception. 
    */
+  class Base;
+  typedef std::shared_ptr<Base> BasePtr;
+  
   class Base {
   public:
     /**
@@ -198,6 +201,8 @@ namespace SoDa {
      */
     Base(const std::string & oname);
 
+    void registerSelf(BasePtr ptr);
+    
     /**
      * get the name of this object
      * @return the name of this object.
@@ -210,7 +215,7 @@ namespace SoDa {
      * @param oname a string that names the object
      * @return a pointer to the SoDaBase object (NULL if the name isn't found)
      */
-    Base * findSoDaObject(const std::string & oname); 
+    BasePtr findSoDaObject(const std::string & oname); 
 
     /**
      * Get a time stamp in nS resolution that monotonically increases
@@ -220,13 +225,20 @@ namespace SoDa {
      */
     double getTime(); 
 
+    /**
+     * @brief get a pointer to myself. 
+     *
+     */
+    BasePtr getSelfPtr() { return self.lock(); }
+    
   private:
     std::string objname; ///< the name of the object
-
+    std::weak_ptr<Base> self;
+    
     static bool first_time; ///< have we seen the first call to getTime? 
     static double base_first_time; ///< time of first call to getTime from anyone. 
 
-    static std::map<std::string, Base * > ObjectDirectory; ///< a class member -- directory of all registered objects.
+    static std::map<std::string, BasePtr > object_directory; ///< a class member -- directory of all registered objects.
   };
 
   namespace Radio {
@@ -246,7 +258,7 @@ namespace SoDa {
        * @param _reason an informative string reporting the cause of the error
        * @param obj  a pointer to the SoDaBase object that triggered the exception (if any).
        */
-      Exception(const std::string & _reason, Base * obj = NULL) 
+      Exception(const std::string & _reason, BasePtr obj = NULL) 
       {
 	thrower = obj;
 	reason = _reason; 
@@ -257,7 +269,7 @@ namespace SoDa {
        * @param _reason an informative string reporting the cause of the error
        * @param obj  a pointer to the SoDa::Base object that triggered the exception (if any).
        */
-      Exception(const char * _reason, Base * obj) {
+      Exception(const char * _reason, BasePtr obj) {
 	thrower = obj;
 	reason = std::string(_reason); 
       }
@@ -268,7 +280,7 @@ namespace SoDa {
        * @param _reason a SoDa::Format object with an explanation of the error
        * @param obj  a pointer to the SoDa::Base object that triggered the exception (if any).
        */
-      Exception(const SoDa::Format & _reason, Base * obj) {
+      Exception(const SoDa::Format & _reason, BasePtr obj) {
 	thrower = obj;
 	reason = _reason.str(); 
       }
@@ -302,10 +314,12 @@ namespace SoDa {
 	return message.c_str();
       }
     private:
-      Base * thrower; ///< who caused the exception, if anyone? 
+      BasePtr thrower; ///< who caused the exception, if anyone? 
       std::string reason; ///< what was the cause of the exception?
 
       std::string message; ///< the reason together with the owner. 
     };
+    
+    
   }
 }

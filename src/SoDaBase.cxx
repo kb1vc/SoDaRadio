@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2014, 2025 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -31,20 +31,25 @@
 #include <map>
 
 namespace SoDa {
-  std::map<std::string, SoDa::Base *> SoDa::Base::ObjectDirectory;
+  std::map<std::string, BasePtr> Base::object_directory; 
 
-  SoDa::Base::Base(const std::string & oname)
+  Base::Base(const std::string & oname)
   {
     objname = oname;
-    if(ObjectDirectory.find(oname) == ObjectDirectory.end()) {
-      ObjectDirectory[oname] = this;
-    }
   }
 
-  SoDa::Base * SoDa::Base::findSoDaObject(const std::string & oname) {
-    std::map<std::string, SoDa::Base *>::iterator mi;
-    mi = ObjectDirectory.find(oname);
-    if(mi != ObjectDirectory.end()) {
+  void Base::registerSelf(BasePtr me) {
+    if(object_directory.find(objname) == object_directory.end()) {
+      object_directory[objname] = me;
+    }
+    
+    self = me; 
+  }
+  
+  BasePtr Base::findSoDaObject(const std::string & oname) {
+    std::map<std::string, BasePtr>::iterator mi;
+    mi = object_directory.find(oname);
+    if(mi != object_directory.end()) {
       return mi->second;
     }
     else {
@@ -52,7 +57,7 @@ namespace SoDa {
     }
   }
 
-  double SoDa::Base::getTime() {
+  double Base::getTime() {
     struct timespec tp; 
     clock_gettime(CLOCK_MONOTONIC, &tp); // 60nS average in tight loops, 160nS cold.
     double ret = ((double) tp.tv_sec) + (1.0e-9 * ((double) tp.tv_nsec)); 
@@ -62,7 +67,8 @@ namespace SoDa {
     }
     return ret - base_first_time; 
   }
-}
 
-bool SoDa::Base::first_time = true;
-double SoDa::Base::base_first_time;
+
+  bool Base::first_time = true;
+  double Base::base_first_time;
+}

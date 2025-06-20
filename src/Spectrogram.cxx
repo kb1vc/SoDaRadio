@@ -86,7 +86,7 @@ void SoDa::Spectrogram::apply_common(std::vector<std::complex<float>> & invec)
     throw SoDa::Radio::Exception(SoDa::Format("inveclen %0 less than fftlen %1\n") 
 				 .addI(invec.size())
 				 .addI(fft_len), 
-				 this);
+				 getSelfPtr());
   }
   // accumulate FFT results over the length of the buffer.
   for(i = 0; i < (invec.size() + 1 - fft_len); i += (fft_len / 2)) {

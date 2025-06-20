@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012,2013,2014 Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2013,2014,2025 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -25,8 +25,7 @@
   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef HILBERT_HDR
-#define HILBERT_HDR
+#pragma once
 
 #include <fstream>
 #include <complex>
@@ -51,8 +50,11 @@ namespace SoDa {
    *   real(g(t)) = real(x(t + tau)) and
    *   imag(g(t)) = shift_by_90deg(imag(x(t + tau)))
    */
+  class HilbertTransformer;
+  typedef std::shared_ptr<HilbertTransformer> HilbertTransformerPtr;
+  
   class HilbertTransformer : public SoDa::Base {
-  public:
+  protected:
     /**
      * constructor -- build a Hilbert Transformer
      * @param inout_buffer_length the length of the input and output buffers
@@ -60,6 +62,15 @@ namespace SoDa {
      */
     HilbertTransformer(unsigned int inout_buffer_length, unsigned int filter_length = 256);
 
+  public:
+    static HilbertTransformerPtr make(unsigned int inout_buffer_length, unsigned int filter_length = 256) {
+      auto ret = std::shared_ptr<HilbertTransformer>(new HilbertTransformer(inout_buffer_length, 
+									filter_length));
+
+      ret->registerSelf(ret);
+      return ret; 
+    }
+    
     /**
      * Perform a hilbert transform on the QUADRATURE signal in the input buffer.
      * Pass the Inphase signal through a delay filter that matches the hilbert transform
@@ -129,4 +140,3 @@ namespace SoDa {
   };
 }
 
-#endif

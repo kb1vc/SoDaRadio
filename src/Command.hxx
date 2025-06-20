@@ -556,6 +556,8 @@ namespace SoDa
 	NOISE
       };
 
+
+  public:
     /**
      * Constructor for commands with no parameters
      *

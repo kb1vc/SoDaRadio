@@ -31,6 +31,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Command.hxx"
 #include "Params.hxx"
 #include <map>
+#include <memory>
 
 namespace SoDa {
   /**
@@ -39,8 +40,11 @@ namespace SoDa {
    * Methods accept a character and encode it into wiggles in the output
    * envelope stream. 
    */
+  class CWGenerator;
+  typedef std::shared_ptr<CWGenerator> CWGeneratorPtr; 
+  
   class CWGenerator {
-  public:
+  protected:
     /**
      * @brief Constructor
      * @param cw_env_stream envelope stream from text-to-CW converter
@@ -49,6 +53,16 @@ namespace SoDa {
      */
     CWGenerator(DatMBoxPtr cw_env_stream, double _samp_rate, unsigned int _env_buf_len);
 
+  public:
+    static CWGeneratorPtr make(DatMBoxPtr cw_env_stream, 
+			       double _samp_rate, 
+			       unsigned int _env_buf_len) {
+      auto ret = std::shared_ptr<CWGenerator>(new CWGenerator(cw_env_stream,
+							     _samp_rate,
+							     _env_buf_len));
+      return ret; 
+    }
+	
     /**
      * @brief set the speed of the cw stream in words per minute
      * @param wpm words per minute

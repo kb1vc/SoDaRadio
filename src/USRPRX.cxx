@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012, 2025 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -45,7 +45,7 @@
 
 #include <fstream>
 
-SoDa::USRPRX::USRPRX(Params * params, uhd::usrp::multi_usrp::sptr _usrp) : 
+SoDa::USRPRX::USRPRX(ParamsPtr params, uhd::usrp::multi_usrp::sptr _usrp) : 
   SoDa::Thread("USRPRX")
 {
 
@@ -105,15 +105,15 @@ void SoDa::USRPRX::run()
 {
   if(cmd_stream == NULL) {
     throw SoDa::Radio::Exception(std::string("Never got command stream subscription\n"), 
-			  this);	
+			  getSelfPtr());	
   }
   if(rx_stream == NULL) {
     throw SoDa::Radio::Exception(std::string("Never got rx stream subscription\n"),
-			  this);	
+			  getSelfPtr());	
   }
   if(if_stream == NULL) {
     throw SoDa::Radio::Exception(std::string("Never got if stream subscription\n"),
-			  this);	
+			  getSelfPtr());	
   }
   
   uhd::set_thread_priority_safe(); 
@@ -135,8 +135,8 @@ void SoDa::USRPRX::run()
       // get a free buffer.
       SoDa::BufPtr buf = SoDa::Buf::make(rx_buffer_size);
 
-      if(buf == nullptr) throw SoDa::Radio::Exception("USRPRX couldn't allocate SoDa::Buf object", this); 
-      if(buf->getComplexBuf().size() == 0) throw SoDa::Radio::Exception("USRPRX allocated empty SoDa::Buf object", this);
+      if(buf == nullptr) throw SoDa::Radio::Exception("USRPRX couldn't allocate SoDa::Buf object", getSelfPtr()); 
+      if(buf->getComplexBuf().size() == 0) throw SoDa::Radio::Exception("USRPRX allocated empty SoDa::Buf object", getSelfPtr());
       
       unsigned int left = rx_buffer_size;
       unsigned int coll_so_far = 0;
@@ -162,12 +162,7 @@ void SoDa::USRPRX::run()
 	// it before the send is complete. 
 	SoDa::BufPtr if_buf = SoDa::Buf::make(rx_buffer_size);
 
-	if(if_buf->copy(buf)) {
-	  if_stream->put(if_buf);
-	}
-	else {
-	  throw SoDa::Radio::Exception("SoDa::Buf Copy for IF stream failed", this);
-	}
+	if_stream->put(if_buf);
       }
 
 
@@ -193,10 +188,10 @@ void SoDa::USRPRX::doMixer(SoDa::BufPtr inout)
 {
   unsigned int i;
   std::complex<float> o;
-  std::complex<float> * ioa = inout->getComplexBuf();
-  for(i = 0; i < inout->getComplexMaxLen(); i++) {
+  std::vector<std::complex<float>> ioa = inout->getComplexBuf();
+  for(auto & v : ioa) {
     o = IF_osc.stepOscCF();
-    ioa[i] = ioa[i] * o; 
+    v = v * o; 
   }
 }
 
@@ -293,15 +288,26 @@ void SoDa::USRPRX::execRepCommand(CommandPtr cmd)
   (void) cmd; 
 }
 
-/// implement the subscription method
-void SoDa::USRPRX::subscribeToMailBox(const std::string & mbox_name, 
-					MailBoxBasePtr mbox_p) {
 
-  cmd_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<CommandPtr>>(mbox_p, "CMDstream");
-  if(cmd_stream != nullptr) {
-    cmd_subs = cmd_stream->subscribe();
+/// implement the subscription method
+void SoDa::USRPRX::subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes)
+{
+  for(auto mbox_p : mailboxes) {
+    cmd_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<CommandPtr>>(mbox_p, "CMDstream");
+    if(cmd_stream != nullptr) {
+      cmd_subs = cmd_stream->subscribe();
+    }
+    rx_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<BufPtr>>(mbox_p, "RXstream");
+    if_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<BufPtr>>(mbox_p, "IFstream");    
   }
-  rx_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<BufPtr>>(mbox_p, "RXstream");
-  if_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<BufPtr>>(mbox_p, "IFstream");
-  
+
+  if(cmd_stream == nullptr) {
+    throw MissingMailBox("CMD", getSelfPtr());
+  }
+  if(rx_stream == nullptr) {
+    throw MissingMailBox("RX", getSelfPtr());
+  }
+  if(if_stream == nullptr) {
+    throw MissingMailBox("IF", getSelfPtr());
+  }
 }

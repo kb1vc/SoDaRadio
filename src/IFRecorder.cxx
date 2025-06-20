@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2018, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2018, 2025 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -35,136 +35,147 @@
 #include <sys/stat.h>
 #include <SoDa/Format.hxx>
 
-SoDa::IFRecorder::IFRecorder(Params * params) : SoDa::Thread("IFRecorder")
-{
-  // setup the streams
-  rx_stream = NULL;
-  cmd_stream = NULL;
+namespace SoDa {
+  IFRecorder::IFRecorder(ParamsPtr params) : Thread("IFRecorder")
+  {
+    // setup the streams
+    rx_stream = NULL;
+    cmd_stream = NULL;
 
-  // what is the default sample rate and buffer size?
-  rf_sample_rate = params->getRXRate(); 
-  rf_buffer_size = params->getRFBufferSize();
+    // what is the default sample rate and buffer size?
+    rf_sample_rate = params->getRXRate(); 
+    rf_buffer_size = params->getRFBufferSize();
 
-  // we aren't recording right now
-  write_stream_on = false; 
+    // we aren't recording right now
+    write_stream_on = false; 
 
-  // we don't know the current center frequency
-  current_rx_center_freq = 0.0; 
-}
-
-
-
-void SoDa::IFRecorder::execSetCommand(SoDa::CommandPtr cmd)
-{
-  SoDa::Command::AudioFilterBW fbw;
-  SoDa::Command::ModulationType txmod; 
-  switch (cmd->target) {
-  case SoDa::Command::RF_RECORD_START:
-    openOutStream(cmd->sparm);
-    break;
-  case SoDa::Command::RF_RECORD_STOP:
-    closeOutStream();
-    break; 
-  default:
-    break; 
+    // we don't know the current center frequency
+    current_rx_center_freq = 0.0; 
   }
-}
 
-void SoDa::IFRecorder::execGetCommand(SoDa::CommandPtr cmd)
-{
-  (void) cmd;
-}
 
-void SoDa::IFRecorder::execRepCommand(SoDa::CommandPtr cmd)
-{
-  switch (cmd->target) {
-  case SoDa::Command::RX_FE_FREQ:
-    current_rx_center_freq = cmd->dparms[0];
-    break;
-  default:
-    // do nothing. 
-    break; 
-  }
-}
 
-void SoDa::IFRecorder::run()
-{
-  bool exitflag = false;
-  SoDa::BufPtr rxbuf;
-  CommandPtr cmd; 
-
-  if((cmd_stream == NULL) || (rx_stream == NULL)) {
-    throw SoDa::Radio::Exception(std::string("Missing a stream connection.\n"), 
-			  this);	
-  }
-  
-  
-  while(!exitflag) {
-    bool did_work = false;
-
-    if(cmd_stream->get(cmd_subs, cmd)) {
-      // process the command.
-      execCommand(cmd);
-      did_work = true; 
-      exitflag |= (cmd->target == Command::STOP); 
+  void IFRecorder::execSetCommand(CommandPtr cmd)
+  {
+    Command::AudioFilterBW fbw;
+    Command::ModulationType txmod; 
+    switch (cmd->target) {
+    case Command::RF_RECORD_START:
+      openOutStream(cmd->sparm);
+      break;
+    case Command::RF_RECORD_STOP:
+      closeOutStream();
+      break; 
+    default:
+      break; 
     }
+  }
 
-    // now look for incoming buffers from the rx_stream.
-    // but keep it to two buffers before we look back at the cmd stream 
-    int bcount = 0; 
-    for(bcount = 0; (bcount < 2) && rx_stream->get(rx_subs, rxbuf); bcount++) {
-      if(rxbuf == NULL) break; 
-      did_work = true; 
+  void IFRecorder::execGetCommand(CommandPtr cmd)
+  {
+    (void) cmd;
+  }
+
+  void IFRecorder::execRepCommand(CommandPtr cmd)
+  {
+    switch (cmd->target) {
+    case Command::RX_FE_FREQ:
+      current_rx_center_freq = cmd->dparms[0];
+      break;
+    default:
+      // do nothing. 
+      break; 
+    }
+  }
+
+  void IFRecorder::run()
+  {
+    bool exitflag = false;
+    BufPtr rxbuf;
+    CommandPtr cmd; 
+
+    if((cmd_stream == NULL) || (rx_stream == NULL)) {
+      throw Radio::Exception(std::string("Missing a stream connection.\n"), 
+			     getSelfPtr());	
+    }
+  
+  
+    while(!exitflag) {
+      bool did_work = false;
+
+      if(cmd_stream->get(cmd_subs, cmd)) {
+	// process the command.
+	execCommand(cmd);
+	did_work = true; 
+	exitflag |= (cmd->target == Command::STOP); 
+      }
+
+      // now look for incoming buffers from the rx_stream.
+      // but keep it to two buffers before we look back at the cmd stream 
+      int bcount = 0; 
+      for(bcount = 0; (bcount < 2) && rx_stream->get(rx_subs, rxbuf); bcount++) {
+	if(rxbuf == NULL) break; 
+	did_work = true; 
       
-      if(write_stream_on) {
-	auto cbuf = rxbuf->getComplexBuf(); 
-	ostr.write((char*) cbuf.data(), cbuf.size() * sizeof(std::complex<float>));
+	if(write_stream_on) {
+	  auto cbuf = rxbuf->getComplexBuf(); 
+	  ostr.write((char*) cbuf.data(), cbuf.size() * sizeof(std::complex<float>));
+	}
+      }
+
+      if(!did_work) {
+	usleep(1000); 
       }
     }
 
-    if(!did_work) {
-      usleep(1000); 
+    // we get here when the server tells us the game is over... (we get a STOP command)
+    if(write_stream_on) {
+      ostr.close();
     }
   }
 
-  // we get here when the server tells us the game is over... (we get a STOP command)
-  if(write_stream_on) {
-    ostr.close();
-  }
-}
+  void IFRecorder::openOutStream(char * ofile_name)
+  {
+    std::cerr << Format("IFRecorder: about to open file [%0] for writing\n")
+      .addS(ofile_name); 
+    if(ostr.is_open()) {
+      ostr.close();
+    }
+    ostr.open(ofile_name, std::ofstream::out | std::ofstream::binary); 
 
-void SoDa::IFRecorder::openOutStream(char * ofile_name)
-{
-  std::cerr << SoDa::Format("IFRecorder: about to open file [%0] for writing\n")
-    .addS(ofile_name); 
-  if(ostr.is_open()) {
-    ostr.close();
+    // write the RX front end frequency
+    ostr.write((char*) &current_rx_center_freq, sizeof(double));
+    write_stream_on = true; 
   }
-  ostr.open(ofile_name, std::ofstream::out | std::ofstream::binary); 
 
-  // write the RX front end frequency
-  ostr.write((char*) &current_rx_center_freq, sizeof(double));
-  write_stream_on = true; 
-}
-
-void SoDa::IFRecorder::closeOutStream()
-{
-  std::cerr << "IFRecorder: closing RF file" << std::endl; 
-  if(ostr.is_open()) {
-    ostr.close();
+  void IFRecorder::closeOutStream()
+  {
+    std::cerr << "IFRecorder: closing RF file" << std::endl; 
+    if(ostr.is_open()) {
+      ostr.close();
+    }
+    write_stream_on = false;
   }
-  write_stream_on = false;
-}
 
-/// implement the subscription method
-void SoDa::IFRecorder::subscribeToMailBox(const std::string & mbox_name, SoDa::MailBoxBasePtr mbox_p)
-{
-  cmd_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<CommandPtr>>(mbox_p, "CMDstream");
-  if(cmd_stream != nullptr) {
-    cmd_subs = cmd_stream->subscribe();
-  }
-  rx_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<BufPtr>>(mbox_p, "RXstream");
-  if(rx_stream != nullptr) {
-    rx_subs = rx_stream->subscribe();
+  /// implement the subscription method
+  void IFRecorder::subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes)
+  {
+    for(auto mbox_p : mailboxes) {
+      cmd_stream = MailBoxBase::convert<MailBox<CommandPtr>>(mbox_p, "CMDstream");
+      if(cmd_stream != nullptr) {
+	cmd_subs = cmd_stream->subscribe();
+      }
+      rx_stream = MailBoxBase::convert<MailBox<BufPtr>>(mbox_p, "RXstream");
+      if(rx_stream != nullptr) {
+	rx_subs = rx_stream->subscribe();
+      }
+    }
+
+    if(cmd_stream == nullptr) {
+      throw MissingMailBox("CMD", getSelfPtr());
+    }
+    if(rx_stream == nullptr) {
+      throw MissingMailBox("RX", getSelfPtr());
+    }
   }
 }

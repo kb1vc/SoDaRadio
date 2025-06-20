@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2014, 2025 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -25,9 +25,7 @@
   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef MEDIAN_FILTER_HDR
-#define MEDIAN_FILTER_HDR
-
+#pragma once
 
  ///
  ///  @file MedianFilter.hxx
@@ -102,4 +100,3 @@ namespace SoDa {
   };
 }
 
-#endif

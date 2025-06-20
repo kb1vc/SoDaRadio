@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012,2013,2014 Matthew H. Reilly (kb1vc)
+Copyright (c) 2012,2013,2014, 2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -41,6 +41,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <time.h>
 #include <sys/time.h>
 #include <mutex>
+#include <memory>
 
 namespace SoDa {
   /**
@@ -49,16 +50,28 @@ namespace SoDa {
    * This block uses the CWGenerator object to convert text to a
    * CW envelope. 
    */
+  class CWTX;
+  typedef std::shared_ptr<CWTX> CWTXPtr;
+
+  
   class CWTX : public SoDa::Thread {
-  public:
+  protected:
     /**
      * @brief Constructor
      * @param params block describing intial setup of the radio
      */
-    CWTX(Params * params);
+    CWTX(ParamsPtr params);
 
+  public:
+    static CWTXPtr make(ParamsPtr params)
+    {
+      auto ret = std::shared_ptr<CWTX>(new CWTX(params));
+      ret->registerThread(ret);
+      return ret; 
+    }
+    
     /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, MailBoxBasePtr mbox_p);
+    void subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes);    
 
     /**
      * @brief CWTX run loop: translate text to CW envelopes, handle incoming commands

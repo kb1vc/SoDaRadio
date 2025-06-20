@@ -55,6 +55,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <uhd/types/tune_request.hpp>
 #include <uhd/types/tune_result.hpp>
 
+#include <memory>
+
 namespace SoDa {
 
 
@@ -68,13 +70,32 @@ namespace SoDa {
   ///  requests from other components (including the SoDa::UI listener)
   ///  and dumps status and completion reports back onto
   ///  the command stream channel. 
+  class USRPCtrl;
+  typedef std::shared_ptr<USRPCtrl> USRPCtrlPtr;
+
   class USRPCtrl : public SoDa::Thread {
-  public:
+  private:
     /// Constructor
     /// Build a USRPCtrl thread
     /// @param params Pointer to a parameter object with all the initial settings
     /// and identification for the attached USRP
-    USRPCtrl(Params * params);
+    USRPCtrl(ParamsPtr params);
+
+  public:
+    static USRPCtrlPtr make(ParamsPtr params) {
+      if(singleton_ctrl_obj != nullptr) {
+	auto ret = std::shared_ptr<USRPCtrl>(new USRPCtrl(params));
+	USRPCtrl::singleton_ctrl_obj = ret;
+	ret->registerThread(ret);
+	return ret; 
+      }
+      else {
+	return singleton_ctrl_obj;
+      }
+    }
+
+    static USRPCtrlPtr convert(SoDa::ThreadPtr tp) { return std::dynamic_pointer_cast<USRPCtrl>(tp); }
+
     /// start the thread
     void run();
 
@@ -83,21 +104,20 @@ namespace SoDa {
     /// @return a pointer to the USRP radio object
     uhd::usrp::multi_usrp::sptr getUSRP() { return usrp; }
 
-    /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, MailBoxBasePtr mbox_p);
-
-#if UHD_VERSION < 3110000
-    /// This is the more permanent message handler used before the elimination of the msg class    
-    static void normal_message_handler(uhd::msg::type_t type, const std::string & msg);
-#endif
+    /**
+     * @brief connect to useful mailboxes. 
+     * 
+     * @param mailboxes list of mailboxes to which we might subscribe.
+     */
+    void subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes);  
     
     /// This is a singleton object -- the last (and only, we hope) such object
     /// to be created sets a static pointer to itself.  This looks pretty gross, but
     /// it is necessary to provide context to the error message handlers.
-    static SoDa::USRPCtrl * singleton_ctrl_obj;
+    static USRPCtrlPtr singleton_ctrl_obj;
     
   private:
-    Params * params;
+    ParamsPtr params;
 
     /// The B200 and B210 need some special handling, as they
     /// don't have frontend lock indications (as of 3.7.0)
@@ -165,7 +185,7 @@ namespace SoDa {
 
     
     CmdMBoxPtr cmd_stream; ///< command stream channel
-    CmdMBox::Subscription subid;   ///< subscriber ID for this thread's connection to the command channel
+    CmdMBox::Subscription cmd_subs;   ///< subscriber ID for this thread's connection to the command channel
 
     // USRP stuff.
     uhd::usrp::multi_usrp::sptr usrp; ///< to which USRP unit is this connected?

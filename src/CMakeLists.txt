@@ -14,6 +14,7 @@ set(SoDaServer_SRCS
     UI.cxx
     Command.cxx
     HilbertTransformer.cxx
+    QuadratureOscillator.cxx
     Spectrogram.cxx
     CWGenerator.cxx
     GPSmon.cxx

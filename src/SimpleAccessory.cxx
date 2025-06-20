@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019 Matthew H. Reilly (kb1vc)
+Copyright (c) 2019,2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -67,10 +67,17 @@ void SimpleAccessory::run() {
   }
 }
 
-void SimpleAccessory::subscribeToMailBox(const std::string & mbox_name, SoDa::BaseMBox * mbox_p)
+/// implement the subscription method
+void SimpleAccessory::subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes)
 {
-  if(SoDa::connectMailBox<SoDa::CmdMBox>(this, cmd_stream, "CMD", mbox_name, mbox_p)) {
-    cmd_subs = cmd_stream->subscribe();
+  for(auto mbox_p : mailboxes) {
+    cmd_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<CommandPtr>>(mbox_p, "CMDstream");
+    if(cmd_stream != nullptr) {
+      cmd_subs = cmd_stream->subscribe();
+    }
+
+  if(cmd_stream == nullptr) {
+    throw SoDa::MissingMailBox("CMD", getSelfPtr());
   }
 }
 

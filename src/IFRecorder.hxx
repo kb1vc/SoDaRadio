@@ -65,17 +65,27 @@ namespace SoDa {
    * USB, and LSB modulation via the phasing method, since both I and Q
    * channels are available. AM is performed with a simple magnitude detector.
    */
+  class IFRecorder;
+  typedef std::shared_ptr<IFRecorder> IFRecorderPtr;
+
   class IFRecorder : public SoDa::Thread {
-  public:
+  protected:
     /**
      * @brief the constructor
      *
      * @param params command line parameter object
      **/
-    IFRecorder(Params * params);
+    IFRecorder(ParamsPtr params);
 
+  public:
+    static IFRecorderPtr make(ParamsPtr params) {
+      auto ret = std::shared_ptr<IFRecorder>(new IFRecorder(params));
+      ret->registerThread(ret);
+      return ret;
+    }
+    
     /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, SoDa::MailBoxBasePtr mbox_p);
+    void subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes);    
     
     /**
      * @brief the run method -- does the work of the audio receiver process

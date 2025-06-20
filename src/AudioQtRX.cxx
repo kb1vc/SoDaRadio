@@ -51,7 +51,7 @@ namespace SoDa {
   void AudioQtRX::setupNetwork(std::string audio_sock_basename) 
   {
     std::string sockname = audio_sock_basename + "_rxa";
-    audio_rx_socket = new SoDa::UD::ServerSocket(sockname);
+    audio_rx_socket = std::shared_ptr<SoDa::UD::ServerSocket>(new SoDa::UD::ServerSocket(sockname));
     audio_rx_socket->setDebug(true);
   }
 
@@ -60,6 +60,14 @@ namespace SoDa {
     return true; 
   }
 
+
+  int AudioQtRX::recv(void * buf, unsigned int len, bool when_ready) { 
+    std::ignore = buf;
+    std::ignore = when_ready;
+    float *bp = (float*) buf;
+    for(int i = 0; i < len; i++) { bp[i] = 0.0; }
+    return len; 
+  }
 
   int AudioQtRX::send(void * buf, unsigned int len, bool when_ready) {
     int ret;

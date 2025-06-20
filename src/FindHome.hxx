@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2014, 2025 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,7 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef FIND_HOME_HDR
-#define FIND_HOME_HDR
+#pragma once
 
 #include <string>
 
@@ -42,4 +41,3 @@
  */
 std::string findHome(); 
 
-#endif // FIND_HOME_HDR

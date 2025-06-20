@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012, 2025 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -34,8 +34,10 @@
 #include <sys/stat.h>
 #include <SoDa/Format.hxx>
 
-SoDa::BaseBandRX::BaseBandRX(Params * params,
-		       AudioIfc * _audio_ifc) : SoDa::Thread("BaseBandRX")
+#include <memory>
+
+SoDa::BaseBandRX::BaseBandRX(ParamsPtr params,
+		       AudioIfcPtr _audio_ifc) : SoDa::Thread("BaseBandRX")
 {
   audio_ifc = _audio_ifc; 
   rx_stream = NULL;
@@ -89,7 +91,7 @@ SoDa::BaseBandRX::BaseBandRX(Params * params,
     }
   }
   // create hilbert transformer
-  hilbert = new SoDa::HilbertTransformer(audio_buffer_size);
+  hilbert = SoDa::HilbertTransformer::make(audio_buffer_size);
 
   // initialize the sample for the NBFM and WBFM demodulator
   last_phase_samp = 0.0;
@@ -346,7 +348,7 @@ void SoDa::BaseBandRX::demodulate(SoDa::BufPtr rxbuf)
     break; 
   default:
     // all other modes are unsupported just for now.
-    throw SoDa::Radio::Exception("Unsupported Modulation Mode in RX", this);
+    throw SoDa::Radio::Exception("Unsupported Modulation Mode in RX", getSelfPtr());
     break; 
   }
 }
@@ -470,12 +472,7 @@ void SoDa::BaseBandRX::execGetCommand(SoDa::CommandPtr cmd)
   case SoDa::Command::DBG_REP: // report status
     SoDa::Command::UnitSelector us;
     us = SoDa::Command::UnitSelector(cmd->iparms[0]);
-    if(us == SoDa::Command::BaseBandRX) {
-      std::cerr << SoDa::Format("%0 ready_buffers.size = %1 free_buffers.size = %2\n")
-	.addS(getObjName())
-	.addI(readyAudioBuffers())
-	.addI(free_buffers.size());
-    }
+    // do nothing...
     break; 
   default:
     break; 
@@ -505,7 +502,7 @@ void SoDa::BaseBandRX::run()
 
   if((cmd_stream == NULL) || (rx_stream == NULL)) {
     throw SoDa::Radio::Exception(std::string("Missing a stream connection.\n"),
-			  this);	
+				 getSelfPtr());	
   }
   
   
@@ -556,11 +553,6 @@ void SoDa::BaseBandRX::run()
 
 
 
-int SoDa::BaseBandRX::readyAudioBuffers() 
-{
-  std::lock_guard<std::mutex> lock(ready_mutex);
-  return ready_buffers.size();
-}
 
 void SoDa::BaseBandRX::pendNullBuffer(int count) {
   for(int b = 0; b < count; b++) {
@@ -596,25 +588,9 @@ void SoDa::BaseBandRX::pendAudioBuffer(SoDa::BufPtr bp)
   audio_level = 10.0 * (log10(al / af_gain) - log_audio_buffer_size);
 }
 
-float * SoDa::BaseBandRX::getNextAudioBuffer()
-{
-  std::lock_guard<std::mutex> lock(ready_mutex); 
-  if(ready_buffers.empty()) return NULL;
-  float * ret;
-  ret = ready_buffers.front();
-  ready_buffers.pop();
-  return ret; 
-}
-
 void SoDa::BaseBandRX::flushAudioBuffers()
 {
-  std::lock_guard<std::mutex> lock(ready_mutex); 
-  while(!ready_buffers.empty()) {
-    // we're going to just throw away buffers
-    // the shared_ptr magic will do the rest.
-    auto rb = ready_buffers.front(); 
-    ready_buffers.pop();
-  }
+  // do we need to do anything here? 
   return;
 }
 
@@ -643,14 +619,23 @@ void SoDa::BaseBandRX::buildFilterMap()
 }
 
 /// implement the subscription method
-void SoDa::BaseBandRX::subscribeToMailBox(const std::string & mbox_name, MailBoxBasePtr mbox_p)
+void SoDa::BaseBandRX::subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes)
 {
-  cmd_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<CommandPtr>>(mbox_p, "CMD");
-  if(cmd_stream != nullptr) {
-    cmd_subs = cmd_stream->subscribe();
+  for(auto mbox_p : mailboxes) {
+    cmd_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<CommandPtr>>(mbox_p, "CMDstream");
+    if(cmd_stream != nullptr) {
+      cmd_subs = cmd_stream->subscribe();
+    }
+    rx_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<BufPtr>>(mbox_p, "RXstream");
+    if(rx_stream != nullptr) {
+      rx_subs = rx_stream->subscribe();
+    }
   }
-  rx_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<BufPtr>>(mbox_p, "RX");
-  if(rx_stream != nullptr) {
-    rx_subs = rx_stream->subscribe();
+
+  if(cmd_stream == nullptr) {
+    throw MissingMailBox("CMD", getSelfPtr());
+  }
+  if(rx_stream == nullptr) {
+    throw MissingMailBox("RX", getSelfPtr());
   }
 }

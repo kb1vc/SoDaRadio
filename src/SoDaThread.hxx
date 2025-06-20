@@ -96,6 +96,9 @@ namespace SoDa {
      */
     Thread(const std::string & oname, const std::string & version = std::string(SoDaRadio_VERSION));
 
+  public:
+    void registerThread(SoDa::ThreadPtr me);
+    
     /**
      * @brief the creator of this thread may offer one or more mailboxes
      * to this object.  The thread may "subscribe" to the mailboxes as it
@@ -179,7 +182,7 @@ namespace SoDa {
      * A pointer to ourself
      */
     std::weak_ptr<Thread> self;
-    
+
   private:
     /**
      * This is the actual thread object -- 
@@ -200,35 +203,19 @@ namespace SoDa {
     static void sigsegHandler(int sig);
     
     void hookSigSeg();
+
+    std::string version; 
   };
 
-  /**
-   * @brief if the pattern and key match, return true and set "mbox_ptr" to point
-   * to the mailbox pointed to by "could_be_pointer".  Otherwise, just return false;
-   * 
-   * @param obj A SoDa object so we have someone to blame for an exception.
-   * @param current_ptr if the mailbox has already been connected, then this is it, otherwise, we'll update the mailbox on a match.
-
-   * @param pattern this is the mailbox name we're looking for
-   * @param key this is the name of the  mailbox we're being offered
-   * @param could_be_pointer this is the mailbox we're being offered. 
-   * @return true if we find a match
-   *
-   */
-  template<class T> bool connectMailBox(SoDa::Base * obj, 
-					T & current_ptr, 
-					const std::string & pattern,
-					const std::string & key, 
-					SoDa::MailBoxBasePtr could_be_pointer) {
-    T * ret;
-    if(pattern == key) {
-      ret = SoDa::MailBoxBase::convert<T>(could_be_pointer, true);
-      current_ptr = ret; 
-      return true;
+  class MissingMailBox : public Radio::Exception {
+  public:
+    MissingMailBox(const std::string & mbox_name, BasePtr thrower) :
+      Radio::Exception(SoDa::Format("Mailbox %0 could not be found.").addS(mbox_name).str(),
+		       thrower)
+    {
     }
-    return false;
-  }
+  };
+  
 }
 
 
-#endif
