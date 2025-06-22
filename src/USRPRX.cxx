@@ -166,13 +166,18 @@ void SoDa::USRPRX::run()
       }
 
 
-      // support debug... 
-      scount++;
-
       // tune it down with the IF oscillator
       doMixer(buf); 
       // now put the baseband signal on the ring.
       rx_stream->put(buf);
+      // support debug...
+      if((scount % 20) == 0) {
+	std::cerr << SoDa::Format("USRPRX put %0 buffers (%1 samples each) on rx_stream\n")
+	  .addI(scount)
+	  .addI(rx_buffer_size)
+	  ;
+      }
+      scount++;
 
       // write the buffer output
     }
@@ -293,16 +298,19 @@ void SoDa::USRPRX::execRepCommand(CommandPtr cmd)
 void SoDa::USRPRX::subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes)
 {
   for(auto mbox_p : mailboxes) {
-    cmd_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<CommandPtr>>(mbox_p, "CMDstream");
-    if(cmd_stream != nullptr) {
-      cmd_subs = cmd_stream->subscribe();
-    }
-    rx_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<CBufPtr>>(mbox_p, "RXstream");
-    if_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<CBufPtr>>(mbox_p, "IFstream");    
+    SoDa::MailBoxBase::connect<SoDa::MailBox<CommandPtr>>(mbox_p, "CMDstream",
+							  cmd_stream);
+    SoDa::MailBoxBase::connect<SoDa::MailBox<CBufPtr>>(mbox_p, "RXstream",
+						       rx_stream);
+    SoDa::MailBoxBase::connect<SoDa::MailBox<CBufPtr>>(mbox_p, "IFstream",
+						       if_stream);    
   }
 
   if(cmd_stream == nullptr) {
     throw MissingMailBox("CMD", getSelfPtr());
+  }
+  else {
+      cmd_subs = cmd_stream->subscribe();    
   }
   if(rx_stream == nullptr) {
     throw MissingMailBox("RX", getSelfPtr());

@@ -180,9 +180,25 @@ void deleteLockFile(const std::string & lock_file_name)
 
 int loadAccessories(const std::vector<std::string> & libs, SoDa::Debug & d) {
   // are there loadable modules we want to run?
+  typedef bool (*initfunctype)();
+
   for(auto l : libs) {
-    dlopen(l.c_str(), RTLD_LAZY | RTLD_GLOBAL);
-    d.debugMsg(SoDa::Format("Loaded shared object %0\n").addS(l));
+    initfunctype initfunc; 
+    auto handle = dlopen(l.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+    d.debugMsg(SoDa::Format("Loaded plugin %0\n").addS(l));
+    // now find the "init" method.
+    initfunc = (initfunctype) dlsym(handle, "initPlugin");
+    const char * dlsym_error = dlerror();
+    if(dlsym_error != nullptr) {
+      d.debugMsg(SoDa::Format("Shared plugin %0 does not provied an initialization function %1 -- error %2\n")
+		 .addS(l)
+		 .addS("initPlugin")
+		 .addS(dlsym_error)
+		 );
+    }
+    else {
+      initfunc();
+    }
   }
   return 1; 
 }
@@ -228,8 +244,12 @@ int doWork(SoDa::ParamsPtr params)
   if(params->isRadioType("USRP")) {
     /// create the USRP Control, RX Streamer, and TX Streamer threads
     /// @see SoDa::USRPCtrl @see SoDa::USRPRX @see SoDa::USRPTX
+    std::cerr << "Creating a USRPCtrl\n";
     ctrl = SoDa::USRPCtrl::make(params);
+    if(ctrl == nullptr) std::cerr << "but ctrl was null\n";
     auto usrp_ctrl_ptr = SoDa::USRPCtrl::convert(ctrl);
+    if(usrp_ctrl_ptr == nullptr) std::cerr << "but usrp_ctrl_ptr was null\n";
+    
     rx = SoDa::USRPRX::make(params, usrp_ctrl_ptr->getUSRP());
     tx = SoDa::USRPTX::make(params, usrp_ctrl_ptr->getUSRP());
   }

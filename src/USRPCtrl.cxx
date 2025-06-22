@@ -1152,14 +1152,16 @@ namespace SoDa {
   void USRPCtrl::subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes)
   {
     for(auto mbox_p : mailboxes) {
-      cmd_stream = MailBoxBase::convert<MailBox<CommandPtr>>(mbox_p, "CMDstream");
-      if(cmd_stream != nullptr) {
-	cmd_subs = cmd_stream->subscribe();
-      }
+      MailBoxBase::connect<MailBox<CommandPtr>>(mbox_p,
+						"CMDstream",
+						cmd_stream); 
     }
-
+    
     if(cmd_stream == nullptr) {
       throw MissingMailBox("CMD", getSelfPtr());
+    }
+    else {
+      cmd_subs = cmd_stream->subscribe();
     }
   }
 }

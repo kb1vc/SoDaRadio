@@ -91,6 +91,17 @@ SoDaThreadRegistry.cxx
 add_library(accessory SHARED ${simple_acc_SRCS})
 #target_link_libraries(accessory ${SoDaUtils_LIBRARIES})
 
+set(comm_mon_SRCS
+CommandMonitor.cxx
+SoDaThread.cxx
+SoDaBase.cxx
+Debug.cxx
+SoDaThreadRegistry.cxx
+)
+
+add_library(CommandMonitor SHARED ${comm_mon_SRCS})
+
+
 
 # Export header files that are required to build loadable modules
 set(Loadable_INCLS

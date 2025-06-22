@@ -162,7 +162,9 @@ namespace GUISoDa {
     // a buffer of silence
     float * silence; 
     
-    qint64 status_update_count; 
+    qint64 status_update_count;
+
+    qint64 bytes_sent_count; 
 
     // what is the longest delay that we'll tolerate?
     float max_slack_time; 

@@ -427,30 +427,37 @@ namespace SoDa {
   void UI::subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes)
   {
     for(auto mbox_p : mailboxes) {
-      cmd_stream = MailBoxBase::convert<MailBox<CommandPtr>>(mbox_p, "CMDstream");
-      if(cmd_stream != nullptr) {
-	cmd_subs = cmd_stream->subscribe();
-      }
-      gps_stream = MailBoxBase::convert<MailBox<CommandPtr>>(mbox_p, "GPSstream");
-      if(gps_stream != nullptr) {
-	gps_subs = gps_stream->subscribe();
-      }
-      if_stream = MailBoxBase::convert<MailBox<CBufPtr>>(mbox_p, "IFstream");
-      if(if_stream != nullptr) {
-	if_subs = if_stream->subscribe();
-      }
-      cwtxt_stream = MailBoxBase::convert<MailBox<CommandPtr>>(mbox_p, "CWTXTstream");
+      MailBoxBase::connect<MailBox<CommandPtr>>(mbox_p, "CMDstream",
+							     cmd_stream);
+      MailBoxBase::connect<MailBox<CommandPtr>>(mbox_p, "GPSstream",
+							     gps_stream);
+      MailBoxBase::connect<MailBox<CBufPtr>>(mbox_p, "IFstream",
+							 if_stream);
+      MailBoxBase::connect<MailBox<CommandPtr>>(mbox_p, "CWTXTstream",
+							       cwtxt_stream);
     }
 
     if(cmd_stream == nullptr) {
       throw MissingMailBox("CMD", getSelfPtr());
     }
+    else {
+	cmd_subs = cmd_stream->subscribe();      
+    }
+    
     if(if_stream == nullptr) {
       throw MissingMailBox("IF", getSelfPtr());
     }
+    else {
+      if_subs = if_stream->subscribe();      
+    }
+    
     if(gps_stream == nullptr) {
       throw MissingMailBox("GPS", getSelfPtr());
     }
+    else {
+	gps_subs = gps_stream->subscribe();      
+    }
+    
     if(cwtxt_stream == nullptr) {
       throw MissingMailBox("CWTXT", getSelfPtr());
     }

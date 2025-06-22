@@ -107,7 +107,8 @@ namespace SoDa {
      * @param mailboxes A list of all mailboxes that we know about.
      */
     virtual void subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes) = 0;
-
+  public:
+    
     void operator() () {
       // we woke up with a "start" or "join" call
       outerRun();

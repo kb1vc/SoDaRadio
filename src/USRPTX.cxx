@@ -329,27 +329,30 @@ void SoDa::USRPTX::execRepCommand(CommandPtr cmd)
 void SoDa::USRPTX::subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes)
 {
   for(auto mbox_p : mailboxes) {
-    cmd_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<CommandPtr>>(mbox_p, "CMDstream");
-    if(cmd_stream != nullptr) {
-      cmd_subs = cmd_stream->subscribe();
-    }
-    tx_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<CBufPtr>>(mbox_p, "TXstream");
-    if(tx_stream != nullptr) {
-      tx_subs = tx_stream->subscribe();
-    }
-    cw_env_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<FBufPtr>>(mbox_p, "CWstream");
-    if(cw_env_stream != nullptr) {
-      cw_subs = cw_env_stream->subscribe();
-    }
+    SoDa::MailBoxBase::connect<SoDa::MailBox<CommandPtr>>(mbox_p, "CMDstream",
+							  cmd_stream);
+    SoDa::MailBoxBase::connect<SoDa::MailBox<CBufPtr>>(mbox_p, "TXstream",
+						       tx_stream);
+    SoDa::MailBoxBase::connect<SoDa::MailBox<FBufPtr>>(mbox_p, "CWstream",
+						       cw_env_stream);
   }
 
   if(cmd_stream == nullptr) {
-    throw MissingMailBox("CMD", getSelfPtr());
+    throw SoDa::MissingMailBox("CMD", getSelfPtr());
+  }
+  else {
+    cmd_subs = cmd_stream->subscribe();    
   }
   if(tx_stream == nullptr) {
-    throw MissingMailBox("TX", getSelfPtr());
+    throw SoDa::MissingMailBox("TX", getSelfPtr());
+  }
+  else {
+    tx_subs = tx_stream->subscribe();    
   }
   if(cw_env_stream == nullptr) {
-    throw MissingMailBox("CW", getSelfPtr());
+    throw SoDa::MissingMailBox("CW", getSelfPtr());
+  }
+  else {
+    cw_subs = cw_env_stream->subscribe();    
   }
 }

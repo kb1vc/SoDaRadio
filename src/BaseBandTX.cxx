@@ -199,8 +199,8 @@ namespace SoDa {
   }
 
   CBufPtr BaseBandTX::modulateAM(std::vector<float> & audio_buf,
-				bool is_usb,
-				bool is_lsb)
+				 bool is_usb,
+				 bool is_lsb)
   {
     /// If the modulation scheme is USB or SSB,
     /// we need to make an analytic signal from the scalar real audio_buf.
@@ -234,7 +234,7 @@ namespace SoDa {
 
 
   CBufPtr BaseBandTX::modulateFM(std::vector<float> & audio_buf, 
-				double deviation)
+				 double deviation)
   {
     unsigned int i;
   
@@ -355,16 +355,21 @@ namespace SoDa {
   void BaseBandTX::subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes)
   {
     for(auto mbox_p : mailboxes) {
-      cmd_stream = MailBoxBase::convert<MailBox<CommandPtr>>(mbox_p, "CMDstream");
-      if(cmd_stream != nullptr) {
-	cmd_subs = cmd_stream->subscribe();
-      }
-      tx_stream = MailBoxBase::convert<MailBox<CBufPtr>>(mbox_p, "TXstream");
+      MailBoxBase::connect<MailBox<CommandPtr>>(mbox_p,
+						"CMDstream",
+						cmd_stream); 
+      MailBoxBase::connect<MailBox<CBufPtr>>(mbox_p,
+					     "TXstream",
+					     tx_stream); 
     }
 
     if(cmd_stream == nullptr) {
-      throw MissingMailBox("CMD", getSelfPtr());
+      throw MissingMailBox("CMD", getSelfPtr());    
     }
+    else {
+      cmd_subs = cmd_stream->subscribe();
+    }
+
     if(tx_stream == nullptr) {
       throw MissingMailBox("TX", getSelfPtr());
     }

@@ -161,21 +161,26 @@ namespace SoDa {
   void IFRecorder::subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes)
   {
     for(auto mbox_p : mailboxes) {
-      cmd_stream = MailBoxBase::convert<MailBox<CommandPtr>>(mbox_p, "CMDstream");
-      if(cmd_stream != nullptr) {
-	cmd_subs = cmd_stream->subscribe();
-      }
-      rx_stream = MailBoxBase::convert<MailBox<CBufPtr>>(mbox_p, "RXstream");
-      if(rx_stream != nullptr) {
-	rx_subs = rx_stream->subscribe();
-      }
+      MailBoxBase::connect<MailBox<CommandPtr>>(mbox_p,
+						"CMDstream",
+						cmd_stream); 
+      MailBoxBase::connect<MailBox<CBufPtr>>(mbox_p,
+					     "RXstream",
+					     rx_stream); 
     }
-
+  
     if(cmd_stream == nullptr) {
       throw MissingMailBox("CMD", getSelfPtr());
     }
+    else {
+      cmd_subs = cmd_stream->subscribe();      
+    }
+    
     if(rx_stream == nullptr) {
       throw MissingMailBox("RX", getSelfPtr());
+    }
+    else {
+      rx_subs = rx_stream->subscribe();      
     }
   }
 }

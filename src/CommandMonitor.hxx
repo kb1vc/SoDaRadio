@@ -32,7 +32,7 @@
 #include "SoDaThread.hxx"
 
 /**
- * @file SimpleAccessory.hxx
+ * @file CommandMonitor.hxx
  *
  * an example of a simple bolt-on accessory for SoDaRadio.  It counts
  * the number of commands that go by and reports the count at the end
@@ -43,21 +43,21 @@
  */
 
 // namespace doesn't matter here... let's do without.
-class SimpleAccessory;
-typedef std::shared_ptr<SimpleAccessory> SimpleAccessoryPtr;
+class CommandMonitor;
+typedef std::shared_ptr<CommandMonitor> CommandMonitorPtr;
 
 extern "C" {
   bool initPlugin();
 }
 
-class SimpleAccessory : public SoDa::Thread {
+class CommandMonitor : public SoDa::Thread {
 private:
   // gotta do this to make the base object directory work... sigh. 
-  SimpleAccessory(const std::string & name);
+  CommandMonitor(const std::string & name);
 
 public:
-  static SimpleAccessoryPtr make(const std::string & name) {
-    auto ret = std::shared_ptr<SimpleAccessory>(new SimpleAccessory(name));
+  static CommandMonitorPtr make(const std::string & name) {
+    auto ret = std::shared_ptr<CommandMonitor>(new CommandMonitor(name));
     ret->self = ret;
     ret->registerThread(ret);
     return ret; 
@@ -95,6 +95,7 @@ public:
   }
 
   void shutDown() {
+    std::cerr << "CommandMonitor::shutDown\n";
     printReport();
   }
 

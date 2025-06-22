@@ -25,7 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#include "SimpleAccessory.hxx"
+#include "CommandMonitor.hxx"
 #include <SoDa/Format.hxx>
 #include <iostream>
 #include <string>
@@ -36,10 +36,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * To make an accessory thread that gets loaded and connected automagically, 
  * just create a normal thread object.  Like this: 
  */
-SimpleAccessoryPtr my_accessory;
+CommandMonitorPtr my_accessory;
 extern "C" {
   bool initPlugin() {
-    my_accessory = SimpleAccessory::make("SimpleAccessory");
+    my_accessory = CommandMonitor::make("CommandMonitor");
     if (my_accessory != nullptr) {
       my_accessory->registerThread(my_accessory);
     }
@@ -48,11 +48,11 @@ extern "C" {
 }
 
 
-SimpleAccessory::SimpleAccessory(const std::string & name) : SoDa::Thread(name) {
+CommandMonitor::CommandMonitor(const std::string & name) : SoDa::Thread(name) {
   get_count = set_count = rep_count = 0;
 }
 
-void SimpleAccessory::printReport() {
+void CommandMonitor::printReport() {
   std::cerr << SoDa::Format("Accessory named %s reports: Get: %8d  Set: %8d  Rep: %8d\n")
     .addS(getObjName())
     .addI(get_count, 8)
@@ -60,7 +60,7 @@ void SimpleAccessory::printReport() {
     .addI(rep_count, 8); 
 }
 
-void SimpleAccessory::run() {
+void CommandMonitor::run() {
   bool exitflag = false; 
 
   SoDa::CommandPtr cmd; 
@@ -68,6 +68,7 @@ void SimpleAccessory::run() {
   while(!exitflag) {
     while (cmd_stream->get(cmd_subs, cmd)) {
       execCommand(cmd);
+      std::cerr << SoDa::Format("Monitor: %0\n").addS(cmd->toString());
       exitflag |= (cmd->target == SoDa::Command::STOP);      
     }
 
@@ -77,20 +78,21 @@ void SimpleAccessory::run() {
 
 /// implement the subscription method
 
-void SimpleAccessory::subscribeToMailBoxes(const std::vector<SoDa::MailBoxBasePtr> & mailboxes)
+void CommandMonitor::subscribeToMailBoxes(const std::vector<SoDa::MailBoxBasePtr> & mailboxes)
 {
   for(auto mbox_p : mailboxes) {
     SoDa::MailBoxBase::connect<SoDa::MailBox<SoDa::CommandPtr>>(mbox_p,
-								"CMDstream",
-								cmd_stream); 
+					      "CMDstream",
+					      cmd_stream); 
   }
 
   if(cmd_stream == nullptr) {
-    throw SoDa::MissingMailBox("CMD", getSelfPtr());
+    throw SoDa::MissingMailBox("CMD", getSelfPtr());    
   }
   else {
-    cmd_subs = cmd_stream->subscribe();    
+    cmd_subs = cmd_stream->subscribe();
   }
 }
+
 
 

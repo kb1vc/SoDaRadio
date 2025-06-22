@@ -83,7 +83,7 @@ namespace SoDa {
 
   public:
     static USRPCtrlPtr make(ParamsPtr params) {
-      if(singleton_ctrl_obj != nullptr) {
+      if(singleton_ctrl_obj == nullptr) {
 	auto ret = std::shared_ptr<USRPCtrl>(new USRPCtrl(params));
 	USRPCtrl::singleton_ctrl_obj = ret;
 	ret->registerThread(ret);

@@ -55,7 +55,8 @@ GUISoDa::AudioRXListener::AudioRXListener(QObject * parent, const QString & _soc
     silence[i] = 0.0; 
   }
 
-  status_update_count = 0; 
+  status_update_count = 0;
+  bytes_sent_count = 0;
 
   max_slack_time = 0.2; // 200ms starts to become a problem for FT8... 
 }
@@ -134,11 +135,18 @@ void GUISoDa::AudioRXListener::processRXAudio() {
 	cleanBuffer();
       }
     }
-    status_update_count++; 
 
+    status_update_count++;
+    if((status_update_count % 20) == 0) {
+      qInfo() << QString("Audio listener has gone %1 around the ring. sent %2 bytes\n")
+	.arg(status_update_count)
+	.arg(bytes_sent_count);
+    }
+    
     if(rlen > 0) {
+      bytes_sent_count += rlen;       
       audio_cbuffer_p->put(rx_in_buf, rlen);
-      // send the buffer to anyone else who is listening. 
+      // send the buffer to anyone else who is listening.
       emit(pendAudioBuffer((float*) rx_in_buf, rlen / sizeof(float)));
       len = len - rlen; 
     }
@@ -227,8 +235,8 @@ qint64 GUISoDa::AudioRXListener::readData(char * data, qint64 max_len)
   if((MACOSX == 0) && (avail < max_len)) {
     // we're below the acceptable reserver... stuff some silence
     // into the output buffers until we're 
-    qInfo() << QString("[%3] Audio device attempts to read [%1] bytes, only [%2] available.")
-      .arg(max_len).arg(avail).arg(QDateTime::currentDateTime().toString("HH:mm:ss.zzz t"));
+    //    qInfo() << QString("[%3] Audio device attempts to read [%1] bytes, only [%2] available.")
+    //      .arg(max_len).arg(avail).arg(QDateTime::currentDateTime().toString("HH:mm:ss.zzz t"));
     // stuff some silence in here.. 
     qint64 fill_len = max_len >> 2; 
     memset(data, 0, fill_len); 
