@@ -121,7 +121,7 @@ void GUISoDa::HamlibHandler::processCommand(const QString & cmd, QTcpSocket * so
   // first chop the current command up into tokens
   // This is eventually going to break, as Qt has deprecated it
   // in favor of Qt::SkipEmptyParts. 
-  QStringList cmd_list = cmd.split(QRegularExpression("\\s+"), QString::SkipEmptyParts);
+  QStringList cmd_list = cmd.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
 
   if (cmd_list.size() == 0) return;
 
