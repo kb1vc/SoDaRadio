@@ -81,8 +81,8 @@ SoDa::BaseBandRX::BaseBandRX(ParamsPtr params,
   // prime the audio stream so that we don't fall behind
   // right away.
   for(j = 0; j < 6; j++) {
-    sidetone_silence = SoDa::Buf::make(audio_buffer_size); 
-    auto & ssv = sidetone_silence->getFloatBuf();
+    sidetone_silence = SoDa::FBuf::make(audio_buffer_size); 
+    auto & ssv = sidetone_silence->getBuf();
     for(auto & ss : ssv) {
       ss = 0.0;
     }
@@ -141,16 +141,16 @@ SoDa::BaseBandRX::BaseBandRX(ParamsPtr params,
   // start with initial hang count of 0 (haven't broken squelch yet)
 }
 
-void SoDa::BaseBandRX::demodulateWBFM(SoDa::BufPtr rxbuf, SoDa::Command::ModulationType mod, float af_gain)
+void SoDa::BaseBandRX::demodulateWBFM(SoDa::CBufPtr rxbuf, SoDa::Command::ModulationType mod, float af_gain)
 {
   (void) mod;
 
-  auto abuf = SoDa::Buf::make(audio_buffer_size);
-  auto & audio_buffer = abuf->getFloatBuf();
+  auto abuf = SoDa::FBuf::make(audio_buffer_size);
+  auto & audio_buffer = abuf->getBuf();
   std::vector<float> demod_out(rf_buffer_size);
   unsigned int i;
 
-  auto & dbuf = rxbuf->getComplexBuf();
+  auto & dbuf = rxbuf->getBuf();
 
   // Interestingly, arctan based demodulation (see Lyons p 486 for instance)
   // performs much better than the approximation that avoids the atan call.
@@ -188,15 +188,15 @@ void SoDa::BaseBandRX::demodulateWBFM(SoDa::BufPtr rxbuf, SoDa::Command::Modulat
   pendAudioBuffer(abuf);
 }
 
-void SoDa::BaseBandRX::demodulateNBFM(SoDa::BufPtr dbuf, SoDa::Command::ModulationType mod, float af_gain)
+void SoDa::BaseBandRX::demodulateNBFM(SoDa::CBufPtr dbuf, SoDa::Command::ModulationType mod, float af_gain)
 {
   (void) mod;
 
-  auto abuf = SoDa::Buf::make(dbuf->size());
-  auto & audio_buffer = abuf->getFloatBuf();
+  auto abuf = SoDa::FBuf::make(dbuf->size());
+  auto & audio_buffer = abuf->getBuf();
   // we need a vector because we're sending it through a post-demod filter. 
   std::vector<std::complex<float>> demod_out(dbuf->size());
-  auto & demod_buffer = dbuf->getComplexBuf();
+  auto & demod_buffer = dbuf->getBuf();
 
   // First we need to band-limit the input RF -- modulation width is about 12.5kHz,
   // so the filter should be a 12.5kHz LPF. 
@@ -254,11 +254,11 @@ void SoDa::BaseBandRX::demodulateNBFM(SoDa::BufPtr dbuf, SoDa::Command::Modulati
   pendAudioBuffer(abuf);
 }
 
-void SoDa::BaseBandRX::demodulateSSB(SoDa::BufPtr dbuf, SoDa::Command::ModulationType mod)
+void SoDa::BaseBandRX::demodulateSSB(SoDa::CBufPtr dbuf, SoDa::Command::ModulationType mod)
 {
-  auto abuf = SoDa::Buf::make(dbuf->size());
-  auto & audio_buffer = abuf->getFloatBuf();
-  auto & demod_buffer = dbuf->getComplexBuf();
+  auto abuf = SoDa::FBuf::make(dbuf->size());
+  auto & audio_buffer = abuf->getBuf();
+  auto & demod_buffer = dbuf->getBuf();
 
   // at some point I should just redo this with the filter method.
   // the phasing approach isn't all that great...
@@ -280,11 +280,11 @@ void SoDa::BaseBandRX::demodulateSSB(SoDa::BufPtr dbuf, SoDa::Command::Modulatio
   pendAudioBuffer(abuf);
 }
 
-void SoDa::BaseBandRX::demodulateAM(SoDa::BufPtr dbuf)
+void SoDa::BaseBandRX::demodulateAM(SoDa::CBufPtr dbuf)
 {
-  auto abuf = SoDa::Buf::make(dbuf->size());
-  auto & audio_buffer = abuf->getFloatBuf();
-  auto & demod_buffer = dbuf->getComplexBuf();
+  auto abuf = SoDa::FBuf::make(dbuf->size());
+  auto & audio_buffer = abuf->getBuf();
+  auto & demod_buffer = dbuf->getBuf();
 
   unsigned int i;
   float maxval = 0.0;
@@ -303,29 +303,29 @@ void SoDa::BaseBandRX::demodulateAM(SoDa::BufPtr dbuf)
   pendAudioBuffer(abuf);
 }
 
-void SoDa::BaseBandRX::demodulate(SoDa::BufPtr rxbuf)
+void SoDa::BaseBandRX::demodulate(SoDa::CBufPtr rxbuf)
 {
   // First we downsample and apply the audio filter unless this is a WBFM signal.
-  auto dbufi = SoDa::Buf::make(audio_buffer_size); 
-  auto dbufo = SoDa::Buf::make(audio_buffer_size); 
+  auto dbufi = SoDa::CBuf::make(audio_buffer_size); 
+  auto dbufo = SoDa::CBuf::make(audio_buffer_size); 
   // Note that audio_buffer_size must be (sample_length / decimation rate)
   
   if((rx_modulation != SoDa::Command::WBFM) && (rx_modulation != SoDa::Command::NBFM)) {
-    rf_resampler->apply(rxbuf->getComplexBuf(), dbufi->getComplexBuf());
+    rf_resampler->apply(rxbuf->getBuf(), dbufi->getBuf());
     
     // now do the low pass filter
     if(rx_modulation == SoDa::Command::AM) {
-      am_pre_filter->apply(dbufi->getComplexBuf(), dbufo->getComplexBuf(), *cur_af_gain);
+      am_pre_filter->apply(dbufi->getBuf(), dbufo->getBuf(), *cur_af_gain);
     }
     else {
-      cur_audio_filter->apply(dbufi->getComplexBuf(), dbufo->getComplexBuf(), *cur_af_gain);
+      cur_audio_filter->apply(dbufi->getBuf(), dbufo->getBuf(), *cur_af_gain);
     }
   }
   else if(rx_modulation == SoDa::Command::NBFM) {
     // first, bandpass the RF down to about 25 kHz wide...
-    auto & rfbuf = rxbuf->getComplexBuf();
+    auto & rfbuf = rxbuf->getBuf();
     nbfm_pre_filter->apply(rfbuf, rfbuf, 1.0);
-    rf_resampler->apply(rfbuf, dbufo->getComplexBuf());
+    rf_resampler->apply(rfbuf, dbufo->getBuf());
   }
  
   switch(rx_modulation) {
@@ -557,8 +557,8 @@ void SoDa::BaseBandRX::run()
 void SoDa::BaseBandRX::pendNullBuffer(int count) {
   for(int b = 0; b < count; b++) {
 
-    auto nullbufptr = SoDa::Buf::make(audio_buffer_size);
-    auto & nullvec = nullbufptr->getFloatBuf();
+    auto nullbufptr = SoDa::FBuf::make(audio_buffer_size);
+    auto & nullvec = nullbufptr->getBuf();
     for(auto & v : nullvec) {
       v = 0.0;
     }
@@ -566,11 +566,11 @@ void SoDa::BaseBandRX::pendNullBuffer(int count) {
   }
 }
 
-void SoDa::BaseBandRX::pendAudioBuffer(SoDa::BufPtr bp)
+void SoDa::BaseBandRX::pendAudioBuffer(SoDa::FBufPtr bp)
 {
   // no big deal here.  We're going to send it right to 
   // the audio device.
-  auto & fv = bp->getFloatBuf();
+  auto & fv = bp->getBuf();
   auto b = fv.data();
   auto buf_size = fv.size();
   audio_ifc->send(b, buf_size * sizeof(float));

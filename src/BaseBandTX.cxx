@@ -226,7 +226,7 @@ namespace SoDa {
     CBufPtr txbuf = CBuf::make(tx_buffer_size);
   
     /// Upsample the IQ audio (at 48KS/s) to the RF sample rate of 625 KS/s
-    interpolator->apply(audio_IQ_buf, txbuf->getComplexBuf()); 
+    interpolator->apply(audio_IQ_buf, txbuf->getBuf()); 
 
     /// pass the newly created and filled buffer back to the caller
     return txbuf; 
@@ -262,7 +262,7 @@ namespace SoDa {
     CBufPtr txbuf = CBuf::make(tx_buffer_size);
 
     // Upsample the IQ audio (at 48KS/s) to the RF sample rate of 625 KS/s
-    interpolator->apply(audio_IQ_buf, txbuf->getComplexBuf());
+    interpolator->apply(audio_IQ_buf, txbuf->getBuf());
 
     // Pass the newly created and filled buffer back to the caller
     return txbuf;

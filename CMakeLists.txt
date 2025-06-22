@@ -85,7 +85,7 @@ set(CPACK_RPM_PACKAGE_LICENSE "BSD-2-Clause")
 set(CPACK_RPM_PACKAGE_GROUP "Applications/Communications")
 set(CPACK_RPM_PACKAGE_DESCRIPTION  ${SoDaRadio_PACKAGE_DESCRIPTION})
 # removed , libsndfile
-set(CPACK_RPM_PACKAGE_REQUIRES "boost >= 1.48, uhd >= 3.12.0, fftw-devel >= 3.3, qt5-qtbase >= 5.6, qwt-qt5 >= 6.1.2, gpsd >= 3.1, gpsd-libs >= 3.1, qt5-qtmultimedia")
+set(CPACK_RPM_PACKAGE_REQUIRES "uhd >= 3.12.0, fftw-devel >= 3.3, qt5-qtbase >= 5.6, qwt-qt5 >= 6.1.2, gpsd >= 3.1, gpsd-libs >= 3.1, qt5-qtmultimedia")
 set(CPACK_RPM_PACKAGE_RELOCATABLE TRUE)
 # RPM makes a hash out of the uhd dependency if we don't do this:
 set(CPACK_RPM_PACKAGE_AUTOREQPROV " no")
@@ -159,8 +159,6 @@ INSTALL(FILES ${PROJECT_SOURCE_DIR}/SoDaRadioConfig.cmake DESTINATION "${CMAKE_I
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
 
 FIND_PACKAGE(SndFile REQUIRED)
-
-FIND_PACKAGE(Boost 1.45 REQUIRED COMPONENTS program_options thread date_time system filesystem serialization regex QUIET)
 
 IF(${NO_UHD})
   MESSAGE("libUHD Support disabled.")
@@ -249,7 +247,7 @@ include(${PROJECT_SOURCE_DIR}/cmake/Modules/BuildSoDaUtils.cmake)
 # This is the radio interface... 
 ADD_SUBDIRECTORY(src)
 
-ADD_SUBDIRECTORY(exp)
+## ADD_SUBDIRECTORY(exp)
 
 ADD_SUBDIRECTORY(examples)
 

@@ -77,10 +77,6 @@ namespace SoDa {
       fdat.resize(0); 
   }
 
-  BufPtr Buf::make(unsigned int _size) {
-    return std::make_shared<Buf>(_size); 
-  }
-
 
   unsigned int Buf::size() { 
     if(cdat.size() > 0) return cdat.size();
@@ -117,44 +113,6 @@ namespace SoDa {
     }
     else return false; 
   }
-
-    /**
-     * Return the reference to the storage buffer of complex floats
-     *
-     * Note that this is a reference.  Take care as to how it is consumed.
-     *
-     * ~~~~
-     *     std::vector<std::complex<float>> foo = bp->getComplexBuf();
-     * ~~~~
-     *
-     * will cause a *copy* to be made of the complex buffer. To get what you
-     * probably want, you should do this:
-     * ~~~~
-     *     std::vector<std::complex<float>> & foo = bp->getComplexBuf();
-     * ~~~~     
-     *     
-     * 
-     */
-  std::vector<std::complex<float>> & Buf::getComplexBuf() { 
-      if(cdat.size() == 0) cdat.resize(r_size);
-      return cdat; 
-    }
-    /**
-     * Return the reference to the storage buffer of floats
-     * ~~~~
-     *     std::vector<float> foo = bp->getFloatBuf();
-     * ~~~~
-     *
-     * will cause a *copy* to be made of the complex buffer. To get what you
-     * probably want, you should do this:
-     * ~~~~
-     *     std::vector<float> & foo = bp->getFloatBuf();
-     * ~~~~     
-     */
-  std::vector<float> & Buf::getFloatBuf() { 
-      if(fdat.size() == 0) fdat.resize(r_size);    
-      return fdat;
-    }
 
   FBuf::FBuf(unsigned int size) : Buf(size) {
     fdat.resize(size);

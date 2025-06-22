@@ -200,7 +200,7 @@ void CWGenerator::appendToOut(std::vector<float> & v)
   // that we're filling up.
 
   // We'll do this the simplest way possible first.
-  std::vector<float> & curvec = cur_buf->getFloatBuf();
+  std::vector<float> & curvec = cur_buf->getBuf();
   for(auto vv : v) {
     curvec[cur_buf_idx] = vv;
     cur_buf_idx++;
@@ -209,7 +209,7 @@ void CWGenerator::appendToOut(std::vector<float> & v)
       env_stream->put(cur_buf);
       cur_buf = SoDa::FBuf::make(env_buf_len);
       cur_buf_idx = 0;
-      curvec = cur_buf->getFloatBuf();
+      curvec = cur_buf->getBuf();
     }
   }
 }
@@ -217,7 +217,7 @@ void CWGenerator::appendToOut(std::vector<float> & v)
 void CWGenerator::flushBuffer()
 {
   if(cur_buf_idx > 0) {
-    auto & dbuf = cur_buf->getFloatBuf();
+    auto & dbuf = cur_buf->getBuf();
     for(; cur_buf_idx < env_buf_len; cur_buf_idx++) {
       // fill the rest with zeros
       dbuf[cur_buf_idx] = 0.0; 

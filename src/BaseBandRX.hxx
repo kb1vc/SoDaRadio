@@ -140,7 +140,7 @@ namespace SoDa {
      * @param drxbuf downsampled  RF input buffer
      * @param mod modulation type -- LSB, USB, CW_U, or CW_R
      */
-    void demodulateSSB(SoDa::BufPtr drxbuf,
+    void demodulateSSB(SoDa::CBufPtr drxbuf,
 		       SoDa::Command::ModulationType mod); 
 
     /**
@@ -149,7 +149,7 @@ namespace SoDa {
      *
      * @param drxbuf downsampled  RF input buffer
      */
-    void demodulateAM(SoDa::BufPtr drxbuf);
+    void demodulateAM(SoDa::CBufPtr drxbuf);
 
     /**
      * @brief demodulate the input stream as a narrowband frequency modulated signal
@@ -159,7 +159,7 @@ namespace SoDa {
      * @param mod modulation type -- NBFM
      * @param af_gain factor to goose the audio output
      */
-    void demodulateNBFM(SoDa::BufPtr drxbuf,
+    void demodulateNBFM(SoDa::CBufPtr drxbuf,
 			SoDa::Command::ModulationType mod,
 			float af_gain); 
 
@@ -174,7 +174,7 @@ namespace SoDa {
      * @param mod modulation type -- WBFM
      * @param af_gain factor to goose the audio output
      */
-    void demodulateWBFM(SoDa::BufPtr rxbuf,
+    void demodulateWBFM(SoDa::CBufPtr rxbuf,
 			SoDa::Command::ModulationType mod,
 			float af_gain);
 
@@ -185,7 +185,7 @@ namespace SoDa {
      *
      * @param rxbuf RF input buffer
      */
-    void demodulate(SoDa::BufPtr rxbuf);
+    void demodulate(SoDa::CBufPtr rxbuf);
 
     /**
      * @brief send a report of the lower and upper edges of the IF passband
@@ -219,7 +219,7 @@ namespace SoDa {
      * @param b pointer to an audio buffer
      *
      */
-    void pendAudioBuffer(SoDa::BufPtr b); 
+    void pendAudioBuffer(SoDa::FBufPtr b); 
     
     /**
      * @brief put an empty (zero signal) audio buffer on the pending for output list
@@ -244,7 +244,7 @@ namespace SoDa {
     bool in_fallback;  ///< when true, the audio server has gotten ahead...
     unsigned int catchup_rand_mask; ///< a mask to use for fast selection of a random index into an audio buffer. 
 
-    SoDa::BufPtr sidetone_silence;  ///< a sequence of zero samples to stuff silence into the audio
+    SoDa::FBufPtr sidetone_silence;  ///< a sequence of zero samples to stuff silence into the audio
 
     // resampler -- downsample from 625K samples / sec to 48K samples/sec
     SoDa::ReSamplerPtr rf_resampler; ///< downsample the RF input to 48KS/s

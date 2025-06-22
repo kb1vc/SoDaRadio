@@ -49,14 +49,6 @@ target_link_libraries(LineSockets_Test ${TEST_LIBS})
 
 
 
-########### next target ###############
-
-set(SoDa_ThreadTest_SRCS SoDa_ThreadTest.cxx ../src/SoDaBase.cxx ../src/Debug.cxx ../src/SoDaThread.cxx ../src/SoDaThreadRegistry.cxx)
-
-add_executable(SoDa_ThreadTest EXCLUDE_FROM_ALL ${SoDa_ThreadTest_SRCS})
-
-target_link_libraries(SoDa_ThreadTest ${TEST_LIBS})
-
 #install(TARGETS SoDa_ThreadTest DESTINATION tests)
 
 ########### next target ###############
@@ -81,19 +73,6 @@ target_link_libraries(TestServer  rt ${TEST_LIBS})
 ########### next target ###############
 
 
-########### next target ###############
-
-#set(Audio_test_SRCS
-#    Audio_test.cxx
-#    ../src/AudioALSA.cxx
-#    ../src/SoDaBase.cxx
-#    ../src/Debug.cxx)
-
-#add_executable(Audio_test EXCLUDE_FROM_ALL ${Audio_test_SRCS})
-
-#target_link_libraries(Audio_test ${TEST_LIBS})
-
-#install(TARGETS Audio_test DESTINATION tests)
 
 
 ########### next target ###############
@@ -181,17 +160,4 @@ IF(${HAVE_UHD})
 ENDIF()
 
 #install(TARGETS USRPFrontEnd_test DESTINATION tests)
-
-
-add_executable(NCOexp EXCLUDE_FROM_ALL NCOexp.cxx)
-
-target_link_libraries(NCOexp ${Boost_LIBRARIES})
-
-
-
-set(CircularBuffer_test_SRCS CircularBuffer_test.cxx ../common/CircularBuffer.hxx)
-
-add_executable(CircularBuffer_test EXCLUDE_FROM_ALL ${CircularBuffer_test_SRCS})
-
-target_link_libraries(CircularBuffer_test ${TEST_LIBS})
 

@@ -338,11 +338,11 @@ namespace SoDa {
     // fft_update_interval times that we're called -- this will keep
     // the IP traffic to something reasonable. 
     if(lo_check_mode) {
-      lo_spectrogram->apply_acc(buf->getComplexBuf(), 
+      lo_spectrogram->apply_acc(buf->getBuf(), 
 				lo_spectrum, (fft_send_counter == 0) ? 0.0 : 0.1);
     }
     else {
-      spectrogram->apply_acc(buf->getComplexBuf(), 
+      spectrogram->apply_acc(buf->getBuf(), 
 			     spectrum,
 			     (new_spectrum_setting) ? 0.0 : fft_acc_gain);
     }

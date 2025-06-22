@@ -136,12 +136,12 @@ void SoDa::USRPRX::run()
       SoDa::CBufPtr buf = SoDa::CBuf::make(rx_buffer_size);
 
       if(buf == nullptr) throw SoDa::Radio::Exception("USRPRX couldn't allocate SoDa::Buf object", getSelfPtr()); 
-      if(buf->getComplexBuf().size() == 0) throw SoDa::Radio::Exception("USRPRX allocated empty SoDa::Buf object", getSelfPtr());
+      if(buf->getBuf().size() == 0) throw SoDa::Radio::Exception("USRPRX allocated empty SoDa::Buf object", getSelfPtr());
       
       unsigned int left = rx_buffer_size;
       unsigned int coll_so_far = 0;
       uhd::rx_metadata_t md;
-      std::vector<std::complex<float>> dbuf = buf->getComplexBuf();
+      std::vector<std::complex<float>> dbuf = buf->getBuf();
       while(left != 0) {
 	unsigned int got = rx_bits->recv(&(dbuf.data()[coll_so_far]), left, md);
 	if(got == 0) {
@@ -188,7 +188,7 @@ void SoDa::USRPRX::doMixer(SoDa::CBufPtr inout)
 {
   unsigned int i;
   std::complex<float> o;
-  std::vector<std::complex<float>> ioa = inout->getComplexBuf();
+  std::vector<std::complex<float>> ioa = inout->getBuf();
   for(auto & v : ioa) {
     o = IF_osc.stepOscCF();
     v = v * o; 

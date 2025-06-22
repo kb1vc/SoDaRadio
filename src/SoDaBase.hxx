@@ -78,7 +78,7 @@ namespace SoDa {
    *
    */
   class Buf {
-  public:
+  protected:
     /**
      * constructor: Allocate a complex/real buffer of complex data values
      *
@@ -87,8 +87,6 @@ namespace SoDa {
     Buf(unsigned int size);
 
   public:
-    static BufPtr make(unsigned int _size);
-
 
     unsigned int size();
       
@@ -105,38 +103,6 @@ namespace SoDa {
      * @param nl new length
      */
     virtual bool setFloatLen(unsigned int nl);
-    /**
-     * Return the reference to the storage buffer of complex floats
-     *
-     * Note that this is a reference.  Take care as to how it is consumed.
-     *
-     * ~~~~
-     *     std::vector<std::complex<float>> foo = bp->getComplexBuf();
-     * ~~~~
-     *
-     * will cause a *copy* to be made of the complex buffer. To get what you
-     * probably want, you should do this:
-     * ~~~~
-     *     std::vector<std::complex<float>> & foo = bp->getComplexBuf();
-     * ~~~~     
-     *     
-     * 
-     */
-    virtual std::vector<std::complex<float>> & getComplexBuf();
-    
-    /**
-     * Return the reference to the storage buffer of floats
-     * ~~~~
-     *     std::vector<float> foo = bp->getFloatBuf();
-     * ~~~~
-     *
-     * will cause a *copy* to be made of the complex buffer. To get what you
-     * probably want, you should do this:
-     * ~~~~
-     *     std::vector<float> & foo = bp->getFloatBuf();
-     * ~~~~     
-     */
-    virtual std::vector<float> & getFloatBuf();
 
 
   protected:
