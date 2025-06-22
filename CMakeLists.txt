@@ -108,6 +108,9 @@ SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -ffast-math")
 
 MESSAGE("SoDaRadio_VERSION=[${SoDaRadio_VERSION}]")
 
+#FIND_PACKAGE(Boost 1.45 REQUIRED COMPONENTS program_options thread date_time system filesystem serialization regex QUIET)
+FIND_PACKAGE(Boost 1.45 REQUIRED) 
+
 FIND_PACKAGE(Git QUIET)
 
 IF((EXISTS "${CMAKE_SOURCE_DIR}/.git/") AND GIT_FOUND)
