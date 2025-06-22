@@ -202,10 +202,10 @@ int doWork(SoDa::ParamsPtr params)
   // the rx and tx streams are vectors of complex floats.
   // we don't declare the extent here, as it will be set
   // by a negotiation.
-  auto rx_stream = SoDa::DatMBox::make("RXstream");
-  auto tx_stream = SoDa::DatMBox::make("TXstream");
-  auto if_stream = SoDa::DatMBox::make("IFstream");
-  auto cw_env_stream = SoDa::DatMBox::make("CWstream");
+  auto rx_stream = SoDa::CDatMBox::make("RXstream");
+  auto tx_stream = SoDa::CDatMBox::make("TXstream");
+  auto if_stream = SoDa::CDatMBox::make("IFstream");
+  auto cw_env_stream = SoDa::FDatMBox::make("CWstream");
 
   auto cmd_stream = SoDa::CmdMBox::make("CMDstream");
   auto gps_stream = SoDa::CmdMBox::make("GPSstream");

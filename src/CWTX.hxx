@@ -116,7 +116,7 @@ namespace SoDa {
     
     CmdMBoxPtr cwtxt_stream; ///< stream of characters to be encoded (from UI or elsewhere)
     CmdMBoxPtr cmd_stream; ///< stream of commands to modify radio state
-    DatMBoxPtr cw_env_stream; ///< stream carrying cw envelope buffers to USRPTX
+    FDatMBoxPtr cw_env_stream; ///< stream carrying cw envelope buffers to USRPTX
     CmdMBox::Subscription cwtxt_subs; ///< subscription for text stream
     CmdMBox::Subscription cmd_subs; ///< subscription for command stream
 

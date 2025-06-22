@@ -33,9 +33,12 @@ GUISoDa::WFallData::WFallData() {
   clearReady(); 
   num_rows = 300;
   min_time = -1.0 * ((double) num_rows);
-  
-  setInterval( Qt::XAxis, QwtInterval(0.0, 100e9)); // I don't think we'll see too many 100GHz scans
-  setInterval( Qt::YAxis, QwtInterval(-1.0 * ((double) num_rows), 0.0)); // store the last 300 rows
+
+  x_interval = QwtInterval(0.0, 100e9);
+  y_interval = QwtInterval(-1.0 * ((double) num_rows), 0.0);
+    
+  //setInterval( Qt::XAxis, x_interval); // I don't think we'll see too many 100GHz scans
+  //setInterval( Qt::YAxis, y_interval); // store the last 300 rows
 
   ref_level = -80.0; 
   dynamic_range = 80.0; 
@@ -144,7 +147,8 @@ double GUISoDa::WFallData::value(double f, double t) const
 }
 
 void GUISoDa::WFallData::setZRange() {
-  setInterval( Qt::ZAxis, QwtInterval(ref_level, ref_level + dynamic_range));
+  z_interval =  QwtInterval(ref_level, ref_level + dynamic_range);
+  // setInterval( Qt::ZAxis, z_interval);
 }
 
 void GUISoDa::WFallData::setDynamicRange(double drange) {

@@ -32,6 +32,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QColor>
 #include <QPen>
 #include <qwt/qwt_picker_machine.h>
+#include <qwt/qwt_text.h>
 #include <QObject>
 
 namespace GUISoDa {

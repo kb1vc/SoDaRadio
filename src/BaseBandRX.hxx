@@ -204,9 +204,9 @@ namespace SoDa {
 
     SoDa::Command::ModulationType rx_modulation; ///< current receive modulation mode (USB,LSB,CW_U,CW_L,NBFM,WBFM,AM,...)
     
-    DatMBoxPtr rx_stream; ///< mailbox producing rx sample stream from USRP
+    CDatMBoxPtr rx_stream; ///< mailbox producing rx sample stream from USRP
     CmdMBoxPtr cmd_stream; ///< mailbox producing command stream from user
-    DatMBox::Subscription rx_subs; ///< mailbox subscription ID for rx data stream
+    CDatMBox::Subscription rx_subs; ///< mailbox subscription ID for rx data stream
     CmdMBox::Subscription cmd_subs; ///< mailbox subscription ID for command stream
 
     AudioIfcPtr audio_ifc; ///< pointer to the audio interface (output) object

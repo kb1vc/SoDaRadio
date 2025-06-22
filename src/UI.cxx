@@ -218,7 +218,7 @@ namespace SoDa {
     
       // listen ont the IF stream
       int bcount;
-      BufPtr if_buf; 
+      CBufPtr if_buf; 
       for(bcount = 0;
 	  (bcount < 4) && if_stream->get(if_subs, if_buf);
 	  bcount++) {
@@ -322,7 +322,7 @@ namespace SoDa {
   static bool first_ready = true;
   static bool calc_max_first = true;
 
-  void UI::sendFFT(BufPtr buf)
+  void UI::sendFFT(CBufPtr buf)
   {
     fft_send_counter++; 
     dbgctrfft++; 
@@ -435,7 +435,7 @@ namespace SoDa {
       if(gps_stream != nullptr) {
 	gps_subs = gps_stream->subscribe();
       }
-      if_stream = MailBoxBase::convert<MailBox<BufPtr>>(mbox_p, "IFstream");
+      if_stream = MailBoxBase::convert<MailBox<CBufPtr>>(mbox_p, "IFstream");
       if(if_stream != nullptr) {
 	if_subs = if_stream->subscribe();
       }

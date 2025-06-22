@@ -73,13 +73,13 @@ namespace SoDa {
     
     // Do an FFT on an rx buffer and send the positive
     // frequencies to any network listeners. 
-    void sendFFT(SoDa::BufPtr buf);
+    void sendFFT(SoDa::CBufPtr buf);
 
     // the internal communications paths -- between the SoDa threads. 
     CmdMBoxPtr cwtxt_stream, cmd_stream, gps_stream;
-    DatMBoxPtr if_stream; 
+    CDatMBoxPtr if_stream; 
     CmdMBox::Subscription cmd_subs, gps_subs;
-    DatMBox::Subscription if_subs;
+    CDatMBox::Subscription if_subs;
 
 
     // these are the pieces of the posix message queue interface to the GUI or whatever.

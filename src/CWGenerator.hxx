@@ -51,10 +51,10 @@ namespace SoDa {
      * @param _samp_rate sample rate for outbound envelope
      * @param _env_buf_len length of outbound buffer
      */
-    CWGenerator(DatMBoxPtr cw_env_stream, double _samp_rate, unsigned int _env_buf_len);
+    CWGenerator(FDatMBoxPtr cw_env_stream, double _samp_rate, unsigned int _env_buf_len);
 
   public:
-    static CWGeneratorPtr make(DatMBoxPtr cw_env_stream, 
+    static CWGeneratorPtr make(FDatMBoxPtr cw_env_stream, 
 			       double _samp_rate, 
 			       unsigned int _env_buf_len) {
       auto ret = std::shared_ptr<CWGenerator>(new CWGenerator(cw_env_stream,
@@ -112,7 +112,7 @@ namespace SoDa {
     void initMorseMap();
     
     // configuration params. 
-    DatMBoxPtr env_stream;  ///< this is the stream we send envelope buffers into. 
+    FDatMBoxPtr env_stream;  ///< this is the stream we send envelope buffers into. 
     double sample_rate;  ///< we need to know how long a sample is (in time)
     unsigned int env_buf_len; ///< the length of an envelope buffer 
 
@@ -135,7 +135,7 @@ namespace SoDa {
     static std::map<char, std::string> morse_map; ///< map from ascii character to dits-and-dahs
 
     // current output buffer
-    SoDa::BufPtr cur_buf; ///< the current envelope to be filled in
+    SoDa::FBufPtr cur_buf; ///< the current envelope to be filled in
     unsigned int cur_buf_idx; ///< where are we in the buffer? 
     
     // state of the translator

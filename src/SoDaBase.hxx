@@ -60,6 +60,12 @@ namespace SoDa {
   class Buf;
   typedef std::shared_ptr<Buf> BufPtr;
 
+  class FBuf;
+  typedef std::shared_ptr<FBuf> FBufPtr; 
+  
+  class CBuf;
+  typedef std::shared_ptr<CBuf> CBufPtr; 
+  
   /**
    * The Buffer Class
    *
@@ -78,50 +84,27 @@ namespace SoDa {
      *
      * @param size the maximum number of single presion complex values the buffer can hold. 
      */
-    Buf(unsigned int size) : r_size(size) {
-      cdat.resize(0); // both vectors are resized to 0 at the start.
-      fdat.resize(0); 
-    }
+    Buf(unsigned int size);
 
   public:
-    static BufPtr make(unsigned int _size) {
-      return std::make_shared<Buf>(_size); 
-    }
+    static BufPtr make(unsigned int _size);
 
 
-    unsigned int size() { return r_size; }
+    unsigned int size();
       
-    void copy(BufPtr src) {
-      cdat = src->cdat;
-      fdat = src->fdat; 
-      r_size = src->r_size;
-    }
+    void copy(BufPtr src);
     
     /**
      * set the length of the buffer (in number of complex floats.)
      * @param nl new length
      */
-    bool setComplexLen(unsigned int nl) {
-      if(nl > r_size) {
-	cdat.resize(nl);
-	return true; 
-      }
-      else return false; 
-    }
+    virtual bool setComplexLen(unsigned int nl);
     
     /**
      * set the length of the buffer (in number of floats.)
      * @param nl new length
      */
-    bool setFloatLen(unsigned int nl) {
-      if(nl > r_size) {
-	r_size = nl; 
-	cdat.resize(nl);
-	return true; 
-      }
-      else return false; 
-    }
-
+    virtual bool setFloatLen(unsigned int nl);
     /**
      * Return the reference to the storage buffer of complex floats
      *
@@ -139,10 +122,8 @@ namespace SoDa {
      *     
      * 
      */
-    std::vector<std::complex<float>> & getComplexBuf() { 
-      if(cdat.size() == 0) cdat.resize(r_size);
-      return cdat; 
-    }
+    virtual std::vector<std::complex<float>> & getComplexBuf();
+    
     /**
      * Return the reference to the storage buffer of floats
      * ~~~~
@@ -155,18 +136,55 @@ namespace SoDa {
      *     std::vector<float> & foo = bp->getFloatBuf();
      * ~~~~     
      */
-    std::vector<float> & getFloatBuf() { 
-      if(fdat.size() == 0) fdat.resize(r_size);    
-      return fdat;
-    }
+    virtual std::vector<float> & getFloatBuf();
 
-  private:
+
+  protected:
     std::vector<std::complex<float>> cdat; 
     std::vector<float> fdat;
 
     unsigned int r_size; 
   };
 
+  /**
+   * @class FBuf
+   * @brief Buf specialized buffer for floats only.
+   */ 
+  class FBuf : public Buf {
+  public:
+    FBuf(unsigned int size);
+
+    static FBufPtr make(unsigned int _size);    
+    
+    bool setComplexLen(unsigned int nl);
+
+    std::vector<std::complex<float>> & getComplexBuf();
+
+    std::vector<float> & getBuf() { return fdat; }    
+
+    float & operator[](size_t index);
+  }; 
+
+
+  /**
+   * @class CBuf 
+   * @brief Buf specialized buffer for floats only.   
+   */ 
+  class CBuf : public Buf {
+  public:
+    CBuf(unsigned int size);
+
+    static CBufPtr make(unsigned int _size);        
+
+    bool setFloatLen(unsigned int nl);
+
+    std::vector<float> & getFloatBuf();
+    
+    std::vector<std::complex<float>> & getBuf() { return cdat; }
+
+    std::complex<float> & operator[](size_t index);
+  }; 
+  
   /**
    * Mailboxes that carry commands only are of type CmdMBox
    */
@@ -175,9 +193,15 @@ namespace SoDa {
   /**
    * Mailboxes that carry float or complex data are of type DatMBox
    */ 
-  typedef SoDa::MailBox<BufPtr> DatMBox;
-  typedef std::shared_ptr<DatMBox> DatMBoxPtr;
+  typedef SoDa::MailBox<FBufPtr> FDatMBox;
+  typedef std::shared_ptr<FDatMBox> FDatMBoxPtr;
 
+  /**
+   * Mailboxes that carry float or complex data are of type DatMBox
+   */
+  typedef SoDa::MailBox<CBufPtr> CDatMBox;
+  typedef std::shared_ptr<CDatMBox> CDatMBoxPtr;
+  
   /**
    * The SoDa Base class
    *

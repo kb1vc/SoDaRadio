@@ -126,9 +126,9 @@ namespace SoDa {
 
     double current_rx_center_freq; 
 
-    DatMBoxPtr rx_stream; ///< mailbox producing rx sample stream from USRP
+    CDatMBoxPtr rx_stream; ///< mailbox producing rx sample stream from USRP
     CmdMBoxPtr cmd_stream; ///< mailbox producing command stream from user
-    DatMBox::Subscription rx_subs; ///< mailbox subscription ID for rx data stream
+    CDatMBox::Subscription rx_subs; ///< mailbox subscription ID for rx data stream
     CmdMBox::Subscription cmd_subs; ///< mailbox subscription ID for command stream
 
     std::ofstream ostr; ///< raw (binary) output stream.

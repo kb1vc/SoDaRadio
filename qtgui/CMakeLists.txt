@@ -108,7 +108,7 @@ TARGET_LINK_LIBRARIES(SoDaRadio SoDaRadio_Lib
     m ${RT_LIB}
     Threads::Threads
     ${SNDFILE_LIBRARIES}
-    ${SoDaUtils_LIBRARIES}
+    sodautils
     )
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")

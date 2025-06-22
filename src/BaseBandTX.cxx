@@ -154,7 +154,7 @@ namespace SoDa {
 	// If we're in TX mode that isn't CW....
 	// get an input audio buffer.
 	if (tx_stream_on && audio_ifc->recv(audio_buf.data(), audio_buf.size(), true)) { 
-	  BufPtr txbuf = NULL; 
+	  CBufPtr txbuf = NULL; 
 	  std::vector<float> * audio_tx_buffer = & audio_buf; 
 
 	  if(tx_noise_source_ena) {
@@ -198,7 +198,7 @@ namespace SoDa {
     }
   }
 
-  BufPtr BaseBandTX::modulateAM(std::vector<float> & audio_buf,
+  CBufPtr BaseBandTX::modulateAM(std::vector<float> & audio_buf,
 				bool is_usb,
 				bool is_lsb)
   {
@@ -223,7 +223,7 @@ namespace SoDa {
 
     /// Now that the I/Q channels have been populated, get a transmit buffer. 
     /// and upsample the I/Q audio up to the RF rate.
-    BufPtr txbuf = Buf::make(tx_buffer_size);
+    CBufPtr txbuf = CBuf::make(tx_buffer_size);
   
     /// Upsample the IQ audio (at 48KS/s) to the RF sample rate of 625 KS/s
     interpolator->apply(audio_IQ_buf, txbuf->getComplexBuf()); 
@@ -233,7 +233,7 @@ namespace SoDa {
   }
 
 
-  BufPtr BaseBandTX::modulateFM(std::vector<float> & audio_buf, 
+  CBufPtr BaseBandTX::modulateFM(std::vector<float> & audio_buf, 
 				double deviation)
   {
     unsigned int i;
@@ -259,7 +259,7 @@ namespace SoDa {
       audio_IQ_buf[i] = std::complex<float>(oi,oq);
     }
  
-    BufPtr txbuf = Buf::make(tx_buffer_size);
+    CBufPtr txbuf = CBuf::make(tx_buffer_size);
 
     // Upsample the IQ audio (at 48KS/s) to the RF sample rate of 625 KS/s
     interpolator->apply(audio_IQ_buf, txbuf->getComplexBuf());
@@ -359,7 +359,7 @@ namespace SoDa {
       if(cmd_stream != nullptr) {
 	cmd_subs = cmd_stream->subscribe();
       }
-      tx_stream = MailBoxBase::convert<MailBox<BufPtr>>(mbox_p, "TXstream");
+      tx_stream = MailBoxBase::convert<MailBox<CBufPtr>>(mbox_p, "TXstream");
     }
 
     if(cmd_stream == nullptr) {

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017 Matthew H. Reilly (kb1vc)
+Copyright (c) 2017, 2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QColor>
 #include <QPen>
 #include <qwt/qwt_picker_machine.h>
+#include <qwt/qwt_text.h>
+
 namespace GUISoDa {
 
   class WFallPickerClient {

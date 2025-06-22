@@ -71,4 +71,144 @@ namespace SoDa {
 
   bool Base::first_time = true;
   double Base::base_first_time;
+
+  Buf::Buf(unsigned int size) : r_size(size) {
+      cdat.resize(0); // both vectors are resized to 0 at the start.
+      fdat.resize(0); 
+  }
+
+  BufPtr Buf::make(unsigned int _size) {
+    return std::make_shared<Buf>(_size); 
+  }
+
+
+  unsigned int Buf::size() { 
+    if(cdat.size() > 0) return cdat.size();
+    if(fdat.size() > 0) return fdat.size();
+    else return r_size; 
+  }
+      
+  void Buf::copy(BufPtr src) {
+      cdat = src->cdat;
+      fdat = src->fdat; 
+      r_size = src->r_size;
+  }
+    
+    /**
+     * set the length of the buffer (in number of complex floats.)
+     * @param nl new length
+     */
+  bool Buf::setComplexLen(unsigned int nl) {
+    if(nl > cdat.size()) {
+	cdat.resize(nl);
+	return true; 
+      }
+      else return false; 
+    }
+    
+    /**
+     * set the length of the buffer (in number of floats.)
+     * @param nl new length
+     */
+  bool Buf::setFloatLen(unsigned int nl) {
+    if(nl > fdat.size()) {
+      cdat.resize(nl);
+      return true; 
+    }
+    else return false; 
+  }
+
+    /**
+     * Return the reference to the storage buffer of complex floats
+     *
+     * Note that this is a reference.  Take care as to how it is consumed.
+     *
+     * ~~~~
+     *     std::vector<std::complex<float>> foo = bp->getComplexBuf();
+     * ~~~~
+     *
+     * will cause a *copy* to be made of the complex buffer. To get what you
+     * probably want, you should do this:
+     * ~~~~
+     *     std::vector<std::complex<float>> & foo = bp->getComplexBuf();
+     * ~~~~     
+     *     
+     * 
+     */
+  std::vector<std::complex<float>> & Buf::getComplexBuf() { 
+      if(cdat.size() == 0) cdat.resize(r_size);
+      return cdat; 
+    }
+    /**
+     * Return the reference to the storage buffer of floats
+     * ~~~~
+     *     std::vector<float> foo = bp->getFloatBuf();
+     * ~~~~
+     *
+     * will cause a *copy* to be made of the complex buffer. To get what you
+     * probably want, you should do this:
+     * ~~~~
+     *     std::vector<float> & foo = bp->getFloatBuf();
+     * ~~~~     
+     */
+  std::vector<float> & Buf::getFloatBuf() { 
+      if(fdat.size() == 0) fdat.resize(r_size);    
+      return fdat;
+    }
+
+  FBuf::FBuf(unsigned int size) : Buf(size) {
+    fdat.resize(size);
+    r_size = size; 
+  }
+
+  FBufPtr FBuf::make(unsigned int _size) {
+    return std::shared_ptr<FBuf>(new FBuf(_size));
+  }
+
+  bool FBuf::setComplexLen(unsigned int nl) {
+    throw Radio::Exception("Float buffer (FBuf) received getComplexBuf() request.");    
+  }
+
+  std::vector<std::complex<float>> & FBuf::getComplexBuf() {
+    throw Radio::Exception("Float buffer (FBuf) received getComplexBuf() request.");
+  }
+  
+  float & FBuf::operator[](size_t index) {
+    if(index < fdat.size()) {
+      return fdat[index];
+    }
+    else {
+      throw Radio::Exception(SoDa::Format("Float buffer (FBuf) index %0 is out of range (>= %1)")
+			     .addI(index).addI(fdat.size()). str());
+    }
+  }
+
+
+  CBuf::CBuf(unsigned int size) : Buf(size) {
+    cdat.resize(size);
+    r_size = size; 
+  }
+
+  CBufPtr CBuf::make(unsigned int _size) {
+    return std::shared_ptr<CBuf>(new CBuf(_size));
+  }
+
+  bool CBuf::setFloatLen(unsigned int nl) {
+    throw Radio::Exception("Float buffer (CBuf) received getComplexBuf() request.");    
+  }
+
+  std::vector<float> & CBuf::getFloatBuf() {
+    throw Radio::Exception("Float buffer (CBuf) received getComplexBuf() request.");
+  }
+  
+  std::complex<float> & CBuf::operator[](size_t index) {
+    if(index < cdat.size()) {
+      return cdat[index];
+    }
+    else {
+      throw Radio::Exception(SoDa::Format("Complex Float buffer (CBuf) index %0 is out of range (>= %1)")
+			     .addI(index).addI(cdat.size()). str());
+    }
+  }
+
 }

@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012, 2025 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -84,25 +84,25 @@ SoDa::USRPTX::USRPTX(ParamsPtr params, uhd::usrp::multi_usrp::sptr _usrp) : SoDa
   waiting_to_run_dry = false; 
 
   // build the beacon buffer, and the zero buffer.
-  beacon_env = new float[tx_buffer_size];
-  zero_env = new float[tx_buffer_size];
+  beacon_env = SoDa::FBuf::make(tx_buffer_size); 
+  zero_env = SoDa::FBuf::make(tx_buffer_size); 
   for(unsigned int i = 0; i < tx_buffer_size; i++) {
-    beacon_env[i] = 1.0;
-    zero_env[i] = 0.0; 
+    (*beacon_env)[i] = 1.0;
+    (*zero_env)[i] = 0.0; 
   }
 
   // build the cwbuffer
-  cw_buf = new std::complex<float>[tx_buffer_size];
+  cw_buf = SoDa::CBuf::make(tx_buffer_size); 
 
   // set the initial envelope amplitude
   cw_env_amplitude = 0.7;  // more or less sqrt2/2
   
   // build the zero buffer and the transverter lo buffer
-  zero_buf = new std::complex<float>[tx_buffer_size];
-  const_buf = new std::complex<float>[tx_buffer_size];
+  zero_buf = SoDa::CBuf::make(tx_buffer_size);
+  const_buf = SoDa::CBuf::make(tx_buffer_size);
   for(unsigned int i = 0; i < tx_buffer_size; i++) {
-    zero_buf[i] = std::complex<float>(0.0, 0.0);
-    const_buf[i] = std::complex<float>(1.0, 0.0);
+    (*zero_buf)[i] = std::complex<float>(0.0, 0.0);
+    (*const_buf)[i] = std::complex<float>(1.0, 0.0);
   }
 
   tx_enabled = false;
@@ -126,14 +126,15 @@ void SoDa::USRPTX::run()
   debugMsg("Created tx streamer.\n");
 
   bool exitflag = false;
-  SoDa::BufPtr txbuf, cwenv;
+  SoDa::CBufPtr txbuf;
+  SoDa::FBufPtr cwenv;
   CommandPtr cmd; 
-  std::vector<std::complex<float>> buffers(LO_capable ? 2 : 1);
+  std::vector<std::complex<float> *> buffers(LO_capable ? 2 : 1);
 
   while(!exitflag) {
     bool didwork = false; 
-    if(LO_capable && LO_enabled && LO_configured) buffers[1] = const_buf;
-    else if(LO_capable) buffers[1] = zero_buf;
+    if(LO_capable && LO_enabled && LO_configured) buffers[1] = const_buf->getBuf().data();
+    else if(LO_capable) buffers[1] = zero_buf->getBuf().data();
     
     if(cmd_stream->get(cmd_subs, cmd)) {
       // process the command.
@@ -147,8 +148,9 @@ void SoDa::USRPTX::run()
 	    (tx_modulation != SoDa::Command::CW_U) &&
 	    (tx_stream->get(tx_subs, txbuf))) {
       // get a buffer and 
-      buffers[0] = txbuf->getComplexBuf();
-      tx_bits->send(buffers, txbuf->getComplexLen(), md);
+      auto tbuf = txbuf->getBuf();
+      buffers[0] = tbuf.data();
+      tx_bits->send(buffers, tbuf.size(), md);
       md.start_of_burst = false; 
       didwork = true; 
     }
@@ -159,19 +161,20 @@ void SoDa::USRPTX::run()
 	     (tx_modulation == SoDa::Command::CW_U))) {
       if(cw_env_stream->get(cw_subs, cwenv)) {
 	// modulate a carrier with a cw message
-	doCW(cw_buf, cwenv->getFloatBuf(), cwenv->getComplexLen());
+	doCW(cw_buf, cwenv);
 	// now send it to the USRP
-	buffers[0] = cw_buf;
-	tx_bits->send(buffers, cwenv->getComplexLen(), md);
-	cw_env_stream->free(cwenv);
+	auto cbuf = cw_buf->getBuf();
+	buffers[0] = cbuf.data();
+	tx_bits->send(buffers, cbuf.size(), md);
 	md.start_of_burst = false; 
 	didwork = true; 
       }
       else {
 	// we have an empty CW buffer -- we've run out of text.
-	doCW(cw_buf, zero_env, tx_buffer_size);
-	buffers[0] = cw_buf;
-	tx_bits->send(buffers, tx_buffer_size, md); 
+	doCW(cw_buf, zero_env);
+	auto cbuf = cw_buf->getBuf();
+	buffers[0] = cbuf.data();
+	tx_bits->send(buffers, cbuf.size(), md); 
 	// are we supposed to tell anybody about this? 
 	if(waiting_to_run_dry) {
 	  cmd_stream->put(Command::make(Command::REP, Command::TX_CW_EMPTY, 0));
@@ -185,18 +188,20 @@ void SoDa::USRPTX::run()
 	    ((tx_modulation == SoDa::Command::CW_L) ||
 	     (tx_modulation == SoDa::Command::CW_U))) {
       // modulate a carrier with a constant envelope
-      doCW(cw_buf, beacon_env, tx_buffer_size);
+      doCW(cw_buf, beacon_env);
       // now send it to the USRP
-      buffers[0] = cw_buf;
-      tx_bits->send(buffers, tx_buffer_size, md);
+      auto cbuf = cw_buf->getBuf();
+      buffers[0] = cbuf.data();
+      tx_bits->send(buffers, cbuf.size(), md);
       md.start_of_burst = false; 
       didwork = true; 
     }
     else if(tx_enabled && 
 	    tx_bits) {
       // all other cases -- we still want to send the LO buffer
-      buffers[0] = zero_buf;
-      tx_bits->send(buffers, tx_buffer_size, md);
+      auto cbuf = zero_buf->getBuf();
+      buffers[0] = cbuf.data();
+      tx_bits->send(buffers, cbuf.size(), md);
       didwork = true; 
     }
 
@@ -209,14 +214,15 @@ void SoDa::USRPTX::run()
 }
 
 
-void SoDa::USRPTX::doCW(std::complex<float> * out, float * envelope, unsigned int env_len)
+void SoDa::USRPTX::doCW(SoDa::CBufPtr out, SoDa::FBufPtr envelope)
 {
   unsigned int i;
   std::complex<float> c;
+
   
-  for(i = 0; i < env_len; i++) {
+  for(i = 0; i < envelope->size(); i++) {
     c = CW_osc.stepOscCF(); 
-    out[i] = c * envelope[i] * cw_env_amplitude;
+    (*out)[i] = c * (*envelope)[i] * cw_env_amplitude;
   }
 }
 
@@ -242,11 +248,11 @@ void SoDa::USRPTX::transmitSwitch(bool tx_on)
     if(!LO_enabled) {
       // If LO is enabled, we always send SOMETHING....
       md.end_of_burst = true;
-      tx_bits->send(zero_buf, 10, md);
+      tx_bits->send(zero_buf->getBuf().data(), 10, md);
     }
     tx_enabled = false;
     // flush the input stream for us. 
-    tx_stream->flush(tx_subs);
+    tx_stream->clear(tx_subs);
   }
 }
 
@@ -256,7 +262,7 @@ void SoDa::USRPTX::getTXStreamer()
 }
 
 
-void SoDa::USRPTX::execSetCommand(Command * cmd)
+void SoDa::USRPTX::execSetCommand(CommandPtr cmd)
 {
   switch(cmd->target) {
   case SoDa::Command::TX_MODE:
@@ -296,7 +302,7 @@ void SoDa::USRPTX::execSetCommand(Command * cmd)
   }
 }
 
-void SoDa::USRPTX::execGetCommand(Command * cmd)
+void SoDa::USRPTX::execGetCommand(CommandPtr cmd)
 {
   switch(cmd->target) {
   case Command::TX_STATE:
@@ -307,7 +313,7 @@ void SoDa::USRPTX::execGetCommand(Command * cmd)
   }
 }
 
-void SoDa::USRPTX::execRepCommand(Command * cmd)
+void SoDa::USRPTX::execRepCommand(CommandPtr cmd)
 {
   switch(cmd->target) {
   case SoDa::Command::TVRT_LO_CONFIG:
@@ -327,13 +333,13 @@ void SoDa::USRPTX::subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mail
     if(cmd_stream != nullptr) {
       cmd_subs = cmd_stream->subscribe();
     }
-    tx_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<BufPtr>>(mbox_p, "TXstream");
+    tx_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<CBufPtr>>(mbox_p, "TXstream");
     if(tx_stream != nullptr) {
       tx_subs = tx_stream->subscribe();
     }
-    cw_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<BufPtr>>(mbox_p, "CWstream");
-    if(cw_stream != nullptr) {
-      cw_subs = cw_stream->subscribe();
+    cw_env_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<FBufPtr>>(mbox_p, "CWstream");
+    if(cw_env_stream != nullptr) {
+      cw_subs = cw_env_stream->subscribe();
     }
   }
 
@@ -343,7 +349,7 @@ void SoDa::USRPTX::subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mail
   if(tx_stream == nullptr) {
     throw MissingMailBox("TX", getSelfPtr());
   }
-  if(cw_stream == nullptr) {
+  if(cw_env_stream == nullptr) {
     throw MissingMailBox("CW", getSelfPtr());
   }
 }

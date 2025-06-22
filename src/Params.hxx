@@ -52,10 +52,6 @@ namespace SoDa {
      * @param argv pointer to list of parameter strings
      */
     Params(int argc, char * argv[]);
-
-  private:
-    void * operator new(size_t size);    
-
   public:
     static ParamsPtr make(int argc, char * argv[]) {
       return std::shared_ptr<Params>(new Params(argc, argv));

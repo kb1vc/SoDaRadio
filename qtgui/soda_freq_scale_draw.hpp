@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017 Matthew H. Reilly (kb1vc)
+Copyright (c) 2017, 2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef SODA_FREQ_SCALE_DRAW_HDR
 #define SODA_FREQ_SCALE_DRAW_HDR
 #include <qwt/qwt_scale_draw.h>
+#include <qwt/qwt_text.h>
+
 #include <cmath>
 
 namespace GUISoDa {

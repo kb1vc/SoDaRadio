@@ -488,7 +488,7 @@ void SoDa::BaseBandRX::execRepCommand(SoDa::CommandPtr cmd)
 void SoDa::BaseBandRX::run()
 {
   bool exitflag = false;
-  SoDa::BufPtr rxbuf;
+  SoDa::CBufPtr rxbuf;
   CommandPtr cmd; 
 
   int trim_count = 0; 
@@ -626,7 +626,7 @@ void SoDa::BaseBandRX::subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & 
     if(cmd_stream != nullptr) {
       cmd_subs = cmd_stream->subscribe();
     }
-    rx_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<BufPtr>>(mbox_p, "RXstream");
+    rx_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<CBufPtr>>(mbox_p, "RXstream");
     if(rx_stream != nullptr) {
       rx_subs = rx_stream->subscribe();
     }

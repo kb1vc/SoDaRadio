@@ -133,7 +133,7 @@ void SoDa::USRPRX::run()
     else if(audio_rx_stream_enabled) {
       // go get some data
       // get a free buffer.
-      SoDa::BufPtr buf = SoDa::Buf::make(rx_buffer_size);
+      SoDa::CBufPtr buf = SoDa::CBuf::make(rx_buffer_size);
 
       if(buf == nullptr) throw SoDa::Radio::Exception("USRPRX couldn't allocate SoDa::Buf object", getSelfPtr()); 
       if(buf->getComplexBuf().size() == 0) throw SoDa::Radio::Exception("USRPRX allocated empty SoDa::Buf object", getSelfPtr());
@@ -160,7 +160,7 @@ void SoDa::USRPRX::run()
       if(enable_spectrum_report && (if_stream->subscriberCount() > 0)) {
 	// clone a buffer, cause we're going to modify
 	// it before the send is complete. 
-	SoDa::BufPtr if_buf = SoDa::Buf::make(rx_buffer_size);
+	SoDa::CBufPtr if_buf = SoDa::CBuf::make(rx_buffer_size);
 
 	if_stream->put(if_buf);
       }
@@ -184,7 +184,7 @@ void SoDa::USRPRX::run()
   stopStream(); 
 }
 
-void SoDa::USRPRX::doMixer(SoDa::BufPtr inout)
+void SoDa::USRPRX::doMixer(SoDa::CBufPtr inout)
 {
   unsigned int i;
   std::complex<float> o;
@@ -297,8 +297,8 @@ void SoDa::USRPRX::subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mail
     if(cmd_stream != nullptr) {
       cmd_subs = cmd_stream->subscribe();
     }
-    rx_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<BufPtr>>(mbox_p, "RXstream");
-    if_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<BufPtr>>(mbox_p, "IFstream");    
+    rx_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<CBufPtr>>(mbox_p, "RXstream");
+    if_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<CBufPtr>>(mbox_p, "IFstream");    
   }
 
   if(cmd_stream == nullptr) {

@@ -36,7 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * To make an accessory thread that gets loaded and connected automagically, 
  * just create a normal thread object.  Like this: 
  */
-SimpleAccessory my_accessory(std::string("Accessory1"));
+SimpleAccessoryPtr my_accessory = SimpleAccessory::make(std::string("Accessory1"));
 
 
 SimpleAccessory::SimpleAccessory(const std::string & name) : SoDa::Thread(name) {
@@ -54,13 +54,12 @@ void SimpleAccessory::printReport() {
 void SimpleAccessory::run() {
   bool exitflag = false; 
 
+  SoDa::CommandPtr cmd; 
+  
   while(!exitflag) {
-    auto cmd = cmd_stream->get(cmd_subs); 
-    while (cmd != NULL) {
+    while (cmd_stream->get(cmd_subs, cmd)) {
       execCommand(cmd);
       exitflag |= (cmd->target == SoDa::Command::STOP);      
-      cmd_stream->free(cmd);
-      cmd = cmd_stream->get(cmd_subs); 
     }
 
     usleep(10000);
@@ -68,13 +67,15 @@ void SimpleAccessory::run() {
 }
 
 /// implement the subscription method
-void SimpleAccessory::subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes)
+
+void SimpleAccessory::subscribeToMailBoxes(const std::vector<SoDa::MailBoxBasePtr> & mailboxes)
 {
   for(auto mbox_p : mailboxes) {
-    cmd_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<CommandPtr>>(mbox_p, "CMDstream");
+    cmd_stream = SoDa::MailBoxBase::convert<SoDa::MailBox<SoDa::CommandPtr>>(mbox_p, "CMDstream");
     if(cmd_stream != nullptr) {
       cmd_subs = cmd_stream->subscribe();
     }
+  }
 
   if(cmd_stream == nullptr) {
     throw SoDa::MissingMailBox("CMD", getSelfPtr());

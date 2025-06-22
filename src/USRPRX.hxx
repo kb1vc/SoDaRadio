@@ -95,11 +95,11 @@ namespace SoDa {
      *
      * @param inout the input/output RF buffer
      */
-    void doMixer(SoDa::BufPtr inout);
+    void doMixer(SoDa::CBufPtr inout);
     void set3rdLOFreq(double IF_tuning);
 
-    DatMBoxPtr rx_stream;
-    DatMBoxPtr if_stream; 
+    CDatMBoxPtr rx_stream;
+    CDatMBoxPtr if_stream; 
     CmdMBoxPtr cmd_stream;
     CmdMBox::Subscription cmd_subs; 
 

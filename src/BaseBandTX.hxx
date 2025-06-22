@@ -112,7 +112,7 @@ namespace SoDa {
      * if both is_usb and is_lsb are false, the modulator
      * creates an IQ stream that is amplitude modulated
      */
-    SoDa::BufPtr modulateAM(std::vector<float> & audio_buf, 
+    SoDa::CBufPtr modulateAM(std::vector<float> & audio_buf, 
 			    bool is_usb, bool is_lsb); 
 
     /**
@@ -123,7 +123,7 @@ namespace SoDa {
      *
      * Note that this modulator varies the mic gain to prevent over-deviation. 
      */
-    SoDa::BufPtr modulateFM(std::vector<float> & audio_buf, 
+    SoDa::CBufPtr modulateFM(std::vector<float> & audio_buf, 
 			    double deviation);
     
     double fm_phase;
@@ -132,7 +132,7 @@ namespace SoDa {
     double fm_mic_gain; ///< separate gain control for FM deviation....
 
     
-    DatMBoxPtr tx_stream; ///< outbound RF stream to USRPTX transmit chain
+    CDatMBoxPtr tx_stream; ///< outbound RF stream to USRPTX transmit chain
     CmdMBoxPtr cmd_stream; ///< command stream from UI and other units
     CmdMBox::Subscription cmd_subs; ///< subscription ID for command stream
     

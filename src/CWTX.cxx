@@ -268,7 +268,7 @@ namespace SoDa {
       if(cwtxt_stream != nullptr) {
 	cwtxt_subs = cwtxt_stream->subscribe();
       }
-      cw_env_stream = MailBoxBase::convert<MailBox<BufPtr>>(mbox_p, "CWstream");
+      cw_env_stream = MailBoxBase::convert<MailBox<FBufPtr>>(mbox_p, "CWstream");
     }
 
     if(cmd_stream == nullptr) {

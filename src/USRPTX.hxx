@@ -105,17 +105,17 @@ namespace SoDa {
      * @brief execute GET commands from the command channel
      * @param cmd the incoming command
      */
-    void execGetCommand(Command * cmd); 
+    void execGetCommand(CommandPtr cmd); 
     /**
      * @brief handle SET commands from the command channel
      * @param cmd the incoming command
      */
-    void execSetCommand(Command * cmd); 
+    void execSetCommand(CommandPtr cmd); 
     /**
      * @brief handle Report commands from the command channel
      * @param cmd the incoming command
      */
-    void execRepCommand(Command * cmd);
+    void execRepCommand(CommandPtr cmd);
 
     /**
      * @brief set the CW tone frequency to generate an IQ stream
@@ -131,18 +131,18 @@ namespace SoDa {
      *
      * @param out the output IQ buffer, CW_osc amplitude modulated by
      *        the envelope parameter
-     * @param envelope float array of keyed waveform amplitudes
-     * @param env_len length of envelope array
+     * @param envelope float buffer of keyed waveform amplitudes
      *
      */
-    void doCW(std::complex<float> * out, float * envelope, unsigned int env_len);
-    
-    DatMBox::Subscription tx_subs;  ///< subscription handle for transmit audio stream (from BaseBandTX)
-    CmdMBox::Subscription cmd_subs; ///< subscription handle for command stream
-    DatMBox::Subscription cw_subs;  ///< subscription handle for cw envelope stream (from CW unit)
+    void doCW(SoDa::CBufPtr out, SoDa::FBufPtr envelope);
 
-    DatMBoxPtr tx_stream;  ///< transmit audio stream 
-    DatMBoxPtr cw_env_stream; ///< envelope stream from text-to-CW converter (CW unit)
+    
+    CDatMBox::Subscription tx_subs;  ///< subscription handle for transmit audio stream (from BaseBandTX)
+    CmdMBox::Subscription cmd_subs; ///< subscription handle for command stream
+    FDatMBox::Subscription cw_subs;  ///< subscription handle for cw envelope stream (from CW unit)
+
+    CDatMBoxPtr tx_stream;  ///< transmit audio stream 
+    FDatMBoxPtr cw_env_stream; ///< envelope stream from text-to-CW converter (CW unit)
     CmdMBoxPtr cmd_stream; ///< command stream
     
     bool tx_enabled; ///< if true, we're transmitting. 
@@ -151,13 +151,13 @@ namespace SoDa {
     double CW_tone_freq;
     QuadratureOscillator CW_osc; ///< CW tone IQ oscillator
 
-    float * beacon_env; ///< steady constant amplitude envelope
+    SoDa::FBufPtr beacon_env; ///< steady constant amplitude envelope
     bool beacon_mode;   ///< if true, we're transmitting a steady carrier
 
-    float * zero_env; ///< envelope for dead silence
+    SoDa::FBufPtr zero_env; ///< envelope for dead silence
 
-    std::complex<float> * cw_buf; ///< CW modulated envelope to send to USRP
-    std::complex<float> * zero_buf; ///< zero signal envelope to fill in end of transmit stream
+    SoDa::CBufPtr cw_buf; ///< CW modulated envelope to send to USRP
+    SoDa::CBufPtr zero_buf; ///< zero signal envelope to fill in end of transmit stream
 
     double tx_sample_rate; ///< sample rate for buffer going to USRP (UHD)
     unsigned int tx_buffer_size; ///< size of buffer going to USRP
@@ -174,7 +174,7 @@ namespace SoDa {
     bool LO_configured; ///< if true, the LO has had its gain/freq set.
     bool LO_capable; ///< if true, this hardware model supports LO config
 
-    std::complex<float> * const_buf; ///< envelope for dead silence
+    SoDa::CBufPtr const_buf; ///< envelope for dead silence
   }; 
 
 }

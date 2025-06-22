@@ -31,7 +31,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <QWidget>
 #include <qwt/qwt_plot.h>
+#include <qwt/qwt_interval.h>
 #include <qwt/qwt_raster_data.h>
+
 
 namespace GUISoDa {
   class WFallData : public QwtRasterData
@@ -57,8 +59,18 @@ namespace GUISoDa {
       f_lo_marker =  lo; 
       f_hi_marker = hi; 
     }
-  
+
+    QwtInterval interval(Qt::Axis ax) const {
+      if(ax == Qt::XAxis) return x_interval;
+      if(ax == Qt::YAxis) return y_interval;
+      if(ax == Qt::ZAxis) return z_interval;
+      return x_interval;
+    }
+    
   private:
+
+    QwtInterval x_interval, y_interval, z_interval;
+    
     void setReady() { is_ready = true; }
     void clearReady() { is_ready = false; }
     bool is_ready;

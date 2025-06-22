@@ -38,7 +38,7 @@ using namespace SoDa;
 
 std::map<char, std::string> CWGenerator::morse_map; 
 
-CWGenerator::CWGenerator(DatMBoxPtr cw_env_stream, double _samp_rate, unsigned int _env_buf_len)
+CWGenerator::CWGenerator(FDatMBoxPtr cw_env_stream, double _samp_rate, unsigned int _env_buf_len)
 {
   env_stream = cw_env_stream;
   sample_rate = _samp_rate;
@@ -69,7 +69,7 @@ CWGenerator::CWGenerator(DatMBoxPtr cw_env_stream, double _samp_rate, unsigned i
   setCWSpeed(10);
 
   // allocate our first outbound buffer
-  cur_buf = SoDa::Buf::make(env_buf_len);
+  cur_buf = SoDa::FBuf::make(env_buf_len);
   cur_buf_idx = 0; 
   // we really want a buffer that is the complex length. 
 
@@ -207,7 +207,7 @@ void CWGenerator::appendToOut(std::vector<float> & v)
     if(cur_buf_idx == env_buf_len) {
       // send the buffer
       env_stream->put(cur_buf);
-      cur_buf = SoDa::Buf::make(env_buf_len);
+      cur_buf = SoDa::FBuf::make(env_buf_len);
       cur_buf_idx = 0;
       curvec = cur_buf->getFloatBuf();
     }
@@ -224,7 +224,7 @@ void CWGenerator::flushBuffer()
     }
     // post the buffer.
     env_stream->put(cur_buf);
-    cur_buf = SoDa::Buf::make(env_buf_len);    
+    cur_buf = SoDa::FBuf::make(env_buf_len);    
     cur_buf_idx = 0;
   }
 }
@@ -232,7 +232,7 @@ void CWGenerator::flushBuffer()
 void CWGenerator::clearBuffer()
 {
   if(cur_buf != NULL) {
-    cur_buf = SoDa::Buf::make(env_buf_len);
+    cur_buf = SoDa::FBuf::make(env_buf_len);
     cur_buf_idx = 0;
   }
 }
