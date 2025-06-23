@@ -158,6 +158,7 @@ void GUISoDa::Listener::setupSpectrumBuffer(double cfreq, double span, long bufl
 }
 
 void GUISoDa::Listener::processSpectrum() {
+  
   unsigned int rlen = spect_buffer_len * sizeof(float);
   while(((unsigned int) spect_socket->bytesAvailable()) > (sizeof(int) + rlen)) {
     unsigned int len; 
