@@ -76,7 +76,7 @@ add_executable(SoDaServer ${SoDaServer_SRCS})
 
 target_link_libraries(SoDaServer ${RT_LIB}
   Threads::Threads
-  ${SoDaUtils_LIBRARIES}
+  sodautils
     ${Radio_LIBRARIES} ${ALSA_LIBRARIES} ${FFTW3F_LIBRARIES} ${CMAKE_DL_LIBS})
 
 
