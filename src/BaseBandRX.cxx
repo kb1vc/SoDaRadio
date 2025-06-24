@@ -528,12 +528,6 @@ namespace SoDa {
       // now look for incoming buffers from the rx_stream. 
       int bcount = 0; 
       for(bcount = 0; (bcount < 5) && rx_stream->get(rx_subs, rxbuf); bcount++) {
-	if((debug_count % 20) == 0) {
-	  std::cerr << SoDa::Format("BaseBandRX got %0 buffers (%1 samples each) on rx_stream\n")
-	    .addI(debug_count)
-	    .addI(rxbuf->size())
-	    ;
-	}
 	debug_count++; 
 	if(rxbuf == NULL) break; 
 	did_work = true; 

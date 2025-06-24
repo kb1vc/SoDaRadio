@@ -141,6 +141,7 @@ namespace SoDa {
     unsigned int socket_read_count = 0;
     unsigned int socket_empty_count = 0;
     unsigned int iter_count = 0;
+    unsigned int debug_count = 0;
     bool new_connection = true; ;
     while(1) {
       iter_count++;
@@ -222,6 +223,7 @@ namespace SoDa {
       for(bcount = 0;
 	  (bcount < 4) && if_stream->get(if_subs, if_buf);
 	  bcount++) {
+	debug_count++; 
 	sendFFT(if_buf);
       }
 
@@ -406,8 +408,11 @@ namespace SoDa {
     else if((fft_send_counter >= fft_update_interval) && (slice != NULL)) {
       // send the buffer over to the XY plotter.
       for(int i = 0; i < required_spect_buckets; i++) {
+	float r = slice[i];
 	log_spectrum[i] = 10.0 * log10(slice[i] * 0.05); 
       }
+
+      
       wfall_socket->put(log_spectrum.data(), sizeof(float) * required_spect_buckets);
       fft_send_counter = 0;
       calc_max_first = true; 

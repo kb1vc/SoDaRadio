@@ -118,7 +118,7 @@ namespace SoDa {
 	did_work = true; 
       
 	if(write_stream_on) {
-	  auto cbuf = rxbuf->getBuf(); 
+	  auto & cbuf = rxbuf->getBuf(); 
 	  ostr.write((char*) cbuf.data(), cbuf.size() * sizeof(std::complex<float>));
 	}
       }
