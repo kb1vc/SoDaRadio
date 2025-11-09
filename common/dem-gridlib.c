@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012,2013,2014 Matthew H. Reilly (kb1vc)
+Copyright (c) 2012,2013,2014,2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -561,9 +561,6 @@ void DEM_Bearing2LL(
     double f = 1.0/298.25722210088; 
 
     /* System generated locals */
-
-    /* Builtin functions */
-    double sin(), cos(), atan2(), sqrt();
 
     /* Local variables */
     static double c, d, e, r, x, y, cf, sa, cu, sf, cy, cz, su, tu, 

@@ -372,7 +372,8 @@ void MainWindow::widgetSaveRestore(QObject * op, const QString & par, bool save)
 	    (my_class == "QwtPlotPicker") ||	    	    
 	    (my_class == "QwtScaleWidget") ||
 	    (my_class == "QwtTextLabel")) {
-      // do nothing. 
+      // do nothing.
+      qDebug() << QString("my_class = [%1]\n").arg(my_class);
     }
     widgetSaveRestore((*cp), my_pathname, save);
   }

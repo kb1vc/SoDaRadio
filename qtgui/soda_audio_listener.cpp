@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2018 Matthew H. Reilly (kb1vc)
+Copyright (c) 2018, 2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -36,15 +36,18 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 GUISoDa::AudioListener::AudioListener(QObject * parent,
 				      const QString & socket_basename,
 				      unsigned int _sample_rate) {
+
   rx_listener = new AudioRXListener(parent, socket_basename, _sample_rate); 
   rx_recorder = new AudioRecorder(_sample_rate); 
   
   connect(rx_listener, SIGNAL(pendAudioBuffer(float*, qint64)), 
 	  rx_recorder, SLOT(saveData(float*, qint64)));
   this->setObjectName(QString("GUISoDa::AudioListener"));
+
 }
 
 GUISoDa::AudioRXListener::AudioRXListener(QObject * parent, const QString & _socket_basename, unsigned int _sample_rate) : QIODevice(parent) {
+
   quit = false;
   socket_basename = _socket_basename; 
   sample_rate = _sample_rate; 
@@ -58,7 +61,8 @@ GUISoDa::AudioRXListener::AudioRXListener(QObject * parent, const QString & _soc
   status_update_count = 0;
   bytes_sent_count = 0;
 
-  max_slack_time = 0.2; // 200ms starts to become a problem for FT8... 
+  max_slack_time = 0.2; // 200ms starts to become a problem for FT8...
+
 }
 
 bool GUISoDa::AudioRXListener::init()
@@ -68,14 +72,15 @@ bool GUISoDa::AudioRXListener::init()
   // fast radio vs. slow audio will eventually wrap the circular buffer, 
   // but not in a way that will hurt. 
   // slow radio vs. fast audio will trigger an under-run on occasion. 
-  // we will recover in the audioOutputError handler. 
+  // we will recover in the audioOutputError handler.
+
   audio_cbuffer_p = new SoDa::CircularBuffer<char>(sample_rate * sizeof(float) * 10); 
 
   // create the rx input buffer
   rx_in_buf_len = 16 * 1024; // bigger than the largest anticipated packet
   rx_in_buf = new char[rx_in_buf_len]; 
 
-  audio_rx_socket = new QLocalSocket(this);
+  debug audio_rx_socket = new QLocalSocket(this);
   QString rx_socket_name = socket_basename + "_rxa"; 
 
   int wcount = 0; 
@@ -88,7 +93,7 @@ bool GUISoDa::AudioRXListener::init()
       return false;       
     }
   }
-  
+
   audio_rx_socket->connectToServer(rx_socket_name);
   while(!audio_rx_socket->waitForConnected(1000)) {
     qDebug() << QString("AudioRXListener Waited for connection on local socket\n[%1]. Is something wrong?").arg(rx_socket_name);
@@ -96,10 +101,9 @@ bool GUISoDa::AudioRXListener::init()
     QThread::sleep(5); // sleep for 5 seconds...    
   }
   connect(audio_rx_socket, SIGNAL(readyRead()), 
-	  this, SLOT(processRXAudio())); 
+  	  this, SLOT(processRXAudio())); 
   connect(audio_rx_socket, SIGNAL(error(QLocalSocket::LocalSocketError)), 
-	  this, SLOT(audioSocketError(QLocalSocket::LocalSocketError)));
-
+  	  this, SLOT(audioSocketError(QLocalSocket::LocalSocketError)));
 
   return true; 
 }
@@ -113,7 +117,6 @@ void GUISoDa::AudioRXListener::processRXAudio() {
   // 400KB/sec.  The CircularBuffer object has been measured
   // at way above 300MB/sec on a really old Intel desktop 
   // (a 2010 edition i7). 
-
   qint64 len = audio_rx_socket->bytesAvailable();
 
   
@@ -137,11 +140,6 @@ void GUISoDa::AudioRXListener::processRXAudio() {
     }
 
     status_update_count++;
-    if((status_update_count % 20) == 0) {
-      qInfo() << QString("Audio listener has gone %1 around the ring. sent %2 bytes\n")
-	.arg(status_update_count)
-	.arg(bytes_sent_count);
-    }
     
     if(rlen > 0) {
       bytes_sent_count += rlen;       
