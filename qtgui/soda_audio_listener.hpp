@@ -82,11 +82,7 @@ namespace GUISoDa {
      * @param len the length of the buffer that we just ignored
      * @return 0 all the time. 
      */
-    qint64 writeData(const char * data, qint64 len) {
-      Q_UNUSED(data);
-      Q_UNUSED(len);
-      return 0; 
-    }
+    qint64 writeData(const char * data, qint64 len) override;
     
     /**
      * @brief read method to supply a sequence of samples to the audio 
@@ -97,12 +93,12 @@ namespace GUISoDa {
      *
      * @return the number of bytes written to the buffer
      */
-    qint64 readData(char * data, qint64 maxlen); 
+    qint64 readData(char * data, qint64 maxlen) override; 
 
     /**
      * @brief how many bytes are ready for reading
      */
-    qint64 bytesAvailable() const; 
+    qint64 bytesAvailable() const override; 
 
     /**
      * @brief implementation of QIODevice start method -- announce that we're open for business
@@ -145,7 +141,7 @@ namespace GUISoDa {
     QLocalSocket * audio_rx_socket;     
     bool quit; 
 
-    QScopedPointer<QAudioOutput> audioRX; 
+    QScopedPointer<QAudioOutput> audio_rx_output;; 
     
     // the audio samples arrive as floats, but
     // the packets move back and forth as bytes

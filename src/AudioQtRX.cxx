@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012, 2025 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -40,8 +40,6 @@ namespace SoDa {
 		   std::string audio_port_name) :
     AudioIfc(_sample_rate, _sample_count_hint, "AudioQtRX Qt Interface") {
 
-    std::cerr << "Creating AudioQtRX\n";
-    
     setupNetwork(audio_sock_basename); 
 
     ang = 0.0; 
@@ -72,6 +70,11 @@ namespace SoDa {
   int AudioQtRX::send(void * buf, unsigned int len, bool when_ready) {
     int ret;
     ret = audio_rx_socket->put(buf, len, false);
+    float * fbuf = (float*) buf;
+    float sum = 0; 
+    for(int i = 0; i < len / 4; i++) {
+      sum += fbuf[i]; 
+    }
     return ret; 
   }
 

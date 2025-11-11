@@ -187,7 +187,7 @@ int SoDa::IP::NetSocket::get(void * ptr, unsigned int size)
       return 0; 
     }
     else {
-      perror("Oops -- socket get -- "); 
+      perror("Oops -- SoDa::IP::NetSocket::get -- "); 
       return stat;
     }
   }

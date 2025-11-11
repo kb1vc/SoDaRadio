@@ -36,18 +36,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 GUISoDa::AudioListener::AudioListener(QObject * parent,
 				      const QString & socket_basename,
 				      unsigned int _sample_rate) {
-
   rx_listener = new AudioRXListener(parent, socket_basename, _sample_rate); 
   rx_recorder = new AudioRecorder(_sample_rate); 
   
   connect(rx_listener, SIGNAL(pendAudioBuffer(float*, qint64)), 
 	  rx_recorder, SLOT(saveData(float*, qint64)));
   this->setObjectName(QString("GUISoDa::AudioListener"));
-
 }
 
 GUISoDa::AudioRXListener::AudioRXListener(QObject * parent, const QString & _socket_basename, unsigned int _sample_rate) : QIODevice(parent) {
-
   quit = false;
   socket_basename = _socket_basename; 
   sample_rate = _sample_rate; 
@@ -62,7 +59,6 @@ GUISoDa::AudioRXListener::AudioRXListener(QObject * parent, const QString & _soc
   bytes_sent_count = 0;
 
   max_slack_time = 0.2; // 200ms starts to become a problem for FT8...
-
 }
 
 bool GUISoDa::AudioRXListener::init()
@@ -80,7 +76,7 @@ bool GUISoDa::AudioRXListener::init()
   rx_in_buf_len = 16 * 1024; // bigger than the largest anticipated packet
   rx_in_buf = new char[rx_in_buf_len]; 
 
-  debug audio_rx_socket = new QLocalSocket(this);
+  audio_rx_socket = new QLocalSocket(this);
   QString rx_socket_name = socket_basename + "_rxa"; 
 
   int wcount = 0; 
@@ -100,13 +96,22 @@ bool GUISoDa::AudioRXListener::init()
     qDebug() << audio_rx_socket->errorString();
     QThread::sleep(5); // sleep for 5 seconds...    
   }
+
   connect(audio_rx_socket, SIGNAL(readyRead()), 
-  	  this, SLOT(processRXAudio())); 
+  	  this, SLOT(processRXAudio()));
+
   connect(audio_rx_socket, SIGNAL(error(QLocalSocket::LocalSocketError)), 
   	  this, SLOT(audioSocketError(QLocalSocket::LocalSocketError)));
 
   return true; 
 }
+
+qint64 GUISoDa::AudioRXListener::writeData(const char * data, qint64 maxlen) {
+  Q_UNUSED(data);
+  Q_UNUSED(maxlen);
+  return 0; 
+}
+
 
 void GUISoDa::AudioRXListener::processRXAudio() {
   // we've got an incoming buffer. 
@@ -119,7 +124,6 @@ void GUISoDa::AudioRXListener::processRXAudio() {
   // (a 2010 edition i7). 
   qint64 len = audio_rx_socket->bytesAvailable();
 
-  
   while(len > 0) {
     // get the data from the socket
     qint64 tlen = (len > rx_in_buf_len) ? rx_in_buf_len : len;
@@ -157,8 +161,8 @@ void GUISoDa::AudioRXListener::processRXAudio() {
 
 void GUISoDa::AudioRXListener::closeRadio()
 {
-  audioRX->stop();
-  audioRX->disconnect(this);
+  audio_rx_output->stop();
+  audio_rx_output->disconnect(this);
 }
 
 void GUISoDa::AudioRXListener::cleanBuffer() 
@@ -185,34 +189,33 @@ bool GUISoDa::AudioRXListener::initAudio(const QAudioDeviceInfo & dev_info)
   if(!dev_info.isFormatSupported(format)) {
     qDebug() << QString("Sound system will not support [%1] floating point samples/sec").arg(sample_rate); 
   }
-  audioRX.reset(new QAudioOutput(dev_info, format));
+  audio_rx_output.reset(new QAudioOutput(dev_info, format));
   
-  audioRX->setBufferSize((sizeof(float) * sample_rate) >> 2); // buffer up 1/4 second
+  audio_rx_output->setBufferSize((sizeof(float) * sample_rate) >> 2); // buffer up 1/4 second
 
-
-  
   // react to errors when they happen. 
-  connect(audioRX.data(), SIGNAL(stateChanged(QAudio::State)), 
+  connect(audio_rx_output.data(), SIGNAL(stateChanged(QAudio::State)), 
 	  this, SLOT(audioOutError(QAudio::State)));
 
   // start this IO device -- does this need to be here? 
   this->start(); 
 
   // tell the audio device where to find the QIODevice.
-  audioRX->start(this);
+  audio_rx_output->start(this);
   return true; 
 }	
 
+
 void  GUISoDa::AudioRXListener::setAudioGain(float gain)
 {
-  audioRX->setVolume(qreal(gain));
+  audio_rx_output->setVolume(qreal(gain));
 }
 
 void  GUISoDa::AudioRXListener::setRXDevice(const QAudioDeviceInfo & dev_info)
 {
-  if(audioRX != NULL) {
-    audioRX->stop();
-    audioRX->disconnect(this); 
+  if(audio_rx_output != NULL) {
+    audio_rx_output->stop();
+    audio_rx_output->disconnect(this); 
   }
 
   QList<QAudioDeviceInfo> devs = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
@@ -242,7 +245,11 @@ qint64 GUISoDa::AudioRXListener::readData(char * data, qint64 max_len)
   }
   else {
     int ret = (qint64) audio_cbuffer_p->get(data, max_len);
-    
+    float * fdat = (float*) data;
+    float sum = 0.0; 
+    for(int i = 0; i < ret / 4; i++) {
+      sum += fdat[i]; 
+    }
     return ret; 
   }
 }
@@ -254,14 +261,14 @@ qint64 GUISoDa::AudioRXListener::bytesAvailable() const {
 
 void GUISoDa::AudioRXListener::audioOutError(QAudio::State new_state) {
   if(new_state == QAudio::StoppedState) {
-    switch (audioRX->error()) {
+    switch (audio_rx_output->error()) {
     case QAudio::UnderrunError:
       qDebug() << QString("AudioRXListener under-run. Attempting reset.");
-      audioRX->reset();
+      audio_rx_output->reset();
       break; 
     case QAudio::IOError:
       qDebug() << QString("AudioRXListener IO error. Attempting reset.");
-      audioRX->reset();
+      audio_rx_output->reset();
       break; 
     case QAudio::OpenError:
       qFatal("AudioRXListener got a OpenError of some sort on the audio output device.");      

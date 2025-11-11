@@ -49,13 +49,16 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   QMainWindow(parent),
   ui(new Ui::MainWindow)
 {
+  qDebug() << QString("MainWIndow about to start UI");  
   ui->setupUi(this);
-
+  qDebug() << QString("MainWIndow started UI");  
   // setup the listener. 
   listener = new GUISoDa::Listener(this, QString::fromStdString(params.getServerSocketBasename())); 
 
   // setup the audio listener
+  qDebug() << QString("About to start AudioListener");
   audio_listener = new GUISoDa::AudioListener(this, QString::fromStdString(params.getServerSocketBasename()));
+  qDebug() << QString("Started AudioListener");
   
   setupSpectrum();
   setupWaterFall();

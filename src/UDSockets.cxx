@@ -213,7 +213,7 @@ int SoDa::UD::NetSocket::get(void * ptr, unsigned int size, bool len_prefix)
 	return 0; 
       }
       else {
-	perror("Oops -- socket get -- "); 
+	perror("Oops -- SoDa::UD::NetSocket::get -- "); 
 	return stat;
       }
     }

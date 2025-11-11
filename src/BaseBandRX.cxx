@@ -445,15 +445,15 @@ namespace SoDa {
       }
       break; 
     case Command::RX_AF_GAIN: // set audio gain. 
-      af_gain = powf(10.0, 0.25 * (cmd->dparms[0] - 50.0));
+      af_gain = powf(10.0, 0.25 * (cmd->dparms[0] - 30.0));
       cmd_stream->put(Command::make(Command::REP, Command::RX_AF_GAIN, 
-				    50. + 4.0 * log10(af_gain)));
+				    30. + 4.0 * log10(af_gain)));
       break; 
     case Command::RX_AF_SIDETONE_GAIN: // set audio gain. 
-      af_sidetone_gain = powf(10.0, 0.25 * (cmd->dparms[0] - 50.0));
+      af_sidetone_gain = powf(10.0, 0.25 * (cmd->dparms[0] - 30.0));
       // we send out reports for hamlib and other listeners...
       cmd_stream->put(Command::make(Command::REP, Command::RX_AF_SIDETONE_GAIN, 
-				    50. + 4.0 * log10(af_sidetone_gain)));
+				    30. + 4.0 * log10(af_sidetone_gain)));
       break;
     case Command::NBFM_SQUELCH:
       nbfm_squelch_level = powf(10, 0.5 * cmd->dparms[0]) * ((float) audio_buffer_size);
@@ -472,7 +472,7 @@ namespace SoDa {
       break;
     case Command::RX_AF_GAIN: // set af filter bw.
       cmd_stream->put(Command::make(Command::REP, Command::RX_AF_GAIN, 
-				    50.0 + 4.0 * log10(af_gain)));
+				    30.0 + 4.0 * log10(af_gain)));
       break;
     case Command::DBG_REP: // report status
       Command::UnitSelector us;
