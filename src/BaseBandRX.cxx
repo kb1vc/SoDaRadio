@@ -444,7 +444,7 @@ namespace SoDa {
 	repAFFilterShape();
       }
       break; 
-    case Command::RX_AF_GAIN: // set audio gain. 
+    case Command::RX_AF_GAIN: // set audio gain.  
       af_gain = powf(10.0, 0.25 * (cmd->dparms[0] - 30.0));
       cmd_stream->put(Command::make(Command::REP, Command::RX_AF_GAIN, 
 				    30. + 4.0 * log10(af_gain)));
