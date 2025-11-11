@@ -57,7 +57,6 @@ void GUISoDa::HamlibListener::run()
 void GUISoDa::HamlibListener::readyRead() {
   QByteArray array = socket_p->read(socket_p->bytesAvailable());
 
-  qInfo() << QString("HL::rR\n");
   char * as = array.data();
 
   int lim = array.count();

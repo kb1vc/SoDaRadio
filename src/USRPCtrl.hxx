@@ -227,12 +227,6 @@ namespace SoDa {
     /// daughtercards... 
     /// @param val true to enable transmitter front end, false otherwise. 
     void setTXFrontEndEnable(bool val); 
-
-    /// set the transverter LO frequency and power
-    /// This code does not work for libUHD after 3.7 -- it may not work for the older versions either.;(
-    void setTransverterLOFreqPower(double freq, double power);
-    void enableTransverterLO();
-    void disableTransverterLO();
     
     /// we use TX_IO bit 12 to turn on the TX relay
     /// we use TX_IO bit 11 to monitor the TX relay
@@ -270,13 +264,6 @@ namespace SoDa {
     std::string tx_ant;  ///< TX antenna choice (usually has to be TX or TX/RX1?
 
     std::string motherboard_name; ///< The model name of the USRP unit
-
-    // transverter local oscillator support.
-    bool tvrt_lo_capable; ///< if true, this unit can implement a local transverter oscillator.
-    bool tvrt_lo_mode; ///< if true, set the transmit frequency, with some knowledge of the tvrt LO.
-    double tvrt_lo_gain; ///< output power for the second transmit channel (used for transverter LO)
-    double tvrt_lo_freq; ///< the frequency of the second transmit channel oscillator
-    double tvrt_lo_fe_freq; ///< the frequency of the second transmit channel front-end oscillator
     
     // enables verbose messages
     bool debug_mode; ///< print stuff when we are in debug mode

@@ -107,21 +107,7 @@ namespace SoDa {
     // we need to setup the subdevices
     if(is_B2xx) {
       usrp->set_rx_subdev_spec(std::string("A:A"), 0);
-      std::cerr << "DISABLING TVRT LO" << std::endl;
-      if(0 && is_B210) {
-	debugMsg("Setup two subdevices -- TVRT_LO Capable");
-	usrp->set_tx_subdev_spec(std::string("A:A A:B"), 0);
-	tvrt_lo_capable = true;
-      }
-      else {
-	debugMsg("Setup one subdevice -- NOT TVRT_LO Capable");
-	usrp->set_tx_subdev_spec(std::string("A:A"), 0);
-	tvrt_lo_capable = false;
-      }
-    }
-    else {
-      debugMsg("Setup one subdevice -- NOT TVRT_LO Capable");
-      tvrt_lo_capable = false;
+      usrp->set_tx_subdev_spec(std::string("A:A"), 0);
     }
 
     first_gettime = 0.0;
@@ -181,9 +167,6 @@ namespace SoDa {
 
     // turn off the transmitter
     setTXEna(false);
-
-    // turn of the LO
-    tvrt_lo_mode = false;
 
     // if we are in integer-N mode, setup the step table.
     testIntNMode(params->forceIntN(), params->forceFracN()); 
@@ -377,11 +360,7 @@ namespace SoDa {
     
       uhd::tune_request_t tx_request(freq);
     
-      if(tvrt_lo_mode) {
-	tx_request.rf_freq_policy = uhd::tune_request_t::POLICY_MANUAL;
-	tx_request.rf_freq = tvrt_lo_fe_freq;
-      }
-      else if(supports_IntN_Mode) {
+      if(supports_IntN_Mode) {
 	// This is a little complicated.
 	// For the UBX, at least, the RF oscillator was bleeding through
 	// to the output and appearing > -40dBc.   That is not sufficient
@@ -426,12 +405,6 @@ namespace SoDa {
 
       double txfreqs[2];
       txfreqs[0] = usrp->get_tx_freq(0);
-      if(tvrt_lo_mode) {
-	txfreqs[1] = usrp->get_tx_freq(1);
-	debugMsg(Format("TX LO = %0  TVRT LO = %1\n")
-		 .addF(txfreqs[0], 10, 6, 'e')
-		 .addF(txfreqs[1], 10, 6, 'e'));
-      }
     }
 
     // If we are setting the RX mode, then we need to send
@@ -650,20 +623,6 @@ namespace SoDa {
       cmd_stream->put(Command::make(Command::REP, Command::TX_ANT, usrp->get_tx_antenna()));
       break;
 
-    case Command::TVRT_LO_CONFIG:
-      setTransverterLOFreqPower(cmd->dparms[0], cmd->dparms[1]);
-      break;
-
-    case Command::TVRT_LO_ENABLE:
-      debugMsg("Enable Transverter LO");
-      enableTransverterLO();
-      break; 
-
-    case Command::TVRT_LO_DISABLE:
-      debugMsg("Disable Transverter LO");
-      disableTransverterLO();
-      break;
-
     default:
       break; 
     }
@@ -865,60 +824,6 @@ namespace SoDa {
     return ((enabits & TX_RELAY_MON) != 0); 
   }
 
-  void USRPCtrl::setTransverterLOFreqPower(double freq, double power)
-  {
-    uhd::gain_range_t tx_gain_range = usrp->get_tx_gain_range(1);
-    double plo = tx_gain_range.start();
-    double phi = tx_gain_range.stop();
-    tvrt_lo_gain = plo + power * (phi - plo);
-    tvrt_lo_freq = freq; 
-  
-    debugMsg(Format("Setting Transverter LO freq = %0 power = %1 gain = %2\n") 
-	     .addF(tvrt_lo_freq, 10, 6, 'e')
-	     .addF(power, 'e')
-	     .addF(tvrt_lo_gain, 'e'));
-  
-    debugMsg("About to report Transverter LO setting.");
-    cmd_stream->put(Command::make(Command::REP, Command::TVRT_LO_CONFIG, tvrt_lo_freq, power));  
-
-  }
-
-  void USRPCtrl::enableTransverterLO()
-  {
-    if(!tvrt_lo_capable) {
-      tvrt_lo_mode = false; 
-      return;
-    }
-
-    debugMsg("Enabling transverter LO\n");
-    usrp->set_tx_antenna("TX2", 1);
-    
-    usrp->set_tx_gain(tvrt_lo_gain, 1);
-    // tune the first LO 4MHz below the target, and let the DDC make up the rest. 
-    uhd::tune_request_t lo_freq_req(tvrt_lo_freq, -4.0e6);
-    uhd::tune_result_t tres = usrp->set_tx_freq(lo_freq_req, 1);
-
-    tvrt_lo_mode = true;
-  
-    debugMsg(Format("LO frequency = %0 power %1  number of channels = %2 target_rf %3 actual rf %4 target dsp %5 actual dsp %6\n")
-	     .addF(usrp->get_tx_freq(1), 10, 6, 'e')
-	     .addF(usrp->get_tx_gain(1), 10, 6, 'e')
-	     .addI(usrp->get_tx_num_channels())
-	     .addF(tres.target_rf_freq, 10, 6, 'e')
-	     .addF(tres.actual_rf_freq, 10, 6, 'e')
-	     .addF(tres.target_dsp_freq, 10, 6, 'e')
-	     .addF(tres.actual_dsp_freq, 10, 6, 'e'));
-
-    tvrt_lo_fe_freq = tres.target_rf_freq; 
-  }
-
-  void USRPCtrl::disableTransverterLO()
-  {
-    tvrt_lo_mode = false;
-    if(!tvrt_lo_capable) return; 
-    usrp->set_tx_gain(0.0, 1);
-    usrp->set_tx_freq(100.0e6, 1);
-  }
 
   void USRPCtrl::applyTargetFreqCorrection(double target_freq, double avoid_freq, uhd::tune_request_t * treq)
   {
