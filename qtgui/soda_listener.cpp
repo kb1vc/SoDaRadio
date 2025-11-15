@@ -145,8 +145,10 @@ bool GUISoDa::Listener::get(SoDa::Command & cmd)
 
 void GUISoDa::Listener::setupSpectrumBuffer(double cfreq, double span, long buflen)
 {
-  (void) span; 
-  spect_center_freq = cfreq; 
+  (void) span;
+  // the radio server doesn't know about the transverter.
+  // that's up to the GUI to correct - here. 
+  spect_center_freq = cfreq - transverter_lo_freq; 
 
   if(spect_buffer_len < buflen) {
     if(spect_buffer_len > 0) delete[] spect_buffer; 
@@ -206,13 +208,13 @@ void GUISoDa::Listener::setRXFreq(double freq) {
   // we get the LO freq and multiplier from the config band widget
   // Note that the LO is setup for "high side" injection so that
   // tuning works in the right direction.  
-  put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_RETUNE_FREQ, freq), __PRETTY_FUNCTION__);
+  put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_RETUNE_FREQ, freq + transverter_lo_freq), __PRETTY_FUNCTION__);
 
   current_rx_freq = freq;   
 }
 
 void GUISoDa::Listener::setTXFreq(double freq) {
-  put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_RETUNE_FREQ, freq), __PRETTY_FUNCTION__);
+  put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_RETUNE_FREQ, freq + transverter_lo_freq), __PRETTY_FUNCTION__);
 
   current_tx_freq = freq; 
 }
@@ -242,6 +244,7 @@ void GUISoDa::Listener::setAFSidetoneGain(int gain) {
 }
 
 void GUISoDa::Listener::setTransverterLO(double freq) {
+  qInfo() << QString("setTransverterLO(%0)").arg(freq);
   transverter_lo_freq = freq; 
 }
 
@@ -274,9 +277,9 @@ bool GUISoDa::Listener::handleREP(const SoDa::Command & cmd)
   case SoDa::Command::TX_ANT_NAME:
     emit(addTXAntName(QString(cmd.sparm)));
     break; 
-  case SoDa::Command::SPEC_DIMS:
-    emit(configureSpectrum(cmd.dparms[0], cmd.dparms[1], ((long) cmd.dparms[2])));
-    setupSpectrumBuffer(cmd.dparms[0], cmd.dparms[1], (long) cmd.dparms[2]);
+  case SoDa::Command::SPEC_DIMS: // 1 1 neither works 0 0 wfall works 0 1 neither works 1 0 both work (!)
+    emit(configureSpectrum(cmd.dparms[0] - 1.0 * transverter_lo_freq, cmd.dparms[1], ((long) cmd.dparms[2])));
+    setupSpectrumBuffer(cmd.dparms[0] - 0.0 * transverter_lo_freq, cmd.dparms[1], (long) cmd.dparms[2]);
     break; 
   case SoDa::Command::HWMB_REP:
     emit(repHWMBVersion(QString(cmd.sparm)));
@@ -322,7 +325,7 @@ void GUISoDa::Listener::setTXAnt(const QString & antname)
 
 void GUISoDa::Listener::setSpectrumCenter(double freq) 
 {
-  put(SoDa::Command(SoDa::Command::SET, SoDa::Command::SPEC_CENTER_FREQ, freq), __PRETTY_FUNCTION__);
+  put(SoDa::Command(SoDa::Command::SET, SoDa::Command::SPEC_CENTER_FREQ, freq + transverter_lo_freq), __PRETTY_FUNCTION__);
 }
 
 void GUISoDa::Listener::setSpectrumUpdateRate(int rate)

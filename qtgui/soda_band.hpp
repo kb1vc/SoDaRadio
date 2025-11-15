@@ -116,8 +116,9 @@ namespace GUISoDa {
     double maxFreq() const  { return max_freq; }
     double lastRXFreq() const { return last_rx_freq; }
     double lastTXFreq() const { return last_tx_freq; }
-  
-    double tvLOFreq() const  { return tv_LO_freq; }
+
+    // let the GUI decide the units. 
+    double tvLOFreq() const  { return tv_LO_freq * 1e6; }
     double tvLOMult() const  { return tv_LO_mult; }  
     bool txEna() const  { return tx_enabled; }
     bool tverterEna() const  { return tverter_mode; }
@@ -139,7 +140,6 @@ namespace GUISoDa {
     void setLastRXFreq(double v) { last_rx_freq = v; }
     void setLastTXFreq(double v) { last_tx_freq = v; }  
     void setTvLOFreq(double v) {
-      qDebug() << QString("Set transverter lo freq %0").arg(v);
       tv_LO_freq = v;
     }
     void setTvLOMult(double v) { tv_LO_mult = v; }  

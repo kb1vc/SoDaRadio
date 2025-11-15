@@ -222,6 +222,7 @@ void MainWindow::changeBand(const QString & band)
       if (auto_bandswitch_target != "") {
         ui->Mode_cb->setValue(band_map[band].defMode());
       }
+
       double rx_freq = band_map[band].lastRXFreq() * 1e6;
       setRXFreq(rx_freq);
       double tx_freq = band_map[band].lastTXFreq() * 1e6;
@@ -229,7 +230,14 @@ void MainWindow::changeBand(const QString & band)
 	tx_freq = rx_freq + band_map[band].satOffset() * 1e6;
       }
       setTXFreq_nocross(tx_freq);
-      listener->setSpectrumCenter(rx_freq);      
+      listener->setSpectrumCenter(rx_freq);
+
+      // set the transverter lo offset
+      double lo_freq = band_map[band].tvLOFreq();
+      double lo_mult = band_map[band].tvLOMult();      
+      listener->setTransverterLO(lo_freq * lo_mult);
+      qInfo() << QString("Setting transverter lo %0 lo mult %1").arg(lo_freq).arg(lo_mult);
+      
     }
     else {
       auto_bandswitch_target = ""; 
