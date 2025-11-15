@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017 Matthew H. Reilly (kb1vc)
+Copyright (c) 2017, 2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -81,6 +81,8 @@ bool GUISoDa::Listener::init()
 
   spect_buffer_len = 0; 
 
+  transverter_lo_freq = 0.0;
+  
   return true; 
 }
 
@@ -200,6 +202,10 @@ bool GUISoDa::Listener::put(const SoDa::Command & cmd, const char * func_name)
 }
 
 void GUISoDa::Listener::setRXFreq(double freq) {
+  // this is where we send the LO corrected frequency (if necessary)
+  // we get the LO freq and multiplier from the config band widget
+  // Note that the LO is setup for "high side" injection so that
+  // tuning works in the right direction.  
   put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_RETUNE_FREQ, freq), __PRETTY_FUNCTION__);
 
   current_rx_freq = freq;   
@@ -233,6 +239,10 @@ void GUISoDa::Listener::setAFGain(int gain) {
 void GUISoDa::Listener::setAFSidetoneGain(int gain) {
   double dgain = gain;   
   put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_AF_SIDETONE_GAIN, dgain), __PRETTY_FUNCTION__);
+}
+
+void GUISoDa::Listener::setTransverterLO(double freq) {
+  transverter_lo_freq = freq; 
 }
 
 

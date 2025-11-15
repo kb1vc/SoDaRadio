@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017 Matthew H. Reilly (kb1vc)
+Copyright (c) 2017, 2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -93,6 +93,8 @@ namespace GUISoDa {
     void setRXFreq(double freq);
     void setTXFreq(double freq);
 
+    void setTransverterLO(double freq);
+    
     void setModulation(int mod_id); 
 
     void setAFFilter(int id); 
@@ -132,7 +134,10 @@ namespace GUISoDa {
 
   protected:
     double current_rx_freq; 
-    double current_tx_freq; 
+    double current_tx_freq;
+
+    double transverter_lo_freq;
+    
     int get(char* buf, int maxlen); 
     bool get(SoDa::Command & cmd); 
     int put(const char * buf, int len);

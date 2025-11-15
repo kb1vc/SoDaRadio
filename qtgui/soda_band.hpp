@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017 Matthew H. Reilly (kb1vc)
+Copyright (c) 2017,2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,9 +25,8 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+#pragma once
 
-#ifndef SODA_BAND_HDR
-#define SODA_BAND_HDR
 #include <QString>
 #include <QObject>
 #include <QSettings>
@@ -139,7 +138,10 @@ namespace GUISoDa {
     void setMaxFreq(double v) { max_freq = v; }
     void setLastRXFreq(double v) { last_rx_freq = v; }
     void setLastTXFreq(double v) { last_tx_freq = v; }  
-    void setTvLOFreq(double v) { tv_LO_freq = v; }
+    void setTvLOFreq(double v) {
+      qDebug() << QString("Set transverter lo freq %0").arg(v);
+      tv_LO_freq = v;
+    }
     void setTvLOMult(double v) { tv_LO_mult = v; }  
     void setTxEna(bool v) { tx_enabled = v; }
     void setTverterEna(bool v) { tverter_mode = v; }
@@ -223,4 +225,3 @@ namespace GUISoDa {
     }
   };
 }
-#endif
