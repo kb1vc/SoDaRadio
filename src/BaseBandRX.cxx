@@ -308,16 +308,31 @@ namespace SoDa {
     pendAudioBuffer(abuf);
   }
 
+  double calcPower(std::vector<std::complex<float>> & in) {
+    double res = 0.0;
+    double N = float(in.size());
+    double max = 0.0; 
+    for(auto & v : in) {
+      auto a = std::abs(v);
+      res = res + a * a;
+      if(a > max) max = a; 
+    }
+    
+    //    return res / N;
+    return max;
+  }
+
+  int dbg_count = 0; 
   void BaseBandRX::demodulate(CBufPtr rxbuf)
   {
     // First we downsample and apply the audio filter unless this is a WBFM signal.
     auto dbufi = CBuf::make(audio_buffer_size); 
     auto dbufo = CBuf::make(audio_buffer_size); 
     // Note that audio_buffer_size must be (sample_length / decimation rate)
-  
+    
     if((rx_modulation != Command::WBFM) && (rx_modulation != Command::NBFM)) {
       rf_resampler->apply(rxbuf->getBuf(), dbufi->getBuf());
-    
+
       // now do the low pass filter
       if(rx_modulation == Command::AM) {
 	am_pre_filter->apply(dbufi->getBuf(), dbufo->getBuf(), *cur_af_gain);
@@ -325,6 +340,16 @@ namespace SoDa {
       else {
 	cur_audio_filter->apply(dbufi->getBuf(), dbufo->getBuf(), *cur_af_gain);
       }
+      if((dbg_count % 256) == 0) {
+	auto in_power = calcPower(dbufi->getBuf());      
+	auto out_power = calcPower(dbufo->getBuf());
+	std::cerr << SoDa::Format("BaseBandRX::demodulate in power %0 out power %1 gain %2\n")
+	  .addF(in_power, 'e')
+	  .addF(out_power, 'e')
+	  .addF(10 * std::log10(out_power / in_power), 'e')
+	  ;
+      }
+      dbg_count++; 
     }
     else if(rx_modulation == Command::NBFM) {
       // first, bandpass the RF down to about 25 kHz wide...
