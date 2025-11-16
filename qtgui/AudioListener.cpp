@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017 Matthew H. Reilly (kb1vc)
+Copyright (c) 2018, 2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,49 +26,22 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "soda_hamlib_server.hpp"
-#include "soda_hamlib_handler.hpp"
-#include "soda_hamlib_listener.hpp"
-
+#include "AudioListener.hpp"
 #include <QMessageBox>
-#include <hamlib/rig.h>
+#include <cstring>
+#include <QDateTime>
+#include <QFileDialog>
+#include <QByteArray>
 
-using namespace GUISoDa;
-
-GUISoDa::HamlibServer::HamlibServer(QObject * parent, int _port_num) :
-  QTcpServer(parent), port_num(_port_num)  {
-
-  handler_p = new HamlibHandler(this);
-}
+namespace GUISoDa {
+  AudioListener::AudioListener(QObject * parent,
+			       const QString & socket_basename,
+			       unsigned int _sample_rate) {
+    rx_listener = new AudioRXListener(parent, socket_basename, _sample_rate); 
+    rx_recorder = new AudioRecorder(_sample_rate); 
   
-GUISoDa::HamlibServer::~HamlibServer() {
-
-  emit stopListeners();
-
-  for(auto l : listener_list) {
-    l->wait();
+    connect(rx_listener, SIGNAL(pendAudioBuffer(float*, qint64)), 
+	    rx_recorder, SLOT(saveData(float*, qint64)));
+    this->setObjectName(QString("GUISoDa::AudioListener"));
   }
 }
-
-bool GUISoDa::HamlibServer::start() {
-  if( !this->listen( QHostAddress::LocalHost, port_num ) ) {
-    QMessageBox::critical( (QWidget *)this->parent(), tr("Error!"), tr("Cannot listen to port %1").arg(port_num) );
-  }
-
-  return true; 
-}
-
-void GUISoDa::HamlibServer::incomingConnection(qintptr descriptor) {
-  // create a new listener
-  HamlibListener * listener = new HamlibListener(descriptor, handler_p, this);
-
-  // make sure the thread terminates itself
-  connect(listener, SIGNAL(finished()), listener, SLOT(deleteLater()));
-  connect(this, SIGNAL(stopListeners()), listener, SLOT(setFinished()));
-
-  listener_list.push_back(listener); 
-
-  listener->start(); // start the thread -- it will wait for data from the client.
-}
-
-

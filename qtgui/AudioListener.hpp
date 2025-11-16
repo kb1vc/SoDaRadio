@@ -1,5 +1,6 @@
+#pragma once
 /*
-Copyright (c) 2017 Matthew H. Reilly (kb1vc)
+Copyright (c) 2018, 2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,48 +27,47 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef SODA_HAMLIB_SERVER_HEADER
-#define SODA_HAMLIB_SERVER_HEADER
+
 #include <QObject>
+#include <QIODevice>
+#include <QAudioOutput>
 #include <QString>
 #include <QtNetwork/QtNetwork>
-#include <iostream>
-#include <errno.h>
-#include "soda_hamlib_listener.hpp"
-#include "soda_hamlib_handler.hpp"
-#include "../src/Command.hxx"
 
- // This, and soda_hamlib_listener are taken 
- // from a pattern at https://gist.github.com/lamprosg/4587087
- // nicely done and documented. 
- // 
+#include <iostream>
+#include <fstream>
+#include <errno.h>
+#include <sndfile.h>
+#include "../common/CircularBuffer.hxx"
+
+#include "AudioRXListener.hpp"
+#include "AudioRecorder.hpp"
 
 namespace GUISoDa {
-  class HamlibServer : public QTcpServer {
-    Q_OBJECT
-
+  
+  // the event loop for audio and network ports lives in its own
+  // thread. 
+  class AudioListener : public QThread {
   public:
-    HamlibServer(QObject * parent = 0, int _port_num = 4575);
+    AudioListener(QObject * parent = 0, 
+		  const QString & socket_basename = "tmp", 
+		  unsigned int _sample_rate = AudioRXListener::DEFAULT_SAMPLE_RATE);
 
-    ~HamlibServer();
+    ~AudioListener() {
+      delete rx_listener;
+      delete rx_recorder; 
+    }
+    
+    void init() {
+      rx_listener->init();
+      rx_recorder->start();
+    }
 
-    HamlibHandler * getHandler() { return handler_p; }
+    AudioRXListener * getRX() const { return rx_listener; }
+    AudioRecorder * getRec() const { return rx_recorder; }
 
-  signals:
-    void stopListeners();
-		      
-  public slots:
-    // start listening for the first incoming connection.
-    bool start(); 
-
-
-  protected:
-    void incomingConnection(qintptr desc);
-    int port_num;
-
-    HamlibHandler * handler_p; 
-
-    std::list<HamlibListener *> listener_list;
-  };
+  private:
+    AudioRXListener * rx_listener; 
+    AudioRecorder * rx_recorder; 
+  }; 
 }
-#endif

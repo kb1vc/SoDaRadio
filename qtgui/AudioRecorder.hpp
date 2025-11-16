@@ -1,5 +1,6 @@
+#pragma once
 /*
-Copyright (c) 2018 Matthew H. Reilly (kb1vc)
+Copyright (c) 2018, 2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,50 +27,52 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "mainwindow.hpp"
-#include "ui_mainwindow.h"
+#include <QObject>
+#include <QIODevice>
+#include <QAudioOutput>
+#include <QString>
+#include <QtNetwork/QtNetwork>
+
 #include <iostream>
-#include <QAudioDeviceInfo>
+#include <fstream>
+#include <errno.h>
+#include <sndfile.h>
+#include "../common/CircularBuffer.hxx"
 
-QString MainWindow::secondsToElapsed(int seconds)
-{
-  int sec, min, hr; 
-  int t = seconds;
-  hr = t / 3600; 
-  t = t % 3600; 
-  min = t / 60; 
-  sec = t % 60;
-  return QString("%1:%2:%3").arg(hr, 2, 10, QChar('0')).arg(min, 2, 10, QChar('0')).arg(sec, 2, 10, QChar('0'));
+namespace GUISoDa {
+
+  // put the recorder in its own thread, so if something goes wrong
+  // we don't zorch the rest of the radio. 
+  class AudioRecorder : public QThread {
+    Q_OBJECT
+    
+  public:
+    AudioRecorder(int _sample_rate);
+    ~AudioRecorder() {
+      if(snd_file != NULL) {
+	sf_close(snd_file); 
+	delete rec_buffer; 
+      }
+    }
+
+  public slots:
+    void getRecDirectory(QWidget * par); 
+    
+    // write buffer to circular buffer or to file. 
+    void saveData(float * buf, qint64 len); 
+
+    // start/stop recording
+    void record(bool on); 
+    
+  protected:
+    void openSoundFile(const QString & fname); 
+    
+    QString record_directory; 
+    QString current_file; 
+    
+    SNDFILE * snd_file; 
+    int sample_rate; 
+    
+    SoDa::CircularBuffer<float> * rec_buffer; 
+  }; 
 }
-
-void MainWindow::setupStatus()
-{
-  elapsed_seconds = 0; 
-  transmit_seconds = 0; 
-  transmit_intervals = 0; 
-  
-  ui->StartTime_lbl->setText(QDateTime::currentDateTime().toString("dd-MMM-yy HH:mm:ss t"));
-  
-  connect(radio_listener, &GUISoDa::RadioListener::repPTT,
-	  [=](bool fl) {
-	    if(fl) {
-	      transmit_intervals++; 
-	      transmit_time.start();
-	    }
-	    else {
-	      transmit_seconds += ((transmit_time.elapsed() + 500) / 1000);
-	      ui->TransTime_lbl->setText(secondsToElapsed(transmit_seconds)); 
-	      ui->TransInt_lbl->setText(QString("%1").arg(transmit_intervals));
-	    }
-	  }); 
-
-  connect(&one_second_timer, &QTimer::timeout, 
-	  [=]() {
-	    elapsed_seconds++; 
-	    ui->ElapsedTime_lbl->setText(secondsToElapsed(elapsed_seconds));
-	  }); 
-  
-  one_second_timer.start(1000); 
-  
-}
-

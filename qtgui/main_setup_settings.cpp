@@ -30,26 +30,26 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ui_mainwindow.h"
 #include <iostream>
 #include "soda_comboboxes.hpp"
-#include "soda_listener.hpp"
+#include "RadioListener.hpp"
 #include <QAudioDeviceInfo>
 
 void MainWindow::setupSettings()
 {
   connect(ui->CWSpeed_sli, SIGNAL(valueChanged(int)), 
-	  listener, SLOT(setCWSpeed(int)));
+	  radio_listener, SLOT(setCWSpeed(int)));
   connect(ui->CWSpeed_sli, &QSlider::valueChanged,
 	  [=](int s) {
 	    ui->CWSpeed_lbl->setText(QString("%1").arg(s, 2));
 	  }); 
   connect(ui->Sidetone_sli, SIGNAL(valueChanged(int)), 
-	  listener, SLOT(setSidetoneVolume(int)));
+	  radio_listener, SLOT(setSidetoneVolume(int)));
   connect(ui->Sidetone_sli, &QSlider::valueChanged,
 	  [=](int s) {
 	    ui->Sidetone_lbl->setText(QString("%1").arg(s, 2));
 	  }); 
 
   connect(ui->TXPower_sli, SIGNAL(valueChanged(int)), 
-	  listener, SLOT(setTXGain(int)));
+	  radio_listener, SLOT(setTXGain(int)));
   connect(ui->TXPower_sli, &QSlider::valueChanged,
 	  [=](int s) {
 	    ui->TXPower_lbl->setText(QString("%1").arg(s, 3));
@@ -59,7 +59,7 @@ void MainWindow::setupSettings()
 	  ui->FromGrid_lab, SLOT(setText(const QString &)));
 
   connect(ui->externalRefClock_ck, SIGNAL(stateChanged(int)), 
-	  listener, SLOT(setClockRef(int)));
+	  radio_listener, SLOT(setClockRef(int)));
 
   connect(ui->openLog_btn, SIGNAL(clicked()),
 	  ui->LogView, SLOT(readLogReportDlg()));
@@ -75,7 +75,7 @@ void MainWindow::setupSettings()
 	  this, SLOT(restoreConfig_dlg()));  
 
   connect(ui->Squelch_sli, SIGNAL(valueChanged(int)), 
-	  listener, SLOT(setSquelchLevel(int)));
+	  radio_listener, SLOT(setSquelchLevel(int)));
   setupAudioDeviceList(); 
 }
 

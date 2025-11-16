@@ -3508,7 +3508,7 @@
   <customwidget>
    <class>GUISoDa::FreqLabel</class>
    <extends>QLabel</extends>
-   <header>freqlabel.hpp</header>
+   <header>FreqLabel.hpp</header>
   </customwidget>
   <customwidget>
    <class>GUISoDa::LogTable</class>

@@ -36,77 +36,12 @@ namespace GUISoDa {
 
   class Band {
   public:
-    Band() {
-      band_name = ""; 
-      band_index = 0; 
-      def_rx_ant = "";
-      def_tx_ant = "";
-      min_freq = 0.0; 
-      max_freq = 0.0; 
-      def_mode = "";
-      tx_enabled = false; 
-      tverter_mode = false; 
-      lowside_injection = false; 
-      tv_LO_freq = 0.0; 
-      tv_LO_mult = 0.0;
-      last_rx_freq = 0.0;
-      last_tx_freq = 0.0;
+    Band();
 
-      sat_offset = 0.0; 
-      full_duplex = false; 
-      sat_offset_enabled = false; 
-    }
-
-    void restore(QSettings * set_p) {
-      band_name = set_p->value("Name").toString();
-      band_index = set_p->value("Index").toInt();
-
-      def_rx_ant = set_p->value("DefRXAnt").toString();
-      def_tx_ant = set_p->value("DefTXAnt").toString();
-
-      def_mode = set_p->value("DefMode").toString();    
-
-      min_freq = set_p->value("MinFreq").toDouble();
-      max_freq = set_p->value("MaxFreq").toDouble();
-
-      last_rx_freq = set_p->value("LastRXFreq").toDouble();
-      last_tx_freq = set_p->value("LastTXFreq").toDouble();
-
-      tx_enabled = set_p->value("TXEna").toBool();    
-
-      tv_LO_freq = set_p->value("TVLOFreq").toDouble();
-      tv_LO_mult = set_p->value("TVLOMult").toDouble();
-      tverter_mode = set_p->value("TVMode").toBool();
-      lowside_injection = set_p->value("TVLowInjection").toBool();    
-
-      // satellite mode. 
-      sat_offset = set_p->value("SatOffset", 0.0).toDouble();
-      full_duplex = set_p->value("FullDuplex", false).toBool();
-      sat_offset_enabled = set_p->value("SatOffsetEna", false).toBool(); 
-    }
-
-    void save(QSettings * set_p) const {
-      set_p->setValue("Name", band_name);
-      set_p->setValue("Index", band_index);
-      set_p->setValue("DefRXAnt", def_rx_ant);
-      set_p->setValue("DefTXAnt", def_tx_ant);
-      set_p->setValue("DefMode", def_mode);    
-      set_p->setValue("MinFreq", min_freq);
-      set_p->setValue("MaxFreq", max_freq);
-      set_p->setValue("LastRXFreq", last_rx_freq);
-      set_p->setValue("LastTXFreq", last_tx_freq);
-      set_p->setValue("TVLOFreq", tv_LO_freq);
-      set_p->setValue("TVLOMult", tv_LO_mult);
-      set_p->setValue("TXEna", tx_enabled);
-      set_p->setValue("TVMode", tverter_mode);
-      set_p->setValue("TVLowInjection", lowside_injection);
-
-      set_p->setValue("SatOffset", sat_offset);
-      set_p->setValue("FullDuplex", full_duplex);
-      set_p->setValue("SatOffsetEna", sat_offset_enabled); 
-
-    }
-
+    void restore(QSettings * set_p);
+    
+    void save(QSettings * set_p) const;
+    
     const QString & name() const  { return band_name; }
     int index() const  { return band_index; }
     const QString & defRXAnt() const  { return def_rx_ant; }
@@ -153,11 +88,7 @@ namespace GUISoDa {
     void setSatOffsetEna(bool v) { sat_offset_enabled = v; }
 
 
-    bool isInBand(double freq) const {
-      double tf = freq * 1e-6; 
-      bool res = (tf >= min_freq) && (tf <= max_freq); 
-      return res; 
-    }
+    bool isInBand(double freq) const;
 
   
     
@@ -182,46 +113,4 @@ namespace GUISoDa {
     bool sat_offset_enabled; 
   }; 
 
-  class BandMap : public QMap<QString, Band> {
-  public:
-    BandMap() { }
-
-    typedef QMapIterator<QString, Band> BandMapIterator; 
-    
-    void restoreBands(QSettings * set_p) {
-      int size = set_p->beginReadArray("Bands");
-      for(int i = 0; i < size; i++) {
-	Band b; 
-	set_p->setArrayIndex(i);
-	QString dname = set_p->value("Name").toString();
-	b.restore(set_p); 
-	QString bn = b.name();
-	(*this)[b.name()] = b; 
-      }
-      set_p->endArray();
-    }
-
-    void saveBands(QSettings * set_p) {
-      set_p->beginWriteArray("Bands");
-      BandMapIterator bmi(*this);    
-      int i = 0;    
-      while(bmi.hasNext()) {
-	bmi.next();
-	if(bmi.value().name() == "") continue;       
-	set_p->setArrayIndex(i);
-	bmi.value().save(set_p); 
-	i++; 
-      }
-      set_p->endArray();
-    }
-    
-    QString findBand(double freq) const {
-      BandMapIterator bmi(*this);
-      while(bmi.hasNext()) {
-	bmi.next();
-	if(bmi.value().isInBand(freq)) return bmi.value().name();
-      }
-      return ""; 
-    }
-  };
 }

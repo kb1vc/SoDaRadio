@@ -1,3 +1,4 @@
+#pragma once
 /*
 Copyright (c) 2018, 2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
@@ -25,7 +26,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#pragma once
+
 
 #include <QObject>
 #include <QIODevice>
@@ -164,66 +165,4 @@ namespace GUISoDa {
     // what is the longest delay that we'll tolerate?
     float max_slack_time; 
   };
-
-  // put the recorder in its own thread, so if something goes wrong
-  // we don't zorch the rest of the radio. 
-  class AudioRecorder : public QThread {
-    Q_OBJECT
-    
-  public:
-    AudioRecorder(int _sample_rate);
-    ~AudioRecorder() {
-      if(snd_file != NULL) {
-	sf_close(snd_file); 
-	delete rec_buffer; 
-      }
-    }
-
-  public slots:
-    void getRecDirectory(QWidget * par); 
-    
-    // write buffer to circular buffer or to file. 
-    void saveData(float * buf, qint64 len); 
-
-    // start/stop recording
-    void record(bool on); 
-    
-  protected:
-    void openSoundFile(const QString & fname); 
-    
-    QString record_directory; 
-    QString current_file; 
-    
-    SNDFILE * snd_file; 
-    int sample_rate; 
-    
-    SoDa::CircularBuffer<float> * rec_buffer; 
-  }; 
-  
-  // the event loop for audio and network ports lives in its own
-  // thread. 
-  class AudioListener : public QThread {
-  public:
-    AudioListener(QObject * parent = 0, 
-		  const QString & socket_basename = "tmp", 
-		  unsigned int _sample_rate = AudioRXListener::DEFAULT_SAMPLE_RATE);
-
-    ~AudioListener() {
-      delete rx_listener;
-      delete rx_recorder; 
-    }
-    
-    void init() {
-      rx_listener->init();
-      rx_recorder->start();
-    }
-
-    AudioRXListener * getRX() const { return rx_listener; }
-    AudioRecorder * getRec() const { return rx_recorder; }
-
-  private:
-    AudioRXListener * rx_listener; 
-    AudioRecorder * rx_recorder; 
-  }; 
-
 }

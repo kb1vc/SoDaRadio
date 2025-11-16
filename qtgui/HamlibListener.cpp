@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2017 Matthew H. Reilly (kb1vc)
+  Copyright (c) 2017,2025 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -26,60 +26,53 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef FREQLABEL_HDR
-#define FREQLABEL_HDR
-
-#include <QLabel>
-#include <QWidget>
-#include <Qt>
-#include <QMouseEvent>
-#include <iostream>
+#include "HamlibListener.hpp"
+#include "HamlibHandler.hpp"
 
 namespace GUISoDa {
 
-  class FreqLabel : public QLabel {
-    Q_OBJECT
- 
-  public:
-    explicit FreqLabel(QWidget * parent = Q_NULLPTR,
-		       Qt::WindowFlags f = Qt::WindowFlags());
-    ~FreqLabel();
+  HamlibListener::HamlibListener(qintptr desc, 
+				 HamlibHandler * _handler,
+				 QObject *parent) : QThread(parent), 
+						    handler_p(_handler), 
+						    socket_desc(desc) 
+  {
+    // not much else to do. 
+  }
 
+  void HamlibListener::run()
+  {
+    socket_p = new QTcpSocket(); 
 
-    double getFreq() const {
-      return frequency; 
+    if(!socket_p->setSocketDescriptor(socket_desc)) {
+      emit error(socket_p->error()); 
+      return; 
     }
 
-    void setFreqUpdate(double freq) {
-      setFreq(freq); 
-      emit(newFreq(frequency));
+    connect(socket_p, SIGNAL(readyRead()), this, SLOT(readyRead()), Qt::DirectConnection);
+    connect(socket_p, SIGNAL(disconnected()), this, SLOT(disconnected()));
+
+    exec();
+  }
+
+  void HamlibListener::readyRead() {
+    QByteArray array = socket_p->read(socket_p->bytesAvailable());
+
+    char * as = array.data();
+
+    int lim = array.count();
+    for(int i = 0; i < lim; i++) {
+      if(as[i] == '\n') {
+	handler_p->processCommand(current_command, socket_p);
+	current_command = QString("");
+      }
+      else {
+	current_command.append(as[i]);
+      }
     }
-  signals:
-    void newFreq(double freq);
+  }
 
-  public slots:
-    void setFreq(double freq); 
-
-  protected:
-    void mousePressEvent(QMouseEvent * event);
-
-    double updateFrequency() {
-      double dif = ((double) int_freq);
-      double dff = 1e-6 * ((double) frac_freq);
-      frequency = (dif + dff) * 1e6;
-      return frequency; 
-    }
-  
-  private:
-    double frequency;  // in hz
-    long int_freq, frac_freq; // in MHz. 
-
-    QString freq2String();
-
-    int incdec_position; 
-
-    int disp_w, disp_h; // width and height of actual string.
-  }; 
+  void HamlibListener::disconnected() {
+    socket_p->deleteLater();
+  }
 }
-
-#endif

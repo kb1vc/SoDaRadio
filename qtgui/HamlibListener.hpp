@@ -1,5 +1,7 @@
+#pragma once
+
 /*
-Copyright (c) 2017 Matthew H. Reilly (kb1vc)
+Copyright (c) 2017, 2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,12 +28,10 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef SODA_HAMLIB_LISTENER_DEF
-#define SODA_HAMLIB_LISTENER_DEF
 
 #include <QThread>
 #include <QtNetwork/QtNetwork>
-#include "soda_hamlib_handler.hpp"
+#include "HamlibHandler.hpp"
 
 namespace GUISoDa {
   
@@ -60,4 +60,4 @@ namespace GUISoDa {
     QTcpSocket * socket_p;
   };
 }
-#endif
+

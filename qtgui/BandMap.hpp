@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017 Matthew H. Reilly (kb1vc)
+Copyright (c) 2017,2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,52 +25,23 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+#pragma once
 
-#include "soda_hamlib_listener.hpp"
-#include "soda_hamlib_handler.hpp"
+#include <QString>
+#include <QObject>
+#include <QSettings>
+#include <QMap>
 
+#include "Band.hpp"
 
-GUISoDa::HamlibListener::HamlibListener(qintptr desc, 
-				       GUISoDa::HamlibHandler * _handler,
-				       QObject *parent) : QThread(parent), 
-							  handler_p(_handler), 
-							  socket_desc(desc) 
-{
-  // not much else to do. 
-}
-
-void GUISoDa::HamlibListener::run()
-{
-  socket_p = new QTcpSocket(); 
-
-  if(!socket_p->setSocketDescriptor(socket_desc)) {
-    emit error(socket_p->error()); 
-    return; 
-  }
-
-  connect(socket_p, SIGNAL(readyRead()), this, SLOT(readyRead()), Qt::DirectConnection);
-  connect(socket_p, SIGNAL(disconnected()), this, SLOT(disconnected()));
-
-  exec();
-}
-
-void GUISoDa::HamlibListener::readyRead() {
-  QByteArray array = socket_p->read(socket_p->bytesAvailable());
-
-  char * as = array.data();
-
-  int lim = array.count();
-  for(int i = 0; i < lim; i++) {
-    if(as[i] == '\n') {
-      handler_p->processCommand(current_command, socket_p);
-      current_command = QString("");
-    }
-    else {
-      current_command.append(as[i]);
-    }
-  }
-}
-
-void GUISoDa::HamlibListener::disconnected() {
-  socket_p->deleteLater();
+namespace GUISoDa {
+class BandMap : public QMap<QString, Band> {
+  public:
+  BandMap() { }
+  typedef QMapIterator<QString, Band> BandMapIterator; 
+  void restoreBands(QSettings * set_p);
+  void saveBands(QSettings * set_p);  
+  QString findBand(double freq) const;
+  
+  };
 }

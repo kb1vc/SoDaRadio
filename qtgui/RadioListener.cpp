@@ -26,16 +26,18 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "soda_listener.hpp"
+#include "RadioListener.hpp"
 #include <QDebug>
 
-GUISoDa::Listener::Listener(QObject * parent, const QString & _socket_basename) : QObject(parent) {
+namespace GUISoDa {
+
+  RadioListener::RadioListener(QObject * parent, const QString & _socket_basename) : QObject(parent) {
   quit = false;
   socket_basename = _socket_basename;
-  qInfo() << QString("Listener::Listener socket_basename = [%1]\n").arg(socket_basename);
+  qInfo() << QString("RadioListener::Listener socket_basename = [%1]\n").arg(socket_basename);
 }
 
-bool GUISoDa::Listener::init()
+bool RadioListener::init()
 {
   tx_gain_min = 0; 
   tx_gain_max = 100; 
@@ -86,14 +88,14 @@ bool GUISoDa::Listener::init()
   return true; 
 }
 
-void GUISoDa::Listener::start()
+void RadioListener::start()
 {
   put(SoDa::Command(SoDa::Command::GET, SoDa::Command::HWMB_REP));
   put(SoDa::Command(SoDa::Command::GET, SoDa::Command::TX_GAIN_RANGE));  
   return; 
 }
 
-int GUISoDa::Listener::put(const char * buf, int len)
+int RadioListener::put(const char * buf, int len)
 {
   cmd_socket->write((char*) &len, sizeof(int)); 
 
@@ -113,7 +115,7 @@ int GUISoDa::Listener::put(const char * buf, int len)
   return len; 
 }
 
-int GUISoDa::Listener::get(char * buf, int maxlen)
+int RadioListener::get(char * buf, int maxlen)
 {
   int len; 
   int stat = cmd_socket->read((char*) & len, sizeof(int));
@@ -137,13 +139,13 @@ int GUISoDa::Listener::get(char * buf, int maxlen)
   return len; 
 }
 
-bool GUISoDa::Listener::get(SoDa::Command & cmd)
+bool RadioListener::get(SoDa::Command & cmd)
 {
   int len = get((char*) &cmd, sizeof(SoDa::Command));
   return len > 0; 
 }
 
-void GUISoDa::Listener::setupSpectrumBuffer(double cfreq, double span, long buflen)
+void RadioListener::setupSpectrumBuffer(double cfreq, double span, long buflen)
 {
   (void) span;
   // the radio server doesn't know about the transverter.
@@ -161,7 +163,7 @@ void GUISoDa::Listener::setupSpectrumBuffer(double cfreq, double span, long bufl
   }
 }
 
-void GUISoDa::Listener::processSpectrum() {
+void RadioListener::processSpectrum() {
   
   unsigned int rlen = spect_buffer_len * sizeof(float);
   while(((unsigned int) spect_socket->bytesAvailable()) > (sizeof(int) + rlen)) {
@@ -181,7 +183,7 @@ void GUISoDa::Listener::processSpectrum() {
   }
 }
 
-void GUISoDa::Listener::processCmd() {
+void RadioListener::processCmd() {
   SoDa::Command incmd; 
  
   while(((unsigned int) cmd_socket->bytesAvailable()) > sizeof(SoDa::Command)) {
@@ -194,7 +196,7 @@ void GUISoDa::Listener::processCmd() {
 }
 
 
-bool GUISoDa::Listener::put(const SoDa::Command & cmd, const char * func_name)
+bool RadioListener::put(const SoDa::Command & cmd, const char * func_name)
 {
   int len = put((char*) &cmd, sizeof(SoDa::Command));
   if(len <= 0) {
@@ -203,7 +205,7 @@ bool GUISoDa::Listener::put(const SoDa::Command & cmd, const char * func_name)
   return len > 0;
 }
 
-void GUISoDa::Listener::setRXFreq(double freq) {
+void RadioListener::setRXFreq(double freq) {
   // this is where we send the LO corrected frequency (if necessary)
   // we get the LO freq and multiplier from the config band widget
   // Note that the LO is setup for "high side" injection so that
@@ -213,43 +215,43 @@ void GUISoDa::Listener::setRXFreq(double freq) {
   current_rx_freq = freq;   
 }
 
-void GUISoDa::Listener::setTXFreq(double freq) {
+void RadioListener::setTXFreq(double freq) {
   put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_RETUNE_FREQ, freq + transverter_lo_freq), __PRETTY_FUNCTION__);
 
   current_tx_freq = freq; 
 }
 
-void GUISoDa::Listener::setRXGain(int gain) {
+void RadioListener::setRXGain(int gain) {
   double dgain = gain;   
   put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_RF_GAIN, dgain), __PRETTY_FUNCTION__);
 }
 
-void GUISoDa::Listener::setTXGain(int gain) {
+void RadioListener::setTXGain(int gain) {
   // gain is relative to max -- so we subtract from max gain.  
   double dgain = ((double) gain);  
   
   put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_RF_GAIN, dgain), __PRETTY_FUNCTION__);
 }
 
-void GUISoDa::Listener::setAFGain(int gain) {
+void RadioListener::setAFGain(int gain) {
   double dgain = gain; 
   // this is a little complex...
   dgain = 50.0 * (log10(dgain) / log10(100.0));
   put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_AF_GAIN, dgain), __PRETTY_FUNCTION__);
 }
 
-void GUISoDa::Listener::setAFSidetoneGain(int gain) {
+void RadioListener::setAFSidetoneGain(int gain) {
   double dgain = gain;   
   put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_AF_SIDETONE_GAIN, dgain), __PRETTY_FUNCTION__);
 }
 
-void GUISoDa::Listener::setTransverterLO(double freq) {
+void RadioListener::setTransverterLO(double freq) {
   qInfo() << QString("setTransverterLO(%0)").arg(freq);
   transverter_lo_freq = freq; 
 }
 
 
-void GUISoDa::Listener::setModulation(int mod_id)
+void RadioListener::setModulation(int mod_id)
 {
 
   put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_MODE, mod_id), __PRETTY_FUNCTION__);
@@ -257,12 +259,12 @@ void GUISoDa::Listener::setModulation(int mod_id)
   put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_MODE, mod_id), __PRETTY_FUNCTION__);
 }
 
-void GUISoDa::Listener::setAFFilter(int id)
+void RadioListener::setAFFilter(int id)
 {
   put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_AF_FILTER, id), __PRETTY_FUNCTION__);
 }
 
-bool GUISoDa::Listener::handleREP(const SoDa::Command & cmd) 
+bool RadioListener::handleREP(const SoDa::Command & cmd) 
 {
   switch(cmd.target) {
   case SoDa::Command::MOD_SEL_ENTRY:
@@ -313,60 +315,60 @@ bool GUISoDa::Listener::handleREP(const SoDa::Command & cmd)
   return true; 
 }
 
-void GUISoDa::Listener::setRXAnt(const QString & antname)
+void RadioListener::setRXAnt(const QString & antname)
 {
   put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_ANT, antname.toStdString()), __PRETTY_FUNCTION__);
 }
 
-void GUISoDa::Listener::setTXAnt(const QString & antname)
+void RadioListener::setTXAnt(const QString & antname)
 {
   put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_ANT, antname.toStdString()), __PRETTY_FUNCTION__);
 }
 
-void GUISoDa::Listener::setSpectrumCenter(double freq) 
+void RadioListener::setSpectrumCenter(double freq) 
 {
   put(SoDa::Command(SoDa::Command::SET, SoDa::Command::SPEC_CENTER_FREQ, freq + transverter_lo_freq), __PRETTY_FUNCTION__);
 }
 
-void GUISoDa::Listener::setSpectrumUpdateRate(int rate)
+void RadioListener::setSpectrumUpdateRate(int rate)
 {
   put(SoDa::Command(SoDa::Command::SET, SoDa::Command::SPEC_UPDATE_RATE, rate), __PRETTY_FUNCTION__);
 }  
 
-void GUISoDa::Listener::setSpectrumAvgWindow(int window)
+void RadioListener::setSpectrumAvgWindow(int window)
 {
   put(SoDa::Command(SoDa::Command::SET, SoDa::Command::SPEC_AVG_WINDOW, window), __PRETTY_FUNCTION__);
 }
 
-void GUISoDa::Listener::setCWSpeed(int speed)
+void RadioListener::setCWSpeed(int speed)
 {
   put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_CW_SPEED, speed), __PRETTY_FUNCTION__);
 }
 
-void GUISoDa::Listener::setSidetoneVolume(int vol)
+void RadioListener::setSidetoneVolume(int vol)
 {
   put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_AF_SIDETONE_GAIN, ((double) vol)), __PRETTY_FUNCTION__);
 }
 
-void GUISoDa::Listener::setSquelchLevel(int lev) 
+void RadioListener::setSquelchLevel(int lev) 
 {
   put(SoDa::Command(SoDa::Command::SET, SoDa::Command::NBFM_SQUELCH, ((double) lev)), __PRETTY_FUNCTION__);
 }
 
-void GUISoDa::Listener::setClockRef(int external)
+void RadioListener::setClockRef(int external)
 {
   int clock_source = (external != Qt::Unchecked) ? 1 : 0;
   put(SoDa::Command(SoDa::Command::SET, SoDa::Command::CLOCK_SOURCE, clock_source), __PRETTY_FUNCTION__);
 }
 
-void GUISoDa::Listener::setPTT(bool on, bool full_duplex)
+void RadioListener::setPTT(bool on, bool full_duplex)
 {
   int tx_state = on ? 1 : 0;
   int duplex = full_duplex ? 1 : 0;
   put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_STATE, tx_state, full_duplex), __PRETTY_FUNCTION__);
 }
 
-void GUISoDa::Listener::recordRF(int checkbox_state)
+void RadioListener::recordRF(int checkbox_state)
 {
   if(checkbox_state == Qt::Checked) {
     QString fname = QString("%1.cf").arg(QDateTime::currentDateTime().toString("dd-MMM-yy_HHmmss"));
@@ -377,18 +379,18 @@ void GUISoDa::Listener::recordRF(int checkbox_state)
   }
 }
 
-void GUISoDa::Listener::setCarrier(bool on)
+void RadioListener::setCarrier(bool on)
 {
   int carrier_state = on ? 1 : 0;
   put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_BEACON, carrier_state), __PRETTY_FUNCTION__);
 }
 
-void GUISoDa::Listener::clearCWBuffer()
+void RadioListener::clearCWBuffer()
 {
   put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_CW_FLUSHTEXT), __PRETTY_FUNCTION__);
 }
 
-void GUISoDa::Listener::sendCW(const QString & txt)
+void RadioListener::sendCW(const QString & txt)
 {
   char cwbuf[SoDa::Command::getMaxStringLen()]; 
   int i, j; 
@@ -415,7 +417,7 @@ void GUISoDa::Listener::sendCW(const QString & txt)
   }
 }
 
-bool GUISoDa::Listener::handleSET(const SoDa::Command & cmd)
+bool RadioListener::handleSET(const SoDa::Command & cmd)
 {
   switch(cmd.target) {
   default:
@@ -425,7 +427,7 @@ bool GUISoDa::Listener::handleSET(const SoDa::Command & cmd)
   return true; 
 }
 
-bool GUISoDa::Listener::handleGET(const SoDa::Command & cmd)
+bool RadioListener::handleGET(const SoDa::Command & cmd)
 {
   switch(cmd.target) {
   default:
@@ -434,8 +436,9 @@ bool GUISoDa::Listener::handleGET(const SoDa::Command & cmd)
   return true; 
 }
 
-void GUISoDa::Listener::closeRadio()
+void RadioListener::closeRadio()
 {
   put(SoDa::Command(SoDa::Command::SET, SoDa::Command::STOP, 0), __PRETTY_FUNCTION__);
 }
 
+}

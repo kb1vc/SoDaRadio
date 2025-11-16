@@ -26,7 +26,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "soda_hamlib_handler.hpp"
+#include "HamlibHandler.hpp"
 #include <hamlib/rig.h>
 
 // All the command handling here is according to what I learned from
@@ -34,9 +34,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // and
 // http://hamlib.sourceforge.net/pdf/rigctl.1.pdf
 
-using namespace GUISoDa;
+namespace GUISoDa {
 
-GUISoDa::HamlibHandler::HamlibHandler(QObject * parent) : QObject(parent)
+HamlibHandler::HamlibHandler(QObject * parent) : QObject(parent)
 {
   // setup the tables
   initModTables(); 
@@ -53,11 +53,11 @@ GUISoDa::HamlibHandler::HamlibHandler(QObject * parent) : QObject(parent)
   split_enabled = true; 
 }
   
-GUISoDa::HamlibHandler::~HamlibHandler() {
+HamlibHandler::~HamlibHandler() {
 }
 
 
-void GUISoDa::HamlibHandler::initModTables()
+void HamlibHandler::initModTables()
 {
   // setup the mode map
   soda2hl_modmap[SoDa::Command::LSB] = QString("LSB");
@@ -76,29 +76,29 @@ void GUISoDa::HamlibHandler::initModTables()
   hl2soda_modmap[QString("CWR")]  = SoDa::Command::CW_L;
 }
 
-void GUISoDa::HamlibHandler::initCommandTables()
+void HamlibHandler::initCommandTables()
 {
   // setup all the commands
-  registerCommand("dump_state", "\\dump_state", &GUISoDa::HamlibHandler::cmdDumpState, true);
-  registerCommand("v", "get_vfo", &GUISoDa::HamlibHandler::cmdVFO, true);
-  registerCommand("V", "set_vfo", &GUISoDa::HamlibHandler::cmdVFO, false);  
-  registerCommand("f", "get_freq", &GUISoDa::HamlibHandler::cmdFreq, true);
-  registerCommand("F", "set_freq", &GUISoDa::HamlibHandler::cmdFreq, false);  
-  registerCommand("i", "get_split_freq", &GUISoDa::HamlibHandler::cmdSplitFreq, true);
-  registerCommand("I", "set_split_freq", &GUISoDa::HamlibHandler::cmdSplitFreq, false);  
-  registerCommand("x", "get_split_mode", &GUISoDa::HamlibHandler::cmdMode, true);
-  registerCommand("X", "set_split_mode", &GUISoDa::HamlibHandler::cmdMode, false);  
-  registerCommand("m", "get_mode", &GUISoDa::HamlibHandler::cmdMode, true);
-  registerCommand("M", "set_mode", &GUISoDa::HamlibHandler::cmdMode, false);  
-  registerCommand("t", "get_ptt", &GUISoDa::HamlibHandler::cmdPTT, true);
-  registerCommand("T", "set_ptt", &GUISoDa::HamlibHandler::cmdPTT, false);
-  registerCommand("s", "get_split_vfo", &GUISoDa::HamlibHandler::cmdSplitVFO, true);
-  registerCommand("S", "set_split_vfo", &GUISoDa::HamlibHandler::cmdSplitVFO, false);  
-  registerCommand("q", "exit", &GUISoDa::HamlibHandler::cmdQuit, true);
-  registerCommand("Q", "quit", &GUISoDa::HamlibHandler::cmdQuit, true);    
+  registerCommand("dump_state", "\\dump_state", &HamlibHandler::cmdDumpState, true);
+  registerCommand("v", "get_vfo", &HamlibHandler::cmdVFO, true);
+  registerCommand("V", "set_vfo", &HamlibHandler::cmdVFO, false);  
+  registerCommand("f", "get_freq", &HamlibHandler::cmdFreq, true);
+  registerCommand("F", "set_freq", &HamlibHandler::cmdFreq, false);  
+  registerCommand("i", "get_split_freq", &HamlibHandler::cmdSplitFreq, true);
+  registerCommand("I", "set_split_freq", &HamlibHandler::cmdSplitFreq, false);  
+  registerCommand("x", "get_split_mode", &HamlibHandler::cmdMode, true);
+  registerCommand("X", "set_split_mode", &HamlibHandler::cmdMode, false);  
+  registerCommand("m", "get_mode", &HamlibHandler::cmdMode, true);
+  registerCommand("M", "set_mode", &HamlibHandler::cmdMode, false);  
+  registerCommand("t", "get_ptt", &HamlibHandler::cmdPTT, true);
+  registerCommand("T", "set_ptt", &HamlibHandler::cmdPTT, false);
+  registerCommand("s", "get_split_vfo", &HamlibHandler::cmdSplitVFO, true);
+  registerCommand("S", "set_split_vfo", &HamlibHandler::cmdSplitVFO, false);  
+  registerCommand("q", "exit", &HamlibHandler::cmdQuit, true);
+  registerCommand("Q", "quit", &HamlibHandler::cmdQuit, true);    
 }
 
-void GUISoDa::HamlibHandler::registerCommand(const char * shortname, 
+void HamlibHandler::registerCommand(const char * shortname, 
 		       const char * longname,
 		       cmdHandler_t handler, 
 		       bool is_get)
@@ -116,7 +116,7 @@ void GUISoDa::HamlibHandler::registerCommand(const char * shortname,
 }
 
 
-void GUISoDa::HamlibHandler::processCommand(const QString & cmd, QTcpSocket * socket_p)
+void HamlibHandler::processCommand(const QString & cmd, QTcpSocket * socket_p)
 {
   // first chop the current command up into tokens
   // This is eventually going to break, as Qt has deprecated it
@@ -164,7 +164,7 @@ void GUISoDa::HamlibHandler::processCommand(const QString & cmd, QTcpSocket * so
   }
 }
 
-bool GUISoDa::HamlibHandler::cmdDumpState(QTextStream & out, QTextStream & in, bool getval)
+bool HamlibHandler::cmdDumpState(QTextStream & out, QTextStream & in, bool getval)
 {
   (void) in;
   (void) getval; 
@@ -234,7 +234,7 @@ bool GUISoDa::HamlibHandler::cmdDumpState(QTextStream & out, QTextStream & in, b
   return true;
 }
 
-bool GUISoDa::HamlibHandler::cmdVFO(QTextStream & out, QTextStream & in, bool getval)
+bool HamlibHandler::cmdVFO(QTextStream & out, QTextStream & in, bool getval)
 {
   if(getval) {
     out << current_VFO << "\n";
@@ -246,7 +246,7 @@ bool GUISoDa::HamlibHandler::cmdVFO(QTextStream & out, QTextStream & in, bool ge
   return true;
 }
 
-bool GUISoDa::HamlibHandler::cmdFreq(QTextStream & out, QTextStream & in, bool getval)
+bool HamlibHandler::cmdFreq(QTextStream & out, QTextStream & in, bool getval)
 {
   if(getval) {
     QString resp = QString("%1").arg(rx_freq, 15, 'f');
@@ -269,7 +269,7 @@ bool GUISoDa::HamlibHandler::cmdFreq(QTextStream & out, QTextStream & in, bool g
   return true;  
 }
 
-bool GUISoDa::HamlibHandler::cmdSplitFreq(QTextStream & out, QTextStream & in, bool getval)
+bool HamlibHandler::cmdSplitFreq(QTextStream & out, QTextStream & in, bool getval)
 {
   if(getval) {
     QString resp = QString("%1").arg(tx_freq, 15, 'f');
@@ -286,7 +286,7 @@ bool GUISoDa::HamlibHandler::cmdSplitFreq(QTextStream & out, QTextStream & in, b
 }
 
 
-bool GUISoDa::HamlibHandler::cmdMode(QTextStream & out, QTextStream & in, bool getval)
+bool HamlibHandler::cmdMode(QTextStream & out, QTextStream & in, bool getval)
 {
   if(getval) {
     out << soda2hl_modmap[modulation] << "\n" << 6000 << "\n";
@@ -320,7 +320,7 @@ bool GUISoDa::HamlibHandler::cmdMode(QTextStream & out, QTextStream & in, bool g
   return true;  
 }
 
-bool GUISoDa::HamlibHandler::cmdPTT(QTextStream & out, QTextStream & in, bool getval)
+bool HamlibHandler::cmdPTT(QTextStream & out, QTextStream & in, bool getval)
 {
   if(getval) {
     QString tx_state = tx_on ? "1" : "0";
@@ -337,7 +337,7 @@ bool GUISoDa::HamlibHandler::cmdPTT(QTextStream & out, QTextStream & in, bool ge
   return true;  
 }
 
-bool GUISoDa::HamlibHandler::cmdSplitVFO(QTextStream & out, QTextStream & in, bool getval)
+bool HamlibHandler::cmdSplitVFO(QTextStream & out, QTextStream & in, bool getval)
 {
   if(getval) {
     QString se = split_enabled ? "1" : "0"; 
@@ -355,7 +355,7 @@ bool GUISoDa::HamlibHandler::cmdSplitVFO(QTextStream & out, QTextStream & in, bo
 
 
 
-bool GUISoDa::HamlibHandler::cmdQuit(QTextStream & out, QTextStream & in, bool getval)
+bool HamlibHandler::cmdQuit(QTextStream & out, QTextStream & in, bool getval)
 {
   (void) in;
   (void) getval; 
@@ -364,21 +364,22 @@ bool GUISoDa::HamlibHandler::cmdQuit(QTextStream & out, QTextStream & in, bool g
 }
 
 
-void GUISoDa::HamlibHandler::reportRXFreq(double freq) {
+void HamlibHandler::reportRXFreq(double freq) {
   rx_freq = freq; 
 }
 
-void GUISoDa::HamlibHandler::reportTXFreq(double freq) {
+void HamlibHandler::reportTXFreq(double freq) {
   tx_freq = freq; 
 }
 
-void GUISoDa::HamlibHandler::reportModulation(int mod_id)
+void HamlibHandler::reportModulation(int mod_id)
 {
   modulation = (SoDa::Command::ModulationType) mod_id;
   
 }
 
-void GUISoDa::HamlibHandler::reportTXOn(bool _tx_on) 
+void HamlibHandler::reportTXOn(bool _tx_on) 
 {
   tx_on = _tx_on; 
+}
 }

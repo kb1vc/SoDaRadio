@@ -63,9 +63,6 @@ namespace SoDa {
     audio_buffer_size = rf_resampler->getOutputBufferSize();
     rf_buffer_size = rf_resampler->getInputBufferSize();
 
-    std::cerr << "\n\n*********\naudio_buffer_size " << audio_buffer_size << "\n******\n\n";
-    std::cerr << "\n\n*********\naudio_sample_rate " << audio_sample_rate << "\n******\n\n";
-
     // setup the audio level meter
     log_audio_buffer_size = log10((float) audio_buffer_size); 
 
@@ -343,11 +340,6 @@ namespace SoDa {
       if((dbg_count % 256) == 0) {
 	auto in_power = calcPower(dbufi->getBuf());      
 	auto out_power = calcPower(dbufo->getBuf());
-	std::cerr << SoDa::Format("BaseBandRX::demodulate in power %0 out power %1 gain %2\n")
-	  .addF(in_power, 'e')
-	  .addF(out_power, 'e')
-	  .addF(10 * std::log10(out_power / in_power), 'e')
-	  ;
       }
       dbg_count++; 
     }
