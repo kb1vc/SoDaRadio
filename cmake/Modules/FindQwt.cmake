@@ -14,6 +14,8 @@
 #  QWT_ROOT_DIR - root dir (ex. /usr/local)
 
 #=============================================================================
+# modified/updated Nov 2025 Matt Reilly for Qt6
+
 # Copyright 2010-2013, Julien Schueller
 # All rights reserved.
 # 
@@ -47,7 +49,7 @@ message("IN FindQwt.cmake  at src dir / cmake/Modules QT_INCLUDE_DIR = ${QT_INCL
 find_path ( QWT_INCLUDE_DIR
   NAMES qwt_plot.h
   HINTS ${QT_INCLUDE_DIR} /opt/local/include
-  PATH_SUFFIXES qwt qwt-qt5 qt5/qwt qt5
+  PATH_SUFFIXES qwt qwt-qt6 qt6/qwt qt6
 )
 
 set ( QWT_INCLUDE_DIRS ${QWT_INCLUDE_DIR} )
@@ -81,7 +83,7 @@ endif ()
 
 
 find_library ( QWT_LIBRARY
-  NAMES qwt-qt5 qwt
+  NAMES qwt-qt6 qwt
   HINTS ${QT_LIBRARY_DIR} /opt/local/lib /opt/local/qwt/lib/qwt.framework/Versions/Current
 )
 
