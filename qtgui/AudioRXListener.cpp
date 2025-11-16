@@ -173,10 +173,12 @@ namespace GUISoDa {
     return format; 
   }
 
+  qaudiodeviceinfo is now qaudiodevice...
   bool AudioRXListener::initAudio(const QAudioDeviceInfo & dev_info)
   {
     QAudioFormat format = createAudioFormat();
-  
+
+    
     if(!dev_info.isFormatSupported(format)) {
       qDebug() << QString("Sound system will not support [%1] floating point samples/sec").arg(sample_rate); 
     }
