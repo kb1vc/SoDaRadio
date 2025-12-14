@@ -11,7 +11,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = SoDaRadioQT
 TEMPLATE = app
 
-LIBS += -lqwt-qt6
+LIBS += -lqwt-qt5
 
 SOURCES += main.cpp\
         mainwindow.cpp \
