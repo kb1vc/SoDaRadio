@@ -27,7 +27,6 @@
 */
 
 #include "IFRecorder.hxx"
-#include "OSFilter.hxx"
 #include <fstream>
 #include <stdio.h>
 #include <fcntl.h>

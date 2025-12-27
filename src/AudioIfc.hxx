@@ -89,7 +89,7 @@ namespace SoDa {
      * recv -- get a buffer of data from the audio input
      * @param buf buffer of type described by the DataFormat selected at init
      * @param len number of elements in the buffer to send
-     * @param when_ready if true, test with sendBufferReady and return 0 if not ready
+     * @param when_ready if true, test with recvBufferReady and return 0 if not ready
      * otherwise perform the recv regardless.
      * @return number of elements transferred to the audio output
      */

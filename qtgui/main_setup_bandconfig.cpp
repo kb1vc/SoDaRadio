@@ -126,8 +126,10 @@ void MainWindow::fillBandMapEntry(const QString & band)
     ui->BCMaxFreq_le->setText(QString("%1").arg(b.maxFreq(), 14, 'f', 6));    
 
     ui->BCDefMode_cb->setCurrentText(b.defMode());
-    
-    ui->BCLOFreq_le->setText(QString("%1").arg(b.tvLOFreq(), 14, 'f', 6));
+
+    // this is tacky.  why am I correcting to MHz when I don't
+    // do that for b.minFreq, b.maxFreq ? 
+    ui->BCLOFreq_le->setText(QString("%1").arg(b.tvLOFreq()*1e-6, 14, 'f', 6));
     ui->BCLOMult_sb->setValue((int) b.tvLOMult());
 
     ui->BCEnableTX_cb->setChecked(b.txEna());

@@ -206,6 +206,7 @@ else()
   ENDIF()
 endif()
 
+set(CMAKE_AUTOUIC ON)
 
 
 ## Need hamlib for just the include files to get hamlib codes for
