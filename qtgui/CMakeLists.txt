@@ -36,6 +36,7 @@ SET(SoDaRadio_Lib_SRCS
   HamlibListener.cpp  
   AudioListener.cpp
   AudioRXListener.cpp
+  AudioTXServer.cpp
   AudioRecorder.cpp
   Band.cpp
   BandMap.cpp

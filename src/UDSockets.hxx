@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012, 2025 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -25,9 +25,7 @@
   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-
-#ifndef UDSOCKETS_HDR
-#define UDSOCKETS_HDR
+#pragma once
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -37,6 +35,7 @@
 #include <sys/un.h>
 #include <unistd.h>
 
+#include <memory>
 #include <string>
 #include <iostream>
 
@@ -129,5 +128,3 @@ namespace SoDa {
   }
 }
 
-
-#endif

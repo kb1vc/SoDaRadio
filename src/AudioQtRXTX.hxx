@@ -80,7 +80,7 @@ namespace SoDa {
   public:
     static AudioQtRXTXPtr make(unsigned int _sample_rate,
 			       unsigned int _sample_count_hint = 1024,
-			       std::string audio_sock_basename = std::string("soda_"));
+			       std::string audio_sock_basename = std::string("soda_")) {
       auto ret = std::shared_ptr<AudioQtRXTX>(new AudioQtRXTX(_sample_rate,
 							      _sample_count_hint,
 							      audio_sock_basename));
