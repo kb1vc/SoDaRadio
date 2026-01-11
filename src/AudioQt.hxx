@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-  Copyright (c) 2012, 2025 Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012, 2025, 2026 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,7 @@
 */
 
 #include "SoDaBase.hxx"
+#include "SoDaThread.hxx"
 #include "AudioIfc.hxx"
 #include "UDSockets.hxx"
 #include <string>
@@ -39,8 +40,10 @@
 #include <tuple>
 
 namespace SoDa {
+
   class AudioQt;
   typedef std::shared_ptr<AudioQt> AudioQtPtr;
+  typedef std::shared_ptr<std::vector<float>> FloatVecPtr;
   
   /**
    * @class AudioQt
@@ -48,32 +51,27 @@ namespace SoDa {
    * @brief Qt audio interface class
    *
    * AudioQt implements the interface specified by AudioIfc.  It should
-   * be interchangable with other audio interface handlers.  When BasebandRX
-   * posts data to the audio interface, it is transmitted via a unix domain
-   * socket to the GUI where the audio output device is managed. 
+   * be interchangable with other audio interface handlers.
    *
-   * For now, the transmit side is via ALSA.  That will change in time. 
+   * When BasebandRX posts data to the audio interface, it is
+   * transmitted via a unix domain socket to the GUI where the audio
+   * output device is managed. In the standard SoDaRadio configuration,
+   * this is turned into a QtAudio output stream.
    *
-   * The first several generations of SoDa used a Port Audio interface, but
-   * the PA library tends to spew a lot of extraneous "informational" messages
-   * on the console.  Though it is quite simple, the noise that PA creates makes
-   * it not my (kb1vc) interface of choice.
+   * BasebandTX watches for incoming data on its audio input mailbox. This
+   * arrives from the GUI (a QtAudio stream) via a unix domain socket.
    *
-   * ALSA on the other hand is documented poorly, organized oddly, and
-   * nearly inscrutable. But it is fast, and doesn't make a lot of noise on the
-   * console. 
-   *
-   * On the other hand, ALSA doesn't support asynchronous callbacks on the
-   * audio output channel.  Because of this it really really stinks 
-   * when it comes to dealing with real-time problems.  Yes there is a documented
-   * "register a callback" function, but here's a surprise: it isn't supported 
-   * in certain cases that are common for Fedora, Ubuntu, and others.  
-   *
-   * Qt, on the other hand, is well documented, nicely written, and 
-   * works pretty much all the time.  
+   * The AudioQt object runs as a thread, solely to listen in on the
+   * incoming (transmit) audio socket. As samples arrive, they are
+   * appended to a dequeue of buffers to be passed back to the
+   * BasebandTX object when it needs data. The listener thread
+   * also subscribes to the cmd mailbox ring: it throws away
+   * incoming and buffered samples while the radio is in TX
+   * mode. This allows the process sourcing the audio stream to
+   * be ignorant of the current state of the transceiver. 
    * 
    */
-  class AudioQt : public AudioIfc, public Debug {
+  class AudioQt : public AudioIfc, public Thread {
   protected:
     /**
      * constructor
@@ -83,23 +81,19 @@ namespace SoDa {
      * @param audio_sock_basename starting string for the unix-domain sockets
      *                            that carry the RX audio stream from the SoDaServer (radio) process
      *                            and the TX audio stream from the Qt GUI.
-     * @param audio_port_name we're not going to care about this pretty soon. 
      */
     AudioQt(unsigned int _sample_rate,
 	    unsigned int _sample_count_hint = 1024,
-	    std::string audio_sock_basename = std::string("soda_"),
-	    std::string audio_port_name = std::string("default"));
+	    std::string audio_sock_basename = std::string("soda_"));
 
   public:
     static AudioQtPtr make(unsigned int _sample_rate,
-			     unsigned int _sample_count_hint = 1024,
-			     std::string audio_sock_basename = std::string("soda_"),
-			     std::string audio_port_name = std::string("default")) {
+			   unsigned int _sample_count_hint = 1024,
+			   std::string audio_sock_basename = std::string("soda_")) {
       auto ret = std::shared_ptr<AudioQt>(new AudioQt(_sample_rate,
-							  _sample_count_hint,
-							  audio_sock_basename,
-							  audio_port_name));
-      ret->registerSelf(ret);
+						      _sample_count_hint,
+						      audio_sock_basename));
+      ret->registerThread(ret);
       return ret; 
     }
     
@@ -125,16 +119,14 @@ namespace SoDa {
     bool sendBufferReady(unsigned int len);
 
     /**
-     * recv -- get a buffer of data from the audio input -- Always returns a buffer
-     * of 0.0.  AudioQtTX over-rides this method. 
+     * recv -- get a buffer of data from the audio input
      * 
-     * @param buf buffer of type described by the DataFormat selected at init
-     * @param len number of elements in the buffer to get
+     * @param buf float vector of samples coming from the audio input device
      * @param when_ready if true, test with recvBufferReady and return 0 if not ready
      * otherwise perform the recv regardless.
      * @return number of elements transferred from the audio input
      */
-    virtual int recv(void * buf, unsigned int len, bool when_ready = false);
+    virtual int recv(std::vector<float> & buf, bool when_ready = false);
 
     /**
      * recvBufferReady -- are there samples waiting in the audio device?
@@ -165,7 +157,7 @@ namespace SoDa {
     /**
      * start the input stream
      */
-    virtual void wakeIn() { }
+    virtual void wakeIn();
 
     std::string currentPlaybackState() {
       return std::string("Fabulous");
@@ -174,22 +166,58 @@ namespace SoDa {
     virtual std::string currentCaptureState() {
       return std::string("NOT IMPLEMENTED");
     }
+    /**
+     * @brief the run method -- maintains incoming audio sample buffers
+     */
+    void run();
+
+    void subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes);
     
   protected:
     /**
      * setup the network sockets for the audio link to the user interface.
      */
     void setupNetwork(std::string audio_sock_basename) ;
+
+    /**
+     * @brief create buffers to hold incoming samples. Put them in the free pool
+     */ 
+    void setupBuffers(unsigned int bsize);
+
+    /**
+     * @brief create a new buffer to be added to the free pool
+     *
+     * @param bsize number of samples in the buffer
+     * @return a pointer to a float vector. 
+     */
+    FloatVecPtr makeBuffer(unsigned int bsize);
+    
+    /**
+     * @brief gets a buffer from the free pool
+     */
+    FloatVecPtr getFreeBuffer();
     
   private:
+    std::shared_ptr<SoDa::UD::ServerSocket> audio_rx_socket;
+    std::shared_ptr<SoDa::UD::ServerSocket> audio_tx_socket;
 
-  private:
-    std::shared_ptr<SoDa::UD::ServerSocket> audio_rx_socket; 
+    // the TX process monitors the command bus for TX on/off. 
+    CmdMBoxPtr cmd_stream; ///< command stream from UI and other units
+    CmdMBox::Subscription cmd_subs; ///< subscription ID for command stream
+
+    bool ignore_tx_data;
+    
+    // the transmit audio buffer ring
+    const int initial_pool_size = 42; 
+    std::queue<FloatVecPtr> incoming_audio_bufs;
+    std::queue<FloatVecPtr> free_audio_bufs;
+    // the mutex for managing it
+    std::mutex tx_data_mutex; 
 
     // debug assistance
     float ang; 
-    float ang_incr; 
-  };
+    float ang_incr;
 
+  };
 }
 

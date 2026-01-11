@@ -84,16 +84,6 @@
  * special user-defined functions. IFServer presents a simple example of a plugin that subscribes 
  * to the command and the RX IF stream. 
  *
- * Audio is handled in two ways in the SoDa::AudioQt class.
- * 
- * @li Transmit audio is read from an ALSA device by the SoDaServer process
- * via the SoDa::AudioQt::recv method.  With time, this function will migrate
- * to a socket connection the Qt GUI.
- * @li Receive audio is written by the SoDa::AudioQt send method
- *  to a socket that, in the normal configuration, 
- * is connected to the Qt based GUI.  This allows for better flow control and
- * also simplifies interfacing the audio stream to external modems like "fldigi"
- * and WSJT-X. 
  *
  * The SoDa receiver architecture is a 3 stage heterodyne design.  
  * The first two IF conversions are performed within the USRP SDR platform.
@@ -118,7 +108,17 @@
  *    is comparatively low. 
  *
  * @image html SoDa_Radio_TX_Signal_Path.svg
+ * Audio is handled in two ways in the SoDa::AudioQt class.
+ * 
+ * @li Transmit audio is captured by the gui process (via Qt Audio) and sent via
+ * a socket to the SoDaServer process. 
+ * @li Receive audio is written by the SoDa::AudioQt send method
+ *  to a socket that, in the normal configuration, 
+ * is connected to the Qt based GUI.  This allows for better flow control and
+ * also simplifies interfacing the audio stream to external modems like "fldigi"
+ * and WSJT-X. 
  */
+
 // #include <uhd/usrp/multi_usrp.hpp>
 #include <unistd.h>
 #include <stdio.h>
@@ -131,6 +131,7 @@
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
 #include "SoDaThreadRegistry.hxx"
+
 
 #include <SoDa/MailBox.hxx>
 
@@ -155,14 +156,7 @@
 #include "Command.hxx"
 #include "Debug.hxx"
 
-#ifdef HAVE_ASOUND
-#  include "AudioQtRXTX.hxx"
-   using AudioQt = SoDa::AudioQtRXTX;
-#else
-#  include "AudioQtRX.hxx"
-   using AudioQt = SoDa::AudioQtRX;  
-#endif
-
+#include "AudioQt.hxx"
 
 
 void createLockFile(const std::string & lock_file_name)
@@ -265,10 +259,10 @@ int doWork(SoDa::ParamsPtr params)
   /// These are subclasses of the more generic SoDa::AudioIfc class
   //
   
-  auto audio_ifc = AudioQt::make(params->getAudioSampleRate(),
-				 params->getAFBufferSize(),
-				 params->getServerSocketBasename(),
-				 params->getAudioPortName());
+  auto audio_ifc = SoDa::AudioQt::make(params->getAudioSampleRate(),
+				       params->getAFBufferSize(),
+				       params->getServerSocketBasename());
+  
   /// Create the audio RX and audio TX unit threads
   /// These are also responsible for implementing IF tuning and modulation. 
   /// @see SoDa::BaseBandRX @see SoDa::BaseBandTX

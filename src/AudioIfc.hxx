@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-  Copyright (c) 2012,2025 Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2025, 2026 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -48,7 +48,7 @@ namespace SoDa {
    * unix domain socket interface to the Qt GUI, and TX audio is
    * captured from an AudioALSA object. 
    */
-  class AudioIfc : public SoDa::Base {
+  class AudioIfc {
   protected:
     /*
      * constructor
@@ -58,7 +58,7 @@ namespace SoDa {
      */
     AudioIfc(unsigned int _sample_rate,
 	     unsigned int _sample_count_hint,
-	     const std::string & name = "AudioIfc") : SoDa::Base(name) {
+	     const std::string & name = "AudioIfc") {
       sample_rate = _sample_rate;
       sample_count_hint = _sample_count_hint;
       datatype_size = sizeof(float);
@@ -87,13 +87,12 @@ namespace SoDa {
 
     /**
      * recv -- get a buffer of data from the audio input
-     * @param buf buffer of type described by the DataFormat selected at init
-     * @param len number of elements in the buffer to send
+     * @param buf vector of float samples from the audio input device
      * @param when_ready if true, test with recvBufferReady and return 0 if not ready
      * otherwise perform the recv regardless.
      * @return number of elements transferred to the audio output
      */
-    virtual int recv(void * buf, unsigned int len, bool when_ready = false) = 0;
+    virtual int recv(std::vector<float> & buf, bool when_ready = false) = 0;
 
     /**
      * recvBufferReady -- is there enough space in the audio device

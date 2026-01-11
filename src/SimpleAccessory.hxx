@@ -28,6 +28,7 @@
 
 #pragma once
 
+#include "Command.hxx"
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
 

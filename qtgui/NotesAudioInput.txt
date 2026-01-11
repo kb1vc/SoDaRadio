@@ -1,0 +1,95 @@
+
+in the example
+
+================
+AudioInfo is a QIODevice that
+implements start/stop/read/write
+it owns a format definition
+it signals "update"
+
+Its constructor
+ takes a sample QAudioFormat format and 
+remembers it.
+
+its start method opens the qio device as write only
+its stop device calls close on its QIODevice self.
+
+then there is read data and write data.
+read data returns 0
+writedata accepts the buffer, and eats the samples.
+   after the buffer has been consumed, write emits "update"
+   and returns the number of bytes taken from the input buffer
+
+
+================
+
+InputTest
+
+when the device is changed,
+  it stops the current AudioInfo object
+  it stops the current AudioInput object (what is that?)
+  It disconnects the audioInput object from the InputTest object
+  it calls its own initializeAudio call with the device info for the new device
+
+initializeAUdio QAudioDeviceInfo dev_info
+   creates a format
+    tests to see if it is supported by dev_info
+
+creates a new AudioInfo object with the new format
+
+connects a call to set-level to the update signal from AudioInfo
+
+creates  a new AudioInput device (new QAudioInput(dev_info, format)
+
+starts the audioInfo device (the QIODevice)
+
+stops the audioInput device
+starts the audioInput device with a pointer to audioInfor.data
+
+
+when changing device
+
+stop audioInfo
+stop audioInput
+disconnect audio input from the input test device
+
+call initializeAudio with newly selected QAudioDeviceInfo object
+
+============
+
+=========================
+
+So here's what we do.
+
+AudioTXInput is a QIODevice that has all the methods of the AudioInfo object in
+the example. 
+
+whenever the example created a new AudioInfo object we don't do anything -- we've
+not changed the format and that's all the AudioInfo constructor does.
+
+When a new device is chosen we stop ourselves. we stop our current audio input device
+we disconnect from our audio input device
+
+and we call initializeAudio that mimics the example's initializeAudio
+
+----
+
+
+AudioTXServer owns a socket.
+  on creation it creates the audio_tx_socket by waiting for the Radio to create it.
+  it connects the readyRead signal from the socket to the processReturn slot
+  in the AudioTXServer thingie -- processReturn does nothing. 
+
+on IODevice::write: 
+
+   It eats the data and puts it in an outbount message on audio_tx_socket
+   and then returns. Use the "put" object in RadioListener as a pattern. 
+
+not much else to do.
+
+================================================================
+
+AudioTXServer must be created by some QThread. Perhaps the main thread? Someone
+who sleeps all the time. 
+
+

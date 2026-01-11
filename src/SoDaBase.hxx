@@ -150,7 +150,7 @@ namespace SoDa {
 
     std::complex<float> & operator[](size_t index);
   }; 
-  
+
   /**
    * Mailboxes that carry commands only are of type CmdMBox
    */

@@ -35,6 +35,7 @@
 
 namespace SoDa
 {
+
   class Command;
   typedef std::shared_ptr<Command> CommandPtr;
   

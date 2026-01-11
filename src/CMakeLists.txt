@@ -32,15 +32,7 @@ set(SoDaServer_SRCS
 
 find_package(FFTW3f REQUIRED QUIET)
 
-set(SoDaServer_SRCS ${SoDaServer_SRCS} AudioQtRX.cxx)
-IF(ALSA_FOUND)
-  add_definitions(-DHAVE_LIBASOUND=1)
-  set(SoDaServer_SRCS ${SoDaServer_SRCS} AudioQtRXTX.cxx)
-  message("ALSA enabled -- TX is enabled in this configuration.")
-ELSE()
-  message("ALSA is disabled/not available -- TX is disabled in this configuration.")  
-ENDIF()
-
+set(SoDaServer_SRCS ${SoDaServer_SRCS} AudioQt.cxx)
 
 IF(HAVE_GPSLIB)
   ADD_DEFINITIONS(-DHAVE_GPSLIB=1)

@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012, 2025 Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012, 2025, 2026 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   FM modulator features based on code contributed by and 
@@ -53,9 +53,9 @@ namespace SoDa {
   {
     debug_mode = false;
     debug_ctr = 0;
-    tx_stream = NULL;
+    tx_stream =nullptr;
 
-    cmd_stream = NULL;
+    cmd_stream =nullptr;
 
     audio_sample_rate = params->getAudioSampleRate();
     auto rf_sample_rate = params->getRXRate();
@@ -114,7 +114,7 @@ namespace SoDa {
     CommandPtr cmd; 
     std::vector<float> audio_buf(audio_buffer_size);
 
-    if((cmd_stream == NULL) || (tx_stream == NULL)) {
+    if((cmd_stream ==nullptr) || (tx_stream ==nullptr)) {
       throw Radio::Exception(std::string("Missing a stream connection.\n"),
 			     getSelfPtr());	
     }
@@ -147,14 +147,14 @@ namespace SoDa {
       }
       else if (!tx_stream_on || cw_tx_mode) {
 	// read audio information and throw it away. 
-	audio_ifc->recv(audio_buf.data(), audio_buf.size(), true);
+	audio_ifc->recv(audio_buf, true);
 	usleep(1000); 
       }
       else {
 	// If we're in TX mode that isn't CW....
 	// get an input audio buffer.
-	if (tx_stream_on && audio_ifc->recv(audio_buf.data(), audio_buf.size(), true)) { 
-	  CBufPtr txbuf = NULL; 
+	if (tx_stream_on && audio_ifc->recv(audio_buf, true)) { 
+	  CBufPtr txbuf =nullptr; 
 	  std::vector<float> * audio_tx_buffer = & audio_buf; 
 
 	  if(tx_noise_source_ena) {
@@ -189,7 +189,7 @@ namespace SoDa {
 	  else if(tx_mode == Command::WBFM) {
 	    txbuf = modulateFM(*audio_tx_buffer, wbfm_deviation);
 	  }
-	  if(txbuf != NULL) {
+	  if(txbuf !=nullptr) {
 	    tx_stream->put(txbuf); 
 	  }
 	}      
@@ -301,9 +301,7 @@ namespace SoDa {
 	if(tx_stream_on) {
 	  // Put the audio interface to sleep
 	  // and flush the input buffer	
-	  // Actually, never put the audio interface to sleep. 
-	  // always read from the input buffer. 
-	  // audio_ifc->sleepIn(); 
+	  audio_ifc->sleepIn(); 
 	  tx_stream_on = false; 
 	}
       }

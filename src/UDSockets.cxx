@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012, 2025 Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012, 2025, 2026 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -126,12 +126,12 @@ namespace SoDa {
     std::cerr << "Created client socket [" << mailbox_pathname << "]\n";  
   }
 
-  bool UD::ServerSocket::isReady()
+  bool UD::ServerSocket::isReady(size_t required_len)
   {
     if(ready) {
       // is the socket still open? 
       char buf[32];
-      if(recv(conn_socket, buf, 32, MSG_PEEK | MSG_DONTWAIT) == 0) {
+      if(recv(conn_socket, buf, required_len, MSG_PEEK | MSG_DONTWAIT) == 0) {
 	// connection has been closed. -- though this never seems to trigger
 	close(conn_socket);
 	ready = false;
@@ -153,8 +153,8 @@ namespace SoDa {
 	conn_socket = ns;
 	int x = fcntl(conn_socket, F_GETFL, 0);
 	int stat = fcntl(conn_socket, F_SETFL, x | O_NONBLOCK);
-      
-	ready = true; 
+	char buf[32];
+	ready = (recv(conn_socket, buf, required_len, MSG_PEEK | MSG_DONTWAIT) != 0);
       }
     }
     return ready; 

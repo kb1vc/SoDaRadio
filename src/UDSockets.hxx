@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012, 2025 Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012, 2025, 2026 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -82,7 +82,7 @@ namespace SoDa {
 	return std::shared_ptr<ServerSocket>(new ServerSocket(path)); 
       }
 
-      bool isReady();
+      bool isReady(size_t required_len = 32);
 
       int get(void *ptr, unsigned int size, bool len_prefix = true) {
 	int rv = NetSocket::get(ptr, size, len_prefix);

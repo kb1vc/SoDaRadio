@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012, 2025 Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012, 2025, 2026 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,8 @@
 
 #include "Debug.hxx"
 #include "AudioQt.hxx"
+#include "SoDaBase.hxx"
+#include "SoDaThread.hxx"
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -36,14 +38,32 @@
 namespace SoDa {
   AudioQt::AudioQt(unsigned int _sample_rate,
 		   unsigned int _sample_count_hint, 
-		   std::string audio_sock_basename, 
-		   std::string audio_port_name) :
-    AudioIfc(_sample_rate, _sample_count_hint, "AudioQt Qt Interface") {
+		   std::string audio_sock_basename) :
+    AudioIfc(_sample_rate, _sample_count_hint, "AudioQt Qt Interface"),
+    Thread("AudioQt")
+  {
 
     setupNetwork(audio_sock_basename); 
 
+    setupBuffers(_sample_count_hint);
+    
     ang = 0.0; 
     ang_incr = 2.0 * M_PI / 48.0; 
+
+    cmd_stream = nullptr;
+
+    ignore_tx_data = true; 
+  }
+
+  FloatVecPtr AudioQt::makeBuffer(unsigned int bsize) {
+      return std::shared_ptr<std::vector<float>>(new std::vector<float>(bsize));    
+  }
+
+  void AudioQt::setupBuffers(unsigned int bsize) {
+    for(int i = 0; i < initial_pool_size; i++) {
+      auto nbufp = makeBuffer(bsize);
+      free_audio_bufs.push(nbufp);
+    }
   }
 
   void AudioQt::setupNetwork(std::string audio_sock_basename) 
@@ -57,38 +77,114 @@ namespace SoDa {
   }
 
   void AudioQt::sleepIn() {
-    // call recv until we get an empty buffer
-    const int buf_size = 1024;
-    char junk_buffer[buf_size];
-    while(recv(junk_buffer, buf_size) != 0) {
-      // do nothing.  we're just going to throw away the bits.
+    std::lock_guard<std::mutex> tx_data_lock(tx_data_mutex);
+    ignore_tx_data = true; 
+    while(incoming_audio_bufs.size() != 0) {
+      free_audio_bufs.push(incoming_audio_bufs.front());
+      incoming_audio_bufs.pop();
     }
   }
-  
+
+  void AudioQt::wakeIn() {
+    std::lock_guard<std::mutex> tx_data_lock(tx_data_mutex);
+    ignore_tx_data = false; 
+  }
   bool AudioQt::sendBufferReady(unsigned int len)  {
     return true; 
   }
 
-  int AudioQt::recvBufferReady(unsigned int len) {
-    return true; 
+  bool AudioQt::recvBufferReady(unsigned int len) {
+    std::lock_guard<std::mutex> tx_data_lock(tx_data_mutex);    
+    return incoming_audio_bufs.size() != 0;
   }
 
-  int AudioQt::recv(void * buf, unsigned int len, bool when_ready) {
-    // read a buffer from the tx_socket.
-    auto got_bytes = tx_socket->get(buf, len);
-    if(got_bytes < 0) {
-      if((errno != EWOULDBLOCK) && (errno != EAGAIN)) {
-	// we've got a problem.  Wonder what it is? 
-      }
-      got_bytes = 0; 
-    }
-    std::ignore = when_ready;
-    return got_bytes; 
+  int AudioQt::recv(std::vector<float> & buf, bool when_ready) {
+    std::lock_guard<std::mutex> tx_data_lock(tx_data_mutex);
+    // we only return one size of buffer
+    if(incoming_audio_bufs.size() == 0) return 0;
+    
+    // read a buffer from the incoming queue
+    auto abufp = incoming_audio_bufs.front();
+    incoming_audio_bufs.pop();
+    // copy the buffer. sigh. 
+    buf = *abufp;
+    // put the old buffer on the free list
+    free_audio_bufs.push(abufp);
+    
+    return buf.size();
   }
 
   int AudioQt::send(void * buf, unsigned int len, bool when_ready) {
     int ret;
     ret = audio_rx_socket->put(buf, len, false);
+    return ret; 
+  }
+
+  void AudioQt::subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes)
+  {
+    for(auto mbox_p : mailboxes) {
+      MailBoxBase::connect<MailBox<CommandPtr>>(mbox_p,
+						"CMDstream",
+						cmd_stream); 
+    }
+  }
+
+  void AudioQt::run()
+  {
+    bool exit_flag = false;
+    CommandPtr cmd; 
+    FloatVecPtr cur_buf_ptr = nullptr;
+    if(cmd_stream == nullptr) {
+      throw SoDa::Radio::Exception(std::string("Missing a stream connection.\n"),
+			     getSelfPtr());	
+    }
+    
+    // now poll various places
+    unsigned int samples_left = 0;
+    unsigned int samples_so_far = 0;
+    
+    while(!exit_flag) {
+      if(cmd_stream->get(cmd_subs, cmd)) {
+	exit_flag |= (cmd->target == Command::STOP);
+      }
+      else {
+	// we don't want to block on an empty input
+	// from the audio source, so we test
+	if(audio_tx_socket->isReady()) {
+	  if(cur_buf_ptr == nullptr) {
+	    cur_buf_ptr = getFreeBuffer();
+	    cur_buf_ptr->resize(sample_count_hint);
+	    samples_left = sample_count_hint;
+	    samples_so_far = 0; 
+	  }
+	  // now get a buffer full.
+	  // this is ugly, but it is how we deal with avoiding a copy.
+	  auto bstart = (cur_buf_ptr->data() + samples_so_far);
+	  int stat = audio_tx_socket->get(bstart, samples_left, false);
+	  if(stat > 0) {
+	    samples_so_far += stat;
+	    samples_left -= stat;
+	    if(samples_left == 0) {
+	      std::lock_guard<std::mutex> tx_data_lock(tx_data_mutex);	      
+	      incoming_audio_bufs.push(cur_buf_ptr);
+	      cur_buf_ptr = nullptr; 
+	    }
+	  }
+	}
+      }
+    }  
+  }
+  
+  FloatVecPtr AudioQt::getFreeBuffer() {
+    std::lock_guard<std::mutex> tx_data_lock(tx_data_mutex);
+    if(free_audio_bufs.size() == 0) {
+      for(int i = 0; i < 10; i++) {
+	free_audio_bufs.push(makeBuffer(sample_count_hint));
+      }
+    }
+
+    auto ret = free_audio_bufs.front();
+    free_audio_bufs.pop();
     return ret; 
   }
 }
