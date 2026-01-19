@@ -178,6 +178,14 @@ namespace SoDa {
       std::this_thread::sleep_for(std::chrono::microseconds(microseconds));
     }
 
+    /**
+     * @brief Get the process/thread ID for this thread -- helps with
+     * figuring out who caused a segfault
+     *
+     * @return the process ID reported by sysgettid;
+     */ 
+    uint32_t getID();
+    
   protected:
     /**
      * A pointer to ourself

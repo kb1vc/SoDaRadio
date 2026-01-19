@@ -16,6 +16,7 @@ extern "C" {
 #include <signal.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <pthread.h>
 }
 
 
@@ -47,10 +48,19 @@ void SoDa::Thread::execCommand(CommandPtr cmd)
   }
 }
 
-
+uint32_t SoDa::Thread::getID() {
+  pthread_t tid = pthread_self();
+  //  pid_t pid = syscall(SYS_gettid);
+  return tid; 
+}
 void  SoDa::Thread::outerRun() {
+  
   hookSigSeg();
-  debugMsg(getObjName() + " starting.\n");
+  debugMsg(SoDa::Format("%0::outerRun pid %1 starting\n")
+	   .addS(getObjName())
+	   .addU(getID())
+	   .str());
+
   try {
     run(); 
   }
@@ -71,11 +81,14 @@ void  SoDa::Thread::outerRun() {
 
 void  SoDa::Thread::sigsegHandler(int sig)
 {
+  pthread_t tid = pthread_self();
+  
   std::cerr << "\n-----------"
 	    << "\n-----------"
 	    << "\n-----------"
 	    << "\n-----------"
-	    << " A SoDaThread caught a sig segv"
+	    << " A SoDaThread caught a sig segv "
+	    << tid 
 	    << "\n-----------"
 	    << "\n-----------"
 	    << "\n-----------"

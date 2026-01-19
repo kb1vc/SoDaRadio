@@ -127,6 +127,13 @@ namespace SoDa {
 						"CMDstream",
 						cmd_stream); 
     }
+
+    if(cmd_stream == nullptr) {
+      throw MissingMailBox("CMD", getSelfPtr());    
+    }
+    else {
+      cmd_subs = cmd_stream->subscribe();
+    }
   }
 
   void AudioQt::run()

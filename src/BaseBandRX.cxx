@@ -255,7 +255,7 @@ namespace SoDa {
     // then send it to the audio port.
     pendAudioBuffer(abuf);
   }
-
+  
   void BaseBandRX::demodulateSSB(CBufPtr dbuf, Command::ModulationType mod)
   {
     auto abuf = FBuf::make(dbuf->size());
@@ -266,7 +266,7 @@ namespace SoDa {
     // the phasing approach isn't all that great...
     // The right thing to do is to take the conj of the dmod buffer if we're LSB
     // then take the real part. 
-  
+
     // shift the Q channel by pi/2
     // note that this hilbert filter transforms the Q channel and delays the I channel
     hilbert->applyIQ(demod_buffer, demod_buffer); 
@@ -278,6 +278,10 @@ namespace SoDa {
     for(i = 0; i < demod_buffer.size(); i++) {
       audio_buffer[i] = (float) (demod_buffer[i].real() + sbmul * demod_buffer[i].imag()); 
     }
+
+    // apply the audio filter *after* demodulation. 
+    cur_audio_filter->apply(audio_buffer, audio_buffer, *cur_af_gain);
+
     // then send it to the audio port.
     pendAudioBuffer(abuf);
   }
@@ -334,14 +338,6 @@ namespace SoDa {
       if(rx_modulation == Command::AM) {
 	am_pre_filter->apply(dbufi->getBuf(), dbufo->getBuf(), *cur_af_gain);
       }
-      else {
-	cur_audio_filter->apply(dbufi->getBuf(), dbufo->getBuf(), *cur_af_gain);
-      }
-      if((dbg_count % 256) == 0) {
-	auto in_power = calcPower(dbufi->getBuf());      
-	auto out_power = calcPower(dbufo->getBuf());
-      }
-      dbg_count++; 
     }
     else if(rx_modulation == Command::NBFM) {
       // first, bandpass the RF down to about 25 kHz wide...
@@ -353,11 +349,11 @@ namespace SoDa {
     switch(rx_modulation) {
     case Command::LSB:
     case Command::CW_L:
-      demodulateSSB(dbufo, Command::LSB); 
+      demodulateSSB(dbufi, Command::LSB); 
       break; 
     case Command::USB:
     case Command::CW_U:
-      demodulateSSB(dbufo, Command::USB); 
+      demodulateSSB(dbufi, Command::USB); 
       break;
     case Command::NBFM:
       demodulateNBFM(dbufo, Command::NBFM, *cur_af_gain);

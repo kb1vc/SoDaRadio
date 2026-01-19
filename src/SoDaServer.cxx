@@ -262,29 +262,53 @@ int doWork(SoDa::ParamsPtr params)
   auto audio_ifc = SoDa::AudioQt::make(params->getAudioSampleRate(),
 				       params->getAFBufferSize(),
 				       params->getServerSocketBasename());
-  
+  std::cerr << SoDa::Format("%0 pid %1\n")
+    .addS(audio_ifc->getObjName())
+    .addU(audio_ifc->getID())
+    ;
   /// Create the audio RX and audio TX unit threads
   /// These are also responsible for implementing IF tuning and modulation. 
   /// @see SoDa::BaseBandRX @see SoDa::BaseBandTX
   std::cerr << "About to create baseband rx\n";
   auto bbrx = SoDa::BaseBandRX::make(params, audio_ifc);
+  std::cerr << SoDa::Format("%0 pid %1\n")
+    .addS(bbrx->getObjName())
+    .addU(bbrx->getID())
+    ;
 
   std::cerr << "About to create baseband tx\n";  
   auto bbtx = SoDa::BaseBandTX::make(params, audio_ifc);
+  std::cerr << SoDa::Format("%0 pid %1\n")
+    .addS(bbtx->getObjName())
+    .addU(bbtx->getID())
+    ;
 
   /// Create the morse code (CW) tx handler thread @see SoDa::CWTX
   std::cerr << "About to create cwtx\n";  
   auto cwtx = SoDa::CWTX::make(params);
+  std::cerr << SoDa::Format("%0 pid %1\n")
+    .addS(cwtx->getObjName())
+    .addU(cwtx->getID())
+    ;
     
   /// Create the user interface (UI) thread @see SoDa::UI
   std::cerr << "About to create UI listener\n";    
   auto ui = SoDa::UI::make(params);
+  std::cerr << SoDa::Format("%0 pid %1\n")
+    .addS(ui->getObjName())
+    .addU(ui->getID())
+    ;
 
   /// Create an IF listener process that copies the IF stream to an output file
   /// when requested.
   std::cerr << "About to create if recorder\n";
   auto ifrec = SoDa::IFRecorder::make(params);
+  std::cerr << SoDa::Format("%0 pid %1\n")
+    .addS(ifrec->getObjName())
+    .addU(ifrec->getID())
+    ;
 
+  
 #if HAVE_GPSLIB    
   auto gps = SoDa::GPSmon::make(params);
 #endif
