@@ -32,8 +32,12 @@ ENDIF()
 PROJECT(SoDaRadio)
 # Huge bump in version -- replacing crufty stuff with new SoDaLibs
 # implementations of filters, resamplers, mailboxes, ....
-SET(SoDaRadio_VERSION_MAJOR 9)
-SET(SoDaRadio_VERSION_MINOR 0)
+# version 10 moves TX audio from portaudio/whatever to Qt audio stream
+# 10.1.0 Fixed NBMF demod and a mistake in LSB demod. (LSB filter was
+# "on the wrong side" and nbmf demod had the squelch set wayyyyy too high.
+# there must have been something that changed higher-up in the chain. 
+SET(SoDaRadio_VERSION_MAJOR 10)
+SET(SoDaRadio_VERSION_MINOR 1)
 SET(SoDaRadio_VERSION_PATCH 0)
 SET(SoDaRadio_VERSION "${SoDaRadio_VERSION_MAJOR}.${SoDaRadio_VERSION_MINOR}.${SoDaRadio_VERSION_PATCH}")
 

@@ -1234,10 +1234,10 @@
                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;IF level required to enable NBFM demod&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Note that squelch level is with reference to RF gain setting. Increased RF gain will decrease the signal strength necessary to break the squelch. &lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                   </property>
                   <property name="maximum">
-                   <number>12</number>
+                   <number>100</number>
                   </property>
                   <property name="sliderPosition">
-                   <number>6</number>
+                   <number>50</number>
                   </property>
                   <property name="orientation">
                    <enum>Qt::Orientation::Horizontal</enum>

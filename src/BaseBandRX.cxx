@@ -137,7 +137,7 @@ namespace SoDa {
     pendNullBuffer(2);
 
     // default NBFM squelch is midlin
-    nbfm_squelch_level = 1000.0 * ((float) audio_buffer_size); // this is really modest
+    nbfm_squelch_level = 1e-3; // this is really modest
     // hang time is 5 audio frames (about 1/4 sec)
     nbfm_squelch_hang_time = 5;
     // start with initial hang count of 0 (haven't broken squelch yet)
@@ -215,8 +215,9 @@ namespace SoDa {
     // NB FM has a deviation of +/- 6.25 kHz or so.  At a sampling
     // rate of 625kHz, we'd see a maximum angle advance, assuming zero-beat, of
     // pi * 6.25 / 312.5
-    // As with WBFM, we goose the gain a bit 
-    float recip_max_phase_diff = 4.0 / (M_PI * 6.25e3 / rf_sample_rate); 
+    // We need to suppress the gain a whole lot... 
+    // but nowhere near that big...
+    float recip_max_phase_diff = 0.05 / (M_PI * 6.25e3 / rf_sample_rate); 
   
     for(i = 0; i < dbuf->size(); i++) {
       // do the atan demod
@@ -232,16 +233,17 @@ namespace SoDa {
       amp_sum += abs(demod_buffer[i]);
     }
 
-    // now look at the magnitude and compare it to the threshold
+    auto amp_mean = amp_sum / float(dbuf->size());    
 
-    if(amp_sum > nbfm_squelch_level) {
+    // now look at the magnitude and compare it to the threshold    
+    if(amp_mean > nbfm_squelch_level) {
       nbfm_squelch_hang_count = nbfm_squelch_hang_time;
     }
     else if(nbfm_squelch_hang_count > 0) {
       nbfm_squelch_hang_count--;
     }
-  
-    cur_audio_filter->apply(demod_out, demod_out, af_gain);
+    
+    cur_audio_filter->apply(demod_out, demod_out, af_gain * 0.1);
   
     if(audio_save_enable) {
       audio_file2.write((char*) demod_out.data(), demod_out.size() * sizeof(std::complex<float>));
@@ -469,7 +471,10 @@ namespace SoDa {
 				    30. + 4.0 * log10(af_sidetone_gain)));
       break;
     case Command::NBFM_SQUELCH:
-      nbfm_squelch_level = powf(10, 0.5 * cmd->dparms[0]) * ((float) audio_buffer_size);
+      // the squelch level from the gui is in the range 0 to 100
+      // we want a squelch level between 0.1e-3 and 100e-3
+      // thats a 10^3 range from -4 to -1
+      nbfm_squelch_level = powf(10,  0.03 * cmd->dparms[0] - 4);
       break; 
     default:
       break; 
@@ -635,7 +640,7 @@ namespace SoDa {
 
     am_pre_filter = OSFilter::make(10.0, 8000.0, 100, audio_sample_rate, audio_buffer_size);
 
-    nbfm_pre_filter = OSFilter::make(10.0,  12500.0, 1000, rf_sample_rate, rf_buffer_size);
+    nbfm_pre_filter = OSFilter::make(-12500.0,  12500.0, 1000, rf_sample_rate, rf_buffer_size);
 
   }
 

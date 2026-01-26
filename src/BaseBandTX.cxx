@@ -61,9 +61,9 @@ namespace SoDa {
     auto rf_sample_rate = params->getRXRate();
   
     // create the interpolator.
-    interpolator = ReSampler::make(rf_sample_rate, audio_sample_rate, 0.05);
+    interpolator = ReSampler::make(audio_sample_rate, rf_sample_rate, 0.05);
 
-    audio_buffer_size = interpolator->getOutputBufferSize();
+    audio_buffer_size = interpolator->getInputBufferSize();
 
     // now setup the FM deviation
     nbfm_deviation = 2.0 * M_PI * 2.5e3 / audio_sample_rate; // 2.5 kHz max deviation
