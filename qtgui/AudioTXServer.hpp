@@ -30,7 +30,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <QObject>
 #include <QIODevice>
+#include <QAudioSource>
 #include <QAudioInput>
+#include <QAudioDevice>
+#include <QMediaFormat>
+#include <QMediaDevices>
+#include <QCameraDevice>
 #include <QString>
 #include <QtNetwork/QtNetwork>
 
@@ -210,7 +215,7 @@ namespace GUISoDa {
     QLocalSocket * audio_tx_socket;     
 
     QAudioFormat audio_format;
-    QScopedPointer<QAudioInput> audio_input_p;
+    QScopedPointer<QAudioSource> audio_input_p;
 
     bool is_active;
 

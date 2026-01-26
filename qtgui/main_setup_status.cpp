@@ -29,7 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mainwindow.hpp"
 #include "ui_mainwindow.h"
 #include <iostream>
-#include <QAudioDeviceInfo>
+#include <QAudioDevice>
 
 QString MainWindow::secondsToElapsed(int seconds)
 {

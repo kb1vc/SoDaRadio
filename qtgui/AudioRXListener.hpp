@@ -30,7 +30,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <QObject>
 #include <QIODevice>
+#include <QAudioDevice>
 #include <QAudioOutput>
+#include <QAudioSink>
 #include <QString>
 #include <QtNetwork/QtNetwork>
 
@@ -142,7 +144,7 @@ namespace GUISoDa {
     QLocalSocket * audio_rx_socket;     
     bool quit; 
 
-    QScopedPointer<QAudioOutput> audio_rx_output;; 
+    QScopedPointer<QAudioSink> audio_rx_output;; 
     
     // the audio samples arrive as floats, but
     // the packets move back and forth as bytes

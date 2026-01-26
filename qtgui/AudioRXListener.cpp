@@ -165,15 +165,13 @@ namespace GUISoDa {
     QAudioFormat format;
     format.setSampleRate(sample_rate);
     format.setChannelCount(1);
-    format.setSampleSize(32);
-    format.setCodec("audio/pcm");
-    format.setByteOrder(QAudioFormat::LittleEndian);
-    format.setSampleType(QAudioFormat::Float);
+    format.setSampleFormat(QAudioFormat::Float);
+    // from qt5 -- now qt6 is all pcm all the time    format.setCodec("audio/pcm");
   
     return format; 
   }
 
-  bool AudioRXListener::initAudio(const QAudioDevice & dev)
+  bool AudioRXListener::initAudio(const QAudioDevice & dev_info)
   {
     QAudioFormat format = createAudioFormat();
 
@@ -181,7 +179,7 @@ namespace GUISoDa {
     if(!dev_info.isFormatSupported(format)) {
       qDebug() << QString("Sound system will not support [%1] floating point samples/sec").arg(sample_rate); 
     }
-    audio_rx_output.reset(new QAudioOutput(dev_info, format));
+    audio_rx_output.reset(new QAudioSink(dev_info, format));
   
     audio_rx_output->setBufferSize((sizeof(float) * sample_rate) >> 2); // buffer up 1/4 second
 
@@ -203,14 +201,13 @@ namespace GUISoDa {
     audio_rx_output->setVolume(qreal(gain));
   }
 
-  void  AudioRXListener::setRXDevice(const QAudioDeviceInfo & dev_info)
+  void  AudioRXListener::setRXDevice(const QAudioDevice & dev_info)
   {
     if(audio_rx_output != NULL) {
       audio_rx_output->stop();
       audio_rx_output->disconnect(this); 
     }
 
-    QList<QAudioDeviceInfo> devs = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
     initAudio(dev_info);
   }
 

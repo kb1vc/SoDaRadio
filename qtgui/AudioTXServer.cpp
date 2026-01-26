@@ -53,7 +53,7 @@ namespace GUISoDa {
   
     // create the default device
     // find it:
-    auto default_device = QAudioDeviceInfo::defaultInputDevice();
+    auto default_device = QMediaDevices::defaultAudioOutput();
     
     initAudioDevice(default_device); 
     
@@ -94,15 +94,12 @@ namespace GUISoDa {
     QAudioFormat format;
     format.setSampleRate(48000);
     format.setChannelCount(1);
-    format.setSampleSize(32);
-    format.setSampleType(QAudioFormat::Float);
-    format.setByteOrder(QAudioFormat::LittleEndian);
-    format.setCodec("audio/pcm");
+    format.setSampleFormat(QAudioFormat::Float);
     
     return format;
   }
 
-  bool AudioTXServer::audioFormatIsSupported(QAudioDeviceInfo & dev_info) {
+  bool AudioTXServer::audioFormatIsSupported(QAudioDevice & dev_info) {
     auto format = createAudioFormat();
     
     // setup the format -- is it supported.  If not, we die
@@ -110,7 +107,7 @@ namespace GUISoDa {
   }
 
   
-  bool AudioTXServer::initAudioDevice(const QAudioDeviceInfo & dev_info) {
+  bool AudioTXServer::initAudioDevice(const QAudioDevice & dev_info) {
     // we don't want to do this while a transfer is in progress.
     mutex.lock();
     
@@ -124,7 +121,7 @@ namespace GUISoDa {
     }
     
     // set the format
-    audio_input_p.reset(new QAudioInput(dev_info, format)); 
+    audio_input_p.reset(new QAudioSource(dev_info, format)); 
 
     // now we've got a new audio input device.  Connect it to
     // us (we're a QIODevice and implement the WRITE operation.)
