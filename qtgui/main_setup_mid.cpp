@@ -30,44 +30,44 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ui_mainwindow.h"
 #include <iostream>
 #include "soda_comboboxes.hpp"
-#include "soda_listener.hpp"
+#include "RadioListener.hpp"
 
 void MainWindow::setupMidControls()
 {
   // These controls include band selection, PTT, TX display,
   // antenna selection, CW QSO buttons, and the navigation panel
 
-  connect(listener, &GUISoDa::Listener::addRXAntName, 
+  connect(radio_listener, &GUISoDa::RadioListener::addRXAntName, 
 	  [this](const QString & v){
 	    ui->RXAnt_sel->addItem(v); });
-  connect(listener, &GUISoDa::Listener::addTXAntName, 
+  connect(radio_listener, &GUISoDa::RadioListener::addTXAntName, 
 	  [this](const QString & v){
 	    ui->TXAnt_sel->addItem(v); });
 
   connect(ui->RXAnt_sel, SIGNAL(currentTextChanged(const QString &)),
-	  listener, SLOT(setRXAnt(const QString &)));
+	  radio_listener, SLOT(setRXAnt(const QString &)));
   connect(ui->TXAnt_sel, SIGNAL(currentTextChanged(const QString &)),
-	  listener, SLOT(setTXAnt(const QString &)));
+	  radio_listener, SLOT(setTXAnt(const QString &)));
 
   //  connect(ui->PTT_btn, SIGNAL(toggled(bool)), 
-  //	  listener, SLOT(setPTT(bool)));
+  //	  radio_listener, SLOT(setPTT(bool)));
   connect(ui->PTT_btn, &QPushButton::toggled,
 	  [=](bool on) {
-	    listener->setPTT(on, getFullDuplex()); 
+	    radio_listener->setPTT(on, getFullDuplex()); 
 	  });
 
-  connect(listener, &GUISoDa::Listener::repPTT,
+  connect(radio_listener, &GUISoDa::RadioListener::repPTT,
 	  [=](bool on) { ui->TXState_lab->setText(on ? "TX ON" : "TX OFF"); });
 
   connect(ui->CWCurLine_le, &QLineEdit::returnPressed, 
 	  [=]() 
 	  { ui->CWOutBound_te->appendPlainText(ui->CWCurLine_le->text());
-	    listener->sendCW(ui->CWCurLine_le->text());
+	    radio_listener->sendCW(ui->CWCurLine_le->text());
 	    ui->CWCurLine_le->clear(); });
 	    
 
   connect(ui->ClrBuff_btn, SIGNAL(released()), 
-	  listener, SLOT(clearCWBuffer()));
+	  radio_listener, SLOT(clearCWBuffer()));
 
   connect(ui->MyCall_btn, &QPushButton::pressed,
 	  [=]() {
@@ -135,11 +135,11 @@ void MainWindow::setupMidControls()
 	  });
   
   connect(ui->Carrier_btn, SIGNAL(toggled(bool)), 
-	  listener, SLOT(setCarrier(bool)));
+	  radio_listener, SLOT(setCarrier(bool)));
 }
 
 void MainWindow::sendCannedCW(const QString & txt) 
 {
-  listener->sendCW(txt); 
+  radio_listener->sendCW(txt); 
   ui->CWOutBound_te->appendPlainText(txt); 
 }

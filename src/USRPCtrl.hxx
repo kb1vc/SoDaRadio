@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+Copyright (c) 2012, 2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -34,23 +34,19 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ///  @author M. H. Reilly (kb1vc)
  ///  @date   July 2013
  ///
+#pragma once
 
-#ifndef USRPCTRL_HDR
-#define USRPCTRL_HDR
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
-#include "MultiMBox.hxx"
 #include "Command.hxx"
 #include "Params.hxx"
 #include "TRControl.hxx"
 #include "PropTree.hxx"
 #include <uhd/version.hpp>
-#if UHD_VERSION < 3110000
-#  include <uhd/utils/msg.hpp>
-#  include <uhd/utils/thread_priority.hpp>
-#else
-#  include <uhd/utils/thread.hpp>
-#endif
+
+#include <SoDa/MailBox.hxx>
+
+#include <uhd/utils/thread.hpp>
 
 
 #include <uhd/utils/safe_main.hpp>
@@ -58,6 +54,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <uhd/usrp/dboard_base.hpp>
 #include <uhd/types/tune_request.hpp>
 #include <uhd/types/tune_result.hpp>
+
+#include <memory>
 
 namespace SoDa {
 
@@ -72,13 +70,32 @@ namespace SoDa {
   ///  requests from other components (including the SoDa::UI listener)
   ///  and dumps status and completion reports back onto
   ///  the command stream channel. 
+  class USRPCtrl;
+  typedef std::shared_ptr<USRPCtrl> USRPCtrlPtr;
+
   class USRPCtrl : public SoDa::Thread {
-  public:
+  private:
     /// Constructor
     /// Build a USRPCtrl thread
     /// @param params Pointer to a parameter object with all the initial settings
     /// and identification for the attached USRP
-    USRPCtrl(Params * params);
+    USRPCtrl(ParamsPtr params);
+
+  public:
+    static USRPCtrlPtr make(ParamsPtr params) {
+      if(singleton_ctrl_obj == nullptr) {
+	auto ret = std::shared_ptr<USRPCtrl>(new USRPCtrl(params));
+	USRPCtrl::singleton_ctrl_obj = ret;
+	ret->registerThread(ret);
+	return ret; 
+      }
+      else {
+	return singleton_ctrl_obj;
+      }
+    }
+
+    static USRPCtrlPtr convert(SoDa::ThreadPtr tp) { return std::dynamic_pointer_cast<USRPCtrl>(tp); }
+
     /// start the thread
     void run();
 
@@ -87,21 +104,20 @@ namespace SoDa {
     /// @return a pointer to the USRP radio object
     uhd::usrp::multi_usrp::sptr getUSRP() { return usrp; }
 
-    /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
-
-#if UHD_VERSION < 3110000
-    /// This is the more permanent message handler used before the elimination of the msg class    
-    static void normal_message_handler(uhd::msg::type_t type, const std::string & msg);
-#endif
+    /**
+     * @brief connect to useful mailboxes. 
+     * 
+     * @param mailboxes list of mailboxes to which we might subscribe.
+     */
+    void subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes);  
     
     /// This is a singleton object -- the last (and only, we hope) such object
     /// to be created sets a static pointer to itself.  This looks pretty gross, but
     /// it is necessary to provide context to the error message handlers.
-    static SoDa::USRPCtrl * singleton_ctrl_obj;
+    static USRPCtrlPtr singleton_ctrl_obj;
     
   private:
-    Params * params;
+    ParamsPtr params;
 
     /// The B200 and B210 need some special handling, as they
     /// don't have frontend lock indications (as of 3.7.0)
@@ -111,16 +127,16 @@ namespace SoDa {
 
     /// Parse an incoming command and dispatch.
     /// @param cmd a command record
-    void execCommand(Command * cmd);
+    void execCommand(CommandPtr cmd);
     /// Dispatch an incoming GET command
     /// @param cmd a command record
-    void execGetCommand(Command * cmd); 
+    void execGetCommand(CommandPtr cmd); 
     /// Dispatch an incoming SET command
     /// @param cmd a command record
-    void execSetCommand(Command * cmd); 
+    void execSetCommand(CommandPtr cmd); 
     /// Dispatch an incoming REPort command
     /// @param cmd a command record
-    void execRepCommand(Command * cmd); 
+    void execRepCommand(CommandPtr cmd); 
 
     /// get the number of seconds since the "Epoch"
     /// @return relative time in seconds
@@ -168,8 +184,8 @@ namespace SoDa {
     void set1stLOFreq(double freq, char sel, bool set_if_freq = false);
 
     
-    CmdMBox * cmd_stream; ///< command stream channel
-    unsigned int subid;   ///< subscriber ID for this thread's connection to the command channel
+    CmdMBoxPtr cmd_stream; ///< command stream channel
+    CmdMBox::Subscription cmd_subs;   ///< subscriber ID for this thread's connection to the command channel
 
     // USRP stuff.
     uhd::usrp::multi_usrp::sptr usrp; ///< to which USRP unit is this connected?
@@ -211,12 +227,6 @@ namespace SoDa {
     /// daughtercards... 
     /// @param val true to enable transmitter front end, false otherwise. 
     void setTXFrontEndEnable(bool val); 
-
-    /// set the transverter LO frequency and power
-    /// This code does not work for libUHD after 3.7 -- it may not work for the older versions either.;(
-    void setTransverterLOFreqPower(double freq, double power);
-    void enableTransverterLO();
-    void disableTransverterLO();
     
     /// we use TX_IO bit 12 to turn on the TX relay
     /// we use TX_IO bit 11 to monitor the TX relay
@@ -254,13 +264,6 @@ namespace SoDa {
     std::string tx_ant;  ///< TX antenna choice (usually has to be TX or TX/RX1?
 
     std::string motherboard_name; ///< The model name of the USRP unit
-
-    // transverter local oscillator support.
-    bool tvrt_lo_capable; ///< if true, this unit can implement a local transverter oscillator.
-    bool tvrt_lo_mode; ///< if true, set the transmit frequency, with some knowledge of the tvrt LO.
-    double tvrt_lo_gain; ///< output power for the second transmit channel (used for transverter LO)
-    double tvrt_lo_freq; ///< the frequency of the second transmit channel oscillator
-    double tvrt_lo_fe_freq; ///< the frequency of the second transmit channel front-end oscillator
     
     // enables verbose messages
     bool debug_mode; ///< print stuff when we are in debug mode
@@ -294,4 +297,3 @@ namespace SoDa {
 }
 
 
-#endif

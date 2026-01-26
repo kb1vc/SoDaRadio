@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-  Copyright (c) 2020, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2020, 2025 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,8 @@
 #include "AudioIfc.hxx"
 #include "UDSockets.hxx"
 #include <string>
+#include <memory>
+
 #include <mutex>
 // Only works if we have ALSA
 #include <alsa/asoundlib.h>
@@ -45,7 +47,7 @@ namespace SoDa {
   /**
    * @class AudioQtRXTX
    *
-   * @brief Qt audio interface class for transmit via ALSA, inherits 
+   * @brief Qt audio interface class for the transmit side. It inherits
    * from AudioQtRX for the Qt receive path. 
    *
    * AudioQtRXTX implements the interface specified by AudioIfc.  It should
@@ -57,24 +59,38 @@ namespace SoDa {
    *
    * 
    */
+  class AudioQtRXTX;
+  typedef std::shared_ptr<AudioQtRXTX> AudioQtRXTXPtr;
+  
   class AudioQtRXTX : public AudioQtRX {
-  public:
+  protected:
     /**
      * constructor
      * @param _sample_rate in Hz  48000 is a good choice
      * @param _sample_count_hint  the size of the buffers passed to and from
      *                              the audio device (in samples)
-     * @param audio_sock_basename starting string for the unix-domain socket 
-     *                            that carries the audio stream from the SoDaServer (radio) process
-     * @param audio_port_name  which ALSA device are we connecting to?
+     * @param audio_sock_basename starting string for the unix-domain sockets
+     *                            that carry the audio stream from the SoDaServer (radio) process to the GUI (RX)
+     *                            and from the GUI to the server (TX)
      */
     AudioQtRXTX(unsigned int _sample_rate,
-	    unsigned int _sample_count_hint = 1024,
-	    std::string audio_sock_basename = std::string("soda_"),
-	    std::string audio_port_name = std::string("default"));
+		unsigned int _sample_count_hint = 1024,
+		std::string audio_sock_basename = std::string("soda_"))
 
+  public:
+    static AudioQtRXTXPtr make(unsigned int _sample_rate,
+			       unsigned int _sample_count_hint = 1024,
+			       std::string audio_sock_basename = std::string("soda_")) {
+      auto ret = std::shared_ptr<AudioQtRXTX>(new AudioQtRXTX(_sample_rate,
+							      _sample_count_hint,
+							      audio_sock_basename));
+      ret->registerSelf(ret);
+      return ret; 
+    }
+  
     ~AudioQtRXTX() {
     }
+
     
     /**
      * recv -- get a buffer of data from the audio input
@@ -107,61 +123,6 @@ namespace SoDa {
 
     std::string currentCaptureState();
 
-  protected:
-    snd_pcm_t * pcm_in;  ///< The capture (input) handle. 
-    snd_pcm_hw_params_t * hw_in_params;  ///< the input parameter list
-
-    /**
-     *
-     */
-    std::string currentState(snd_pcm_t * dev);
-    /**
-     * setup the capture handle and features.
-     */
-    void setupCapture(std::string audio_port_name); 
-
-    /**
-     * setup the parameters for a PCM device
-     * @param dev the device handle
-     * @param hw_params (out parameter) a pointer to a device parameter block
-     */
-    void setupParams(snd_pcm_t * dev, snd_pcm_hw_params_t * & hw_params);
-    
-    /**
-     * checkStatus check to see if the return status from an alsa call was OK
-     * @param err -- the error number
-     * @param exp -- why are we here
-     * @param fatal -- if true, throw an exception, otherwise print an error to std::cerr
-     */
-    void checkStatus(int err, const std::string & exp, bool fatal = false) {
-      if (err < 0) {
-	if(fatal) throw SoDa::Radio::Exception(SoDa::Format("%0 %1")
-					.addS(exp)
-					.addS(snd_strerror(err)), this);
-	else std::cerr << SoDa::Format("%0 %1 %2\n")
-	       .addS(getObjName())
-	       .addS(exp)
-	       .addS(snd_strerror(err));
-      }
-    }
-
-  private:
-    /**
-     * recvBufferReady_priv -- are there samples waiting in the audio device?
-     *                    
-     * actual implementation of ready check, but without protecting mutex. 
-     *
-     * @param len the number of samples that we wish to get
-     * @return true if len samples are waiting in in the device buffer
-     */
-    bool recvBufferReady_priv(unsigned int len);
-
-  private:
-    std::mutex alsa_mutex;
-
-    // debug assistance
-    float ang; 
-    float ang_incr; 
   };
 
 }

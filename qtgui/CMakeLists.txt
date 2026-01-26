@@ -8,13 +8,13 @@ SET(SoDaRadio_SRCS
   
 SET(SoDaRadio_Lib_SRCS
   mainwindow.cpp
-  freqlabel.cpp
+  FreqLabel.cpp
   soda_logtable.cpp
   soda_wfall.cpp
   soda_spect.cpp
   soda_wfall_data.cpp
   soda_comboboxes.cpp
-  soda_listener.cpp
+  RadioListener.cpp
   ../src/Command.cxx
   main_setup_top.cpp
   main_setup_mid.cpp
@@ -31,24 +31,31 @@ SET(SoDaRadio_Lib_SRCS
   ../common/dem-gridlib.h    
   ../common/GuiParams.cxx
   ../common/GuiParams.hxx
-  soda_hamlib_server.cpp
-  soda_hamlib_handler.cpp
-  soda_hamlib_listener.cpp  
-  soda_audio_listener.cpp
+  HamlibServer.cpp
+  HamlibHandler.cpp
+  HamlibListener.cpp  
+  AudioListener.cpp
+  AudioRXListener.cpp
+  AudioServer.cpp  
+  AudioTXServer.cpp
+  AudioRecorder.cpp
+  Band.cpp
+  BandMap.cpp
   )
 
 SET(SoDaRadio_HDRS
   mainwindow.hpp
-  freqlabel.hpp
+  FreqLabel.hpp
   soda_logtable.hpp
   soda_spect.hpp
   soda_wfall.hpp
   soda_comboboxes.hpp
-  soda_listener.hpp
-  soda_hamlib_server.hpp
-  soda_hamlib_handler.hpp
-  soda_hamlib_listener.hpp
-  soda_audio_listener.hpp  
+  RadioListener.hpp
+  HamlibServer.hpp
+  HamlibHandler.hpp
+  HamlibListener.hpp
+  AudioRXListener.hpp
+  AudioRecorder.hpp
   )
 
 SET(SoDaRadio_NOMOC_HDRS
@@ -58,7 +65,8 @@ SET(SoDaRadio_NOMOC_HDRS
   soda_wfall_picker.hpp
   ../common/GuiParams.hxx
   ../src/Command.hxx  
-  soda_band.hpp
+  Band.hpp
+  BandMap.hpp
 )
 
 SET(SoDaRadio_UIS
@@ -108,7 +116,7 @@ TARGET_LINK_LIBRARIES(SoDaRadio SoDaRadio_Lib
     m ${RT_LIB}
     Threads::Threads
     ${SNDFILE_LIBRARIES}
-    ${SoDaUtils_LIBRARIES}
+    sodautils
     )
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")

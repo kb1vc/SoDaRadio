@@ -1,0 +1,17 @@
+Qt6 has gotten pretty strict about what had been a warning:
+all communication with a socket must come from a single thread.
+
+But that's not how the hamlib listener is working.
+Right now there are three parts:
+
+HamlibServer
+
+HamlibHandler
+
+HamlibListener
+
+Here's how it works right now. 
+
+-----
+
+A better pattern is in the normal soda_listener.hpp scheme.

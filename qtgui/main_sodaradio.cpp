@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017 Matthew H. Reilly (kb1vc)
+Copyright (c) 2017, 2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -108,6 +108,8 @@ static void startupServer(const QString & lock_file_name, SoDa::GuiParams & p)
   
   server_command += QString(" --lockfile %1 ").arg(lock_file_name); 
 
+  QTextStream qqw(stdout);
+  qqw << QString("server command [%1]\n").arg(server_command);
   QProcess::startDetached(server_command); 
 
 }

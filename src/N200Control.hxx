@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2015, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2015, 2025 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,7 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef N200Serial_HDR
-#define N200Serial_HDR
+#pragma once
 
 #include "TRControl.hxx"
 #include "IPSockets.hxx"
@@ -35,7 +34,7 @@
 #include <list>
 #include <iostream>
 #include <uhd/usrp/multi_usrp.hpp>
-
+#include <memory>
 
 
 namespace SoDa {
@@ -98,7 +97,7 @@ namespace SoDa {
   private:
     bool sendCommand(const std::string & cmd, int retry_count); 
 
-    IP::ClientSocket * skt; 
+    std::shared_ptr<IP::ClientSocket> skt; 
 
     // For N200's that don't connect to an external serial widget
     // (that is, if we find that the GPSDO is present, or that 
@@ -107,4 +106,3 @@ namespace SoDa {
     int mboard; 
   };
 }
-#endif

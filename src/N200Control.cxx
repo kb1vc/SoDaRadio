@@ -52,7 +52,7 @@ namespace SoDa
     usrp = _usrp; 
     
 
-    skt = new IP::ClientSocket(ip_addr_str.c_str(), portnum, IP::UDP); 
+    skt = std::shared_ptr<IP::ClientSocket>(new IP::ClientSocket(ip_addr_str.c_str(), portnum, IP::UDP)); 
 
     skt->setBlocking();
 
@@ -63,8 +63,7 @@ namespace SoDa
     catch (IP::ReadTimeoutExc & ex) {
       // if we get here, then the device is not connected!  
       std::cerr << "No Serial TR switch control device found." << std::endl; 
-      delete skt; 
-      skt = NULL; 
+      skt = nullptr;
     }
   }
 
@@ -81,8 +80,7 @@ namespace SoDa
       catch (IP::ReadTimeoutExc & ex) {
 	// if we get here, then the device is not connected!  
 	std::cerr << "No Serial Controlled TR switch is connected to this N2xx....." << std::endl; 
-	delete skt; 
-	skt = NULL; 
+	skt = nullptr;
 	return false; 
       }
     }
@@ -104,8 +102,7 @@ namespace SoDa
       catch (IP::ReadTimeoutExc & ex) {
 	// if we get here, then the device is not connected!
 	std::cerr << "No Serial Controlled TR switch is connected to this N2xx....." << std::endl; 	
-	delete skt; 
-	skt = NULL; 
+	skt = nullptr;
 	return false; 
       }
     }

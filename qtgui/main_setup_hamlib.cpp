@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017 Matthew H. Reilly (kb1vc)
+Copyright (c) 2017,2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ui_mainwindow.h"
 #include <iostream>
 #include "soda_comboboxes.hpp"
-#include "soda_listener.hpp"
+#include "RadioListener.hpp"
 
 void MainWindow::setupHamlib()
 {
@@ -60,14 +60,14 @@ void MainWindow::setupHamlib()
 	  this, SLOT(setTXFreq(double)));
 
   connect(hlib_server->getHandler(), SIGNAL(setRXFreq(double)),
-	  this->listener, SLOT(setSpectrumCenter(double)));
+	  this->radio_listener, SLOT(setSpectrumCenter(double)));
 
   connect(hlib_server->getHandler(), SIGNAL(setTXFreq(double)),
 	  this, SLOT(setTXFreq(double)));
 
   connect(hlib_server->getHandler(), &GUISoDa::HamlibHandler::setTXOn,
 	  [=](bool on) {
-	    this->listener->setPTT(on, getFullDuplex());
+	    this->radio_listener->setPTT(on, getFullDuplex());
 	  });
 }
 

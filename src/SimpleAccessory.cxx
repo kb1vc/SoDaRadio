@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019 Matthew H. Reilly (kb1vc)
+Copyright (c) 2019,2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * To make an accessory thread that gets loaded and connected automagically, 
  * just create a normal thread object.  Like this: 
  */
-SimpleAccessory my_accessory(std::string("Accessory1"));
+SimpleAccessoryPtr my_accessory;
+extern "C" {
+  bool initPlugin() {
+    my_accessory = SimpleAccessory::make("SimpleAccessory");
+    if (my_accessory != nullptr) {
+      my_accessory->registerThread(my_accessory);
+    }
+    return true;
+  }
+}
 
 
 SimpleAccessory::SimpleAccessory(const std::string & name) : SoDa::Thread(name) {
@@ -54,23 +63,33 @@ void SimpleAccessory::printReport() {
 void SimpleAccessory::run() {
   bool exitflag = false; 
 
+  SoDa::CommandPtr cmd; 
+  
   while(!exitflag) {
-    auto cmd = cmd_stream->get(cmd_subs); 
-    while (cmd != NULL) {
+    while (cmd_stream->get(cmd_subs, cmd)) {
       execCommand(cmd);
       exitflag |= (cmd->target == SoDa::Command::STOP);      
-      cmd_stream->free(cmd);
-      cmd = cmd_stream->get(cmd_subs); 
     }
 
     usleep(10000);
   }
 }
 
-void SimpleAccessory::subscribeToMailBox(const std::string & mbox_name, SoDa::BaseMBox * mbox_p)
+/// implement the subscription method
+
+void SimpleAccessory::subscribeToMailBoxes(const std::vector<SoDa::MailBoxBasePtr> & mailboxes)
 {
-  if(SoDa::connectMailBox<SoDa::CmdMBox>(this, cmd_stream, "CMD", mbox_name, mbox_p)) {
-    cmd_subs = cmd_stream->subscribe();
+  for(auto mbox_p : mailboxes) {
+    SoDa::MailBoxBase::connect<SoDa::MailBox<SoDa::CommandPtr>>(mbox_p,
+								"CMDstream",
+								cmd_stream); 
+  }
+
+  if(cmd_stream == nullptr) {
+    throw SoDa::MissingMailBox("CMD", getSelfPtr());
+  }
+  else {
+    cmd_subs = cmd_stream->subscribe();    
   }
 }
 

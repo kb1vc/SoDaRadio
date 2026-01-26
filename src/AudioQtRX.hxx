@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-  Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012, 2025 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -35,10 +35,13 @@
 #include <mutex>
 #include <iostream>
 #include <stdexcept>
-
+#include <memory>
 #include <tuple>
 
 namespace SoDa {
+  class AudioQtRX;
+  typedef std::shared_ptr<AudioQtRX> AudioQtRXPtr;
+  
   /**
    * @class AudioQtRX
    *
@@ -71,7 +74,7 @@ namespace SoDa {
    * 
    */
   class AudioQtRX : public AudioIfc, public Debug {
-  public:
+  protected:
     /**
      * constructor
      * @param _sample_rate in Hz  48000 is a good choice
@@ -86,8 +89,20 @@ namespace SoDa {
 	    std::string audio_sock_basename = std::string("soda_"),
 	    std::string audio_port_name = std::string("default"));
 
+  public:
+    static AudioQtRXPtr make(unsigned int _sample_rate,
+			     unsigned int _sample_count_hint = 1024,
+			     std::string audio_sock_basename = std::string("soda_"),
+			     std::string audio_port_name = std::string("default")) {
+      auto ret = std::shared_ptr<AudioQtRX>(new AudioQtRX(_sample_rate,
+							  _sample_count_hint,
+							  audio_sock_basename,
+							  audio_port_name));
+      ret->registerSelf(ret);
+      return ret; 
+    }
+    
     ~AudioQtRX() {
-      delete audio_rx_socket;
     }
     
     /**
@@ -118,13 +133,7 @@ namespace SoDa {
      * otherwise perform the recv regardless.
      * @return number of elements transferred from the audio input
      */
-    virtual int recv(void * buf, unsigned int len, bool when_ready = false) { 
-      std::ignore = buf;
-      std::ignore = when_ready;
-      float *bp = (float*) buf;
-      for(int i = 0; i < len; i++) { bp[i] = 0.0; }
-      return len; 
-    }
+    virtual int recv(void * buf, unsigned int len, bool when_ready = false);
 
     /**
      * recvBufferReady -- are there samples waiting in the audio device?
@@ -171,12 +180,10 @@ namespace SoDa {
      */
     void setupNetwork(std::string audio_sock_basename) ;
     
-    
-
   private:
 
   private:
-    SoDa::UD::ServerSocket * audio_rx_socket; 
+    std::shared_ptr<SoDa::UD::ServerSocket> audio_rx_socket; 
 
     // debug assistance
     float ang; 

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017 Matthew H. Reilly (kb1vc)
+Copyright (c) 2017, 2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -30,32 +30,32 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ui_mainwindow.h"
 #include <iostream>
 #include "soda_comboboxes.hpp"
-#include "soda_listener.hpp"
+#include "RadioListener.hpp"
 
 void MainWindow::setupTopControls()
 {
   // setup the top row of controls under the tabbed pages.
   // these are the basic radio settings... gain, frequency and such
   // we connect the report side and then the command side. 
-  connect(listener, SIGNAL(addModulation(QString, int)), 
+  connect(radio_listener, SIGNAL(addModulation(QString, int)), 
 	  ui->Mode_cb, SLOT(addValue(QString, int)));
   connect(ui->Mode_cb, SIGNAL(valueChanged(int)), 
-	  listener, SLOT(setModulation(int)));
+	  radio_listener, SLOT(setModulation(int)));
 
-  connect(listener, SIGNAL(addFilterName(QString, int)), 
+  connect(radio_listener, SIGNAL(addFilterName(QString, int)), 
 	  ui->AFBw_cb, SLOT(addValue(QString, int)));
   connect(ui->AFBw_cb, SIGNAL(valueChanged(int)),
-	  listener, SLOT(setAFFilter(int)));
+	  radio_listener, SLOT(setAFFilter(int)));
 
   connect(ui->RFGain_slide, SIGNAL(valueChanged(int)), 
-	  listener, SLOT(setRXGain(int)));
+	  radio_listener, SLOT(setRXGain(int)));
   connect(ui->RFGain_slide, &QSlider::valueChanged,
 	  [=](int s) {
 	    ui->RFGain_lbl->setText(QString("%1").arg(s, 3));
 	  }); 
 
   connect(ui->AFGain_slide, SIGNAL(valueChanged(int)), 
-	  listener, SLOT(setAFGain(int)));
+	  radio_listener, SLOT(setAFGain(int)));
 
   connect(ui->RXFreq_lab, SIGNAL(newFreq(double)), 
 	  this, SLOT(setRXFreq(double))); 
@@ -120,7 +120,7 @@ void MainWindow::updateBandDisplay(double freq)
       // undo the mode switching...
       ui->Mode_cb->setValue(cur_mode);
       
-      listener->setSpectrumCenter(freq);      
+      radio_listener->setSpectrumCenter(freq);      
     }
   }
 }
@@ -128,7 +128,7 @@ void MainWindow::updateBandDisplay(double freq)
 void MainWindow::setRXFreq_nocross(double freq)
 {
   // tell the radio. 
-  listener->setRXFreq(freq);
+  radio_listener->setRXFreq(freq);
 
   // tell the hamlib listener
   if(hlib_server != NULL) {
@@ -149,7 +149,7 @@ void MainWindow::setRXFreq_nocross(double freq)
 void MainWindow::setTXFreq_nocross(double freq)
 {
   // tell the radio. 
-  listener->setTXFreq(freq); 
+  radio_listener->setTXFreq(freq); 
   
   // tell the TX freq display
   ui->TXFreq_lab->setFreq(freq); 

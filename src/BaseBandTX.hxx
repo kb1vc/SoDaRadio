@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012,2013,2014 Matthew H. Reilly (kb1vc)
+Copyright (c) 2012,2013,2014,2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
   FM modulator features based on code contributed by and 
@@ -28,17 +28,18 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+#pragma once
 
-#ifndef BASEBANDTX_HDR
-#define BASEBANDTX_HDR
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
-#include "MultiMBox.hxx"
 #include "Params.hxx"
 #include "Command.hxx"
-#include "ReSamplers625x48.hxx"
 #include "HilbertTransformer.hxx"
 #include "AudioIfc.hxx"
+
+#include <SoDa/MailBox.hxx>
+#include <SoDa/ReSampler.hxx>
+#include <SoDa/OSFilter.hxx>
 
 namespace SoDa {
   /**
@@ -50,21 +51,35 @@ namespace SoDa {
    * CW (CW_L and CW_U) modes are implemented in the USRPTX module and the CW unit.
    *
    */
-  class BaseBandRX;  
+  class BaseBandRX;
+
+  class BaseBandTX;
+  typedef std::shared_ptr<BaseBandTX> BaseBandTXPtr;
+  typedef std::weak_ptr<BaseBandTX> BaseBandTXWeakPtr;
+  
   class BaseBandTX : public SoDa::Thread {
-  public:
+  protected:
     /**
      * constructor
      *
      * @param params command line parameter object
      * @param audio_ifc pointer to the audio output handler
      */
-    BaseBandTX(Params * params,
-	       AudioIfc * audio_ifc
+    BaseBandTX(ParamsPtr params,
+	       AudioIfcPtr audio_ifc
 	       );
 
+  public:
+    static BaseBandTXPtr make(ParamsPtr params,
+	       AudioIfcPtr audio_ifc
+			      ) {
+      auto ret = std::shared_ptr<BaseBandTX>(new BaseBandTX(params, audio_ifc));
+      ret->registerThread(ret);      
+      return ret; 
+    }
+    
     /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
+    void subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes);    
     
 
     /**
@@ -76,52 +91,53 @@ namespace SoDa {
      * @brief execute GET commands from the command channel
      * @param cmd the incoming command
      */
-    void execGetCommand(Command * cmd); 
+    void execGetCommand(CommandPtr cmd); 
     /**
      * @brief handle SET commands from the command channel
      * @param cmd the incoming command
      */
-    void execSetCommand(Command * cmd); 
+    void execSetCommand(CommandPtr cmd); 
     /**
      * @brief handle Report commands from the command channel
      * @param cmd the incoming command
      */
-    void execRepCommand(Command * cmd); 
+    void execRepCommand(CommandPtr cmd); 
 
     /**
      * @brief create an AM/SSB modulation envelope
      *
      * @param audio_buf the buffer of modulating audio info
-     * @param len the length of the audio buffer
      * @param is_usb if true, generate upper sideband
      * @param is_lsb if true, generate lower sideband
      * if both is_usb and is_lsb are false, the modulator
      * creates an IQ stream that is amplitude modulated
      */
-    SoDa::Buf * modulateAM(float * audio_buf, unsigned int len, bool is_usb, bool is_lsb); 
+    SoDa::CBufPtr modulateAM(std::vector<float> & audio_buf, 
+			    bool is_usb, bool is_lsb); 
 
     /**
      * @brief create a narrowband/wideband FM modulation envelope
      *
      * @param audio_buf the buffer of modulating audio info
-     * @param len the length of the audio buffer
      * @param deviation the phase shift per audio sample for a maximum amplitude (1.0) input.
      *
      * Note that this modulator varies the mic gain to prevent over-deviation. 
      */
-    SoDa::Buf * modulateFM(float * audio_buf, unsigned int len, double deviation);
+    SoDa::CBufPtr modulateFM(std::vector<float> & audio_buf, 
+			    double deviation);
+    
     double fm_phase;
     double nbfm_deviation; ///< phase advance for 2.5kHz deviation.
     double wbfm_deviation; ///< phase advance for 75kHz deviation
     double fm_mic_gain; ///< separate gain control for FM deviation....
 
     
-    DatMBox * tx_stream; ///< outbound RF stream to USRPTX transmit chain
-    CmdMBox * cmd_stream; ///< command stream from UI and other units
-    unsigned int cmd_subs; ///< subscription ID for command stream
+    CDatMBoxPtr tx_stream; ///< outbound RF stream to USRPTX transmit chain
+    CmdMBoxPtr cmd_stream; ///< command stream from UI and other units
+    CmdMBox::Subscription cmd_subs; ///< subscription ID for command stream
     
     // The interpolator
-    SoDa::ReSample48to625 * interpolator;  ///< Upsample from 48KHz to 625KHz
+    SoDa::ReSamplerPtr interpolator;  ///< Upsample from 48KHz to 625KHz
 
     // parameters
     unsigned int audio_buffer_size; ///< length (in samples) of an input audio buffer
@@ -136,25 +152,19 @@ namespace SoDa {
     float af_gain; ///< local microphone gain. 
 
     // audio server state
-    AudioIfc * audio_ifc; ///< pointer to an AudioIfc object for the microphone input
+    AudioIfcPtr audio_ifc; ///< pointer to an AudioIfc object for the microphone input
 
     bool tx_stream_on; ///< if true, we are transmitting. 
 
     // we need some intermediate storage for things like
     // the IQ buffer
-    std::complex<float> * audio_IQ_buf; ///< temporary storage for outbound modulation envelope
-
-    /**
-     * SSB modulation requires that we upsample before
-     * doing the quadrature generation.
-     */
-    float * ssb_af_upsample; 
+    std::vector<std::complex<float>> audio_IQ_buf; ///< temporary storage for outbound modulation envelope
 
     /**
      * This is a buffer that holds a set of "noise" samples (uniform random)
      * for testing the TX audio chain.
      */
-    float * noise_buffer; 
+    std::vector<float> noise_buffer; 
 
     /**
      * When this is TRUE, audio modes (USB,LSB,AM,NBFM,WBFM) use a noise source for
@@ -170,12 +180,12 @@ namespace SoDa {
     /** 
      * TX audio filter
      */
-    SoDa::OSFilter * tx_audio_filter;
+    SoDa::OSFilterPtr tx_audio_filter;
 
     /**
      *The hilbert transformer to create an analytic (I/Q) signal.
      */
-    SoDa::HilbertTransformer * hilbert;
+    SoDa::HilbertTransformerPtr hilbert;
 
     /**
      * mic gain is adjustable, to make sure we aren't noxious.
@@ -188,4 +198,3 @@ namespace SoDa {
 }
 
 
-#endif

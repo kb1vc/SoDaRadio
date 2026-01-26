@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2015, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2015, 2025 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,7 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef GenericSerial_HDR
-#define GenericSerial_HDR
+#pragma once
 
 #include <string>
 #include <list>
@@ -58,4 +57,3 @@ namespace SoDa {
     int getSpeed(int spd); 
   };
 }
-#endif

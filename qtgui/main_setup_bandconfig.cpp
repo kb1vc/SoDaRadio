@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017 Matthew H. Reilly (kb1vc)
+Copyright (c) 2017, 2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ui_mainwindow.h"
 #include <iostream>
 #include "soda_comboboxes.hpp"
-#include "soda_listener.hpp"
+#include "RadioListener.hpp"
 
 // methods and such for the bandconfig panel.
 // This includes saving the band config list to the
@@ -56,14 +56,14 @@ void MainWindow::setupBandConfig()
   ui->BCLOFreq_le->setValidator(new QDoubleValidator(this));
   ui->BCSatOffset_le->setValidator(new QDoubleValidator(this));  
 
-  connect(listener, &GUISoDa::Listener::addRXAntName, 
+  connect(radio_listener, &GUISoDa::RadioListener::addRXAntName, 
 	  [this](const QString & v){
 	    ui->BCRXAnt_cb->addItem(v); });
-  connect(listener, &GUISoDa::Listener::addTXAntName, 
+  connect(radio_listener, &GUISoDa::RadioListener::addTXAntName, 
 	  [this](const QString & v){
 	    ui->BCTXAnt_cb->addItem(v); });
 
-  connect(listener, SIGNAL(addModulation(QString, int)), 
+  connect(radio_listener, SIGNAL(addModulation(QString, int)), 
 	  ui->BCDefMode_cb, SLOT(addValue(QString, int)));
   
   
@@ -126,8 +126,10 @@ void MainWindow::fillBandMapEntry(const QString & band)
     ui->BCMaxFreq_le->setText(QString("%1").arg(b.maxFreq(), 14, 'f', 6));    
 
     ui->BCDefMode_cb->setCurrentText(b.defMode());
-    
-    ui->BCLOFreq_le->setText(QString("%1").arg(b.tvLOFreq(), 14, 'f', 6));
+
+    // this is tacky.  why am I correcting to MHz when I don't
+    // do that for b.minFreq, b.maxFreq ? 
+    ui->BCLOFreq_le->setText(QString("%1").arg(b.tvLOFreq()*1e-6, 14, 'f', 6));
     ui->BCLOMult_sb->setValue((int) b.tvLOMult());
 
     ui->BCEnableTX_cb->setChecked(b.txEna());
@@ -222,6 +224,7 @@ void MainWindow::changeBand(const QString & band)
       if (auto_bandswitch_target != "") {
         ui->Mode_cb->setValue(band_map[band].defMode());
       }
+
       double rx_freq = band_map[band].lastRXFreq() * 1e6;
       setRXFreq(rx_freq);
       double tx_freq = band_map[band].lastTXFreq() * 1e6;
@@ -229,7 +232,14 @@ void MainWindow::changeBand(const QString & band)
 	tx_freq = rx_freq + band_map[band].satOffset() * 1e6;
       }
       setTXFreq_nocross(tx_freq);
-      listener->setSpectrumCenter(rx_freq);      
+      radio_listener->setSpectrumCenter(rx_freq);
+
+      // set the transverter lo offset
+      double lo_freq = band_map[band].tvLOFreq();
+      double lo_mult = band_map[band].tvLOMult();      
+      radio_listener->setTransverterLO(lo_freq * lo_mult);
+      qInfo() << QString("Setting transverter lo %0 lo mult %1").arg(lo_freq).arg(lo_mult);
+      
     }
     else {
       auto_bandswitch_target = ""; 

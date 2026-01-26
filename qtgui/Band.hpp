@@ -1,0 +1,116 @@
+/*
+Copyright (c) 2017,2025 Matthew H. Reilly (kb1vc)
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+    Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in
+    the documentation and/or other materials provided with the
+    distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+#pragma once
+
+#include <QString>
+#include <QObject>
+#include <QSettings>
+#include <QMap>
+
+namespace GUISoDa {
+
+  class Band {
+  public:
+    Band();
+
+    void restore(QSettings * set_p);
+    
+    void save(QSettings * set_p) const;
+    
+    const QString & name() const  { return band_name; }
+    int index() const  { return band_index; }
+    const QString & defRXAnt() const  { return def_rx_ant; }
+    const QString & defTXAnt() const  { return def_tx_ant; }
+    const QString & defMode() const  { return def_mode; }  
+    double minFreq() const  { return min_freq; }
+    double maxFreq() const  { return max_freq; }
+    double lastRXFreq() const { return last_rx_freq; }
+    double lastTXFreq() const { return last_tx_freq; }
+
+    // let the GUI decide the units. 
+    double tvLOFreq() const  { return tv_LO_freq * 1e6; }
+    double tvLOMult() const  { return tv_LO_mult; }  
+    bool txEna() const  { return tx_enabled; }
+    bool tverterEna() const  { return tverter_mode; }
+    bool tverterLowInjection() const  { return lowside_injection; }
+
+    double satOffset() const { return sat_offset; }
+    bool fullDuplex() const { return full_duplex; }
+    bool satOffsetEna() const { return sat_offset_enabled; }
+
+    
+    void setName(const QString & v) { band_name = v; }
+    void setIndex(int v) { band_index = v; }
+    void setDefRXAnt(const QString & v) { def_rx_ant = v; }
+    void setDefTXAnt(const QString & v) { def_tx_ant = v; }
+    void setDefMode(const QString & v) { def_mode = v; }  
+  
+    void setMinFreq(double v) { min_freq = v; }
+    void setMaxFreq(double v) { max_freq = v; }
+    void setLastRXFreq(double v) { last_rx_freq = v; }
+    void setLastTXFreq(double v) { last_tx_freq = v; }  
+    void setTvLOFreq(double v) {
+      tv_LO_freq = v;
+    }
+    void setTvLOMult(double v) { tv_LO_mult = v; }  
+    void setTxEna(bool v) { tx_enabled = v; }
+    void setTverterEna(bool v) { tverter_mode = v; }
+    void setTverterLowInjection(bool v) { lowside_injection = v; }
+
+    // satellite modes
+    void setSatOffset(double v) { sat_offset = v; }
+    void setFullDuplex(bool v) { full_duplex = v; }
+    void setSatOffsetEna(bool v) { sat_offset_enabled = v; }
+
+
+    bool isInBand(double freq) const;
+
+  
+    
+  protected:
+    QString band_name; 
+    int band_index; 
+    QString def_rx_ant;
+    QString def_tx_ant;
+    double min_freq; 
+    double max_freq; 
+    QString def_mode; 
+    bool tx_enabled; 
+    bool tverter_mode; 
+    bool lowside_injection; 
+    double tv_LO_freq; 
+    double tv_LO_mult; 
+    double last_rx_freq; 
+    double last_tx_freq; 
+
+    double sat_offset; 
+    bool full_duplex; 
+    bool sat_offset_enabled; 
+  }; 
+
+}

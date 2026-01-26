@@ -44,7 +44,7 @@
  *
  * SoDa was written and is maintained by Matt Reilly, kb1vc.
  *
- * @section structure Structure of the Radio
+ * @section radio_structure Structure of the Radio
  *
  * The SoDa program is partitioned into two parts:
  *
@@ -63,7 +63,7 @@
  * multiple threads of the SoDa application.  The threads communicate via
  * a simple mailbox-in-shared-memory communications scheme where each
  * thread can "subscribe" to one or more message streams, and place messages
- * into any message stream. (See SoDa::MultiMBox and SoDa::MBoxMessage)
+ * into any message stream. (See SoDa::MailBox from the SoDaUtils library.)
  *
  * The image below shows the thread objects that make up the SoDa
  * SDR radio, and the message streams that link them. 
@@ -84,16 +84,6 @@
  * special user-defined functions. IFServer presents a simple example of a plugin that subscribes 
  * to the command and the RX IF stream. 
  *
- * Audio is handled in two ways in the SoDa::AudioQt class.
- * 
- * @li Transmit audio is read from an ALSA device by the SoDaServer process
- * via the SoDa::AudioQt::recv method.  With time, this function will migrate
- * to a socket connection the Qt GUI.
- * @li Receive audio is written by the SoDa::AudioQt send method
- *  to a socket that, in the normal configuration, 
- * is connected to the Qt based GUI.  This allows for better flow control and
- * also simplifies interfacing the audio stream to external modems like "fldigi"
- * and WSJT-X. 
  *
  * The SoDa receiver architecture is a 3 stage heterodyne design.  
  * The first two IF conversions are performed within the USRP SDR platform.
@@ -118,7 +108,17 @@
  *    is comparatively low. 
  *
  * @image html SoDa_Radio_TX_Signal_Path.svg
+ * Audio is handled in two ways in the SoDa::AudioQt class.
+ * 
+ * @li Transmit audio is captured by the gui process (via Qt Audio) and sent via
+ * a socket to the SoDaServer process. 
+ * @li Receive audio is written by the SoDa::AudioQt send method
+ *  to a socket that, in the normal configuration, 
+ * is connected to the Qt based GUI.  This allows for better flow control and
+ * also simplifies interfacing the audio stream to external modems like "fldigi"
+ * and WSJT-X. 
  */
+
 // #include <uhd/usrp/multi_usrp.hpp>
 #include <unistd.h>
 #include <stdio.h>
@@ -131,7 +131,9 @@
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
 #include "SoDaThreadRegistry.hxx"
-#include "MultiMBox.hxx"
+
+
+#include <SoDa/MailBox.hxx>
 
 // Include functions to dynamically link any user supplied plugins
 #include <dlfcn.h>
@@ -154,14 +156,7 @@
 #include "Command.hxx"
 #include "Debug.hxx"
 
-#ifdef HAVE_ASOUND
-#  include "AudioQtRXTX.hxx"
-   using AudioQt = SoDa::AudioQtRXTX;
-#else
-#  include "AudioQtRX.hxx"
-   using AudioQt = SoDa::AudioQtRX;  
-#endif
-
+#include "AudioQt.hxx"
 
 
 void createLockFile(const std::string & lock_file_name)
@@ -179,58 +174,82 @@ void deleteLockFile(const std::string & lock_file_name)
 
 int loadAccessories(const std::vector<std::string> & libs, SoDa::Debug & d) {
   // are there loadable modules we want to run?
+  typedef bool (*initfunctype)();
+
   for(auto l : libs) {
-    dlopen(l.c_str(), RTLD_LAZY | RTLD_GLOBAL);
-    d.debugMsg(SoDa::Format("Loaded shared object %0\n").addS(l));
+    initfunctype initfunc; 
+    auto handle = dlopen(l.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+    d.debugMsg(SoDa::Format("Loaded plugin %0\n").addS(l));
+    // now find the "init" method.
+    initfunc = (initfunctype) dlsym(handle, "initPlugin");
+    const char * dlsym_error = dlerror();
+    if(dlsym_error != nullptr) {
+      d.debugMsg(SoDa::Format("Shared plugin %0 does not provied an initialization function %1 -- error %2\n")
+		 .addS(l)
+		 .addS("initPlugin")
+		 .addS(dlsym_error)
+		 );
+    }
+    else {
+      initfunc();
+    }
   }
   return 1; 
 }
 
 /// do the work of creating the SoDa threads
 /// @param params command line parameter parser object
-int doWork(SoDa::Params & params)
+int doWork(SoDa::ParamsPtr params)
 {
   /// create the components of the radio
-  SoDa::Debug d(params.getDebugLevel(), "SoDaServer");
-  d.setDefaultLevel(params.getDebugLevel());
+  SoDa::Debug d(params->getDebugLevel(), "SoDaServer");
+  d.setDefaultLevel(params->getDebugLevel());
   
-  loadAccessories(params.getLibs(), d);
+  loadAccessories(params->getLibs(), d);
   
   // These are the mailboxes that connect
   // the various widgets
   // the rx and tx streams are vectors of complex floats.
   // we don't declare the extent here, as it will be set
-  // by a negotiation.  
-  SoDa::DatMBox rx_stream, tx_stream, if_stream, cw_env_stream;
-  SoDa::CmdMBox cmd_stream(false);
-  // create a separate gps stream to avoid "leaks" and latency problems... 
-  SoDa::CmdMBox gps_stream(false);
-  SoDa::CmdMBox cwtxt_stream(false);
+  // by a negotiation.
+  auto rx_stream = SoDa::CDatMBox::make("RXstream");
+  auto tx_stream = SoDa::CDatMBox::make("TXstream");
+  auto if_stream = SoDa::CDatMBox::make("IFstream");
+  auto cw_env_stream = SoDa::FDatMBox::make("CWstream");
 
-  SoDa::Thread * ctrl;
-  SoDa::Thread * rx;
-  SoDa::Thread * tx;
+  auto cmd_stream = SoDa::CmdMBox::make("CMDstream");
+  auto gps_stream = SoDa::CmdMBox::make("GPSstream");
+  auto cwtxt_stream = SoDa::CmdMBox::make("CWTXTstream");  
 
-  SoDa::MailBoxMap mailbox_map;
+  SoDa::ThreadPtr ctrl;
+  SoDa::ThreadPtr rx;
+  SoDa::ThreadPtr tx;
 
-  mailbox_map["RX"] = &rx_stream;
-  mailbox_map["TX"] = &tx_stream;
-  mailbox_map["CMD"] = &cmd_stream;
-  mailbox_map["CW_TXT"] = &cwtxt_stream;
-  mailbox_map["CW_ENV"] = &cw_env_stream;  
-  mailbox_map["GPS"] = &gps_stream;
-  mailbox_map["IF"] = &if_stream;
+  std::vector<SoDa::MailBoxBasePtr> mailboxes;
+
+  mailboxes.push_back(rx_stream);
+  mailboxes.push_back(tx_stream);
+  mailboxes.push_back(cmd_stream);
+  mailboxes.push_back(cwtxt_stream);
+  mailboxes.push_back(cw_env_stream);  
+  mailboxes.push_back(gps_stream);
+  mailboxes.push_back(if_stream);
   
-  if(params.isRadioType("USRP")) {
+  if(params->isRadioType("USRP")) {
     /// create the USRP Control, RX Streamer, and TX Streamer threads
     /// @see SoDa::USRPCtrl @see SoDa::USRPRX @see SoDa::USRPTX
-    ctrl = new SoDa::USRPCtrl(&params);
-    rx = new SoDa::USRPRX(&params, ((SoDa::USRPCtrl *)ctrl)->getUSRP());
-    tx = new SoDa::USRPTX(&params, ((SoDa::USRPCtrl *)ctrl)->getUSRP());
+    std::cerr << "Creating a USRPCtrl\n";
+    ctrl = SoDa::USRPCtrl::make(params);
+    if(ctrl == nullptr) std::cerr << "but ctrl was null\n";
+    auto usrp_ctrl_ptr = SoDa::USRPCtrl::convert(ctrl);
+    if(usrp_ctrl_ptr == nullptr) std::cerr << "but usrp_ctrl_ptr was null\n";
+    
+    rx = SoDa::USRPRX::make(params, usrp_ctrl_ptr->getUSRP());
+    tx = SoDa::USRPTX::make(params, usrp_ctrl_ptr->getUSRP());
   }
   else {
     std::cerr << SoDa::Format("Radio type [%0] is not yet supported\nHit ^C to exit.\n")
-      .addS(params.getRadioType()); 
+      .addS(params->getRadioType()); 
     exit(-1);
   }
 
@@ -240,34 +259,58 @@ int doWork(SoDa::Params & params)
   /// These are subclasses of the more generic SoDa::AudioIfc class
   //
   
-  AudioQt audio_ifc(params.getAudioSampleRate(),
-			  params.getAFBufferSize(),
-			  params.getServerSocketBasename(),
-			  params.getAudioPortName());
+  auto audio_ifc = SoDa::AudioQt::make(params->getAudioSampleRate(),
+				       params->getAFBufferSize(),
+				       params->getServerSocketBasename());
+  std::cerr << SoDa::Format("%0 pid %1\n")
+    .addS(audio_ifc->getObjName())
+    .addU(audio_ifc->getID())
+    ;
   /// Create the audio RX and audio TX unit threads
   /// These are also responsible for implementing IF tuning and modulation. 
   /// @see SoDa::BaseBandRX @see SoDa::BaseBandTX
   std::cerr << "About to create baseband rx\n";
-  SoDa::BaseBandRX bbrx(&params, &audio_ifc);
+  auto bbrx = SoDa::BaseBandRX::make(params, audio_ifc);
+  std::cerr << SoDa::Format("%0 pid %1\n")
+    .addS(bbrx->getObjName())
+    .addU(bbrx->getID())
+    ;
 
   std::cerr << "About to create baseband tx\n";  
-  SoDa::BaseBandTX bbtx(&params, &audio_ifc);
+  auto bbtx = SoDa::BaseBandTX::make(params, audio_ifc);
+  std::cerr << SoDa::Format("%0 pid %1\n")
+    .addS(bbtx->getObjName())
+    .addU(bbtx->getID())
+    ;
 
   /// Create the morse code (CW) tx handler thread @see SoDa::CWTX
   std::cerr << "About to create cwtx\n";  
-  SoDa::CWTX cwtx(&params);
+  auto cwtx = SoDa::CWTX::make(params);
+  std::cerr << SoDa::Format("%0 pid %1\n")
+    .addS(cwtx->getObjName())
+    .addU(cwtx->getID())
+    ;
     
   /// Create the user interface (UI) thread @see SoDa::UI
   std::cerr << "About to create UI listener\n";    
-  SoDa::UI ui(&params);
+  auto ui = SoDa::UI::make(params);
+  std::cerr << SoDa::Format("%0 pid %1\n")
+    .addS(ui->getObjName())
+    .addU(ui->getID())
+    ;
 
   /// Create an IF listener process that copies the IF stream to an output file
   /// when requested.
   std::cerr << "About to create if recorder\n";
-  SoDa::IFRecorder ifrec(&params);
+  auto ifrec = SoDa::IFRecorder::make(params);
+  std::cerr << SoDa::Format("%0 pid %1\n")
+    .addS(ifrec->getObjName())
+    .addU(ifrec->getID())
+    ;
 
+  
 #if HAVE_GPSLIB    
-  SoDa::GPSmon gps(&params);
+  auto gps = SoDa::GPSmon::make(params);
 #endif
   
   d.debugMsg("Created units.");
@@ -277,7 +320,7 @@ int doWork(SoDa::Params & params)
   auto registrar = SoDa::ThreadRegistry::getRegistrar();  
 
   // hook everyone up to the mailboxes. 
-  registrar->subscribeThreads(mailbox_map);
+  registrar->subscribeThreads(mailboxes);
   
   // Now start each of the activities -- they may or may not
   // implement the "start" method -- not all objects need to be threads.
@@ -310,10 +353,10 @@ int main(int argc, char * argv[])
   /// information from the command line and from
   /// the stored configuration files.
   /// @see SoDa::Params
-  SoDa::Params params(argc, argv);
+  SoDa::ParamsPtr params = SoDa::Params::make(argc, argv);
 
   /// create a lock file to signal that we're alive. 
-  createLockFile(params.getLockFileName()); 
+  createLockFile(params->getLockFileName()); 
 
   try {
     doWork(params); 
@@ -323,5 +366,5 @@ int main(int argc, char * argv[])
     std::cerr << "\t" << exc.toString() << std::endl; 
   }
 
-  deleteLockFile(params.getLockFileName());   
+  deleteLockFile(params->getLockFileName());   
 }
