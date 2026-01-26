@@ -173,7 +173,7 @@ namespace GUISoDa {
     return format; 
   }
 
-  bool AudioRXListener::initAudio(const QAudioDeviceInfo & dev_info)
+  bool AudioRXListener::initAudio(const QAudioDevice & dev)
   {
     QAudioFormat format = createAudioFormat();
 

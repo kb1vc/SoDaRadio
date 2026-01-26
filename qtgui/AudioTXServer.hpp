@@ -128,7 +128,7 @@ namespace GUISoDa {
      * @param dev_info a descriptor for the device
      * @return true on success, false on some fatal problem 
      */
-    bool initAudioDevice(const QAudioDeviceInfo & dev_info);
+    bool initAudioDevice(const QAudioDevice & dev);
 
     /**
      * @brief write method for a write only device
@@ -162,7 +162,7 @@ namespace GUISoDa {
      * @param dev_info a Qt audio device descritor.
      * @return true if dev_info supports the 32/fload/pcm format, false otherwise. 
      */
-    static bool audioFormatIsSupported(QAudioDeviceInfo & dev_info);
+    static bool audioFormatIsSupported(QAudioDevice & dev_info);
     
   protected:    
     /**
@@ -197,7 +197,7 @@ namespace GUISoDa {
      *
      * @param dev_info describes the audio device that will provide data
      */
-    void changeDevice(QAudioDeviceInfo & dev_info);
+    void changeDevice(QAudioDevice & dev_info);
 
     /**
      * @brief This closes out the audio device and the socket. 

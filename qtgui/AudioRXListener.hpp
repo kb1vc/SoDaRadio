@@ -68,7 +68,7 @@ namespace GUISoDa {
      * @brief initialize audio interface
      * @return true on success, false on some fatal problem 
      */
-    bool initAudio(const QAudioDeviceInfo & dev_info);
+    bool initAudio(const QAudioDevice & dev_info);
 
     /*
      * This is a QIODevice, so it must implement some means of providing data 
@@ -125,7 +125,7 @@ namespace GUISoDa {
 					   
   public slots:
     void setAudioGain(float gain); 
-    void setRXDevice(const QAudioDeviceInfo & dev_info);
+    void setRXDevice(const QAudioDevice & dev_info);
     void closeRadio();
     void audioOutError(QAudio::State new_state);
 

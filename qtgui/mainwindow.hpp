@@ -32,7 +32,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QMainWindow>
 #include <QCloseEvent>
 #include <QSettings>
-#include <QAudioDeviceInfo>
+#include <QAudioDevice>
 
 #include "RadioListener.hpp"
 #include "../common/GuiParams.hxx"

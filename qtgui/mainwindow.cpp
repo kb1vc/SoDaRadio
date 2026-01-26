@@ -91,13 +91,13 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   connect(ui->audioOut_cb, QOverload<int>::of(&QComboBox::currentIndexChanged),
 	  [=](int index) {
 	    int ridx = ((index >= 0) && (index < ui->audioOut_cb->count())) ? index : 0;
-	    audio_listener->getRX()->setRXDevice(ui->audioOut_cb->itemData(ridx).value<QAudioDeviceInfo>());
+	    audio_listener->getRX()->setRXDevice(ui->audioOut_cb->itemData(ridx).value<QAudioDevice>());
 	  });
 
   connect(audio_listener->getRX(), SIGNAL(bufferSlack(const QString &)), 
 	  ui->slack_lab, SLOT(setText(const QString &)));
 
-  connect(ui->Record_chk, &QCheckBox::stateChanged,
+  connect(ui->Record_chk, &QCheckBox::checkStateChanged,
 	  [=](int changed) {
 	    audio_listener->getRec()->record(changed != Qt::Unchecked);
 	  });
