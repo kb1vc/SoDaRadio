@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012,2013,2014,2015,2016,2017 Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2013,2014,2015,2016,2017,2025 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -355,6 +355,7 @@ int main(int argc, char * argv[])
   /// @see SoDa::Params
   SoDa::ParamsPtr params = SoDa::Params::make(argc, argv);
 
+  std::cerr << "\n===============\nGot to SoDaServer start\n\n\n";
   /// create a lock file to signal that we're alive. 
   createLockFile(params->getLockFileName()); 
 
@@ -366,5 +367,6 @@ int main(int argc, char * argv[])
     std::cerr << "\t" << exc.toString() << std::endl; 
   }
 
-  deleteLockFile(params->getLockFileName());   
+  deleteLockFile(params->getLockFileName());
+  std::cerr << "\n$$$$$$$$$$$$$$$$$$\nGot to SoDaServer exit\n\n\n";  
 }

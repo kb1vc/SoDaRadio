@@ -82,7 +82,7 @@ namespace GUISoDa {
       QThread::sleep(5); // sleep for 5 seconds...    
     }
 
-    connect(audio_tx_socket, SIGNAL(error(QLocalSocket::LocalSocketError)), 
+    connect(audio_tx_socket, SIGNAL(errorOccured(QLocalSocket::LocalSocketError)), 
 	    this, SLOT(audioSocketError(QLocalSocket::LocalSocketError)));
 
     return true;

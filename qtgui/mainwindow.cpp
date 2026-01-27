@@ -72,6 +72,8 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   setupLogEditor();
   setupStatus();
 
+  qDebug() << QString("Setup all the settings and UI components.");
+  
   this->setWindowIcon(QIcon(QPixmap(SoDaLogo_Big)));
   
   // connect(listener, SIGNAL(repHWMBVersion(const QString &)), 
@@ -114,22 +116,27 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   connect(ui->aboutSoDa_btn, SIGNAL(clicked(bool)), 
 	  this, SLOT(displayAppInfo(bool)));
 
+  qDebug() << QString("connected stuff");  
   settings_p = new QSettings("kb1vc.org", "SoDaRadioQT", this);
 
   current_band_selector = ui->bandSel_cb->currentText(); 
   auto_bandswitch_target = QString("");
 
-
+  qDebug() << QString("About to init radio_listener");  
   radio_listener->init();
+  qDebug() << QString("About to start radio_listener");
   radio_listener->start();
+  
+  qDebug() << QString("About to init audo_listener");        
   audio_listener->init();
+  qDebug() << QString("About to start audo_listener");      
   audio_listener->start();
-  
-  hlib_server = new HamlibServer(this, params.getHamlibPortNumber());
-  
-  hlib_server->start();
 
-  setupHamlib();  
+  qDebug() << QString("About to starting hamlib server");        
+  hlib_server = new HamlibServer(this, params.getHamlibPortNumber());
+  hlib_server->start();
+  setupHamlib();
+  qDebug() << QString("setup hamlib server");          
 }
 
 MainWindow::~MainWindow()

@@ -56,7 +56,7 @@ bool RadioListener::init()
   }
 
   cmd_socket->connectToServer(cmd_socket_name); 
-  while(!cmd_socket->waitForConnected(1000)) {
+  while(!cmd_socket->waitForConnected(30000)) {
     qDebug() << QString("Waited for connection on local socket [%1_cmd]. Is something wrong?").arg(socket_basename);
     qDebug() << cmd_socket->errorString();
     QThread::sleep(5); // sleep for 5 seconds...    
@@ -64,7 +64,7 @@ bool RadioListener::init()
     
   connect(cmd_socket, SIGNAL(readyRead()), 
 	  this, SLOT(processCmd())); 
-  connect(cmd_socket, SIGNAL(error(QLocalSocket::LocalSocketError)), 
+  connect(cmd_socket, SIGNAL(errorOccurred(QLocalSocket::LocalSocketError)), 
 	  this, SLOT(cmdErrorHandler(QLocalSocket::LocalSocketError)));
 
 
@@ -78,7 +78,7 @@ bool RadioListener::init()
     
   connect(spect_socket, SIGNAL(readyRead()), 
 	  this, SLOT(processSpectrum())); 
-  connect(spect_socket, SIGNAL(error(QLocalSocket::LocalSocketError)), 
+  connect(spect_socket, SIGNAL(errorOccurred(QLocalSocket::LocalSocketError)), 
 	  this, SLOT(cmdErrorHandler(QLocalSocket::LocalSocketError)));
 
   spect_buffer_len = 0; 

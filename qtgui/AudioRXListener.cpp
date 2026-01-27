@@ -82,7 +82,7 @@ namespace GUISoDa {
     }
 
     audio_rx_socket->connectToServer(rx_socket_name);
-    while(!audio_rx_socket->waitForConnected(1000)) {
+    while(!audio_rx_socket->waitForConnected(30000)) {
       qDebug() << QString("AudioRXListener Waited for connection on local socket\n[%1]. Is something wrong?").arg(rx_socket_name);
       qDebug() << audio_rx_socket->errorString();
       QThread::sleep(5); // sleep for 5 seconds...    
@@ -91,7 +91,7 @@ namespace GUISoDa {
     connect(audio_rx_socket, SIGNAL(readyRead()), 
 	    this, SLOT(processRXAudio()));
 
-    connect(audio_rx_socket, SIGNAL(error(QLocalSocket::LocalSocketError)), 
+    connect(audio_rx_socket, SIGNAL(errorOccurred(QLocalSocket::LocalSocketError)), 
 	    this, SLOT(audioSocketError(QLocalSocket::LocalSocketError)));
 
     return true; 

@@ -35,9 +35,10 @@ PROJECT(SoDaRadio)
 # version 10 moves TX audio from portaudio/whatever to Qt audio stream
 # 10.1.0 Fixed NBMF demod and a mistake in LSB demod. (LSB filter was
 # "on the wrong side" and nbmf demod had the squelch set wayyyyy too high.
-# there must have been something that changed higher-up in the chain. 
-SET(SoDaRadio_VERSION_MAJOR 10)
-SET(SoDaRadio_VERSION_MINOR 1)
+# there must have been something that changed higher-up in the chain.
+# 11.0 - Beginning of port to qt6 -- RX works now!
+SET(SoDaRadio_VERSION_MAJOR 11)
+SET(SoDaRadio_VERSION_MINOR 0)
 SET(SoDaRadio_VERSION_PATCH 0)
 SET(SoDaRadio_VERSION "${SoDaRadio_VERSION_MAJOR}.${SoDaRadio_VERSION_MINOR}.${SoDaRadio_VERSION_PATCH}")
 
