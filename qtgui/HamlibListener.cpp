@@ -60,7 +60,7 @@ namespace GUISoDa {
 
     char * as = array.data();
 
-    int lim = array.count();
+    int lim = array.size(); 
     for(int i = 0; i < lim; i++) {
       if(as[i] == '\n') {
 	handler_p->processCommand(current_command, socket_p);

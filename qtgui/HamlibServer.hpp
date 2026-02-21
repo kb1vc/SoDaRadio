@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017 Matthew H. Reilly (kb1vc)
+Copyright (c) 2017, 2026 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -58,9 +58,10 @@ namespace GUISoDa {
 		      
   public slots:
     // start listening for the first incoming connection.
-    bool start(); 
+    bool start();
 
-
+    // Need to move socket processing from the Listener and handler back to the process that owns the socket.
+    
   protected:
     void incomingConnection(qintptr desc);
     int port_num;

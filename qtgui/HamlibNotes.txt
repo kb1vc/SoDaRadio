@@ -1,0 +1,7 @@
+The hamlib server/client is all screwed up.  Qt6 exposese the problem.
+
+The process that creates the network socket delegates TX and RX to two
+different processes. That's just dumb. Not sure how it happened.
+
+So, how is it setup now?
+
