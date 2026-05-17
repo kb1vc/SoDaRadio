@@ -48,11 +48,7 @@ void SoDa::Command::initTables()
   // created from the buildmap file produced by enum_body2map.sh
   initTableEntry(std::string("RX_TUNE_FREQ"), RX_TUNE_FREQ);
   initTableEntry(std::string("TX_TUNE_FREQ"), TX_TUNE_FREQ);
-  initTableEntry(std::string("RX_RETUNE_FREQ"), RX_RETUNE_FREQ);
-  initTableEntry(std::string("TX_RETUNE_FREQ"), TX_RETUNE_FREQ);
-  initTableEntry(std::string("RX_FE_FREQ"), RX_FE_FREQ);
-  initTableEntry(std::string("TX_FE_FREQ"), TX_FE_FREQ);
-  initTableEntry(std::string("RX_LO3_FREQ"), RX_LO3_FREQ);
+  initTableEntry(std::string("RX_NCO_FREQ"), RX_NCO_FREQ);
   initTableEntry(std::string("RX_SAMP_RATE"), RX_SAMP_RATE);
   initTableEntry(std::string("TX_SAMP_RATE"), TX_SAMP_RATE);
   initTableEntry(std::string("RX_ANT"), RX_ANT);

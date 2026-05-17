@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012, 2026 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -31,11 +31,8 @@
 
 #include <uhd/version.hpp>
 #include <uhd/utils/safe_main.hpp>
-#if UHD_VERSION < 3110000
-#  include <uhd/utils/thread_priority.hpp>
-#else 
-#  include <uhd/utils/thread.hpp>
-#endif
+#include <uhd/utils/thread.hpp>
+
 #include <uhd/usrp/multi_usrp.hpp>
 #include <fftw3.h>
 #include <sys/types.h>
@@ -46,7 +43,7 @@
 #include <fstream>
 
 SoDa::USRPRX::USRPRX(Params * params, uhd::usrp::multi_usrp::sptr _usrp) : 
-  SoDa::Thread("USRPRX")
+  SoDa::RadioRX(params)
 {
 
   usrp = _usrp; 
@@ -85,115 +82,75 @@ SoDa::USRPRX::USRPRX(Params * params, uhd::usrp::multi_usrp::sptr _usrp) :
   if_stream = NULL;
   cmd_stream = NULL;
 
-}
-
-static void doFFTandDump(int fd, std::complex<float> * in, int len) __attribute__ ((unused));
-
-static void doFFTandDump(int fd, std::complex<float> * in, int len)
-{
-  std::complex<float> out[len];
-  // create plan
-  fftwf_plan tplan = fftwf_plan_dft_1d(len, (fftwf_complex*) in, (fftwf_complex*) out,
-				       FFTW_FORWARD, FFTW_ESTIMATE | FFTW_UNALIGNED);
-
-  fftwf_execute(tplan);
-  write(fd, out, sizeof(std::complex<float>) * len); 
-  fftwf_destroy_plan(tplan); 
-}
-
-void SoDa::USRPRX::run()
-{
-  if(cmd_stream == NULL) {
-    throw SoDa::Radio::Exception(std::string("Never got command stream subscription\n"), 
-			  this);	
-  }
-  if(rx_stream == NULL) {
-    throw SoDa::Radio::Exception(std::string("Never got rx stream subscription\n"),
-			  this);	
-  }
-  if(if_stream == NULL) {
-    throw SoDa::Radio::Exception(std::string("Never got if stream subscription\n"),
-			  this);	
-  }
-  
   uhd::set_thread_priority_safe(); 
   // now do the event loop.  we watch
   // for commands and responses on the command stream.
   // and we watch for data in the input buffer. 
+}
 
-  bool exitflag = false;
 
-  while(!exitflag) {
-    Command * cmd = cmd_stream->get(cmd_subs);
-    if(cmd != NULL) {
-      // process the command.
-      execCommand(cmd);
-      exitflag |= (cmd->target == Command::STOP); 
-      cmd_stream->free(cmd); 
+bool SoDa::USRPRX::convert()
+{
+  bool did_work = false; 
+
+  if(audio_rx_stream_enabled) {
+    // go get some data
+    // get a free buffer.
+    SoDa::Buf * buf = rx_stream->alloc();
+    if(buf == NULL) {
+      buf = new SoDa::Buf(rx_buffer_size); 
     }
-    else if(audio_rx_stream_enabled) {
-      // go get some data
-      // get a free buffer.
-      SoDa::Buf * buf = rx_stream->alloc();
-      if(buf == NULL) {
-	buf = new SoDa::Buf(rx_buffer_size); 
-      }
 
-      if(buf == NULL) throw SoDa::Radio::Exception("USRPRX couldn't allocate SoDa::Buf object", this); 
-      if(buf->getComplexBuf() == NULL) throw SoDa::Radio::Exception("USRPRX allocated empty SoDa::Buf object", this);
+    if(buf == NULL) throw SoDa::Radio::Exception("USRPRX couldn't allocate SoDa::Buf object", this); 
+    if(buf->getComplexBuf() == NULL) throw SoDa::Radio::Exception("USRPRX allocated empty SoDa::Buf object", this);
       
-      unsigned int left = rx_buffer_size;
-      unsigned int coll_so_far = 0;
-      uhd::rx_metadata_t md;
-      std::complex<float> *dbuf = buf->getComplexBuf();
-      while(left != 0) {
-	unsigned int got = rx_bits->recv(&(dbuf[coll_so_far]), left, md);
-	if(got == 0) {
-	  debugMsg("****************************************");
-	  debugMsg(SoDa::Format("RECV got error -- md = [%0]\n").addS(md.to_pp_string()));
-	  debugMsg("****************************************");	  
-	}
-	coll_so_far += got;
-	left -= got;
+    unsigned int left = rx_buffer_size;
+    unsigned int coll_so_far = 0;
+    uhd::rx_metadata_t md;
+    std::complex<float> *dbuf = buf->getComplexBuf();
+    while(left != 0) {
+      unsigned int got = rx_bits->recv(&(dbuf[coll_so_far]), left, md);
+      if(got == 0) {
+	debugMsg("****************************************");
+	debugMsg(SoDa::Format("RECV got error -- md = [%0]\n").addS(md.to_pp_string()));
+	debugMsg("****************************************");	  
+      }
+      coll_so_far += got;
+      left -= got;
+    }
+
+    // If the anybody cares, send the IF buffer out.
+    // If the UI is listening, it will do an FFT on the buffer
+    // and send the positive spectrum via the UI to any listener.
+    // the UI does the FFT then puts it on its own ring.
+    if(enable_spectrum_report && (if_stream->getSubscriberCount() > 0)) {
+      // clone a buffer, cause we're going to modify
+      // it before the send is complete. 
+      SoDa::Buf * if_buf = if_stream->alloc();
+      if(if_buf == NULL) {
+	if_buf = new SoDa::Buf(rx_buffer_size); 
       }
 
-      // If the anybody cares, send the IF buffer out.
-      // If the UI is listening, it will do an FFT on the buffer
-      // and send the positive spectrum via the UI to any listener.
-      // the UI does the FFT then puts it on its own ring.
-      if(enable_spectrum_report && (if_stream->getSubscriberCount() > 0)) {
-	// clone a buffer, cause we're going to modify
-	// it before the send is complete. 
-	SoDa::Buf * if_buf = if_stream->alloc();
-	if(if_buf == NULL) {
-	  if_buf = new SoDa::Buf(rx_buffer_size); 
-	}
-
-	if(if_buf->copy(buf)) {
-	  if_stream->put(if_buf);
-	}
-	else {
-	  throw SoDa::Radio::Exception("SoDa::Buf Copy for IF stream failed", this);
-	}
+      if(if_buf->copy(buf)) {
+	if_stream->put(if_buf);
       }
-
-
-      // support debug... 
-      scount++;
-
-      // tune it down with the IF oscillator
-      doMixer(buf); 
-      // now put the baseband signal on the ring.
-      rx_stream->put(buf);
-
-      // write the buffer output
+      else {
+	throw SoDa::Radio::Exception("SoDa::Buf Copy for IF stream failed", this);
+      }
     }
-    else {
-      sleep_us(1000);
-    }
+
+    // support debug... 
+    scount++;
+
+    // tune it down with the IF oscillator
+    doMixer(buf); 
+    // now put the baseband signal on the ring.
+    rx_stream->put(buf);
+
+    did_work = true; 
   }
-
-  stopStream(); 
+  
+  return did_work; 
 }
 
 void SoDa::USRPRX::doMixer(SoDa::Buf * inout)
@@ -207,7 +164,7 @@ void SoDa::USRPRX::doMixer(SoDa::Buf * inout)
   }
 }
 
-void SoDa::USRPRX::set3rdLOFreq(double IF_tuning)
+void SoDa::USRPRX::setNCOFreq(double IF_tuning) 
 {
   // calculate the advance of phase for the IF
   // oscilator in terms of radians per sample
@@ -216,22 +173,6 @@ void SoDa::USRPRX::set3rdLOFreq(double IF_tuning)
 	   .addF(IF_tuning, 10, 6, 'e'));
 }
 
-void SoDa::USRPRX::execCommand(Command * cmd)
-{
-  switch (cmd->cmd) {
-  case Command::GET:
-    execGetCommand(cmd); 
-    break;
-  case Command::SET:
-    execSetCommand(cmd); 
-    break; 
-  case Command::REP:
-    execRepCommand(cmd); 
-    break;
-  default:
-    break; 
-  }
-}
 
 void SoDa::USRPRX::startStream()
 {
@@ -243,73 +184,12 @@ void SoDa::USRPRX::startStream()
 
 void SoDa::USRPRX::stopStream()
 {
+  // we never stop the stream for a USRP
+}
+
+void SoDa::USRPRX::closeStream()
+{
   usrp->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_STOP_CONTINUOUS, 0);
   audio_rx_stream_enabled = false;
 }
 
-void SoDa::USRPRX::execSetCommand(Command * cmd)
-{
-  switch(cmd->target) {
-  case SoDa::Command::RX_MODE:
-    rx_modulation = SoDa::Command::ModulationType(cmd->iparms[0]); 
-    break; 
-  case Command::RX_LO3_FREQ:
-    current_IF_tuning = cmd->dparms[0];
-    set3rdLOFreq(cmd->dparms[0]); 
-    break;
-  case SoDa::Command::TX_STATE: // SET TX_ON
-    if(cmd->iparms[0] == 3) {
-      if((rx_modulation == SoDa::Command::CW_L) || (rx_modulation == SoDa::Command::CW_U)) {
-	// If we're in a CW mode, set the RF gain to zip.
-	// this is already done in the USRPCtrl thread.
-	// and adjust the AF gain.
-	debugMsg("In TX ON -- stream continues");
-      }
-      else {
-	// We used to stop the RX stream, but we don't anymore. 
-	debugMsg("In TX ON -- stopped stream");	
-	// stopStream();
-      }
-      enable_spectrum_report = (cmd->iparms[1] > 0);
-    }
-    if(cmd->iparms[0] == 2) {
-      // start the RX stream.
-      //usleep(750000);
-      debugMsg("In TX OFF -- restart stream");
-      // we never stopped the stream
-      // but we need to start it the very first time. 
-      startStream();
-      enable_spectrum_report = true;
-      // tell the baseband unit that it is ready to start. 
-      cmd_stream->put(new Command(Command::SET, Command::TX_STATE, 
-				  4));
-    }
-    break; 
-  default:
-    break; 
-  }
-}
-
-void SoDa::USRPRX::execGetCommand(Command * cmd)
-{
-  (void) cmd; 
-}
-
-void SoDa::USRPRX::execRepCommand(Command * cmd)
-{
-  (void) cmd; 
-}
-
-/// implement the subscription method
-void SoDa::USRPRX::subscribeToMailBox(const std::string & mbox_name, 
-					SoDa::BaseMBox * mbox_p) {
-  if(SoDa::connectMailBox<SoDa::CmdMBox>(this, cmd_stream, "CMD", mbox_name, mbox_p)) {
-    cmd_subs = cmd_stream->subscribe();
-  }
-  if(SoDa::connectMailBox<SoDa::DatMBox>(this, rx_stream, "RX", mbox_name, mbox_p)) {
-    // we don't subscribe -- we publish
-  }
-  if(SoDa::connectMailBox<SoDa::DatMBox>(this, if_stream, "IF", mbox_name, mbox_p)) {
-    // we don't subscribe -- we publish
-  }
-}

@@ -44,7 +44,7 @@ namespace SoDa {
    *
    * @image html SoDa_Radio_RX_Signal_Path.svg
    */
-  class USRPRX : public SoDa::Thread {
+  class USRPRX : public SoDa::RadioRX {
   public:
     /**
      * The constructor
@@ -55,23 +55,51 @@ namespace SoDa {
      */
     USRPRX(Params * params, uhd::usrp::multi_usrp::sptr usrp);
 
-    /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
-    
     /**
-     * USRPRX is a thread -- this is its run loop. 
+     * Set the last LO (convert to baseband) frequency for the NCO.
+     *
+     * This is called in response to a SET RX_IF_FREQ message from the
+     * RadioControl thread.
+     *
+     * @param freq LO3 frequency
+     * @param sel channel selection
      */
-    void run();
-    
-  private:   
-    void execCommand(Command * cmd); 
-    void execGetCommand(Command * cmd); 
-    void execSetCommand(Command * cmd); 
-    void execRepCommand(Command * cmd);
+    void setIFFreq(double freq, char sel = 0);
 
+    /**
+     * @brief A receiver must accept input data from the rx_stream
+     * and beat it against its NCO to produce output on its if_stream.
+     * If the stream_processing flag is off, any rx_input data will be
+     * dumped. 
+     *
+     * @return true if the receiver had input data ready to convert, false otherwise.
+     */
+    bool convert();
+
+    /**
+     * @brief flush the input rx data stream and set the stream_processing flag to on.
+     */
     void startStream();
-    void stopStream(); 
 
+    /**
+     * @brief we never stop a USRP stream until the radio shuts down
+     */
+    void stopStream();
+
+    /**
+     * @brief stop and close down the USRP input stream
+     */
+    void closeStream();
+
+    /**
+     * @brief Enable IF streamer - This passes the incoming RF sample buffer onto the
+     * IF stream where it can be consumed by the periodogram widget or anybody else.
+     *
+     * @param enable if true, send RF sample buffer onto if_stream, otherwise, don't. 
+     */
+    void enableIFStreamer(bool enable);
+
+  private:   
     /**
      * @brief implement a complex down converter with complex multiplication
      *
@@ -80,12 +108,11 @@ namespace SoDa {
      * @param inout the input/output RF buffer
      */
     void doMixer(SoDa::Buf * inout);
-    void set3rdLOFreq(double IF_tuning);
 
-    DatMBox * rx_stream;
-    DatMBox * if_stream; 
-    CmdMBox * cmd_stream;
-    unsigned int cmd_subs; 
+    /**
+     * @brief The USRP never stops the RX streamer once it starts. 
+     */ 
+    void actualStartStream(); 
 
     // state for the USRP widget
     uhd::rx_streamer::sptr rx_bits;

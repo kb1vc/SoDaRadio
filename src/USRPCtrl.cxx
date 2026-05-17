@@ -49,19 +49,16 @@ const unsigned int SoDa::USRPCtrl::TX_RELAY_MON = 0x0800;
 const double SoDa::USRPCtrl::rxmode_offset = 1.0e6;
 
 
-SoDa::USRPCtrl * SoDa::USRPCtrl::singleton_ctrl_obj = NULL; 
-
-
-SoDa::USRPCtrl::USRPCtrl(Params * _params) : SoDa::Thread("USRPCtrl")
+SoDa::USRPCtrl::USRPCtrl(Params * _params) : SoDa::RadioControl(_params, "USRPCtrl")
 {
-  // point to myself.... 
-  SoDa::USRPCtrl::singleton_ctrl_obj = this;
-
-  // setup a normal message handler that doesn't babble
-  // so much.
   
   // turn off logging below ERROR
   uhd::log::set_console_level(uhd::log::severity_level::warning);
+
+  // let the library know that the usrp thread should take the default level
+  // but treat it as a real-time thread.
+  uhd::set_thread_priority_safe();   
+
   
   // initialize variables
   last_rx_req_freq = 0.0; // at least this is a number...
@@ -187,111 +184,21 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params) : SoDa::Thread("USRPCtrl")
 
   // if we are in integer-N mode, setup the step table.
   testIntNMode(params->forceIntN(), params->forceFracN()); 
-  
-  // we need a cmd stream
-  cmd_stream = NULL; 
 }
 
-/// implement the subscription method
-void SoDa::USRPCtrl::subscribeToMailBox(const std::string & mbox_name, 
-					SoDa::BaseMBox * mbox_p) {
-  if(mbox_name == "CMD") {
-    SoDa::CmdMBox * _cmd_stream = dynamic_cast<SoDa::CmdMBox *>(mbox_p);
-    if(_cmd_stream != NULL) {
-      cmd_stream = _cmd_stream;
-
-      // subscribe to the command stream.
-      subid = cmd_stream->subscribe();
-    }
-    else {
-      throw SoDa::Radio::Exception(SoDa::Format("Bad mailbox pointer for mailbox named = [%0]\n") 
-			     .addS(mbox_name) , this);	
-    }
-  }
-}
-
-
-void SoDa::USRPCtrl::run()
-{
-  if(cmd_stream == NULL) {
-      throw SoDa::Radio::Exception(SoDa::Format("Never got command stream subscription\n"), 
-			  this);	
-  }
-  
-  uhd::set_thread_priority_safe(); 
-  // now do the event loop.  we watch
-  // for commands and responses on the command stream.
-  
-  // do the initial commands
-  cmd_stream->put(new Command(Command::SET, Command::RX_SAMP_RATE,
-			     params->getRXRate())); 
-  cmd_stream->put(new Command(Command::SET, Command::TX_SAMP_RATE,
-			     params->getTXRate()));
-
-  cmd_stream->put(new Command(Command::SET, Command::RX_ANT, 
-			     params->getRXAnt())); 
-  debugMsg(SoDa::Format("Sending TX_ANT as [%0]\n").addS(params->getTXAnt()));
-  cmd_stream->put(new Command(Command::SET, Command::TX_ANT,
-			     params->getTXAnt()));
-  cmd_stream->put(new Command(Command::SET, Command::CLOCK_SOURCE,
-			     params->getClockSource())); 
-
-  cmd_stream->put(new Command(Command::SET, Command::TX_RF_GAIN, 0.0)); 
-  cmd_stream->put(new Command(Command::SET, Command::RX_RF_GAIN, 0.0));
-
-  cmd_stream->put(new Command(Command::SET, Command::RX_AF_GAIN, 0.0));
-
-  // transmitter is off
-  tx_on = false; 
-  cmd_stream->put(new Command(Command::SET, Command::TX_STATE, 0)); 
-  
-  bool exitflag = false;
-  unsigned int cmds_processed = 0;
-  unsigned int loopcount = 0; 
-  while(!exitflag) {
-    loopcount++; 
-    Command * cmd = cmd_stream->get(subid);
-    if(cmd == NULL) {
-      sleep_ms(50);
-    }
-    else {
-      // process the command.
-      if((cmds_processed & 0xff) == 0) {
-	debugMsg(SoDa::Format("USRPCtrl processed %0 commands").addI(cmds_processed));
-      }
-      cmds_processed++; 
-      execCommand(cmd);
-      exitflag |= (cmd->target == Command::STOP); 
-      cmd_stream->free(cmd); 
-    }
-  }
-}
-
-double SoDa::USRPCtrl::getTime()
-{
-  double ret; 
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  ret = (((double) tv.tv_sec) - first_gettime) + 1.0e-6*((double) tv.tv_usec);
-  return ret; 
-}
-
-void SoDa::USRPCtrl::execCommand(Command * cmd)
-{
-  switch (cmd->cmd) {
-  case Command::GET:
-    execGetCommand(cmd); 
+bool SoDa::USRPCtrl::isLOLocked(SoDa::RXTX rxtx) {
+  switch(rxtx) {
+  case SoDa::RX:
+    return !rx_has_lo_locked_sensor || usrp->get_rx_sensor("lo_locked", 0).to_bool(); 
     break;
-  case Command::SET:
-    execSetCommand(cmd); 
+  case SoDa::TX:
+    return !tx_has_lo_locked_sensor || usrp->get_tx_sensor("lo_locked", 0).to_bool();     
     break; 
-  case Command::REP:
-    execRepCommand(cmd); 
-    break;
   default:
-    break; 
-  }
+    return true;
+  };
 }
+
 
 uhd::tune_result_t SoDa::USRPCtrl::checkLock(uhd::tune_request_t & req, char sel, uhd::tune_result_t & cur)
 {
@@ -326,13 +233,8 @@ uhd::tune_result_t SoDa::USRPCtrl::checkLock(uhd::tune_request_t & req, char sel
 void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
 {
   // select "r" for rx and "t" for tx.
-  // We only want to tune for one band :: 2m 144 to 148.
-  // well... not really... I'd like to tune to 432 as well.
-  // well.... this really should be made to work for all freqs.
-  // 
 
   double target_rx_freq;
-
 
   if(sel == 'r') {
     // we round the target frequency to a point that puts the
@@ -482,11 +384,11 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
  * @li RX_ANT set the receive antenna port
  * @li TX_ANT set the transmit antenna port
  */
-void SoDa::USRPCtrl::execSetCommand(Command * cmd)
+void SoDa::USRPCtrl::subExecSetCommand(Command * cmd)
 {
   double freq, fdiff; 
   if(cmd->cmd != Command::SET) {
-    std::cerr << "execSetCommand got a non-set command!  " << cmd->toString() << std::endl;
+    std::cerr << "subExecSetCommand got a non-set command!  " << cmd->toString() << std::endl;
     return; 
   }
   double tmp;
@@ -687,7 +589,7 @@ void SoDa::USRPCtrl::execSetCommand(Command * cmd)
   }
 }
 
-void SoDa::USRPCtrl::execGetCommand(Command * cmd)
+void SoDa::USRPCtrl::subExecGetCommand(Command * cmd)
 {
   int res;
 
@@ -753,7 +655,7 @@ void SoDa::USRPCtrl::execGetCommand(Command * cmd)
   }
 }
 
-void SoDa::USRPCtrl::execRepCommand(Command * cmd)
+void SoDa::USRPCtrl::subExecRepCommand(Command * cmd)
 {
   switch (cmd->target) {
   default:

@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012,2013,2014,2015,2016,2017 Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2013,2014,2015,2016,2017,2026 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -86,20 +86,46 @@
  *
  * Audio is handled in two ways in the SoDa::AudioQt class.
  * 
- * @li Transmit audio is read from an ALSA device by the SoDaServer process
- * via the SoDa::AudioQt::recv method.  With time, this function will migrate
- * to a socket connection the Qt GUI.
- * @li Receive audio is written by the SoDa::AudioQt send method
- *  to a socket that, in the normal configuration, 
- * is connected to the Qt based GUI.  This allows for better flow control and
- * also simplifies interfacing the audio stream to external modems like "fldigi"
- * and WSJT-X. 
+ * This needs to be updated to address the new Qt audio handlers.
+ *
+ *
+ * @section Tuning
  *
  * The SoDa receiver architecture is a 3 stage heterodyne design.  
  * The first two IF conversions are performed within the USRP SDR platform.
  * The final stage of conversion is completed in the USRPRX module.
- * @see SoDa::USRPRX
+ * @see SoDa::USRPRX for instance.
  *
+ * Some radios will have just one stage of RF tuning before converting to/from
+ * baseband. The USRP has two: the front end (PLL/analog) local oscillator, and
+ * a NCO in its FPGA. This NCO is referred to as the 2nd LO.
+ *
+ * Simpler radios will have just one front-end oscillator. In this
+ * case, LO 2 is ignored.
+ *
+ * In all cases, LO3 is an NCO implemented in the RadioRX and RadioTX
+ * modules. This shifts the IF stream to/from the SDR to the
+ * actual DC centered baseband processed in the BaseBandRX/TX modules.
+ *
+ * The signal stream to/from the SDR is NOT DC centered baseband. In
+ * order to get a "clean" spectrum around the desired zero beat, the
+ * stream coming from the SDR is at an intermediate frequency. The
+ * intent is that the actual zero-beat baseband frequency should be
+ * between 50 and 250 kHz above the IF frequency. 
+ *
+ * Two sets of SoDa::Commands control tuning:
+ *
+ * - For the receiver
+ *  - RX_TUNE_FREQ
+ *  - RX_FE_FREQ
+ *  - RX_LO3_FREQ
+ *  - RX_RETUNE_FREQ
+ * - For the transmitter
+ *  - TX_TUNE_FREQ
+ *  - TX_FE_FREQ
+ *  - TX_LO3_FREQ
+ *  - TX_RETUNE_FREQ
+ * 
  * @image html SoDa_Radio_RX_Signal_Path.svg
  *
  * The reason for the three stage conversion scheme is threefold:
@@ -119,7 +145,7 @@
  *
  * @image html SoDa_Radio_TX_Signal_Path.svg
  */
-// #include <uhd/usrp/multi_usrp.hpp>
+
 #include <unistd.h>
 #include <stdio.h>
 #include <sys/time.h>

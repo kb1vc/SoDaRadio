@@ -26,9 +26,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef SODA_BASE_HDR
-#define SODA_BASE_HDR
-
+#pragma once 
 #include "Command.hxx"
 #include "MultiMBox.hxx"
 #include "Debug.hxx"
@@ -57,6 +55,14 @@ extern "C" {
 
 namespace SoDa {
 
+  /**
+   * We often need to distinguis between the RX and TX device
+   */ 
+  enum RXTX { RX, // the command/query/response relates to a receiver
+	      TX, // the command/query/response relates to a transmitter
+	      TXRX // the command/query/response relates to a transmitter and receiver
+  };
+  
   /**
    * The Buffer Class
    *
@@ -285,5 +291,3 @@ namespace SoDa {
     };
   }
 }
-
-#endif

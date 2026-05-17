@@ -90,7 +90,19 @@ namespace SoDa {
      */
     void run();
 
+     
+     
   private:
+    /**
+     * @brief report all demod modes supported.
+     */
+    void reportModes();
+
+    /**
+     * @brief report all filters supported. 
+     */
+    void reportAFFilters();
+    
     /**
      * @brief execute GET commands from the command channel
      * @param cmd the incoming command
@@ -250,8 +262,6 @@ namespace SoDa {
     SoDa::OSFilter * am_pre_filter; ///< Before AM demod, we do some (6KHz) prefilter
     SoDa::OSFilter * nbfm_pre_filter; ///< Before NBFM demod, we do some (15KHz) prefilter -- rf rate
     SoDa::OSFilter * am_audio_filter; ///< After AM demod, we do a second filter
-
-    
     
     std::map<SoDa::Command::AudioFilterBW, SoDa::OSFilter *> filter_map; ///< map filter selectors to the filter objects
 

@@ -1,5 +1,7 @@
+#pragma once
+
 /*
-Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+Copyright (c) 2012, 2026 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -35,22 +37,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ///  @date   July 2013
  ///
 
-#ifndef USRPCTRL_HDR
-#define USRPCTRL_HDR
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
 #include "MultiMBox.hxx"
 #include "Command.hxx"
 #include "Params.hxx"
 #include "TRControl.hxx"
+#include "RadioControl.hxx"
 #include "PropTree.hxx"
 #include <uhd/version.hpp>
-#if UHD_VERSION < 3110000
-#  include <uhd/utils/msg.hpp>
-#  include <uhd/utils/thread_priority.hpp>
-#else
-#  include <uhd/utils/thread.hpp>
-#endif
+#include <uhd/utils/thread.hpp>
+
 
 
 #include <uhd/utils/safe_main.hpp>
@@ -60,8 +57,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <uhd/types/tune_result.hpp>
 
 namespace SoDa {
-
-
   ///  @class USRPCtrl
   /// 
   ///  Though libuhd is designed to be re-entrant, there are some indications
@@ -72,33 +67,26 @@ namespace SoDa {
   ///  requests from other components (including the SoDa::UI listener)
   ///  and dumps status and completion reports back onto
   ///  the command stream channel. 
-  class USRPCtrl : public SoDa::Thread {
+  class USRPCtrl : public SoDa::RadioControl {
   public:
     /// Constructor
     /// Build a USRPCtrl thread
     /// @param params Pointer to a parameter object with all the initial settings
     /// and identification for the attached USRP
     USRPCtrl(Params * params);
-    /// start the thread
-    void run();
 
     /// return a pointer to the multi_usrp object -- used by
     /// RX and TX processes to find the associated USRP widget.
     /// @return a pointer to the USRP radio object
     uhd::usrp::multi_usrp::sptr getUSRP() { return usrp; }
 
-    /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
-
-#if UHD_VERSION < 3110000
-    /// This is the more permanent message handler used before the elimination of the msg class    
-    static void normal_message_handler(uhd::msg::type_t type, const std::string & msg);
-#endif
-    
-    /// This is a singleton object -- the last (and only, we hope) such object
-    /// to be created sets a static pointer to itself.  This looks pretty gross, but
-    /// it is necessary to provide context to the error message handlers.
-    static SoDa::USRPCtrl * singleton_ctrl_obj;
+    /**
+    * is the identified (rx or tx) front-end LO locked?
+    * If not, set the tuning frequency to "the right thing"
+    *
+    * @param rxtx RX, TX
+    */
+    virtual bool isLOLocked(SoDa::RXTX rxtx) = 0; 
     
   private:
     Params * params;
@@ -111,16 +99,16 @@ namespace SoDa {
 
     /// Parse an incoming command and dispatch.
     /// @param cmd a command record
-    void execCommand(Command * cmd);
+    void subExecCommand(Command * cmd);
     /// Dispatch an incoming GET command
     /// @param cmd a command record
-    void execGetCommand(Command * cmd); 
+    void subExecGetCommand(Command * cmd); 
     /// Dispatch an incoming SET command
     /// @param cmd a command record
-    void execSetCommand(Command * cmd); 
+    void subExecSetCommand(Command * cmd); 
     /// Dispatch an incoming REPort command
     /// @param cmd a command record
-    void execRepCommand(Command * cmd); 
+    void subExecRepCommand(Command * cmd); 
 
     /// get the number of seconds since the "Epoch"
     /// @return relative time in seconds
@@ -294,4 +282,3 @@ namespace SoDa {
 }
 
 
-#endif

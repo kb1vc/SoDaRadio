@@ -32,6 +32,7 @@
 #include <string>
 #include "MultiMBox.hxx"
 #include <string.h>
+#include <memory>
 
 namespace SoDa
 {
@@ -76,33 +77,11 @@ public:
     RX_TUNE_FREQ,
 
     /**
-       * Set the RX front end 1st LO and the 2nd IF LO.
-       * The 1st LO is an analog synthesizer and the 2nd LO
-       * drives the digital down converter in the USRP FPGA.
-       *
-       * param is frequency as a double
-       *
-       * @see SoDa::USRPCtrl SoDa::UI
-       */
-    RX_FE_FREQ,
-
-    /**
-       * Tune the 3rd LO, if the current FE frequency
-       * is such that the desired frequency is between 
-       * RX_FE_FREQ + 50KHz and RX_FE_FREQ + 300KHz.
-       * Otherwise, promote this to an RX_TUNE_FREQ request.
+       * Tune the NCO (final LO) frequency to shift to baseband
        *
        * param is frequency as a double
        */
-    RX_RETUNE_FREQ,
-
-    /**
-       * Tune the 3rd LO (in SoDa::USRPRX).
-       *
-       * param is frequency as a double
-       */
-    RX_LO3_FREQ,
-
+    RX_IF_OSC
 
       /**
        * The center frequency for IF buffers from USRPRX
@@ -123,18 +102,11 @@ public:
     TX_TUNE_FREQ,
 
     /**
-       * Same effect as TX_TUNE_FREQ 
+       * Set/report the TX IF frequency 
        *
-       * param is frequency as a double
+       * param is frequency as a double (normally 0)
        */
-    TX_FE_FREQ,
-
-    /**
-       * Same effect as TX_TUNE_FREQ 
-       *
-       * param is frequency as a double
-       */
-    TX_RETUNE_FREQ,
+    TX_IF_OSC,
 
     /**
        * Sample rate for RX is typically 600 KHz or better to allow

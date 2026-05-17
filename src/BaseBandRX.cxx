@@ -466,6 +466,12 @@ void SoDa::BaseBandRX::execGetCommand(SoDa::Command * cmd)
 	.addI(readyAudioBuffers())
 	.addI(free_buffers.size());
     }
+    break;
+  case SoDa::Command::LIST_MODES:
+    reportModes();
+    break;
+  case SoDa::Command::LIST_AF_FILTERS:
+    reportAFFilters();
     break; 
   default:
     break; 
@@ -477,6 +483,42 @@ void SoDa::BaseBandRX::execRepCommand(SoDa::Command * cmd)
 {
   (void) cmd; 
 }
+
+
+void SoDa::BaseBandRX::reportModes()
+{
+    cmd_stream->put(new Command(Command::REP, Command::MOD_SEL_ENTRY, 
+				"CW_U", ((int) SoDa::Command::CW_U)));
+    cmd_stream->put(new Command(Command::REP, Command::MOD_SEL_ENTRY, 
+				"USB", ((int) SoDa::Command::USB)));
+    cmd_stream->put(new Command(Command::REP, Command::MOD_SEL_ENTRY, 
+				"CW_L", ((int) SoDa::Command::CW_L)));
+    cmd_stream->put(new Command(Command::REP, Command::MOD_SEL_ENTRY, 
+				"LSB", ((int) SoDa::Command::LSB)));
+    cmd_stream->put(new Command(Command::REP, Command::MOD_SEL_ENTRY, 
+				"AM", ((int) SoDa::Command::AM)));
+    cmd_stream->put(new Command(Command::REP, Command::MOD_SEL_ENTRY, 
+				"WBFM", ((int) SoDa::Command::WBFM)));
+    cmd_stream->put(new Command(Command::REP, Command::MOD_SEL_ENTRY, 
+				"NBFM", ((int) SoDa::Command::NBFM)));
+}
+
+void SoDa::BaseBandRX::reportAFFilters()
+{
+    cmd_stream->put(new Command(Command::REP, Command::AF_FILT_ENTRY,
+				"100", ((int) SoDa::Command::BW_100)));
+    cmd_stream->put(new Command(Command::REP, Command::AF_FILT_ENTRY,
+				"500", ((int) SoDa::Command::BW_500)));
+    cmd_stream->put(new Command(Command::REP, Command::AF_FILT_ENTRY,
+				"2000", ((int) SoDa::Command::BW_2000)));
+    cmd_stream->put(new Command(Command::REP, Command::AF_FILT_ENTRY,
+				"6000", ((int) SoDa::Command::BW_6000)));
+    cmd_stream->put(new Command(Command::REP, Command::AF_FILT_ENTRY,
+				"WSPR", ((int) SoDa::Command::BW_WSPR)));
+    cmd_stream->put(new Command(Command::REP, Command::AF_FILT_ENTRY,
+				"PASS", ((int) SoDa::Command::BW_PASS)));
+}
+
 
 void SoDa::BaseBandRX::run()
 {
