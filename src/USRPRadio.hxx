@@ -39,6 +39,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Radio.hxx"
 #include "Params.hxx"
+#include "USRPCtrl.hxx"
+#include "USRPRX.hxx"
+#include "USRPTX.hxx"
+
 #include <memory>
 
 namespace SoDa {

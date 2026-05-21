@@ -60,16 +60,6 @@ namespace SoDa {
     }
       
     /**
-     * @brief All radios must provide a way to make themselves. But the
-     * method must return a RadioPtr, not a pointer of the specific
-     * hardware radio model.
-     *
-     * @param params list of initial settings and such. 
-     */ 
-    static RadioPtr make(Params * params) = 0; 
-	 
-      
-    /**
      * @brief start the control, rx, tx, and any other hardware
      * specific processes. Setup all state. 
      */ 

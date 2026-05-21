@@ -41,15 +41,15 @@ namespace SoDa {
   void RadioRX::run()
   {
     if(cmd_stream == NULL) {
-      throw Radio::Exception(std::string("Never got command stream subscription\n"), 
+      throw SDR::Exception(std::string("Never got command stream subscription\n"), 
 			     this);	
     }
     if(rx_stream == NULL) {
-      throw Radio::Exception(std::string("Never got rx stream subscription\n"),
+      throw SDR::Exception(std::string("Never got rx stream subscription\n"),
 			     this);	
     }
     if(if_stream == NULL) {
-      throw Radio::Exception(std::string("Never got if stream subscription\n"),
+      throw SDR::Exception(std::string("Never got if stream subscription\n"),
 			     this);	
     }
   

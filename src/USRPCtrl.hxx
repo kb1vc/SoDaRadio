@@ -56,7 +56,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <uhd/types/tune_request.hpp>
 #include <uhd/types/tune_result.hpp>
 
+#include <memory>
+
 namespace SoDa {
+  class USRPCtrl;
+  typedef std::shared_ptr<USRPCtrl> USRPCtrlPtr;
+  
   ///  @class USRPCtrl
   /// 
   ///  Though libuhd is designed to be re-entrant, there are some indications
@@ -68,13 +73,18 @@ namespace SoDa {
   ///  and dumps status and completion reports back onto
   ///  the command stream channel. 
   class USRPCtrl : public SoDa::RadioControl {
-  public:
+  protected:
     /// Constructor
     /// Build a USRPCtrl thread
     /// @param params Pointer to a parameter object with all the initial settings
     /// and identification for the attached USRP
     USRPCtrl(Params * params);
 
+  public:
+    static USRPCtrlPtr make(Params * params) {
+      return std::shared_ptr<USRPCtrl>(new USRPCtrl(params));
+    }
+    
     /// return a pointer to the multi_usrp object -- used by
     /// RX and TX processes to find the associated USRP widget.
     /// @return a pointer to the USRP radio object

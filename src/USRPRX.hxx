@@ -38,14 +38,19 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <uhd/usrp/multi_usrp.hpp>
 #include <uhd/stream.hpp>
 
+#include <memory>
+
 namespace SoDa {
+  class USRPRX;
+  typedef std::shared_ptr<USRPRX> USRPRXPtr;
+  
   /**
    * The Receive RF Path
    *
    * @image html SoDa_Radio_RX_Signal_Path.svg
    */
   class USRPRX : public SoDa::RadioRX {
-  public:
+  protected:
     /**
      * The constructor
      *
@@ -54,6 +59,10 @@ namespace SoDa {
      * @param usrp a pointer to the UHD USRP object that we are streaming data from.
      */
     USRPRX(Params * params, uhd::usrp::multi_usrp::sptr usrp);
+  public:
+    static USRPRXPtr make(Params * params, uhd::usrp::multi_usrp::sptr _usrp) {
+      return std::shared_ptr<USRPRX>(new USRPRX(params, _usrp));
+    }
 
     /**
      * Set the last LO (convert to baseband) frequency for the NCO.

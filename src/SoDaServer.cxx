@@ -248,7 +248,7 @@ int doWork(SoDa::Params & params)
   mailbox_map["GPS"] = &gps_stream;
   mailbox_map["IF"] = &if_stream;
 
-  auto radio_p = RadioModels::make(params.getRadioType());
+  auto radio_p = SoDa::RadioModels::make(params.getRadioType(), &params);
 
   if(radio_p == nullptr) {
     std::cerr << SoDa::Format("Radio type [%0] is not yet supported\nHit ^C to exit.\n")
@@ -340,7 +340,7 @@ int main(int argc, char * argv[])
   try {
     doWork(params); 
   }
-  catch (SoDa::Radio::Exception exc) {
+  catch (SoDa::SDR::Exception exc) {
     std::cerr << "Exception caught at SoDa main: " << std::endl;
     std::cerr << "\t" << exc.toString() << std::endl; 
   }

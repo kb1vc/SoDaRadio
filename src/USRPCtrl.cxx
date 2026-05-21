@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2026 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -39,8 +39,6 @@
 #include <uhd/types/tune_result.hpp>
 #include <SoDa/Format.hxx>
 
-// Mac OSX doesn't have a clock_gettime, it has
-// the microsecond resolution gettimeofday. 
 #include <sys/time.h>
 
 const unsigned int SoDa::USRPCtrl::TX_RELAY_CTL = 0x1000;
@@ -48,302 +46,303 @@ const unsigned int SoDa::USRPCtrl::TX_RELAY_MON = 0x0800;
 
 const double SoDa::USRPCtrl::rxmode_offset = 1.0e6;
 
+namespace SoDa {
 
-SoDa::USRPCtrl::USRPCtrl(Params * _params) : SoDa::RadioControl(_params, "USRPCtrl")
-{
+  USRPCtrl::USRPCtrl(Params * _params) : RadioControl(_params, "USRPCtrl")
+  {
   
-  // turn off logging below ERROR
-  uhd::log::set_console_level(uhd::log::severity_level::warning);
+    // turn off logging below ERROR
+    uhd::log::set_console_level(uhd::log::severity_level::warning);
 
-  // let the library know that the usrp thread should take the default level
-  // but treat it as a real-time thread.
-  uhd::set_thread_priority_safe();   
-
-  
-  // initialize variables
-  last_rx_req_freq = 0.0; // at least this is a number...
-  tx_on = false;
-  first_gettime = 0.0;
-  rx_rf_gain = 0.0;
-  tx_rf_gain = 0.0;
-  tx_freq = 0.0;
-  tx_freq_rxmode_offset = 0.0;
-  tx_samp_rate = 625000;
-  tx_ant = std::string("TX");
-  motherboard_name = std::string("UNKNOWN_MB");
-  
-  params = _params;
+    // let the library know that the usrp thread should take the default level
+    // but treat it as a real-time thread.
+    uhd::set_thread_priority_safe();   
 
   
-  // make the device.
-  usrp = uhd::usrp::multi_usrp::make(params->getRadioArgs());
+    // initialize variables
+    last_rx_req_freq = 0.0; // at least this is a number...
+    tx_on = false;
+    first_gettime = 0.0;
+    rx_rf_gain = 0.0;
+    tx_rf_gain = 0.0;
+    tx_freq = 0.0;
+    tx_freq_rxmode_offset = 0.0;
+    tx_samp_rate = 625000;
+    tx_ant = std::string("TX");
+    motherboard_name = std::string("UNKNOWN_MB");
+  
+    params = _params;
 
-  if(usrp == NULL) {
-    throw SoDa::Radio::Exception(SoDa::Format("Unable to allocate USRP unit with arguments = [%0]\n").addS(params->getRadioArgs()), this);
-  }
+  
+    // make the device.
+    usrp = uhd::usrp::multi_usrp::make(params->getRadioArgs());
 
-  // We need to find out if this is a B2xx or something like it -- they don't
-  // have daughter cards and there are other things to watch out for....
-  PropTree tree(usrp, getObjName()); 
+    if(usrp == NULL) {
+      throw SDR::Exception(SoDa::Format("Unable to allocate USRP unit with arguments = [%0]\n").addS(params->getRadioArgs()), this);
+    }
 
-  motherboard_name = tree.getStringProp("name", "unknown");
+    // We need to find out if this is a B2xx or something like it -- they don't
+    // have daughter cards and there are other things to watch out for....
+    PropTree tree(usrp, getObjName()); 
 
-  if((motherboard_name == "B200") || (motherboard_name == "B210")) {
-    // B2xx needs a master clock rate of 50 MHz to generate a sample rate of 625 kS/s.
-    // B2xx needs a master clock rate of 25 MHz to generate a sample rate of 625 kS/s.
-    usrp->set_master_clock_rate(25.0e6);
-    debugMsg(SoDa::Format("Initial setup %0").addS(usrp->get_pp_string()));
-    is_B2xx = true;
-    is_B210 = (motherboard_name == "B210");
-  }
-  else {
-    is_B2xx = false; 
-    is_B210 = false;
-  }
+    motherboard_name = tree.getStringProp("name", "unknown");
 
-  // we need to setup the subdevices
-  if(is_B2xx) {
-    usrp->set_rx_subdev_spec(std::string("A:A"), 0);
-    std::cerr << "DISABLING TVRT LO" << std::endl;
-    if(0 && is_B210) {
-      debugMsg("Setup two subdevices -- TVRT_LO Capable");
-      usrp->set_tx_subdev_spec(std::string("A:A A:B"), 0);
-      tvrt_lo_capable = true;
+    if((motherboard_name == "B200") || (motherboard_name == "B210")) {
+      // B2xx needs a master clock rate of 50 MHz to generate a sample rate of 625 kS/s.
+      // B2xx needs a master clock rate of 25 MHz to generate a sample rate of 625 kS/s.
+      usrp->set_master_clock_rate(25.0e6);
+      debugMsg(SoDa::Format("Initial setup %0").addS(usrp->get_pp_string()));
+      is_B2xx = true;
+      is_B210 = (motherboard_name == "B210");
+    }
+    else {
+      is_B2xx = false; 
+      is_B210 = false;
+    }
+
+    // we need to setup the subdevices
+    if(is_B2xx) {
+      usrp->set_rx_subdev_spec(std::string("A:A"), 0);
+      std::cerr << "DISABLING TVRT LO" << std::endl;
+      if(0 && is_B210) {
+	debugMsg("Setup two subdevices -- TVRT_LO Capable");
+	usrp->set_tx_subdev_spec(std::string("A:A A:B"), 0);
+	tvrt_lo_capable = true;
+      }
+      else {
+	debugMsg("Setup one subdevice -- NOT TVRT_LO Capable");
+	usrp->set_tx_subdev_spec(std::string("A:A"), 0);
+	tvrt_lo_capable = false;
+      }
     }
     else {
       debugMsg("Setup one subdevice -- NOT TVRT_LO Capable");
-      usrp->set_tx_subdev_spec(std::string("A:A"), 0);
       tvrt_lo_capable = false;
     }
-  }
-  else {
-    debugMsg("Setup one subdevice -- NOT TVRT_LO Capable");
-    tvrt_lo_capable = false;
-  }
 
-  first_gettime = 0.0;
-  double tmp = getTime();
-  // truncate to whole number of seconds -- paranoia
-  first_gettime = floor(tmp); 
+    first_gettime = 0.0;
+    double tmp = getTime();
+    // truncate to whole number of seconds -- paranoia
+    first_gettime = floor(tmp); 
 
-  // get the tx front end subtree
-  tx_fe_has_enable = false; 
-  tx_fe_subtree = getUSRPFrontEnd(tree, 'T');
+    // get the tx front end subtree
+    tx_fe_has_enable = false; 
+    tx_fe_subtree = getUSRPFrontEnd(tree, 'T');
 
-  // do we care?  If the tx_fe_subtree doesn't have an enable property,
-  // we want to avoid setting and getting it....
-  if(tx_fe_subtree != NULL) {
-    tx_fe_has_enable = tx_fe_subtree->hasProperty("enabled");
-  }
-
-
-  // get the rx front end subtree
-  rx_fe_has_enable = false; 
-  rx_fe_subtree = getUSRPFrontEnd(tree, 'R');
-
-  // do we care?  If the rx_fe_subtree doesn't have an enable property, 
-  // we want to avoid setting and getting it....
-  if(rx_fe_subtree != NULL) {
-    rx_fe_has_enable = rx_fe_subtree->hasProperty("enabled");
-  }
-  if(rx_fe_has_enable) rx_fe_subtree->setBoolProp("enabled",true);
-
-
-  // do we have lock sensors? 
-  std::vector<std::string> rx_snames, tx_snames; 
-  rx_snames = usrp->get_rx_sensor_names(0);
-  tx_snames = usrp->get_tx_sensor_names(0);
-  rx_has_lo_locked_sensor = std::find(rx_snames.begin(), rx_snames.end(), "lo_locked") != rx_snames.end();
-  tx_has_lo_locked_sensor = std::find(tx_snames.begin(), tx_snames.end(), "lo_locked") != tx_snames.end();
-
-
-  // find the gain ranges
-  rx_rf_gain_range = usrp->get_rx_gain_range();
-  tx_rf_gain_range = usrp->get_tx_gain_range();
-
-  // find the frequency ranges
-  rx_rf_freq_range = usrp->get_rx_freq_range();
-  tx_rf_freq_range = usrp->get_tx_freq_range();
-
-  // setup the control IO pins (for TX/RX external relay)
-  // Note that there are no GPIOs available for the B2xx right now.
-  initControlGPIO();
-
-  // setup a widget to control external devices 
-  tr_control = SoDa::TRControl::makeTRControl(usrp);     
-
-  // turn off the transmitter
-  setTXEna(false);
-
-  // if we are in integer-N mode, setup the step table.
-  testIntNMode(params->forceIntN(), params->forceFracN()); 
-}
-
-bool SoDa::USRPCtrl::isLOLocked(SoDa::RXTX rxtx) {
-  switch(rxtx) {
-  case SoDa::RX:
-    return !rx_has_lo_locked_sensor || usrp->get_rx_sensor("lo_locked", 0).to_bool(); 
-    break;
-  case SoDa::TX:
-    return !tx_has_lo_locked_sensor || usrp->get_tx_sensor("lo_locked", 0).to_bool();     
-    break; 
-  default:
-    return true;
-  };
-}
-
-
-uhd::tune_result_t SoDa::USRPCtrl::checkLock(uhd::tune_request_t & req, char sel, uhd::tune_result_t & cur)
-{
-  int lock_itercount = 0;
-  uhd::tune_result_t ret = cur;
-
-  // not all front ends even have LOs....  
-  if(!((sel == 'r') ? rx_has_lo_locked_sensor : tx_has_lo_locked_sensor)) {
-    return cur; 
-  }
-
-  while(1) {
-    uhd::sensor_value_t lo_locked = (sel == 'r') ? usrp->get_rx_sensor("lo_locked",0) : usrp->get_tx_sensor("lo_locked",0);
-    if(lo_locked.to_bool()) break;
-    else sleep_ms(1);
-    if((lock_itercount & 0xfff) == 0) {
-      debugMsg(SoDa::Format("Waiting for %0 LO lock to freq = %1 (%2:%3)  count = %4\n")
-	       .addC(sel)
-	       .addF(req.target_freq, 'e')
-	       .addF(req.rf_freq, 'e')
-	       .addF(req.dsp_freq, 'e')
-	       .addI(lock_itercount));
-      if(sel == 'r') ret = usrp->set_rx_freq(req);
-      else ret = usrp->set_tx_freq(req);
+    // do we care?  If the tx_fe_subtree doesn't have an enable property,
+    // we want to avoid setting and getting it....
+    if(tx_fe_subtree != NULL) {
+      tx_fe_has_enable = tx_fe_subtree->hasProperty("enabled");
     }
-    lock_itercount++; 
+
+
+    // get the rx front end subtree
+    rx_fe_has_enable = false; 
+    rx_fe_subtree = getUSRPFrontEnd(tree, 'R');
+
+    // do we care?  If the rx_fe_subtree doesn't have an enable property, 
+    // we want to avoid setting and getting it....
+    if(rx_fe_subtree != NULL) {
+      rx_fe_has_enable = rx_fe_subtree->hasProperty("enabled");
+    }
+    if(rx_fe_has_enable) rx_fe_subtree->setBoolProp("enabled",true);
+
+
+    // do we have lock sensors? 
+    std::vector<std::string> rx_snames, tx_snames; 
+    rx_snames = usrp->get_rx_sensor_names(0);
+    tx_snames = usrp->get_tx_sensor_names(0);
+    rx_has_lo_locked_sensor = std::find(rx_snames.begin(), rx_snames.end(), "lo_locked") != rx_snames.end();
+    tx_has_lo_locked_sensor = std::find(tx_snames.begin(), tx_snames.end(), "lo_locked") != tx_snames.end();
+
+
+    // find the gain ranges
+    rx_rf_gain_range = usrp->get_rx_gain_range();
+    tx_rf_gain_range = usrp->get_tx_gain_range();
+
+    // find the frequency ranges
+    rx_rf_freq_range = usrp->get_rx_freq_range();
+    tx_rf_freq_range = usrp->get_tx_freq_range();
+
+    // setup the control IO pins (for TX/RX external relay)
+    // Note that there are no GPIOs available for the B2xx right now.
+    initControlGPIO();
+
+    // setup a widget to control external devices 
+    tr_control = TRControl::makeTRControl(usrp);     
+
+    // turn off the transmitter
+    setTXEna(false);
+
+    // if we are in integer-N mode, setup the step table.
+    testIntNMode(params->forceIntN(), params->forceFracN()); 
   }
 
-  return ret; 
-}
-
-double SoDa::USRPCtrl::getLOFreq(SoDa::RXTX rxtx) {
-  if(rxtx == SoDa::RX) {
-    return last_rx_tune_result.actual_rf_freq + last_rx_tune_result.actual_dsp_freq;     
+  bool USRPCtrl::isLOLocked(RXTX rxtx) {
+    switch(rxtx) {
+    case SoDa::RX:
+      return !rx_has_lo_locked_sensor || usrp->get_rx_sensor("lo_locked", 0).to_bool(); 
+      break;
+    case SoDa::TX:
+      return !tx_has_lo_locked_sensor || usrp->get_tx_sensor("lo_locked", 0).to_bool();     
+      break; 
+    default:
+      return true;
+    };
   }
-  else if(rxtx == SoDa::TX) {
-    return last_tx_tune_result.actual_rf_freq + last_tx_tune_result.actual_dsp_freq; 
+
+
+  uhd::tune_result_t USRPCtrl::checkLock(uhd::tune_request_t & req, char sel, uhd::tune_result_t & cur)
+  {
+    int lock_itercount = 0;
+    uhd::tune_result_t ret = cur;
+
+    // not all front ends even have LOs....  
+    if(!((sel == 'r') ? rx_has_lo_locked_sensor : tx_has_lo_locked_sensor)) {
+      return cur; 
+    }
+
+    while(1) {
+      uhd::sensor_value_t lo_locked = (sel == 'r') ? usrp->get_rx_sensor("lo_locked",0) : usrp->get_tx_sensor("lo_locked",0);
+      if(lo_locked.to_bool()) break;
+      else sleep_ms(1);
+      if((lock_itercount & 0xfff) == 0) {
+	debugMsg(SoDa::Format("Waiting for %0 LO lock to freq = %1 (%2:%3)  count = %4\n")
+		 .addC(sel)
+		 .addF(req.target_freq, 'e')
+		 .addF(req.rf_freq, 'e')
+		 .addF(req.dsp_freq, 'e')
+		 .addI(lock_itercount));
+	if(sel == 'r') ret = usrp->set_rx_freq(req);
+	else ret = usrp->set_tx_freq(req);
+      }
+      lock_itercount++; 
+    }
+
+    return ret; 
   }
 
-  return 0.0; /// no idea how we'd get here. 
-}
+  double USRPCtrl::getLOFreq(SoDa::RXTX rxtx) {
+    if(rxtx == SoDa::RX) {
+      return last_rx_tune_result.actual_rf_freq + last_rx_tune_result.actual_dsp_freq;     
+    }
+    else if(rxtx == SoDa::TX) {
+      return last_tx_tune_result.actual_rf_freq + last_tx_tune_result.actual_dsp_freq; 
+    }
 
-double SoDa::USRPCtrl::setLOFreq(double freq, SoDa::RXTX rxtx) 
-{
-  double target_rx_freq;
+    return 0.0; /// no idea how we'd get here. 
+  }
 
-  if(rxtx == SoDa::RX) {
-    if(freq < rx_rf_freq_range.start()) freq = rx_rf_freq_range.start();
-    if(freq > rx_rf_freq_range.stop()) freq = rx_rf_freq_range.stop();
+  double USRPCtrl::setLOFreq(double freq, SoDa::RXTX rxtx) 
+  {
+    double target_rx_freq;
+
+    if(rxtx == SoDa::RX) {
+      if(freq < rx_rf_freq_range.start()) freq = rx_rf_freq_range.start();
+      if(freq > rx_rf_freq_range.stop()) freq = rx_rf_freq_range.stop();
     
-    target_rx_freq = freq; 
+      target_rx_freq = freq; 
 
-    /// This code depends on the integer-N tuning features in libuhd 3.7 and after
-    /// earlier libraries will revert to fractional-N tuning and might
-    /// see a rise in the noisefloor and perhaps some troublesome spurs
-    /// at multiples of the reference frequency divided by the fractional divisor.
-    uhd::tune_request_t rx_trequest(target_rx_freq); 
-    if(supports_IntN_Mode) {
-      // look for a good target RX freq that doesn't cause inband/nearband spurs... 
-      applyTargetFreqCorrection(target_rx_freq, target_rx_freq, &rx_trequest);
-      debugMsg(SoDa::Format("\t*****target_rx_freq = %0 corrected to %1\n")
-	       .addF(target_rx_freq, 'e').addF(rx_trequest.rf_freq, 'e')); 
-    }
-    else {
-      // just use the vanilla tuning.... 
-      rx_trequest.target_freq = target_rx_freq;
-      rx_trequest.rf_freq = target_rx_freq; 
-      rx_trequest.rf_freq_policy = uhd::tune_request_t::POLICY_AUTO;
-      rx_trequest.dsp_freq_policy = uhd::tune_request_t::POLICY_AUTO;
-    }
-
-    last_rx_tune_result = usrp->set_rx_freq(rx_trequest);
-    last_rx_tune_result = checkLock(rx_trequest, 'r', last_rx_tune_result);
-    debugMsg(SoDa::Format("RX Tune RF_actual %0 DDC = %1 tuned = %2 target = %3 request  rf = %4 request ddc = %5\n")
-	     .addF(last_rx_tune_result.actual_rf_freq, 10, 6, 'e')
-	     .addF(last_rx_tune_result.actual_dsp_freq, 10, 6, 'e')
-	     .addF(freq, 10, 6, 'e')
-	     .addF(target_rx_freq, 10, 6, 'e')
-	     .addF(rx_trequest.rf_freq, 10, 6, 'e')
-	     .addF(rx_trequest.dsp_freq, 10, 6, 'e'));
-    return last_rx_tune_result.actual_rf_freq + last_rx_tune_result.actual_dsp_freq;
-  }
-  else {
-    // On the transmit side, we're using a minimal IF rate and
-    // using the full range of the tuning hardware.
-
-    // If the transmitter is off, we retune anyway to park the
-    // transmit LO as far away as possible.   This is especially 
-    // important for the UBX.
-    if(freq < tx_rf_freq_range.start()) freq = tx_rf_freq_range.start();
-    if(freq > tx_rf_freq_range.stop()) freq = tx_rf_freq_range.stop();    
-
-    uhd::tune_request_t tx_request(freq);
-    
-    if(supports_IntN_Mode) {
-      // This is a little complicated.
-      // For the UBX, at least, the RF oscillator was bleeding through
-      // to the output and appearing > -40dBc.   That is not sufficient
-      // for HF, as many amplifier chains rely on LPFs rather than BPFs
-      // where harmonic suppression is the intent.  However, with a
-      // 12.5 MHz step for the RF PLL, we can end up with a honking
-      // big spur in the TX output at 12.5 MHz when we're transmitting
-      // on 30m or 20m.  Below 30MHz, we turn off the small integer
-      // steps -- the default will be something good... one hopes. 
-      if(freq > 30.0e6) {
-	applyTargetFreqCorrection(freq, last_rx_req_freq, &tx_request);
+      /// This code depends on the integer-N tuning features in libuhd 3.7 and after
+      /// earlier libraries will revert to fractional-N tuning and might
+      /// see a rise in the noisefloor and perhaps some troublesome spurs
+      /// at multiples of the reference frequency divided by the fractional divisor.
+      uhd::tune_request_t rx_trequest(target_rx_freq); 
+      if(supports_IntN_Mode) {
+	// look for a good target RX freq that doesn't cause inband/nearband spurs... 
+	applyTargetFreqCorrection(target_rx_freq, target_rx_freq, &rx_trequest);
+	debugMsg(SoDa::Format("\t*****target_rx_freq = %0 corrected to %1\n")
+		 .addF(target_rx_freq, 'e').addF(rx_trequest.rf_freq, 'e')); 
       }
       else {
-	// don't fiddle with adjusting the step size here.
-	// we don't want to use fractional mode if we can avoid it,
-	// as the RF PLL output <still> bleeds through, but it is
-	// within +/- 10 kHz of the carrier.  That's really noxious.
-	// Measured results saw less than 40dB suppression. 
-	tx_request.args = uhd::device_addr_t("mode_n=integer");	
+	// just use the vanilla tuning.... 
+	rx_trequest.target_freq = target_rx_freq;
+	rx_trequest.rf_freq = target_rx_freq; 
+	rx_trequest.rf_freq_policy = uhd::tune_request_t::POLICY_AUTO;
+	rx_trequest.dsp_freq_policy = uhd::tune_request_t::POLICY_AUTO;
       }
+
+      last_rx_tune_result = usrp->set_rx_freq(rx_trequest);
+      last_rx_tune_result = checkLock(rx_trequest, 'r', last_rx_tune_result);
+      debugMsg(SoDa::Format("RX Tune RF_actual %0 DDC = %1 tuned = %2 target = %3 request  rf = %4 request ddc = %5\n")
+	       .addF(last_rx_tune_result.actual_rf_freq, 10, 6, 'e')
+	       .addF(last_rx_tune_result.actual_dsp_freq, 10, 6, 'e')
+	       .addF(freq, 10, 6, 'e')
+	       .addF(target_rx_freq, 10, 6, 'e')
+	       .addF(rx_trequest.rf_freq, 10, 6, 'e')
+	       .addF(rx_trequest.dsp_freq, 10, 6, 'e'));
+      return last_rx_tune_result.actual_rf_freq + last_rx_tune_result.actual_dsp_freq;
     }
     else {
-      tx_request.rf_freq_policy = uhd::tune_request_t::POLICY_AUTO;
-    }
+      // On the transmit side, we're using a minimal IF rate and
+      // using the full range of the tuning hardware.
 
-    debugMsg(SoDa::Format("Tuning TX unit to new frequency %0 (request = %1  (%2 %3))\n")
-	     .addF(freq, 10, 6, 'e')
-	     .addF(tx_request.target_freq, 10, 6, 'e')
-	     .addF(tx_request.rf_freq, 10, 6, 'e')
-	     .addF(tx_request.dsp_freq, 10, 6, 'e'));
+      // If the transmitter is off, we retune anyway to park the
+      // transmit LO as far away as possible.   This is especially 
+      // important for the UBX.
+      if(freq < tx_rf_freq_range.start()) freq = tx_rf_freq_range.start();
+      if(freq > tx_rf_freq_range.stop()) freq = tx_rf_freq_range.stop();    
 
-    last_tx_tune_result = usrp->set_tx_freq(tx_request);
-
-    debugMsg(SoDa::Format("Tuned TX unit to new frequency %0 t.rf %1 a.rf %2 t.dsp %3 a.dsp %4\n")
-	     .addF(freq, 10, 6, 'e')
-	     .addF(last_tx_tune_result.target_rf_freq, 10, 6, 'e')
-	     .addF(last_tx_tune_result.actual_rf_freq, 10, 6, 'e')
-	     .addF(last_tx_tune_result.target_dsp_freq, 10, 6, 'e')
-	     .addF(last_tx_tune_result.actual_dsp_freq, 10, 6, 'e'));
-
-    last_tx_tune_result = checkLock(tx_request, 't', last_tx_tune_result);
-
-    return last_tx_tune_result.actual_rf_freq + last_tx_tune_result.actual_dsp_freq;
+      uhd::tune_request_t tx_request(freq);
     
-    double txfreqs[2];
-    txfreqs[0] = usrp->get_tx_freq(0);
-    if(tvrt_lo_mode) {
-      txfreqs[1] = usrp->get_tx_freq(1);
-      debugMsg(SoDa::Format("TX LO = %0  TVRT LO = %1\n")
-	       .addF(txfreqs[0], 10, 6, 'e')
-	       .addF(txfreqs[1], 10, 6, 'e'));
+      if(supports_IntN_Mode) {
+	// This is a little complicated.
+	// For the UBX, at least, the RF oscillator was bleeding through
+	// to the output and appearing > -40dBc.   That is not sufficient
+	// for HF, as many amplifier chains rely on LPFs rather than BPFs
+	// where harmonic suppression is the intent.  However, with a
+	// 12.5 MHz step for the RF PLL, we can end up with a honking
+	// big spur in the TX output at 12.5 MHz when we're transmitting
+	// on 30m or 20m.  Below 30MHz, we turn off the small integer
+	// steps -- the default will be something good... one hopes. 
+	if(freq > 30.0e6) {
+	  applyTargetFreqCorrection(freq, last_rx_req_freq, &tx_request);
+	}
+	else {
+	  // don't fiddle with adjusting the step size here.
+	  // we don't want to use fractional mode if we can avoid it,
+	  // as the RF PLL output <still> bleeds through, but it is
+	  // within +/- 10 kHz of the carrier.  That's really noxious.
+	  // Measured results saw less than 40dB suppression. 
+	  tx_request.args = uhd::device_addr_t("mode_n=integer");	
+	}
+      }
+      else {
+	tx_request.rf_freq_policy = uhd::tune_request_t::POLICY_AUTO;
+      }
+
+      debugMsg(SoDa::Format("Tuning TX unit to new frequency %0 (request = %1  (%2 %3))\n")
+	       .addF(freq, 10, 6, 'e')
+	       .addF(tx_request.target_freq, 10, 6, 'e')
+	       .addF(tx_request.rf_freq, 10, 6, 'e')
+	       .addF(tx_request.dsp_freq, 10, 6, 'e'));
+
+      last_tx_tune_result = usrp->set_tx_freq(tx_request);
+
+      debugMsg(SoDa::Format("Tuned TX unit to new frequency %0 t.rf %1 a.rf %2 t.dsp %3 a.dsp %4\n")
+	       .addF(freq, 10, 6, 'e')
+	       .addF(last_tx_tune_result.target_rf_freq, 10, 6, 'e')
+	       .addF(last_tx_tune_result.actual_rf_freq, 10, 6, 'e')
+	       .addF(last_tx_tune_result.target_dsp_freq, 10, 6, 'e')
+	       .addF(last_tx_tune_result.actual_dsp_freq, 10, 6, 'e'));
+
+      last_tx_tune_result = checkLock(tx_request, 't', last_tx_tune_result);
+
+      return last_tx_tune_result.actual_rf_freq + last_tx_tune_result.actual_dsp_freq;
+    
+      double txfreqs[2];
+      txfreqs[0] = usrp->get_tx_freq(0);
+      if(tvrt_lo_mode) {
+	txfreqs[1] = usrp->get_tx_freq(1);
+	debugMsg(SoDa::Format("TX LO = %0  TVRT LO = %1\n")
+		 .addF(txfreqs[0], 10, 6, 'e')
+		 .addF(txfreqs[1], 10, 6, 'e'));
+      }
     }
   }
-}
 
-float USRPCtrl::setRFGain(float gain, SoDa::RXTX rxtx) {
-  if(rxtx == SoDa::RX) {
+  float USRPCtrl::setRFGain(float gain, SoDa::RXTX rxtx) {
+    if(rxtx == SoDa::RX) {
       // dparameters ranges from 0 to 100... normalize this
       // to the actual range; 
       rx_rf_gain = rx_rf_gain_range.stop() + cmd->dparms[0];
@@ -353,8 +352,8 @@ float USRPCtrl::setRFGain(float gain, SoDa::RXTX rxtx) {
 	usrp->set_rx_gain(rx_rf_gain);
       }
       return usrp->get_rx_gain();
-  }
-  if(rxtx == SoDa::TX) {
+    }
+    if(rxtx == SoDa::TX) {
       tx_rf_gain = tx_rf_gain_range.stop() + cmd->dparms[0];
       if(tx_rf_gain > tx_rf_gain_range.stop()) tx_rf_gain = tx_rf_gain_range.stop();
       if(tx_rf_gain < tx_rf_gain_range.start()) tx_rf_gain = tx_rf_gain_range.start();
@@ -368,136 +367,136 @@ float USRPCtrl::setRFGain(float gain, SoDa::RXTX rxtx) {
 	usrp->set_tx_gain(tx_rf_gain);
       }
       return usrp->get_tx_gain(); 
-  }
-  return 0.0; 
-}
-
-/**
- * exeSetCommand handles SET messages of the following type:
- * @li RX_RETUNE_FREQ causes the front-end LO + DDS (FE chain) to be retuned to a frequency
- * at least 80 kHz above and no more than 250 kHz above the requested
- * frequency. This places the signal of interest at an IF frequency between
- * 80 kHz and 250 kHz. The IF frequency is set (in the USRPRX thread) to the
- * difference between the requested frequency and the FE chain frequency.
- * @li RX_TUNE_FREQ and RX_FE_FREQ set the FE chain frequency to the specified value.
- * @li LO_CHECK set the FE chain to the specified frequency. This is used in
- * calibrating a transverter chain by "tuning" to a frequency near the transverter
- * LO and listening to the leakage signal.  (It's a long story.)
- * @li TX_RETUNE_FREQ, TX_TUNE_FREQ and TX_FE_FREQ all set the transmit FE chain frequency
- * to the requested value PLUS the tx_freq_rxmode_offset (the transmit IF frequency).
- * @li RX_SAMP_RATE set the receive A/D sample rate in the USRP
- * @li TX_SAMP_RATE set the transmit D/A sample rate in the USRP
- * @li RX_RF_GAIN set the RF gain of the receive front-end
- * @li TX_RF_GAIN set the gain of the transmit front-end
- * @li TX_STATE turn the transmitter ON or OFF
- * @li CLOCK_SOURCE select the external frequency reference for the USRP or the internal clock.
- * @li RX_ANT set the receive antenna port
- * @li TX_ANT set the transmit antenna port
- */
-void SoDa::USRPCtrl::subExecSetCommand(Command * cmd)
-{
-  double freq, fdiff; 
-  if(cmd->cmd != Command::SET) {
-    std::cerr << "subExecSetCommand got a non-set command!  " << cmd->toString() << std::endl;
-    return; 
-  }
-  double tmp;
-  switch (cmd->target) {
-  case Command::CLOCK_SOURCE:
-    if((cmd->iparms[0] & 1) == 1) {
-      debugMsg("Setting reference to external");
-      usrp->set_clock_source(std::string("external"));
     }
-    else {
-      debugMsg("Setting reference to internal");
-      usrp->set_clock_source(std::string("internal"));
-    }
-    break; 
-
-  case Command::TVRT_LO_CONFIG:
-    setTransverterLOFreqPower(cmd->dparms[0], cmd->dparms[1]);
-    break;
-
-  case SoDa::Command::TVRT_LO_ENABLE:
-    debugMsg("Enable Transverter LO");
-    enableTransverterLO();
-    break; 
-
-  case SoDa::Command::TVRT_LO_DISABLE:
-    debugMsg("Disable Transverter LO");
-    disableTransverterLO();
-    break;
-
-  default:
-    break; 
+    return 0.0; 
   }
-}
+
+  /**
+   * exeSetCommand handles SET messages of the following type:
+   * @li RX_RETUNE_FREQ causes the front-end LO + DDS (FE chain) to be retuned to a frequency
+   * at least 80 kHz above and no more than 250 kHz above the requested
+   * frequency. This places the signal of interest at an IF frequency between
+   * 80 kHz and 250 kHz. The IF frequency is set (in the USRPRX thread) to the
+   * difference between the requested frequency and the FE chain frequency.
+   * @li RX_TUNE_FREQ and RX_FE_FREQ set the FE chain frequency to the specified value.
+   * @li LO_CHECK set the FE chain to the specified frequency. This is used in
+   * calibrating a transverter chain by "tuning" to a frequency near the transverter
+   * LO and listening to the leakage signal.  (It's a long story.)
+   * @li TX_RETUNE_FREQ, TX_TUNE_FREQ and TX_FE_FREQ all set the transmit FE chain frequency
+   * to the requested value PLUS the tx_freq_rxmode_offset (the transmit IF frequency).
+   * @li RX_SAMP_RATE set the receive A/D sample rate in the USRP
+   * @li TX_SAMP_RATE set the transmit D/A sample rate in the USRP
+   * @li RX_RF_GAIN set the RF gain of the receive front-end
+   * @li TX_RF_GAIN set the gain of the transmit front-end
+   * @li TX_STATE turn the transmitter ON or OFF
+   * @li CLOCK_SOURCE select the external frequency reference for the USRP or the internal clock.
+   * @li RX_ANT set the receive antenna port
+   * @li TX_ANT set the transmit antenna port
+   */
+  void USRPCtrl::subExecSetCommand(Command * cmd)
+  {
+    double freq, fdiff; 
+    if(cmd->cmd != Command::SET) {
+      std::cerr << "subExecSetCommand got a non-set command!  " << cmd->toString() << std::endl;
+      return; 
+    }
+    double tmp;
+    switch (cmd->target) {
+    case Command::CLOCK_SOURCE:
+      if((cmd->iparms[0] & 1) == 1) {
+	debugMsg("Setting reference to external");
+	usrp->set_clock_source(std::string("external"));
+      }
+      else {
+	debugMsg("Setting reference to internal");
+	usrp->set_clock_source(std::string("internal"));
+      }
+      break; 
+
+    case Command::TVRT_LO_CONFIG:
+      setTransverterLOFreqPower(cmd->dparms[0], cmd->dparms[1]);
+      break;
+
+    case Command::TVRT_LO_ENABLE:
+      debugMsg("Enable Transverter LO");
+      enableTransverterLO();
+      break; 
+
+    case Command::TVRT_LO_DISABLE:
+      debugMsg("Disable Transverter LO");
+      disableTransverterLO();
+      break;
+
+    default:
+      break; 
+    }
+  }
 
 
-void SoDa::USRPCtrl::subExecGetCommand(Command * cmd)
-{
-  int res;
+  void USRPCtrl::subExecGetCommand(Command * cmd)
+  {
+    int res;
 
   
-  switch (cmd->target) {
-  case Command::RX_FE_FREQ:
-    cmd_stream->put(new Command(Command::REP, Command::RX_FE_FREQ, 
-				last_rx_tune_result.actual_rf_freq,
-				last_rx_tune_result.actual_dsp_freq)); 
-    break; 
-  case Command::TX_FE_FREQ:
-    cmd_stream->put(new Command(Command::REP, Command::TX_FE_FREQ, 
-				last_tx_tune_result.actual_rf_freq,
-				last_tx_tune_result.actual_dsp_freq)); 
-    break; 
+    switch (cmd->target) {
+    case Command::RX_FE_FREQ:
+      cmd_stream->put(new Command(Command::REP, Command::RX_FE_FREQ, 
+				  last_rx_tune_result.actual_rf_freq,
+				  last_rx_tune_result.actual_dsp_freq)); 
+      break; 
+    case Command::TX_FE_FREQ:
+      cmd_stream->put(new Command(Command::REP, Command::TX_FE_FREQ, 
+				  last_tx_tune_result.actual_rf_freq,
+				  last_tx_tune_result.actual_dsp_freq)); 
+      break; 
 
-  case Command::RX_SAMP_RATE:
-    cmd_stream->put(new Command(Command::REP, Command::RX_SAMP_RATE, 
-			       usrp->get_rx_rate())); 
-    break; 
-  case Command::TX_SAMP_RATE:
-    cmd_stream->put(new Command(Command::REP, Command::TX_SAMP_RATE, 
-			       usrp->get_tx_rate())); 
-    break;
+    case Command::RX_SAMP_RATE:
+      cmd_stream->put(new Command(Command::REP, Command::RX_SAMP_RATE, 
+				  usrp->get_rx_rate())); 
+      break; 
+    case Command::TX_SAMP_RATE:
+      cmd_stream->put(new Command(Command::REP, Command::TX_SAMP_RATE, 
+				  usrp->get_tx_rate())); 
+      break;
 
-  case Command::TX_GAIN_RANGE:
-    cmd_stream->put(new Command(Command::REP, Command::TX_GAIN_RANGE,
-				tx_rf_gain_range.start(), 
-				tx_rf_gain_range.stop()));
-    break; 
+    case Command::TX_GAIN_RANGE:
+      cmd_stream->put(new Command(Command::REP, Command::TX_GAIN_RANGE,
+				  tx_rf_gain_range.start(), 
+				  tx_rf_gain_range.stop()));
+      break; 
 
-  case Command::CLOCK_SOURCE:
-    res = 0;
-    if(usrp->get_clock_source(0) == std::string("external")) {
-      res = 2; 
-    }
-
-    if (1) {
-      // is it locked?
-      uhd::sensor_value_t ref_locked = usrp->get_mboard_sensor("ref_locked", 0);
-      if(ref_locked.to_bool()) {
-	res |= 1; 
+    case Command::CLOCK_SOURCE:
+      res = 0;
+      if(usrp->get_clock_source(0) == std::string("external")) {
+	res = 2; 
       }
-    }
+
+      if (1) {
+	// is it locked?
+	uhd::sensor_value_t ref_locked = usrp->get_mboard_sensor("ref_locked", 0);
+	if(ref_locked.to_bool()) {
+	  res |= 1; 
+	}
+      }
        
-    cmd_stream->put(new Command(Command::REP, Command::CLOCK_SOURCE,
-				res));
-    break;
+      cmd_stream->put(new Command(Command::REP, Command::CLOCK_SOURCE,
+				  res));
+      break;
 
-  default:
-    break; 
+    default:
+      break; 
+    }
   }
+
+  std::string USRPCtrl::getHardwareDescription() {
+    return SoDa::Format("%0\t%1 to %2 MHz")
+      .addS(motherboard_name)
+      .addF((rx_rf_freq_range.start() * 1e-6), 10, 6, 'e')
+      .addF((rx_rf_freq_range.stop() * 1e-6), 10, 6, 'e').str()));
 }
 
-std::string USRPCtrl::getHardwareDescription() {
-  return SoDa::Format("%0\t%1 to %2 MHz")
-    .addS(motherboard_name)
-    .addF((rx_rf_freq_range.start() * 1e-6), 10, 6, 'e')
-    .addF((rx_rf_freq_range.stop() * 1e-6), 10, 6, 'e').str()));
-}
 
-
-void SoDa::USRPCtrl::subExecRepCommand(Command * cmd)
+void USRPCtrl::subExecRepCommand(Command * cmd)
 {
   switch (cmd->target) {
   default:
@@ -505,7 +504,7 @@ void SoDa::USRPCtrl::subExecRepCommand(Command * cmd)
   }
 }
 
-void SoDa::USRPCtrl::initControlGPIO()
+void USRPCtrl::initControlGPIO()
 {
   supports_tx_gpio = true;
 
@@ -553,7 +552,7 @@ void SoDa::USRPCtrl::initControlGPIO()
   }
 }
 
-void SoDa::USRPCtrl::setTXEna(bool val)
+void USRPCtrl::setTXEna(bool val)
 {
   unsigned short enabits = val ? TX_RELAY_CTL : 0;
   if(supports_tx_gpio) {
@@ -581,7 +580,7 @@ void SoDa::USRPCtrl::setTXEna(bool val)
   }
 }
 
-void SoDa::USRPCtrl::setTXFrontEndEnable(bool val) 
+void USRPCtrl::setTXFrontEndEnable(bool val) 
 {
   if(!tx_fe_has_enable) return; 
 
@@ -598,7 +597,7 @@ void SoDa::USRPCtrl::setTXFrontEndEnable(bool val)
   }
 }
  
-bool SoDa::USRPCtrl::getTXEna()
+bool USRPCtrl::getTXEna()
 {
   unsigned int enabits = 0; 
   if(supports_tx_gpio) {
@@ -609,7 +608,7 @@ bool SoDa::USRPCtrl::getTXEna()
 }
 
 
-bool SoDa::USRPCtrl::getTXRelayOn()
+bool USRPCtrl::getTXRelayOn()
 {
   unsigned int enabits = 0; 
   if(supports_tx_gpio) {
@@ -619,7 +618,7 @@ bool SoDa::USRPCtrl::getTXRelayOn()
   return ((enabits & TX_RELAY_MON) != 0); 
 }
 
-void SoDa::USRPCtrl::setTransverterLOFreqPower(double freq, double power)
+void USRPCtrl::setTransverterLOFreqPower(double freq, double power)
 {
   uhd::gain_range_t tx_gain_range = usrp->get_tx_gain_range(1);
   double plo = tx_gain_range.start();
@@ -637,7 +636,7 @@ void SoDa::USRPCtrl::setTransverterLOFreqPower(double freq, double power)
 
 }
 
-void SoDa::USRPCtrl::enableTransverterLO()
+void USRPCtrl::enableTransverterLO()
 {
   if(!tvrt_lo_capable) {
     tvrt_lo_mode = false; 
@@ -666,7 +665,7 @@ void SoDa::USRPCtrl::enableTransverterLO()
   tvrt_lo_fe_freq = tres.target_rf_freq; 
 }
 
-void SoDa::USRPCtrl::disableTransverterLO()
+void USRPCtrl::disableTransverterLO()
 {
   tvrt_lo_mode = false;
   if(!tvrt_lo_capable) return; 
@@ -674,7 +673,7 @@ void SoDa::USRPCtrl::disableTransverterLO()
   usrp->set_tx_freq(100.0e6, 1);
 }
 
-void SoDa::USRPCtrl::applyTargetFreqCorrection(double target_freq, double avoid_freq, uhd::tune_request_t * treq)
+void USRPCtrl::applyTargetFreqCorrection(double target_freq, double avoid_freq, uhd::tune_request_t * treq)
 {
   debugMsg(SoDa::Format("######   aTFC(%0...)") .addF(target_freq, 10, 6, 'e')); 
 
@@ -746,7 +745,7 @@ void SoDa::USRPCtrl::applyTargetFreqCorrection(double target_freq, double avoid_
 
 
 
-void SoDa::USRPCtrl::testIntNMode(bool force_int_N, bool force_frac_N)
+void USRPCtrl::testIntNMode(bool force_int_N, bool force_frac_N)
 {
   uhd::tune_result_t tunres_int, tunres_frac;  
 
@@ -822,7 +821,7 @@ void SoDa::USRPCtrl::testIntNMode(bool force_int_N, bool force_frac_N)
   return; 
 }
 
-std::vector<std::string>  SoDa::USRPCtrl::listAntennas(SoDa::RXTX rxtx) 
+std::vector<std::string>  USRPCtrl::listAntennas(SoDa::RXTX rxtx) 
 {
   if(rxtx == SoDa::RX) {
     return usrp->get_rx_antennas();
@@ -854,7 +853,7 @@ float USRPCtrl::getSampleRate(SoDa::RXTX rxtx) {
   return 1; 
 }
 
-void SoDa::USRPCtrl::setAntenna(const std::string & ant, SoDa::RXTX rxtx)
+void USRPCtrl::setAntenna(const std::string & ant, SoDa::RXTX rxtx)
 {
   std::vector<std::string> ants; 
 
@@ -877,4 +876,5 @@ void SoDa::USRPCtrl::setAntenna(const std::string & ant, SoDa::RXTX rxtx)
   }
   
   return; 
+}
 }

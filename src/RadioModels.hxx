@@ -77,7 +77,7 @@ namespace SoDa {
     
     static bool init_complete;
     
-    std::map<std::string, std::function<RadioPtr(Params * params)>> model_map; 
+    static std::map<std::string, std::function<RadioPtr(Params * params)>> model_map; 
   };
 }
 

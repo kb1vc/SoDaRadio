@@ -109,6 +109,8 @@ void SoDa::Command::initTables()
   initTableEntry(std::string("NBFM_SQUELCH"), NBFM_SQUELCH);
 
   initTableEntry(std::string("RX_CENTER_FREQ"), RX_CENTER_FREQ);
+  initTableEntry(std::string("LIST_MODES"), LIST_MODES);
+  initTableEntry(std::string("LIST_AF_FILTERS"), LIST_AF_FILTERS);  
 }
 
 SoDa::Command * SoDa::Command::parseCommandString(std::string str)

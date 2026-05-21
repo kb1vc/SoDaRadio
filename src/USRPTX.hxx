@@ -37,7 +37,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <uhd/usrp/multi_usrp.hpp>
 #include <uhd/stream.hpp>
 
+#include <memory>
+
 namespace SoDa {
+  class USRPTX;
+  typedef std::shared_ptr<USRPTX> USRPTXPtr;
+  
   /**
    * The Transmit RF Path
    *
@@ -50,7 +55,7 @@ namespace SoDa {
    *
    */
   class USRPTX : public SoDa::Thread {
-  public:
+  protected:
     /**
      * @brief Constructor for RF Transmit/modulator process
      *
@@ -59,6 +64,11 @@ namespace SoDa {
      *
      */
     USRPTX(Params * params, uhd::usrp::multi_usrp::sptr _usrp);
+
+  public:
+    static USRPTXPtr make(Params * params, uhd::usrp::multi_usrp::sptr _usrp) {
+      return std::shared_ptr<USRPTX>(new USRPTX(params, _usrp));
+    }
 
     /// implement the subscription method
     void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);

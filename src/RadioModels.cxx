@@ -25,7 +25,11 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+#include "RadioModels.hxx"
 
+// Include the toplevel Radio file for each new radio model added in the
+// RadioModels::init method.
+#include "USRPRadio.hxx"
 
 namespace SoDa {
   /*
@@ -33,7 +37,7 @@ namespace SoDa {
    * should ever update is the "init" method below. Don't touch any of the other
    * methods here. 
    */
-  RadioModels::init() {
+  void RadioModels::init() {
     // Add your new radio model here.
     //
     // Just follow the examples below:
@@ -73,7 +77,7 @@ namespace SoDa {
     }
     
     if(model_map.count(hardware_name)) {
-      return model_map[hardware_name]; 
+      return model_map[hardware_name](params); 
     }
     else {
       return nullptr; 

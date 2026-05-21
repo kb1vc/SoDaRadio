@@ -63,7 +63,7 @@ namespace SoDa {
 	subid = cmd_stream->subscribe();
       }
       else {
-	throw Radio::Exception(Format("Bad mailbox pointer for mailbox named = [%0]\n") 
+	throw SDR::Exception(Format("Bad mailbox pointer for mailbox named = [%0]\n") 
 			       .addS(mbox_name) , this);	
       }
     }
@@ -74,7 +74,7 @@ namespace SoDa {
   {
     
     if(cmd_stream == NULL) {
-      throw Radio::Exception(Format("Never got command stream subscription\n"), 
+      throw SDR::Exception(Format("Never got command stream subscription\n"), 
 			     this);	
     }
     // I think this is the right place for this....

@@ -102,8 +102,8 @@ namespace SoDa {
 	buf = new SoDa::Buf(rx_buffer_size); 
       }
 
-      if(buf == NULL) throw Radio::Exception("USRPRX couldn't allocate SoDa::Buf object", this); 
-      if(buf->getComplexBuf() == NULL) throw Radio::Exception("USRPRX allocated empty SoDa::Buf object", this);
+      if(buf == NULL) throw SDR::Exception("USRPRX couldn't allocate SoDa::Buf object", this); 
+      if(buf->getComplexBuf() == NULL) throw SDR::Exception("USRPRX allocated empty SoDa::Buf object", this);
       
       unsigned int left = rx_buffer_size;
       unsigned int coll_so_far = 0;
@@ -136,7 +136,7 @@ namespace SoDa {
 	  if_stream->put(if_buf);
 	}
 	else {
-	  throw Radio::Exception("SoDa::Buf Copy for IF stream failed", this);
+	  throw SDR::Exception("SoDa::Buf Copy for IF stream failed", this);
 	}
       }
 

@@ -67,9 +67,10 @@ namespace SoDa {
      * Constructor
      * Build a RadioControl thread
      * @param params Pointer to a parameter object with all the initial settings
+     * @param name the name given to the thread. 
      * and identification for the attached USRP
      */
-    RadioControl(Params * params);
+    RadioControl(Params * params, const std::string & name);
 
     /**
      * @brief start the thread

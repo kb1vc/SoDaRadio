@@ -480,6 +480,16 @@ namespace SoDa
 	NBFM_SQUELCH,
 
 	/**
+	 * Get a report of supported modes from the baseband rx module
+	 */
+	LIST_MODES,
+
+	/**
+	 * Get a report of supported filters from the baseband rx module
+	 */
+	LIST_AF_FILTERS,
+	
+	/**
 	 * No comment
 	 */
 	NULL_CMD
