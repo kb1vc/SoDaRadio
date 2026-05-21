@@ -29,6 +29,8 @@ set(SoDaServer_SRCS
     B200Control.cxx
     IFRecorder.cxx
     fix_gpsd_ugliness.cxx
+    RadioModels.cxx
+    USRPRadio.cxx
 )
 
 

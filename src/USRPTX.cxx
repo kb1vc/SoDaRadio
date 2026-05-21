@@ -277,7 +277,8 @@ void SoDa::USRPTX::execSetCommand(Command * cmd)
     // TX_STATE must be 3 to turn the transmitter on.
     // bit 1 of the command indicates that CTRL has already done the
     // setup for TX <-> RX mode transitions.
-    if((cmd->iparms[0] & 0x2) != 0) {  
+    if((cmd->iparms[0] == TX_ON_2) {
+	// fiddle this when we move it over to RadioTX. 
       transmitSwitch(cmd->iparms[0] == 3);
       cmd_stream->put(new Command(Command::REP, Command::TX_STATE, tx_enabled ? 1 : 0));
     }

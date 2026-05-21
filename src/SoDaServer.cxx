@@ -158,6 +158,7 @@
 #include "SoDaThread.hxx"
 #include "SoDaThreadRegistry.hxx"
 #include "MultiMBox.hxx"
+#include "RadioModels.hxx"
 
 // Include functions to dynamically link any user supplied plugins
 #include <dlfcn.h>
@@ -246,15 +247,10 @@ int doWork(SoDa::Params & params)
   mailbox_map["CW_ENV"] = &cw_env_stream;  
   mailbox_map["GPS"] = &gps_stream;
   mailbox_map["IF"] = &if_stream;
-  
-  if(params.isRadioType("USRP")) {
-    /// create the USRP Control, RX Streamer, and TX Streamer threads
-    /// @see SoDa::USRPCtrl @see SoDa::USRPRX @see SoDa::USRPTX
-    ctrl = new SoDa::USRPCtrl(&params);
-    rx = new SoDa::USRPRX(&params, ((SoDa::USRPCtrl *)ctrl)->getUSRP());
-    tx = new SoDa::USRPTX(&params, ((SoDa::USRPCtrl *)ctrl)->getUSRP());
-  }
-  else {
+
+  auto radio_p = RadioModels::make(params.getRadioType());
+
+  if(radio_p == nullptr) {
     std::cerr << SoDa::Format("Radio type [%0] is not yet supported\nHit ^C to exit.\n")
       .addS(params.getRadioType()); 
     exit(-1);
@@ -300,10 +296,10 @@ int doWork(SoDa::Params & params)
 
   // get the thing that knows which threads are part of the radio.
   // (Some may be loaded dynamically with the "--load" command line parameter.
-  auto registrar = SoDa::ThreadRegistry::getRegistrar();  
+  auto thread_registrar = SoDa::ThreadRegistry::getRegistrar();  
 
   // hook everyone up to the mailboxes. 
-  registrar->subscribeThreads(mailbox_map);
+  thread_registrar->subscribeThreads(mailbox_map);
   
   // Now start each of the activities -- they may or may not
   // implement the "start" method -- not all objects need to be threads.
@@ -311,12 +307,12 @@ int doWork(SoDa::Params & params)
   d.debugMsg("Starting Threads");
   
   // start all the threads
-  registrar->startThreads();
+  thread_registrar->startThreads();
 
-  registrar->joinThreads();
+  thread_registrar->joinThreads();
 
   // once everyone has joined, we're due to stop
-  registrar->shutDownThreads();  
+  thread_registrar->shutDownThreads();  
   
   // when we get here, we are done... (UI should not return until it gets an "exit/quit" command.)
   d.debugMsg("Exit");

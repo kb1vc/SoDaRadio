@@ -1,3 +1,4 @@
+#pragma once
 /*
 Copyright (c) 2012, Matthew H. Reilly (kb1vc)
 All rights reserved.
@@ -26,8 +27,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef USRPRX_HDR
-#define USRPRX_HDR
+#include "RadioRX.hxx"
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
 #include "MultiMBox.hxx"
@@ -62,9 +62,8 @@ namespace SoDa {
      * RadioControl thread.
      *
      * @param freq LO3 frequency
-     * @param sel channel selection
      */
-    void setIFFreq(double freq, char sel = 0);
+    void setNCOFreq(double freq);
 
     /**
      * @brief A receiver must accept input data from the rx_stream
@@ -74,7 +73,7 @@ namespace SoDa {
      *
      * @return true if the receiver had input data ready to convert, false otherwise.
      */
-    bool convert();
+    bool downConvert();
 
     /**
      * @brief flush the input rx data stream and set the stream_processing flag to on.
@@ -91,6 +90,12 @@ namespace SoDa {
      */
     void closeStream();
 
+    /**
+     * @brief test the processing stream flag
+     * @return true if rx data should be down converted
+     */
+    bool streamEnabled();
+    
     /**
      * @brief Enable IF streamer - This passes the incoming RF sample buffer onto the
      * IF stream where it can be consumed by the periodogram widget or anybody else.
@@ -146,5 +151,3 @@ namespace SoDa {
   }; 
 }
 
-
-#endif

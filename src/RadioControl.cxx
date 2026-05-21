@@ -72,19 +72,23 @@ namespace SoDa {
 
   void RadioControl::run()
   {
+    
     if(cmd_stream == NULL) {
       throw Radio::Exception(Format("Never got command stream subscription\n"), 
 			     this);	
     }
-    // now do the event loop.  we watch
-    // for commands and responses on the command stream.
-  
+    // I think this is the right place for this....
+    cmd_stream->put(new Command(Command::REP, Command::INIT_SETUP_COMPLETE, 0));
+    
     // do the initial commands
     cmd_stream->put(new Command(Command::SET, Command::RX_SAMP_RATE,
 				params->getRXRate())); 
     cmd_stream->put(new Command(Command::SET, Command::TX_SAMP_RATE,
 				params->getTXRate()));
 
+    setSampleRate(params->getRXRate(), SoDa::RX);
+    setSampleRate(params->getTXRate(), SoDa::TX);    
+    
     cmd_stream->put(new Command(Command::SET, Command::RX_ANT, 
 				params->getRXAnt())); 
     debugMsg(Format("Sending TX_ANT as [%0]\n").addS(params->getTXAnt()));
@@ -197,85 +201,42 @@ namespace SoDa {
       break; 
 
     case Command::RX_SAMP_RATE:
-      usrp->set_rx_rate(cmd->dparms[0]);
+      setSampleRate(cmd->dparms[0], SoDa::RX);
       cmd_stream->put(new Command(Command::REP, Command::RX_SAMP_RATE, 
-				  usrp->get_rx_rate())); 
+				  getSampleRate(SoDa::RX)));
       break; 
     case Command::TX_SAMP_RATE:
       tx_samp_rate = cmd->dparms[0]; 
-      usrp->set_tx_rate(cmd->dparms[0]); 
       cmd_stream->put(new Command(Command::REP, Command::TX_SAMP_RATE, 
-				  usrp->get_tx_rate())); 
+				  getSampleRate(SoDa::TX)));
       break;
     
     case Command::RX_RF_GAIN:
       // dparameters ranges from 0 to 100... normalize this
-      // to the actual range; 
-      rx_rf_gain = rx_rf_gain_range.stop() + cmd->dparms[0];
-      if(rx_rf_gain > rx_rf_gain_range.stop()) rx_rf_gain = rx_rf_gain_range.stop();
-      if(rx_rf_gain < rx_rf_gain_range.start()) rx_rf_gain = rx_rf_gain_range.start();
-      if(!tx_on) {
-	usrp->set_rx_gain(rx_rf_gain);
+      // to the actual range;
+      {
+	auto gain = setRFGain(cmd->dparms[0], SoDa::RX);
 	cmd_stream->put(new Command(Command::REP, Command::RX_RF_GAIN, 
-				    usrp->get_rx_gain()));
+				    gain));
       }
       break; 
     case Command::TX_RF_GAIN:
-      tx_rf_gain = tx_rf_gain_range.stop() + cmd->dparms[0];
-      if(tx_rf_gain > tx_rf_gain_range.stop()) tx_rf_gain = tx_rf_gain_range.stop();
-      if(tx_rf_gain < tx_rf_gain_range.start()) tx_rf_gain = tx_rf_gain_range.start();
-      tmp = cmd->dparms[0];
-      debugMsg(Format("Setting TX gain to %0 from power %1 range start = %2 stop = %3\n") 
-	       .addF(tx_rf_gain, 'e')
-	       .addF(tmp, 'e')
-	       .addF(tx_rf_gain_range.start(), 'e')
-	       .addF(tx_rf_gain_range.stop(), 'e'));
-      if(tx_on) {
-	usrp->set_tx_gain(tx_rf_gain);
+      {
+	auto gain = setRFGain(cmd->dparms[0], SoDa::TX);
 	cmd_stream->put(new Command(Command::REP, Command::TX_RF_GAIN, 
-				    usrp->get_tx_gain())); 
+				    gain));
       }
       break; 
     case Command::TX_STATE: // SET TX_ON
       debugMsg(Format("TX_STATE arg = %0\n").addI(cmd->iparms[0]));
-      if(cmd->iparms[0] == 1) {
+      if(cmd->iparms[0] == TX_ON_0) {
 	// we're going to TX mode.
 	// This is the first stage.
-
-	// first, mute the RX unless we're full duplex
-	if(!full_duplex) setGain(0, SoDa::RX);
-	// turn on the transmit amplifier?
-	setGain(tx_rf_gain, SoDa::TX);
-	// tell everybody about it
-	cmd_stream->put(new Command(Command::REP, Command::TX_RF_GAIN, 
-				    getGain(SoDa::TX)));
-	// we can do this even in full duplex mode.
-	setLOFreq(cur_tx_lo_freq, SoDa::TX);
-
-	setTXEna(true); // turn on all the tranmitter stuff. 
-
-	// and tell the TX unit to turn on the TX
-	// This avoids the race between CTRL and TX/RX units for setup and teardown.... 
-	cmd_stream->put(new Command(Command::SET, Command::TX_STATE, 
-				    3, cmd->iparms[1]));
+	setTXRXMode(TX_ON_0, full_duplex);
       }
       if(cmd->iparms[0] == 0) {
 	// going to receive mode
-	tx_on = false; 
-	// set txgain to zero
-	setGain(0.0, SoDa::TX);
-	setGain(rx_rf_gain, SoDa::RX);
-	// if we aren't full duplex, 
-	// tune the TX unit away from where we want to be.
-	tx_freq_rxmode_offset = rxmode_offset; // so tuning works.
-	setLOFreq(cur_tx_lo_freq + tx_freq_rxmode_offset, SoDa::TX);
-
-	// turn off the transmit relay and the TX chain.
-	setTXEna(false); 
-	// and tell the RX unit to turn on the RX
-	// This avoids the race between CTRL and TX/RX units for setup and teardown.... 
-	cmd_stream->put(new Command(Command::SET, Command::TX_STATE, 
-				    2));
+	setTXRXMode(TX_OFF_0, full_duplex);
       }
       break; 
 
@@ -345,18 +306,6 @@ namespace SoDa {
 
   void RadioControl::execRepCommand(Command * cmd)
   {
-    switch (cmd->target) {
-    case Command::TX_IF_FREQ:
-      cur_tx_if_freq = cmd->dparms[0];
-      
-      break; 
-    case Command::RX_IF_FREQ:
-      cur_rx_if_freq = cmd->dparms[0];
-      break; 
-    default:
-      break; 
-    }
-
     subExecRepCommand(cmd);
   }
 
@@ -465,6 +414,56 @@ namespace SoDa {
     }
   }
 
+  void RadioControl::setTXRXMode(RxTxState rxtxst, bool full_duplex) {
+    if(rxtxst == TX_ON_0) {
+      //   1. X turn the RX gain to 0 (temporarily)
+      if(!full_duplex) {
+	setRFGain(0.0, SoDa::RX);
+      }
+
+      //   2. X set the TX gain to its current requested level
+      setRFGain(tx_rf_gain, SoDa::TX);
+      
+      //   3. X Report the tx gain to the world
+      cmd_stream->put(new Command(Command::REP, Command::TX_RF_GAIN, 
+				  getGain(SoDa::TX)));
+
+      //   4. X Set the tx local oscillator (in case it was in "tune remote mode"
+      setLOFreq(cur_tx_lo_freq, SoDa::TX);
+
+      //   5.   Enable the rest of the tx hardware, including the antenna relay.
+      setTXEna(true, full_duplex);
+
+      //   6. X Send a SET message to put TX_ON_1, full_duplex_flag
+      // This will tell the RX unit to shut down (unless it is in full-dux) and then
+      // the RX unit will send a TX_ON_2 message to the TX unit. 
+      // This avoids the race between CTRL and TX/RX units for setup and teardown....
+      cmd_stream->put(new Command(Command::SET, Command::TX_STATE, 
+				  TX_ON_1, cmd->iparms[1]));
+
+    }
+    else if(rxtxst == TX_OFF_0) {
+
+      // 1. X Sets tx gain to 0
+      setRFGain(0.0, SoDa::TX);
+      
+      // 2.   Disable the transmitter and flip the antenna relay
+      setTXEna(false, full_duplex);            
+
+      // 3. X Sets rx gain to current level
+      setRFGain(rx_rf_gain, SoDa::RX);
+
+      // 4. X Sets tx frequency to tx_freq + an offset that gets the tx LO out of the RX passband
+      setLOFreq(cur_tx_lo_freq + tx_freq_rxmode_offset, SoDa::TX);
+      
+      // 6. X Send SET with TX_OFF_1
+      // and tell the RX unit to turn on the RX
+      // This avoids the race between CTRL and TX/RX units for setup and teardown.... 
+      cmd_stream->put(new Command(Command::SET, Command::TX_STATE, 
+				  TX_OFF_1, full_duplex));
+    }
+  }
+  
   double RadioControl::getTime()
   {
     double ret; 

@@ -1,3 +1,4 @@
+#pragma once
 /*
 Copyright (c) 2026 Matthew H. Reilly (kb1vc)
 All rights reserved.
@@ -27,7 +28,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 /**
- *  @file USRPCtrl.hxx @brief Thread class that provides the common
+ *  @file RadioControl.hxx
+ *
+ *  @brief Thread class that provides the common
  *  radio functions for any compatible radio. A model (USRP,
  *  Adalm/Pluto/Lyme/...)  is decribed in a subclass of RadioControl,
  *  and must furnish the virtual methods described here that allow
@@ -36,9 +39,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  its device name and address.
  *
  *  @author M. H. Reilly (kb1vc)
- *  @date   July 2026
+ *  @date   May 2026
  */
-#pragma once
+
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
 #include "MultiMBox.hxx"
@@ -137,12 +140,6 @@ namespace SoDa {
      */
     virtual void reportAntennas(SoDa::RXTX rxtx) final;
 
-    /**
-     * @brief write all supported modulation modes to the report message channel
-     * Get these from the listSupportedModes call. 
-     */
-    virtual void reportModes() final;
-    
 
     /**
      * @brief checked state of front-end LO and back-end IF chain NCO.
@@ -181,16 +178,6 @@ namespace SoDa {
      */
     virtual std::vector<std::string> listAntennas(SoDa::RXTX rxtx) = 0; 
 
-    
-    /**
-     * @brief list the modulation modes that are implemented, send the report on cmd_stream
-     * This will later be used in the RadioControl initialization command sequence from "reportModes"     
-     *
-     * @return list of modes for rx/tx
-     */
-    virtual std::vector<std::string> listSupportedModes() = 0;
-
-
     /**
      * Set the antenna choice.  Use "ant" if it is in the list
      * of alternatives. Otherwise, choose the first alternative.
@@ -200,11 +187,36 @@ namespace SoDa {
     virtual void setAntenna(const std::string & ant, SoDa::RXTX rxtx) = 0;
 
     /**
+     * @brief Set the RX or TX sample rate
+     *
+     * @param rate sample rate (in samples/sec)
+     * @param rxtx choose RX chain or TX chain
+     */
+    virtual void setSampleRate(float rate, SoDa::RXTX rxtx) = 0;
+
+    /**
+     * @brief Get the current setting for the sample rate
+     *
+     * @param rxtx choose RX chain or TX chain
+     * @return the sample rate (samples/sec)
+     */
+    virtual float getSampleRate(SoDa::RXTX rxtx) = 0;
+    
+    /**
+     * @brief set tain on the RX or TX side
+     *
+     * @param gain gain - if not in range, we'll pick something good
+     * @param rxtx  receive or transmit?
+     * @return the actual gain setting
+     */
+    virtual float setRFGain(float gain, SoDa::RXTX rxtx) = 0;
+    
+    /**
      * @brief Set the front-end (LO + DDS) frequency to 'freq'
      * This includes setting the PLL front end synthesizer
      * as well as the FPGA resident digital synthesizer.
      * 
-     * @param freq target frequency (LO and DDS *and* RadioRX/TX NCO combined)
+     * @param freq target frequency (analog LO and DDS in the FPGA)
      * @param rxtx select receiver or transmitter
      *
      * @return The actual LO frequency.
@@ -215,28 +227,32 @@ namespace SoDa {
      * TX object as we like to do all the modulation there at baseband and assume the
      * hardware takes care of the carrier frequency. 
      * 
-     * margin that the requested frequency is at least 110 kHz above the LO frequency
-     * and no more than 140 kHz above the LO frequency. (This keeps the tuned
-     * frequency away from the DC line and below the rolloff for a 625 kS/s stream.
-     *
      * Typically, the call for a receive request would look like this:
      *
-     * if_freq = setFreq(144.215e6, SoDa::RX, 0)
+     * actual_lo_freq = setLOFreq(144.215e6, SoDa::RX)
      *
      * If the target LO can tune in 20 kHz intervals, the actual LO would be 144.100e6 and
      * the if_freq would be 115e3 Hz. This would allow a "clean" window from 144.115 Mhz to
-     * 144.325 MHz in the spectrogram display.  The LO would need to be changed if the
+g     * 144.325 MHz in the spectrogram display.  The LO would need to be changed if the
      * next frequency was greater than 144.240 or less than 144.205 (I think)
      *
      * On the transmit side, the offset may be dictated by the frequency stepping increment
      * in the front-end LO.
      *
-     * To keep everything civilized, setFreq should *never* be called by any other agent
+     * To keep everything civilized, setLOFreq should *never* be called by any other agent
      * than the RadioControl object. (Not even its sub-classes.)
      * 
      */
     virtual double setLOFreq(double freq, SoDa::RXTX rxtx) = 0;
 
+
+    /**
+     * @brief Return the current LO (front end) oscillator setting for RX or TX chain
+     * @param rxtx select receiver or transmitter
+     * @return frequency (Analog LO and DDS/FPGA)
+     */ 
+    virtual double getLOFreq(SoDa::RXTX rxtx) = 0;
+    
     /**
      * @brief Set the recieve or transmit frequency to 'freq'
      * This includes setting the PLL front end synthesizer, 
@@ -297,9 +313,47 @@ namespace SoDa {
     /// get the state of the TX relay confirm bit
     /// @return true if the TX relay sense input is asserted
     virtual bool getTXRelayOn() = 0; 
-    /// turn TX on/off
-    /// @param val true to enable the transmitter, false otherwise.
-    virtual void setTXEna(bool val) = 0;
+
+    ///
+    /**
+     * @brief Initiate the actions that will turn on the transmitter
+     * and (optionally) disable the receiver. Or enable the receiver
+     * and turn off the transmitter.
+     *
+     * This is a multistep process and looks like this:
+     *
+     * To turn TX ON. (RadioControl receives TX_STATE TX_ON_0, full_duplex_flag
+     * (Entries marked with X are performed by RadioControl, others must be implemented
+     * in the model controller's setTXRXMode function. 
+     *   1. X turn the RX gain to 0 (temporarily)
+     *   2. X set the TX gain to its current requested level
+     *   3. X Report the tx gain to the world
+     *   4. X Set the tx local oscillator (in case it was in "tune remote mode"
+     *   5.   Enable the rest of the tx hardware, including the antenna relay. (setTXEna(true, full_duplex))
+     *   6. X Send a SET message to put TX_ON_1, full_duplex_flag
+     *
+     *  On receiving a SET TX_STATE TX_ON_1 CW_TX turns itself on. All other
+     * TX_xxx values turn off CW_TX
+     *
+     * On receiving TX_ON_1 BaseBandTX turns on the audio input stream (unless we're in cw mode)
+     * 
+     *  On receiving a SET TX_STATE TX_ON_1 BaseBandRX flushes all its buffers unless in full duplex
+     *  turn on the sidetone stream, if appropriate
+     *
+     * To turn TX OFF and RX ON (RadioControl receives TX_STATE TX_OFF_0, full_duplex_flag)
+     * 1. X Set tx gain to 0
+     * 2.   Disable transmitter / flip antenna switch
+     * 3. X Sets rx gain to current level
+     * 4. X Sets tx frequency to tx_freq + an offset that gets the tx LO out of the RX passband
+     * 5.   Disable the TX hardware and flip antenna relay (setTXEna(false, full_duplex))
+     * 6. X Send SET with TX_OFF_1
+     *
+     *
+     * @param rxtxst RXTX (TX on/off) state - one of TX_ON_0, TX_ON_1, TX_OFF_0, TX_OFF_1
+     * @param full_duplex if true, leave RX on while transmitter is enabled.
+     */
+    void setTXRXMode(Command::RxTxState rxtxst, bool full_duplex);
+
 
     /**
      * @brief report the model number and any other interesting features (like freq range)

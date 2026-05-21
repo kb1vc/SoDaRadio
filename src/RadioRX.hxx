@@ -88,7 +88,7 @@ namespace SoDa {
      *
      * @param cmd a command record
      */ 
-    void execCommand(Command * cmd) final;
+    virtual void execCommand(Command * cmd) final;
 
     /**
      * @brief Parse an incoming GET command and dispatch.
@@ -98,7 +98,7 @@ namespace SoDa {
      *
      * @param cmd a command record
      */ 
-    void execGetCommand(Command * cmd) final; 
+    virtual void execGetCommand(Command * cmd) final; 
 
     /**
      * @brief Parse an incoming SET command and dispatch.
@@ -108,7 +108,7 @@ namespace SoDa {
      *
      * @param cmd a command record
      */ 
-    void execSetCommand(Command * cmd) final; 
+    virtual void execSetCommand(Command * cmd) final; 
 
     /**
      * @brief Parse an incoming REPort command and dispatch.
@@ -118,7 +118,7 @@ namespace SoDa {
      *
      * @param cmd a command record
      */ 
-    void execRepCommand(Command * cmd) final; 
+    virtual void execRepCommand(Command * cmd) final; 
 
     /// get the number of seconds since the "Epoch"
     /// @return relative time in seconds
@@ -137,6 +137,7 @@ namespace SoDa {
     void subExecRepCommand(Command * cmd) { }
     
     /// Methods that ALL radios must implement.
+  public:
     /**
      * Set the last LO (convert to baseband) frequency for the NCO.
      *
@@ -144,10 +145,9 @@ namespace SoDa {
      * RadioControl thread.
      *
      * @param freq LO3 frequency
-     * @param sel channel selection
      * its front-end frequency so that it can adjust its own oscillator.
      */
-    void setNCOFreq(double freq, char sel = 0) = 0;
+    virtual void setNCOFreq(double freq) = 0;
 
     /**
      * @brief A receiver must accept input data from the rx_stream
@@ -157,23 +157,23 @@ namespace SoDa {
      *
      * @return true if the receiver had input data ready to convert, false otherwise.
      */
-    bool convert() = 0;
+    virtual bool downConvert() = 0;
 
     /**
      * @brief flush the input rx data stream and set the stream_processing flag to on.
      */
-    void startStream() = 0;
+    virtual void startStream() = 0;
 
     /**
      * @brief flush the input rx data stream and set the stream_processing flag to off
      */
-    void stopStream() = 0;
+    virtual void stopStream() = 0;
 
     /**
      * @brief test the processing stream flag
      * @return true if rx data should be down converted
      */
-    bool streamEnabled() = 0;
+    virtual bool streamEnabled() = 0;
 
     /**
      * @brief Enable IF streamer - This passes the incoming RF sample buffer onto the
@@ -181,7 +181,7 @@ namespace SoDa {
      *
      * @param enable if true, send RF sample buffer onto if_stream, otherwise, don't. 
      */
-    void enableIFStreamer(bool enable) = 0; 
+    virtual void enableIFStreamer(bool enable) = 0; 
   protected:
     
     DatMBox * rx_stream;

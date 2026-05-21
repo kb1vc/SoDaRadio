@@ -165,10 +165,6 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params) : SoDa::RadioControl(_params, "USRPCt
   rx_rf_freq_range = usrp->get_rx_freq_range();
   tx_rf_freq_range = usrp->get_tx_freq_range();
 
-  // set the sample rates
-  usrp->set_rx_rate(params->getRXRate());
-  usrp->set_tx_rate(params->getTXRate());
-  
   // setup the control IO pins (for TX/RX external relay)
   // Note that there are no GPIOs available for the B2xx right now.
   initControlGPIO();
@@ -178,9 +174,6 @@ SoDa::USRPCtrl::USRPCtrl(Params * _params) : SoDa::RadioControl(_params, "USRPCt
 
   // turn off the transmitter
   setTXEna(false);
-
-  // turn of the LO
-  tvrt_lo_mode = false;
 
   // if we are in integer-N mode, setup the step table.
   testIntNMode(params->forceIntN(), params->forceFracN()); 
@@ -230,30 +223,26 @@ uhd::tune_result_t SoDa::USRPCtrl::checkLock(uhd::tune_request_t & req, char sel
   return ret; 
 }
 
-void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
-{
-  // select "r" for rx and "t" for tx.
+double SoDa::USRPCtrl::getLOFreq(SoDa::RXTX rxtx) {
+  if(rxtx == SoDa::RX) {
+    return last_rx_tune_result.actual_rf_freq + last_rx_tune_result.actual_dsp_freq;     
+  }
+  else if(rxtx == SoDa::TX) {
+    return last_tx_tune_result.actual_rf_freq + last_tx_tune_result.actual_dsp_freq; 
+  }
 
+  return 0.0; /// no idea how we'd get here. 
+}
+
+double SoDa::USRPCtrl::setLOFreq(double freq, SoDa::RXTX rxtx) 
+{
   double target_rx_freq;
 
-  if(sel == 'r') {
-    // we round the target frequency to a point that puts the
-    // baseband between 150 and 250 KHz below the requested
-    // frequency. and an even 100kHz multiple.
-
-    // we need to fiddle this a bit, as we can hang the radio if 
-    // the requested frequency is out of range... 
+  if(rxtx == SoDa::RX) {
     if(freq < rx_rf_freq_range.start()) freq = rx_rf_freq_range.start();
     if(freq > rx_rf_freq_range.stop()) freq = rx_rf_freq_range.stop();
     
     target_rx_freq = freq; 
-
-    target_rx_freq = 100e3 * floor(freq / 100e3);
-    debugMsg(SoDa::Format("freq = %0 1st target = %1\n").addF(freq, 'e').addF(target_rx_freq, 'e'));
-    while((freq - target_rx_freq) < 100e3) {
-      target_rx_freq -= 100.0e3;
-      debugMsg(SoDa::Format("\tfreq = %0 new target = %1\n").addF(freq, 'e').addF(target_rx_freq, 'e'));
-    }
 
     /// This code depends on the integer-N tuning features in libuhd 3.7 and after
     /// earlier libraries will revert to fractional-N tuning and might
@@ -283,6 +272,7 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
 	     .addF(target_rx_freq, 10, 6, 'e')
 	     .addF(rx_trequest.rf_freq, 10, 6, 'e')
 	     .addF(rx_trequest.dsp_freq, 10, 6, 'e'));
+    return last_rx_tune_result.actual_rf_freq + last_rx_tune_result.actual_dsp_freq;
   }
   else {
     // On the transmit side, we're using a minimal IF rate and
@@ -294,14 +284,9 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
     if(freq < tx_rf_freq_range.start()) freq = tx_rf_freq_range.start();
     if(freq > tx_rf_freq_range.stop()) freq = tx_rf_freq_range.stop();    
 
-    
     uhd::tune_request_t tx_request(freq);
     
-    if(tvrt_lo_mode) {
-      tx_request.rf_freq_policy = uhd::tune_request_t::POLICY_MANUAL;
-      tx_request.rf_freq = tvrt_lo_fe_freq;
-    }
-    else if(supports_IntN_Mode) {
+    if(supports_IntN_Mode) {
       // This is a little complicated.
       // For the UBX, at least, the RF oscillator was bleeding through
       // to the output and appearing > -40dBc.   That is not sufficient
@@ -344,6 +329,8 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
 
     last_tx_tune_result = checkLock(tx_request, 't', last_tx_tune_result);
 
+    return last_tx_tune_result.actual_rf_freq + last_tx_tune_result.actual_dsp_freq;
+    
     double txfreqs[2];
     txfreqs[0] = usrp->get_tx_freq(0);
     if(tvrt_lo_mode) {
@@ -353,13 +340,36 @@ void SoDa::USRPCtrl::set1stLOFreq(double freq, char sel, bool set_if_freq)
 	       .addF(txfreqs[1], 10, 6, 'e'));
     }
   }
+}
 
-  // If we are setting the RX mode, then we need to send
-  // a message to the USRPRX to tell it what its IF freq should be.
-  if((sel == 'r') && set_if_freq) {
-    cmd_stream->put(new Command(Command::SET, Command::RX_LO3_FREQ,
-				freq - target_rx_freq)); 
+float USRPCtrl::setRFGain(float gain, SoDa::RXTX rxtx) {
+  if(rxtx == SoDa::RX) {
+      // dparameters ranges from 0 to 100... normalize this
+      // to the actual range; 
+      rx_rf_gain = rx_rf_gain_range.stop() + cmd->dparms[0];
+      if(rx_rf_gain > rx_rf_gain_range.stop()) rx_rf_gain = rx_rf_gain_range.stop();
+      if(rx_rf_gain < rx_rf_gain_range.start()) rx_rf_gain = rx_rf_gain_range.start();
+      if(!tx_on) {
+	usrp->set_rx_gain(rx_rf_gain);
+      }
+      return usrp->get_rx_gain();
   }
+  if(rxtx == SoDa::TX) {
+      tx_rf_gain = tx_rf_gain_range.stop() + cmd->dparms[0];
+      if(tx_rf_gain > tx_rf_gain_range.stop()) tx_rf_gain = tx_rf_gain_range.stop();
+      if(tx_rf_gain < tx_rf_gain_range.start()) tx_rf_gain = tx_rf_gain_range.start();
+      tmp = cmd->dparms[0];
+      debugMsg(Format("Setting TX gain to %0 from power %1 range start = %2 stop = %3\n") 
+	       .addF(tx_rf_gain, 'e')
+	       .addF(tmp, 'e')
+	       .addF(tx_rf_gain_range.start(), 'e')
+	       .addF(tx_rf_gain_range.stop(), 'e'));
+      if(tx_on) {
+	usrp->set_tx_gain(tx_rf_gain);
+      }
+      return usrp->get_tx_gain(); 
+  }
+  return 0.0; 
 }
 
 /**
@@ -393,159 +403,6 @@ void SoDa::USRPCtrl::subExecSetCommand(Command * cmd)
   }
   double tmp;
   switch (cmd->target) {
-  case Command::RX_RETUNE_FREQ:
-    last_rx_req_freq = cmd->dparms[0]; 
-    freq = cmd->dparms[0];
-    fdiff = freq - (last_rx_tune_result.actual_rf_freq - last_rx_tune_result.actual_dsp_freq);
-    
-    debugMsg(SoDa::Format("Got RX RETUNE request -- frequency %0 diff = %1  last actual_rf %2  dsp %3\n")
-	     .addF(freq, 10, 6, 'e')
-	     .addF(fdiff, 10, 6, 'e')
-	     .addF(last_rx_tune_result.actual_rf_freq, 10, 6, 'e')
-	     .addF(last_rx_tune_result.actual_dsp_freq, 10, 6, 'e'));
-
-    if((fdiff < 200e3) && (fdiff > 100e3)) {
-      cmd_stream->put(new Command(Command::SET, Command::RX_LO3_FREQ, fdiff)); 
-      cmd_stream->put(new Command(Command::REP, Command::RX_FE_FREQ, 
-				  last_rx_tune_result.actual_rf_freq - last_rx_tune_result.actual_dsp_freq));
-      cmd_stream->put(new Command(Command::REP, Command::RX_CENTER_FREQ, last_rx_tune_result.actual_rf_freq));
-      
-      break; 
-    }
-    // else -- treat this as a RX_TUNE_FREQ request.
-  case Command::RX_TUNE_FREQ:    
-  case Command::RX_FE_FREQ:
-    last_rx_req_freq = cmd->dparms[0]; 
-    set1stLOFreq(cmd->dparms[0], 'r', cmd->target != Command::RX_TUNE_FREQ);
-    // now adjust the 3rd lo (missing in int-N mode redo....)
-    fdiff = freq - (last_rx_tune_result.actual_rf_freq - last_rx_tune_result.actual_dsp_freq);    
-    cmd_stream->put(new Command(Command::SET, Command::RX_LO3_FREQ, fdiff));     
-    cmd_stream->put(new Command(Command::REP, Command::RX_FE_FREQ, 
-			       last_rx_tune_result.actual_rf_freq - last_rx_tune_result.actual_dsp_freq)); 
-    cmd_stream->put(new Command(Command::REP, Command::RX_CENTER_FREQ, last_rx_tune_result.actual_rf_freq));
-    break;
-
-  case Command::LO_CHECK:
-    if(cmd->dparms[0] == 0.0) {
-      set1stLOFreq(last_rx_req_freq, 'r', false);
-    }
-    else {
-      debugMsg(SoDa::Format("setting lo check freq to %0\n") .addF(cmd->dparms[0], 10, 6, 'e'));
-      usrp->set_rx_freq(cmd->dparms[0]);
-      // now send a GET lo offset command
-      cmd_stream->put(new Command(Command::GET, Command::LO_OFFSET, 0));
-    }
-    break;
-
-  case Command::TX_RETUNE_FREQ:
-  case Command::TX_TUNE_FREQ:
-  case Command::TX_FE_FREQ:
-    set1stLOFreq(cmd->dparms[0] + tx_freq_rxmode_offset, 't', false);
-    tx_freq = cmd->dparms[0]; 
-    cmd_stream->put(new Command(Command::REP, Command::TX_FE_FREQ, 
-			       last_tx_tune_result.actual_rf_freq + last_tx_tune_result.actual_dsp_freq)); 
-    break; 
-
-  case Command::RX_SAMP_RATE:
-    usrp->set_rx_rate(cmd->dparms[0]);
-    cmd_stream->put(new Command(Command::REP, Command::RX_SAMP_RATE, 
-			       usrp->get_rx_rate())); 
-    break; 
-  case Command::TX_SAMP_RATE:
-    tx_samp_rate = cmd->dparms[0]; 
-    usrp->set_tx_rate(cmd->dparms[0]); 
-    cmd_stream->put(new Command(Command::REP, Command::TX_SAMP_RATE, 
-			       usrp->get_tx_rate())); 
-    break;
-    
-  case Command::RX_RF_GAIN:
-    // dparameters ranges from 0 to 100... normalize this
-    // to the actual range; 
-    rx_rf_gain = rx_rf_gain_range.stop() + cmd->dparms[0];
-    if(rx_rf_gain > rx_rf_gain_range.stop()) rx_rf_gain = rx_rf_gain_range.stop();
-    if(rx_rf_gain < rx_rf_gain_range.start()) rx_rf_gain = rx_rf_gain_range.start();
-    if(!tx_on) {
-      usrp->set_rx_gain(rx_rf_gain);
-      cmd_stream->put(new Command(Command::REP, Command::RX_RF_GAIN, 
-				  usrp->get_rx_gain()));
-    }
-    break; 
-  case Command::TX_RF_GAIN:
-    tx_rf_gain = tx_rf_gain_range.stop() + cmd->dparms[0];
-    if(tx_rf_gain > tx_rf_gain_range.stop()) tx_rf_gain = tx_rf_gain_range.stop();
-    if(tx_rf_gain < tx_rf_gain_range.start()) tx_rf_gain = tx_rf_gain_range.start();
-    tmp = cmd->dparms[0];
-    debugMsg(SoDa::Format("Setting TX gain to %0 from power %1 range start = %2 stop = %3\n") 
-	     .addF(tx_rf_gain, 'e')
-	     .addF(tmp, 'e')
-	     .addF(tx_rf_gain_range.start(), 'e')
-	     .addF(tx_rf_gain_range.stop(), 'e'));
-    if(tx_on) {
-      usrp->set_tx_gain(tx_rf_gain);
-      cmd_stream->put(new Command(Command::REP, Command::TX_RF_GAIN, 
-				  usrp->get_tx_gain())); 
-    }
-    break; 
-  case SoDa::Command::TX_STATE: // SET TX_ON
-    debugMsg(SoDa::Format("TX_STATE arg = %0\n").addI(cmd->iparms[0]));
-    if(cmd->iparms[0] == 1) {
-      // set the txgain to where it is supposed to be.
-      tx_on = true; 
-      bool full_duplex = cmd->iparms[1] != 0;
-      if(!full_duplex) usrp->set_rx_gain(0.0); 
-      usrp->set_tx_gain(tx_rf_gain); 
-      cmd_stream->put(new Command(Command::REP, Command::TX_RF_GAIN, 
-				  usrp->get_tx_gain()));
-      // to move a birdie away, we bumped the TX LO,, move it back. 
-      tx_freq_rxmode_offset = 0.0; // so tuning works.
-
-      // enable the transmit relay
-      debugMsg(SoDa::Format("Enabling TX\nCurrent TXENA %0\n")
-	       .addI(tx_fe_subtree->getBoolProp("enabled")));
-      if(supports_tx_gpio) {
-	debugMsg(SoDa::Format("Current GPIO = %0 ")
-		 .addU(dboard->get_gpio_out(uhd::usrp::dboard_iface::UNIT_TX), 'x', 4));
-      }
-      setTXEna(true);
-
-      debugMsg(SoDa::Format("New TXENA %0\n").addU(tx_fe_subtree->getBoolProp("enabled"), 'x', 4));
-      if(supports_tx_gpio) {
-	debugMsg(SoDa::Format("New GPIO = %0 ")
-		 .addU(dboard->get_gpio_out(uhd::usrp::dboard_iface::UNIT_TX), 'x', 4));
-      }
-      // and tell the TX unit to turn on the TX
-      // This avoids the race between CTRL and TX/RX units for setup and teardown.... 
-      cmd_stream->put(new Command(Command::SET, Command::TX_STATE, 
-				  3, cmd->iparms[1]));
-    }
-    if(cmd->iparms[0] == 0) {
-      tx_on = false; 
-      // set txgain to zero
-      usrp->set_tx_gain(0.0);
-      usrp->set_rx_gain(rx_rf_gain);
-      // tune the TX unit 1MHz away from where we want to be.
-      tx_freq_rxmode_offset = rxmode_offset; // so tuning works.
-      set1stLOFreq(tx_freq + tx_freq_rxmode_offset, 't', false);
-
-      // turn off the transmit relay and the TX chain.
-      // This also turns off the TX LO on a WBX module, so
-      // the above tx_freq_rxmode  trick may not be necessary
-      // We keep the rxmode_offset here in case other modules
-      // leave the TXLO on.
-      setTXEna(false); 
-      debugMsg(SoDa::Format("Disabling TX -- Got TXENA %0")
-	       .addU(tx_fe_subtree->getBoolProp("enabled"), 'x', 4));
-      if(supports_tx_gpio) {
-	debugMsg(SoDa::Format("Got GPIO = %0 ")
-		 .addU(dboard->get_gpio_out(uhd::usrp::dboard_iface::UNIT_TX), 'x', 4));
-      }
-      // and tell the RX unit to turn on the RX
-      // This avoids the race between CTRL and TX/RX units for setup and teardown.... 
-      cmd_stream->put(new Command(Command::SET, Command::TX_STATE, 
-				  2));
-    }
-    break; 
-
   case Command::CLOCK_SOURCE:
     if((cmd->iparms[0] & 1) == 1) {
       debugMsg("Setting reference to external");
@@ -556,19 +413,6 @@ void SoDa::USRPCtrl::subExecSetCommand(Command * cmd)
       usrp->set_clock_source(std::string("internal"));
     }
     break; 
-
-  case Command::RX_ANT:
-    setAntenna(cmd->sparm, 'r');
-    debugMsg(SoDa::Format("Got RX antenna as [%0]\n").addS(usrp->get_rx_antenna()));
-    cmd_stream->put(new Command(Command::REP, Command::RX_ANT, usrp->get_rx_antenna()));
-    break; 
-
-  case Command::TX_ANT:
-    tx_ant = cmd->sparm; 
-    setAntenna(cmd->sparm, 't');
-    debugMsg(SoDa::Format("Got TX antenna as [%0]\n").addS(usrp->get_tx_antenna()));    
-    cmd_stream->put(new Command(Command::REP, Command::TX_ANT, usrp->get_tx_antenna()));
-    break;
 
   case Command::TVRT_LO_CONFIG:
     setTransverterLOFreqPower(cmd->dparms[0], cmd->dparms[1]);
@@ -588,6 +432,7 @@ void SoDa::USRPCtrl::subExecSetCommand(Command * cmd)
     break; 
   }
 }
+
 
 void SoDa::USRPCtrl::subExecGetCommand(Command * cmd)
 {
@@ -639,21 +484,18 @@ void SoDa::USRPCtrl::subExecGetCommand(Command * cmd)
 				res));
     break;
 
-  case Command::HWMB_REP:
-    cmd_stream->put(new Command(Command::REP, Command::HWMB_REP,
-				SoDa::Format("%0\t%1 to %2 MHz")
-				.addS(motherboard_name)
-				.addF((rx_rf_freq_range.start() * 1e-6), 10, 6, 'e')
-				.addF((rx_rf_freq_range.stop() * 1e-6), 10, 6, 'e').str()));
-    reportAntennas(); 
-    reportModes();
-    reportAFFilters();
-    cmd_stream->put(new Command(Command::REP, Command::INIT_SETUP_COMPLETE, 0));
-    break; 
   default:
     break; 
   }
 }
+
+std::string USRPCtrl::getHardwareDescription() {
+  return SoDa::Format("%0\t%1 to %2 MHz")
+    .addS(motherboard_name)
+    .addF((rx_rf_freq_range.start() * 1e-6), 10, 6, 'e')
+    .addF((rx_rf_freq_range.stop() * 1e-6), 10, 6, 'e').str()));
+}
+
 
 void SoDa::USRPCtrl::subExecRepCommand(Command * cmd)
 {
@@ -732,19 +574,11 @@ void SoDa::USRPCtrl::setTXEna(bool val)
     sleep_us(400);    
     // set the tx antenna
     setAntenna(tx_ant, 't');
-    // set the tx gain. 
-    usrp->set_tx_gain(tx_rf_gain);
-    // tx freq
-    set1stLOFreq(tx_freq + tx_freq_rxmode_offset, 't', false);  
-
-    double r = usrp->get_tx_rate(); 
-    debugMsg(SoDa::Format("TX rate = %0\n") .addF(r, 'e'));
   }
 
   if(!val) {
     tr_control->setTXOff(); 
   }
-  
 }
 
 void SoDa::USRPCtrl::setTXFrontEndEnable(bool val) 
@@ -978,7 +812,6 @@ void SoDa::USRPCtrl::testIntNMode(bool force_int_N, bool force_frac_N)
   }
 
 
-
   if(supports_IntN_Mode) {
     debugMsg("Supports INT_N tuning mode.\n");
   }
@@ -989,65 +822,43 @@ void SoDa::USRPCtrl::testIntNMode(bool force_int_N, bool force_frac_N)
   return; 
 }
 
-void SoDa::USRPCtrl::reportModes()
+std::vector<std::string>  SoDa::USRPCtrl::listAntennas(SoDa::RXTX rxtx) 
 {
-    cmd_stream->put(new Command(Command::REP, Command::MOD_SEL_ENTRY, 
-				"CW_U", ((int) SoDa::Command::CW_U)));
-    cmd_stream->put(new Command(Command::REP, Command::MOD_SEL_ENTRY, 
-				"USB", ((int) SoDa::Command::USB)));
-    cmd_stream->put(new Command(Command::REP, Command::MOD_SEL_ENTRY, 
-				"CW_L", ((int) SoDa::Command::CW_L)));
-    cmd_stream->put(new Command(Command::REP, Command::MOD_SEL_ENTRY, 
-				"LSB", ((int) SoDa::Command::LSB)));
-    cmd_stream->put(new Command(Command::REP, Command::MOD_SEL_ENTRY, 
-				"AM", ((int) SoDa::Command::AM)));
-    cmd_stream->put(new Command(Command::REP, Command::MOD_SEL_ENTRY, 
-				"WBFM", ((int) SoDa::Command::WBFM)));
-    cmd_stream->put(new Command(Command::REP, Command::MOD_SEL_ENTRY, 
-				"NBFM", ((int) SoDa::Command::NBFM)));
-}
-
-void SoDa::USRPCtrl::reportAFFilters()
-{
-    cmd_stream->put(new Command(Command::REP, Command::AF_FILT_ENTRY,
-				"100", ((int) SoDa::Command::BW_100)));
-    cmd_stream->put(new Command(Command::REP, Command::AF_FILT_ENTRY,
-				"500", ((int) SoDa::Command::BW_500)));
-    cmd_stream->put(new Command(Command::REP, Command::AF_FILT_ENTRY,
-				"2000", ((int) SoDa::Command::BW_2000)));
-    cmd_stream->put(new Command(Command::REP, Command::AF_FILT_ENTRY,
-				"6000", ((int) SoDa::Command::BW_6000)));
-    cmd_stream->put(new Command(Command::REP, Command::AF_FILT_ENTRY,
-				"WSPR", ((int) SoDa::Command::BW_WSPR)));
-    cmd_stream->put(new Command(Command::REP, Command::AF_FILT_ENTRY,
-				"PASS", ((int) SoDa::Command::BW_PASS)));
-}
-
-void SoDa::USRPCtrl::reportAntennas() 
-{
-  std::vector<std::string> rx_ants = usrp->get_rx_antennas();
-  for(auto ant: rx_ants) {
-    debugMsg(SoDa::Format("Sending RX antenna list element [%0]\n")
-	     .addS(ant));
-    cmd_stream->put(new Command(Command::REP, Command::RX_ANT_NAME, 
-				ant)); 
+  if(rxtx == SoDa::RX) {
+    return usrp->get_rx_antennas();
   }
-  std::vector<std::string> tx_ants = usrp->get_tx_antennas();
-  for(auto ant: tx_ants) {
-    debugMsg(SoDa::Format("Sending TX antenna list element [%0]\n")
-	     .addS(ant));
-    cmd_stream->put(new Command(Command::REP, Command::TX_ANT_NAME, 
-				ant)); 
-
+  else if(rxtx == SoDa::TX) {
+    return usrp->get_tx_antennas();    
+  }
+  else {
+    return std::vector<std::string>(0);
   }
 }
 
+void USRPCtrl::setSampleRate(float rate, SoDa::RXTX rxtx) {
+  if(rxtx == SoDa::RX) {
+    usrp->set_rx_rate(cmd->dparms[0]);    
+  }
+  else if(rxtx == SoDa::TX) {
+    usrp->set_tx_rate(cmd->dparms[0]);    
+  }
+}
 
-void SoDa::USRPCtrl::setAntenna(const std::string & ant, char sel)
+float USRPCtrl::getSampleRate(SoDa::RXTX rxtx) {
+  if(rxtx == SoDa::RX) {
+    return usrp->get_rx_rate();
+  }
+  else if(rxtx == SoDa::TX) {
+    return usrp->get_tx_rate();
+  }
+  return 1; 
+}
+
+void SoDa::USRPCtrl::setAntenna(const std::string & ant, SoDa::RXTX rxtx)
 {
   std::vector<std::string> ants; 
 
-  ants = (sel == 'r') ? usrp->get_rx_antennas() : usrp->get_tx_antennas();  
+  ants = (sel == SoDa::RX) ? usrp->get_rx_antennas() : usrp->get_tx_antennas();  
 
   std::string choice = ants[0];
 
@@ -1058,10 +869,10 @@ void SoDa::USRPCtrl::setAntenna(const std::string & ant, char sel)
     }
   }
 
-  if(sel == 'r') {
+  if(sel == SoDa::RX) {
     usrp->set_rx_antenna(choice); 
   }
-  if(sel == 't') {
+  if(sel == SoDa::TX) {
     usrp->set_tx_antenna(choice); 
   }
   

@@ -102,13 +102,13 @@ namespace SoDa {
   void RadioRX::execSetCommand(Command * cmd)
   {
     switch(cmd->target) {
-    case Command::RX_NCO_FREQ:
+    case Command::RX_IF_FREQ:
       current_IF_tuning = cmd->dparms[0];
       int unit_selector = int(cmd->dparms[1]);
-      setNCOFreq(cmd->dparms[0], unit_selector); 
+      setNCOFreq(cmd->dparms[0]);
       break;
     case Command::TX_STATE: // SET TX_ON
-      if(cmd->iparms[0] == 3) {
+      if(cmd->iparms[0] == TX_ON_1) {
 	// stop the RX stream.
 	// some radios will ignore this. 
 	stopStream();
@@ -117,8 +117,12 @@ namespace SoDa {
 	// don't enable the IF streamer unless we're in full duplex
 	// mode. (Added for satcom and EME folks.)
 	enableIFStreamer(cmd->iparms[1] > 0);
+
+	// tell the transmitter it can turn itself on now. 
+	cmd_stream->put(new Command(Command::SET, Command::TX_STATE, 
+				    Command::TX_ON_2), cmd->iparms[1]);
       }
-      if(cmd->iparms[0] == 2) {
+      if(cmd->iparms[0] == Command::TX_OFF_1) {
 	// start the RX stream.
 	debugMsg("In TX OFF -- restart stream");
 	// we never stopped the stream
@@ -127,7 +131,7 @@ namespace SoDa {
 	enableIFStreamer(true); 
 	// tell the baseband unit that it is ready to start. 
 	cmd_stream->put(new Command(Command::SET, Command::TX_STATE, 
-				    4));
+				    Command::TX_OFF_2));
       }
       break; 
     default:

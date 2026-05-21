@@ -81,12 +81,89 @@ namespace SoDa {
     uhd::usrp::multi_usrp::sptr getUSRP() { return usrp; }
 
     /**
-    * is the identified (rx or tx) front-end LO locked?
-    * If not, set the tuning frequency to "the right thing"
-    *
-    * @param rxtx RX, TX
-    */
-    virtual bool isLOLocked(SoDa::RXTX rxtx) = 0; 
+     * is the identified (rx or tx) front-end LO locked?
+     * If not, set the tuning frequency to "the right thing"
+     *
+     * @param rxtx RX, TX
+     */
+    bool isLOLocked(SoDa::RXTX rxtx);
+
+    /**
+     * @brief Set the front-end (LO + DDS) frequency to 'freq'
+     * This includes setting the PLL front end synthesizer
+     * as well as the FPGA resident digital synthesizer.
+     * 
+     * @param freq target frequency (LO and DDS *and* RadioRX/TX NCO combined)
+     * @param rxtx select receiver or transmitter
+     *
+     * @return The actual LO frequency.
+     *
+     * The actual LO frequency may differ from the requested frequency by a small
+     * margin. Some radios may have a tuning step that is more than a few Hz. In this
+     * case we adjust the LO in the RX and TX objects. (This may be a bigger deal for the
+     * TX object as we like to do all the modulation there at baseband and assume the
+     * hardware takes care of the carrier frequency. 
+     * 
+     * Typically, the call for a receive request would look like this:
+     *
+     * actual_lo_freq = setLOFreq(144.215e6, SoDa::RX)
+     *
+     * If the target LO can tune in 20 kHz intervals, the actual LO would be 144.100e6 and
+     * the if_freq would be 115e3 Hz. This would allow a "clean" window from 144.115 Mhz to
+     * 144.325 MHz in the spectrogram display.  The LO would need to be changed if the
+     * next frequency was greater than 144.240 or less than 144.205 (I think)
+     *
+     * On the transmit side, the offset may be dictated by the frequency stepping increment
+     * in the front-end LO.
+     *
+     * To keep everything civilized, setLOFreq should *never* be called by any other agent
+     * than the RadioControl object. (Not even its sub-classes.)
+     * 
+     */
+    double setLOFreq(double freq, SoDa::RXTX rxtx);
+
+    /**
+     * @brief Return the current LO (front end) oscillator setting for RX or TX chain
+     * @param rxtx select receiver or transmitter
+     * @return frequency (Analog LO and DDS/FPGA)
+     */ 
+    double getLOFreq(SoDa::RXTX rxtx);
+
+    /**
+     * @brief set tain on the RX or TX side
+     *
+     * @param gain gain - if not in range, we'll pick something good
+     * @param rxtx  receive or transmit?
+     * @return the actual gain setting
+     */
+    float setRFGain(float gain, SoDa::RXTX rxtx);
+
+    /**
+     * @brief Set the RX or TX sample rate
+     *
+     * @param rate sample rate (in samples/sec)
+     * @param rxtx choose RX chain or TX chain
+     */
+    void setSampleRate(float rate, SoDa::RXTX rxtx);
+
+    /**
+     * @brief Get the current setting for the sample rate
+     *
+     * @param rxtx choose RX chain or TX chain
+     * @return the sample rate (samples/sec)
+     */
+    float getSampleRate(SoDa::RXTX rxtx);
+    
+    
+    /**
+     * @brief report the model number and any other interesting features (like freq range)
+     * to be displayed on the UI and such.
+     *
+     * @return a string describing the hardware. 
+     */
+    std::string getHardwareDescription();
+    
+
     
   private:
     Params * params;
@@ -124,27 +201,25 @@ namespace SoDa {
 				 uhd::tune_result_t & cur);
 
     /**
-     * report the antennas that are available, send the report on cmd_stream
+     * @brief report the antennas that are available. we'll use this
+     * to let the GUI know what the choices are. 
+     *
+     * @param rxtx select which port RX, or TX
+     * @return list of antennas for rx/tx
+     * This will later be used in the RadioControl initialization command sequence from "reportModes"
+     *
      */
-    void reportAntennas(); 
+    std::vector<std::string> listAntennas(SoDa::RXTX rxtx);
 
-    /**
-     * report the modulation modes that are implemented, send the report on cmd_stream
-     */
-    void reportModes(); 
 
-    /**
-     * report the audio filters that are implemented, send the report on cmd_stream
-     */
-    void reportAFFilters(); 
-
+    
     /**
      * Set the antenna choice.  Use "ant" if it is in the list
      * of alternatives. Otherwise, choose the first alternative.
      * @param ant the requested antenna
-     * @param sel 'r' for RX, 't' for TX
+     * @param rxtx select receiver or transmitter
      */
-    void setAntenna(const std::string & ant, char sel); 
+    void setAntenna(const std::string & ant, SoDa::RXTX rxtx);
 
     /// Set the front-end (LO + DDS) frequency to 'freq'
     /// This includes setting the PLL front end synthesizer

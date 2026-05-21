@@ -211,11 +211,12 @@ namespace SoDa {
     static std::map<std::string, Base * > ObjectDirectory; ///< a class member -- directory of all registered objects.
   };
 
-  namespace Radio {
+  namespace SDR {
     /**
-     * The SoDa Exception class
+     * The SoDa::SDR Exception class (to distinguish it from the
+     * SoDaLibrary SoDa::Exception class. Dammit.
      *
-     * @class SoDa::Radio::Exception
+     * @class SoDa::SDR::Exception
      *
      * Wherever possible, objects reporting exceptions should signal a subclass of the
      * SoDa::Exception class. 
