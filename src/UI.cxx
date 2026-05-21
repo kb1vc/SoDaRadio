@@ -128,9 +128,8 @@ void SoDa::UI::run()
   net_cmd = NULL;
   ring_cmd = NULL;
   
-  cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_FE_FREQ, 144.2e6));
-  cmd_stream->put(new SoDa::Command(Command::SET, Command::TX_FE_FREQ, 144.2e6));
-  cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_LO3_FREQ, 100e3));
+  cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_TUNE_FREQ, 144.2e6));
+  cmd_stream->put(new SoDa::Command(Command::SET, Command::TX_TUNE_FREQ, 144.2e6));
   cmd_stream->put(new SoDa::Command(Command::SET, Command::RX_AF_FILTER, 1));
   sleep_ms(100);
   cmd_stream->put(new SoDa::Command(Command::SET, Command::TX_STATE, 0));
@@ -309,7 +308,7 @@ void SoDa::UI::execGetCommand(Command * cmd)
 void SoDa::UI::execRepCommand(Command * cmd)
 {
   switch(cmd->target) {
-  case SoDa::Command::RX_FE_FREQ:
+  case SoDa::Command::RX_TUNE_FREQ:
     // save the front end baseband frequency
     baseband_rx_freq = cmd->dparms[0];
     break;

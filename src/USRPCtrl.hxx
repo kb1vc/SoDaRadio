@@ -172,10 +172,32 @@ namespace SoDa {
      * @return a string describing the hardware. 
      */
     std::string getHardwareDescription();
+
+    /**
+     * @brief Some radios support multiple choices for the main reference clock
+     * source.  As an example, the USRP N200 can lock its master clock to an
+     * external 10 MHz reference or to an internal TCXO.
+     *
+     * This method chooses that reference source. 
+     *
+     * @param src if src is in the sources list, set the reference source to src
+     * @return true if the source name is valid, false if otherwise or if there is
+     * only one choice. 
+     */
+    bool setClockSource(Command::ClockSource src);
     
+    
+    /**
+     * @brief Some radios support multiple choices for the main reference clock
+     * source.  As an example, the USRP N200 can lock its master clock to an
+     * external 10 MHz reference or to an internal TCXO.
+     *
+     * @return the name of the currently selected clock source
+     */
+    Command::ClockSource getClockSource();
 
     
-  private:
+  protected:
     Params * params;
 
     /// The B200 and B210 need some special handling, as they
@@ -183,19 +205,6 @@ namespace SoDa {
     /// and need a special sample rate.
     bool is_B2xx;
     bool is_B210; ///< the B210 has two tx channels -- use the second for a Transverter LO -- see USRPLO
-
-    /// Parse an incoming command and dispatch.
-    /// @param cmd a command record
-    void subExecCommand(Command * cmd);
-    /// Dispatch an incoming GET command
-    /// @param cmd a command record
-    void subExecGetCommand(Command * cmd); 
-    /// Dispatch an incoming SET command
-    /// @param cmd a command record
-    void subExecSetCommand(Command * cmd); 
-    /// Dispatch an incoming REPort command
-    /// @param cmd a command record
-    void subExecRepCommand(Command * cmd); 
 
     /// get the number of seconds since the "Epoch"
     /// @return relative time in seconds
@@ -231,18 +240,10 @@ namespace SoDa {
      */
     void setAntenna(const std::string & ant, SoDa::RXTX rxtx);
 
-    /// Set the front-end (LO + DDS) frequency to 'freq'
-    /// This includes setting the PLL front end synthesizer
-    /// as well as the FPGA resident digital synthesizer.
-    /// @param freq target frequency (LO and DDS combined)
-    /// @param sel 'r' for RX LO, 't' for TX LO
-    /// @param set_if_freq if TRUE, tell the USRPRX thread to reset
-    /// its front-end frequency so that it can adjust its own oscillator.
-    void set1stLOFreq(double freq, char sel, bool set_if_freq = false);
 
     
-    CmdMBox * cmd_stream; ///< command stream channel
-    unsigned int subid;   ///< subscriber ID for this thread's connection to the command channel
+
+  private:
 
     // USRP stuff.
     uhd::usrp::multi_usrp::sptr usrp; ///< to which USRP unit is this connected?
@@ -284,12 +285,6 @@ namespace SoDa {
     /// daughtercards... 
     /// @param val true to enable transmitter front end, false otherwise. 
     void setTXFrontEndEnable(bool val); 
-
-    /// set the transverter LO frequency and power
-    /// This code does not work for libUHD after 3.7 -- it may not work for the older versions either.;(
-    void setTransverterLOFreqPower(double freq, double power);
-    void enableTransverterLO();
-    void disableTransverterLO();
     
     /// we use TX_IO bit 12 to turn on the TX relay
     /// we use TX_IO bit 11 to monitor the TX relay
@@ -327,13 +322,6 @@ namespace SoDa {
     std::string tx_ant;  ///< TX antenna choice (usually has to be TX or TX/RX1?
 
     std::string motherboard_name; ///< The model name of the USRP unit
-
-    // transverter local oscillator support.
-    bool tvrt_lo_capable; ///< if true, this unit can implement a local transverter oscillator.
-    bool tvrt_lo_mode; ///< if true, set the transmit frequency, with some knowledge of the tvrt LO.
-    double tvrt_lo_gain; ///< output power for the second transmit channel (used for transverter LO)
-    double tvrt_lo_freq; ///< the frequency of the second transmit channel oscillator
-    double tvrt_lo_fe_freq; ///< the frequency of the second transmit channel front-end oscillator
     
     // enables verbose messages
     bool debug_mode; ///< print stuff when we are in debug mode

@@ -161,12 +161,12 @@ namespace SoDa {
    * LO and listening to the leakage signal.  (It's a long story.)
    * @li TX_TUNE_FREQ all set the transmit FE chain frequency
    * to the requested value PLUS the tx_freq_rxmode_offset (the transmit IF frequency).
-   * @li RX_SAMP_RATE set the receive A/D sample rate in the USRP
-   * @li TX_SAMP_RATE set the transmit D/A sample rate in the USRP
+   * @li RX_SAMP_RATE set the receive A/D sample rate in the radio
+   * @li TX_SAMP_RATE set the transmit D/A sample rate in the radio
    * @li RX_RF_GAIN set the RF gain of the receive front-end
    * @li TX_RF_GAIN set the gain of the transmit front-end
    * @li TX_STATE turn the transmitter ON or OFF
-   * @li CLOCK_SOURCE select the external frequency reference for the USRP or the internal clock.
+   * @li CLOCK_SOURCE select the external frequency reference for the radio or the internal clock.
    * @li RX_ANT set the receive antenna port
    * @li TX_ANT set the transmit antenna port
    */
@@ -185,7 +185,7 @@ namespace SoDa {
 
     case Command::LO_CHECK:
       if(cmd->dparms[0] == 0.0) {
-	setLOFreq(last_rx_req_freq, SoDa::RX);
+	setLOFreq(last_rx_lo_freq, SoDa::RX);
       }
       else {
 	debugMsg(Format("setting lo check freq to %0\n") .addF(cmd->dparms[0], 10, 6, 'e'));
@@ -227,16 +227,16 @@ namespace SoDa {
 				    gain));
       }
       break; 
-    case Command::TX_STATE: // SET TX_ON
+    case Command::TX_STATE: // SET Command::TX_ON
       debugMsg(Format("TX_STATE arg = %0\n").addI(cmd->iparms[0]));
-      if(cmd->iparms[0] == TX_ON_0) {
+      if(cmd->iparms[0] == Command::TX_ON_0) {
 	// we're going to TX mode.
 	// This is the first stage.
-	setTXRXMode(TX_ON_0, full_duplex);
+	setTXRXMode(Command::TX_ON_0, full_duplex);
       }
       if(cmd->iparms[0] == 0) {
 	// going to receive mode
-	setTXRXMode(TX_OFF_0, full_duplex);
+	setTXRXMode(Command::TX_OFF_0, full_duplex);
       }
       break; 
 
@@ -251,6 +251,10 @@ namespace SoDa {
       cmd_stream->put(new Command(Command::REP, Command::TX_ANT, getAntenna(SoDa::TX)));
       break;
 
+    case Command::CLOCK_SOURCE:
+      setClockSource(cmd->iparms[0]);
+      break;
+      
     default:
       break; 
     }
@@ -263,33 +267,47 @@ namespace SoDa {
     int res;
   
     switch (cmd->target) {
-    case Command::RX_FE_FREQ:
-      cmd_stream->put(new Command(Command::REP, Command::RX_FE_FREQ, 
-				  last_rx_tune_result.actual_rf_freq,
-				  last_rx_tune_result.actual_dsp_freq)); 
+    case Command::RX_TUNE_FREQ:
+      cmd_stream->put(new Command(Command::REP, Command::RX_TUNE_FREQ, 
+				  cur_rx_freq));
       break; 
-    case Command::TX_FE_FREQ:
-      cmd_stream->put(new Command(Command::REP, Command::TX_FE_FREQ, 
-				  last_tx_tune_result.actual_rf_freq,
-				  last_tx_tune_result.actual_dsp_freq)); 
+    case Command::TX_TUNE_FREQ:
+      cmd_stream->put(new Command(Command::REP, Command::TX_TUNE_FREQ, 
+				  cur_tx_freq));
       break; 
 
+    case Command::RX_LO_FREQ:
+      cmd_stream->put(new Command(Command::REP, Command::RX_LO_FREQ, 
+				  cur_rx_lo_freq));
+      break; 
+    case Command::TX_LO_FREQ:
+      cmd_stream->put(new Command(Command::REP, Command::TX_LO_FREQ, 
+				  cur_tx_lo_freq));
+      break; 
+      
     case Command::RX_SAMP_RATE:
       cmd_stream->put(new Command(Command::REP, Command::RX_SAMP_RATE, 
-				  usrp->get_rx_rate())); 
+				  getSampleRate(SoDa::RX)));
       break; 
     case Command::TX_SAMP_RATE:
       cmd_stream->put(new Command(Command::REP, Command::TX_SAMP_RATE, 
-				  usrp->get_tx_rate())); 
+				  getSampleRate(SoDa::TX)));
       break;
 
     case Command::TX_GAIN_RANGE:
       cmd_stream->put(new Command(Command::REP, Command::TX_GAIN_RANGE,
-				  tx_rf_gain_range.start(), 
-				  tx_rf_gain_range.stop()));
+				  getGainRange(SoDa::TX)));
       break; 
 
-
+    case Command::RX_GAIN_RANGE:
+      cmd_stream->put(new Command(Command::REP, Command::TX_GAIN_RANGE,
+				  getGainRange(SoDa::RX)));
+      break; 
+      
+    case Command::CLOCK_SOURCE:
+	  cmd_stream->put(new Command(Command::REP, Command::CLOCK_SOURCE,
+				      getClockSource()));
+	  break; 
     case Command::HWMB_REP:
       cmd_stream->put(new Command(Command::REP, Command::HWMB_REP,
 				  getHardwareDescription));
@@ -312,14 +330,14 @@ namespace SoDa {
 
   void RadioControl::reportAntennas() 
   {
-    std::vector<std::string> rx_ants = usrp->get_rx_antennas();
+    std::vector<std::string> rx_ants = listAntennas(SoDa::RX);
     for(auto ant: rx_ants) {
       debugMsg(Format("Sending RX antenna list element [%0]\n")
 	       .addS(ant));
       cmd_stream->put(new Command(Command::REP, Command::RX_ANT_NAME, 
 				  ant)); 
     }
-    std::vector<std::string> tx_ants = usrp->get_tx_antennas();
+    std::vector<std::string> tx_ants = listAntennas(SoDa::TX);
     for(auto ant: tx_ants) {
       debugMsg(Format("Sending TX antenna list element [%0]\n")
 	       .addS(ant));
@@ -327,32 +345,6 @@ namespace SoDa {
 				  ant)); 
 
     }
-  }
-
-
-  void RadioControl::setAntenna(const std::string & ant, char sel)
-  {
-    std::vector<std::string> ants; 
-
-    ants = (sel == 'r') ? usrp->get_rx_antennas() : usrp->get_tx_antennas();  
-
-    std::string choice = ants[0];
-
-    for(auto a: ants) {
-      if (ant == a) {
-	choice = ant; 
-	break; 
-      }
-    }
-
-    if(sel == 'r') {
-      usrp->set_rx_antenna(choice); 
-    }
-    if(sel == 't') {
-      usrp->set_tx_antenna(choice); 
-    }
-  
-    return; 
   }
 
   // return -1 if we don't need to reset the LO
@@ -379,7 +371,9 @@ namespace SoDa {
       // tell the TX IF to set its new IF frequency. Then wait for it
       // to respond with a report. 
       cmd_stream->put(new Command(Command::SET, Command::TX_IF_FREQ, new_tx_if_freq));
-      cmd_stream->put(new Command(Command::REP, Command::TX_TUNE_FREQ, 
+      cmd_stream->put(new Command(Command::REP, Command::TX_LO_FREQ,
+				  cur_tx_lo_freq));
+      cmd_stream->put(new Command(Command::REP, Command::TX_TUNE_FREQ,
 				  cur_tx_lo_freq + new_tx_if_freq));
     }
     else { // rxtx is RX
@@ -392,7 +386,6 @@ namespace SoDa {
 	// we also need to tell everyone about the new center frequency for the IF stream
 	cmd_stream->put(new Command(Command::REP, Command::RX_CENTER_FREQ, 
 				    cur_rx_lo_freq));
-      
       }
 
       // change the IF frequency    
@@ -402,20 +395,23 @@ namespace SoDa {
       cmd_stream->put(new Command(Command::SET, Command::RX_IF_FREQ, new_rx_if_freq));
       cmd_stream->put(new Command(Command::REP, Command::RX_TUNE_FREQ, 
 				  cur_rx_lo_freq + new_rx_if_freq));
+      cmd_stream->put(new Command(Command::REP, Command::RX_LO_FREQ, 
+				  cur_rx_lo_freq));
+      
     }
   }
   
   bool RadioControl::isLocked(SoDa::RXTX rxtx) {
     if(rxtx == SoDa::RX) {
-      return (cur_rx_lo_freq == new_rx_lo_freq) && isLOLocked(SoDa::TX);
+      return (cur_rx_lo_freq == getLOFreq(SoDa::RX)) && isLOLocked(SoDa::TX);
     }
     else {
-      return (cur_rx_lo_freq == new_rx_lo_freq) && isLOLocked(SoDa::TX);
+      return (cur_rx_lo_freq == getLOFreq(SoDa::TX)) && isLOLocked(SoDa::TX);
     }
   }
 
   void RadioControl::setTXRXMode(RxTxState rxtxst, bool full_duplex) {
-    if(rxtxst == TX_ON_0) {
+    if(rxtxst == Command::TX_ON_0) {
       //   1. X turn the RX gain to 0 (temporarily)
       if(!full_duplex) {
 	setRFGain(0.0, SoDa::RX);
@@ -434,15 +430,15 @@ namespace SoDa {
       //   5.   Enable the rest of the tx hardware, including the antenna relay.
       setTXEna(true, full_duplex);
 
-      //   6. X Send a SET message to put TX_ON_1, full_duplex_flag
+      //   6. X Send a SET message to put Command::TX_ON_1, full_duplex_flag
       // This will tell the RX unit to shut down (unless it is in full-dux) and then
-      // the RX unit will send a TX_ON_2 message to the TX unit. 
+      // the RX unit will send a Command::TX_ON_2 message to the TX unit. 
       // This avoids the race between CTRL and TX/RX units for setup and teardown....
       cmd_stream->put(new Command(Command::SET, Command::TX_STATE, 
-				  TX_ON_1, cmd->iparms[1]));
+				  Command::TX_ON_1, cmd->iparms[1]));
 
     }
-    else if(rxtxst == TX_OFF_0) {
+    else if(rxtxst == Command::TX_OFF_0) {
 
       // 1. X Sets tx gain to 0
       setRFGain(0.0, SoDa::TX);
@@ -456,11 +452,11 @@ namespace SoDa {
       // 4. X Sets tx frequency to tx_freq + an offset that gets the tx LO out of the RX passband
       setLOFreq(cur_tx_lo_freq + tx_freq_rxmode_offset, SoDa::TX);
       
-      // 6. X Send SET with TX_OFF_1
+      // 6. X Send SET with Command::TX_OFF_1
       // and tell the RX unit to turn on the RX
       // This avoids the race between CTRL and TX/RX units for setup and teardown.... 
       cmd_stream->put(new Command(Command::SET, Command::TX_STATE, 
-				  TX_OFF_1, full_duplex));
+				  Command::TX_OFF_1, full_duplex));
     }
   }
   
@@ -472,5 +468,12 @@ namespace SoDa {
     ret = (((double) tv.tv_sec) - first_gettime) + 1.0e-6*((double) tv.tv_usec);
     return ret; 
   }
-  
+
+  bool RadioControl::setClockSource(Command::ClockSource src) {
+    return true; 
+  }
+
+  Command::ClockSource RadioControl::getClockSource() {
+    return Command::ClockSource::INTERNAL; 
+  }
 }

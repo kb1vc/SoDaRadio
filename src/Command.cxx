@@ -47,8 +47,14 @@ void SoDa::Command::initTables()
   table_needs_init = false; 
   // created from the buildmap file produced by enum_body2map.sh
   initTableEntry(std::string("RX_TUNE_FREQ"), RX_TUNE_FREQ);
+  initTableEntry(std::string("RX_LO_FREQ"), RX_LO_FREQ);
+  initTableEntry(std::string("RX_IF_FREQ"), RX_IF_FREQ);
+  initTableEntry(std::string("RX_CENTER_FREQ"), RX_CENTER_FREQ);
+
   initTableEntry(std::string("TX_TUNE_FREQ"), TX_TUNE_FREQ);
-  initTableEntry(std::string("RX_NCO_FREQ"), RX_NCO_FREQ);
+  initTableEntry(std::string("TX_LO_FREQ"), TX_LO_FREQ);
+  initTableEntry(std::string("TX_IF_FREQ"), TX_IF_FREQ);
+  
   initTableEntry(std::string("RX_SAMP_RATE"), RX_SAMP_RATE);
   initTableEntry(std::string("TX_SAMP_RATE"), TX_SAMP_RATE);
   initTableEntry(std::string("RX_ANT"), RX_ANT);
@@ -108,7 +114,6 @@ void SoDa::Command::initTables()
   initTableEntry(std::string("RF_RECORD_STOP"), RF_RECORD_STOP);
   initTableEntry(std::string("NBFM_SQUELCH"), NBFM_SQUELCH);
 
-  initTableEntry(std::string("RX_CENTER_FREQ"), RX_CENTER_FREQ);
   initTableEntry(std::string("LIST_MODES"), LIST_MODES);
   initTableEntry(std::string("LIST_AF_FILTERS"), LIST_AF_FILTERS);  
 }

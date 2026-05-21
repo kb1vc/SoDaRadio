@@ -78,7 +78,7 @@ void SoDa::IFRecorder::execGetCommand(SoDa::Command * cmd)
 void SoDa::IFRecorder::execRepCommand(SoDa::Command * cmd)
 {
   switch (cmd->target) {
-  case SoDa::Command::RX_FE_FREQ:
+  case SoDa::Command::RX_TUNE_FREQ:
     current_rx_center_freq = cmd->dparms[0];
     break;
   default:

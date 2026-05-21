@@ -68,7 +68,7 @@ namespace SoDa {
      * Build a RadioControl thread
      * @param params Pointer to a parameter object with all the initial settings
      * @param name the name given to the thread. 
-     * and identification for the attached USRP
+     * and identification for the attached radio
      */
     RadioControl(Params * params, const std::string & name);
 
@@ -158,7 +158,8 @@ namespace SoDa {
     void subExecSetCommand(Command * cmd) { }
     void subExecRepCommand(Command * cmd) { }
 
-    
+
+  protected:
     /// Methods that ALL radios must implement.
     /**
     * is the identified (rx or tx) front-end LO locked?
@@ -355,6 +356,32 @@ g     * 144.325 MHz in the spectrogram display.  The LO would need to be changed
      */
     void setTXRXMode(Command::RxTxState rxtxst, bool full_duplex);
 
+    /**
+     * @brief Some radios support multiple choices for the main reference clock
+     * source.  As an example, the USRP N200 can lock its master clock to an
+     * external 10 MHz reference or to an internal TCXO.
+     *
+     * This method chooses that reference source. 
+     *
+     * There is a default implementation of this method that returns "Internal"
+     *
+     * @param src if src is in the sources list, set the reference source to src
+     * @return true if the source name is valid, false if otherwise or if there is
+     * only one choice. 
+     */
+    virtual bool setClockSource(Command::ClockSource src);
+    
+
+    /**
+     * @brief Some radios support multiple choices for the main reference clock
+     * source.  As an example, the USRP N200 can lock its master clock to an
+     * external 10 MHz reference or to an internal TCXO.
+     *
+     * There is a default implementation of this method that returns "Internal"
+     *
+     * @return the name of the currently selected clock source
+     */
+    virtual Command::ClockSource getClockSource();
 
     /**
      * @brief report the model number and any other interesting features (like freq range)
@@ -401,10 +428,10 @@ g     * 144.325 MHz in the spectrogram display.  The LO would need to be changed
 
     static const double tx_freq_rxmode_offset; ///< tx offset when in RX mode
 
-    double tx_samp_rate; ///< sample rate to USRP TX chain. 
+    double tx_samp_rate; ///< sample rate to TX chain. 
     std::string tx_ant;  ///< TX antenna choice (usually has to be TX or TX/RX1?
 
-    std::string motherboard_name; ///< The model name of the USRP unit
+    std::string motherboard_name; ///< The model name of the radio
 
     // transverter local oscillator support.
     bool tvrt_lo_capable; ///< if true, this unit can implement a local transverter oscillator.

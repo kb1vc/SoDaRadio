@@ -59,6 +59,15 @@ namespace SoDa
       };
 
     /**
+     * @brief some radios support two sources for the master oscillator reference.
+     * (chosen by set/get ClockSource)
+     */
+    enum ClockSource
+      {
+	EXTERNAL,
+	INTERNAL
+      }; 
+    /**
      * @brief Transmit/Receive state changes go through stages. See TX_STATE
      */
     enum RxTxState
@@ -67,7 +76,8 @@ namespace SoDa
 	TX_OFF_1,
 	TX_OFF_2,
 	TX_ON_0,
-	TX_ON_1
+	TX_ON_1,
+	TX_ON_2, 	
       };
     /**
      * @brief Each command has a "target" state that it is meant to modify, query, or report
@@ -86,12 +96,20 @@ namespace SoDa
 	RX_TUNE_FREQ,
 
 	/**
-	 * Tune the NCO (final LO) frequency to shift to baseband
+	 * Tune the RX hardware front end local oscillator 
 	 *
 	 * param is frequency as a double
 	 */
-	RX_IF_OSC,
+	RX_LO_FREQ,
 
+
+	/**
+	 * Tune the software NCO (final LO) frequency to shift to baseband
+	 *
+	 * param is frequency as a double
+	 */
+	RX_IF_FREQ,
+	
 	/**
 	 * The center frequency for IF buffers from USRPRX
 	 *
@@ -111,11 +129,18 @@ namespace SoDa
 	TX_TUNE_FREQ,
 
 	/**
+	 * Tune the RX hardware front end local oscillator 
+	 *
+	 * param is frequency as a double
+	 */
+	TX_LO_FREQ,
+	
+	/**
 	 * Set/report the TX IF frequency 
 	 *
 	 * param is frequency as a double (normally 0)
 	 */
-	TX_IF_OSC,
+	TX_IF_FREQ,
 
 	/**
 	 * Sample rate for RX is typically 600 KHz or better to allow
