@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017 Matthew H. Reilly (kb1vc)
+Copyright (c) 2017, 2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -69,7 +69,7 @@ static void alertAndExit(const QString & err_msg)
  * @param p set of command line parameters, some of which are 
  * passed to the server process.
  */
-static void startupServer(const QString & lock_file_name, SoDa::GuiParams & p)
+static QProcess * startupServer(QObject * parent, const QString & lock_file_name, SoDa::GuiParams & p)
 {
   // start the radio server  
   QString server_name;
@@ -95,21 +95,33 @@ static void startupServer(const QString & lock_file_name, SoDa::GuiParams & p)
   // fix a problem with the UBUNTU menu proxy, whatever that is.
   char ub_fix[] = "UBUNTU_MENUPROXY=";
   putenv(ub_fix);
-  
-  server_command = QString("%1 --uds_name \"%2\" ").arg(server_name).arg(ss2QS(p.getServerSocketBasename()));
+
+  QStringList server_args;
+
+  server_args << "--uds_name" << ss2QS(p.getServerSocketBasename());
 
   // now add the uhd args
   QString uhd_args = ss2QS(p.getUHDArgs());
-  if(uhd_args != "") server_command += QString("--uhdargs %1 ").arg(uhd_args);
-  if(p.getDebugLevel() > 0) server_command += QString("--debug %1 ").arg(p.getDebugLevel());
-  QString server_args = ss2QS(p.getServerArgs());
-  if(server_args != "") server_command += QString("%1 ").arg(server_args);
+  if(uhd_args != "") {
+    server_args << "--uhdargs" << uhd_args; 
+  }
+  if(p.getDebugLevel() > 0) {
+    server_args << "--debug" << QString("%1").arg(p.getDebugLevel()); 
+  }
   
+  QString server_extra_args = ss2QS(p.getServerArgs());
+  if(server_extra_args != "") {
+    server_args << server_extra_args; 
+  }  
+
+  server_args << "--lockfile" << lock_file_name; 
+  server_args.append("--lockfile");
+
+  QProcess * process = new QProcess(parent);
+  process->start(server_name, server_args);
+  qDebug() << QString("started detached server\n");
   
-  server_command += QString(" --lockfile %1 ").arg(lock_file_name); 
-
-  QProcess::startDetached(server_command); 
-
+  return process;
 }
 
 /**
@@ -122,6 +134,8 @@ static void startupServer(const QString & lock_file_name, SoDa::GuiParams & p)
  */
 void setupLookNFeel()
 {
+  qInfo() << QString("setupLookNFeel");
+  
   qApp->setStyle(QStyleFactory::create("fusion"));
 
   QPalette palette;
@@ -143,6 +157,9 @@ void setupLookNFeel()
   palette.setColor(QPalette::Disabled, QPalette::ButtonText, Qt::darkGray);
 
   qApp->setPalette(palette);
+
+  qInfo() << QString("setupLookNFeel return");  
+  
 }
 
 bool checkForZombies(const QString & server_lock_filename, const QString & server_socket_base) 
@@ -193,6 +210,11 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     SoDa::GuiParams p(argc, argv);    
 
+      
+    if(p.getDebugLevel() > 0) {
+      qInfo() << QString("parsed command line");
+    }
+    
     if(p.hadNoCommand()) {
       a.quit();
       return 0;
@@ -208,6 +230,11 @@ int main(int argc, char *argv[])
     QString server_lock_filename = QString("%1/sodaserver_args%2.lock")
       .arg(apdir)
       .arg(uhdargs);
+
+    if(p.getDebugLevel() > 0) {
+      qInfo() << QString("server_lock_filename %1").arg(server_lock_filename);
+    }
+    
     
     QString ssbn; 
     if(p.getServerSocketBasename() == std::string("")) {
@@ -219,9 +246,20 @@ int main(int argc, char *argv[])
       ssbn = QString::fromStdString(p.getServerSocketBasename());
     }
 
+    if(p.getDebugLevel() > 0) {
+      qInfo() << QString("check for zombies");
+    }
     
     if(!checkForZombies(server_lock_filename, ssbn)) {
-      startupServer(server_lock_filename, p); 
+      if(p.getDebugLevel() > 0) {
+	qInfo() << QString("starting server");
+      }
+      
+      QProcess * server_proc = startupServer(nullptr, server_lock_filename, p); 
+
+      if(p.getDebugLevel() > 0) {
+	qInfo() << QString("settingup UI");
+      }
       
       setupLookNFeel();
     
@@ -229,4 +267,9 @@ int main(int argc, char *argv[])
       w.show();
       return a.exec();
     }
+
+    if(p.getDebugLevel() > 0) {
+      qInfo() << QString("DONE!!!!\n\nDONE\n\n");
+    }
+    
 }

@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012,2013,2014 Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2013,2014,2025 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -25,9 +25,8 @@
   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+#pragma once
 
-#ifndef QUADOSC_HDR
-#define QUADOSC_HDR
 #include <complex>
 #include <math.h>
 
@@ -41,15 +40,7 @@ namespace SoDa {
     /**
      * Constructor
      */
-    QuadratureOscillator() {
-      idx = 0;
-      ang = 0.0;
-      last = std::complex<double>(1.0,0.0);
-      ejw = last;
-
-      // default IF freq is SampRate/1000;
-      setPhaseIncr(2.0 * M_PI / 1000.0);
-    }
+    QuadratureOscillator();
 
     /**
      * @brief step the oscillator and produce a complex double result
@@ -74,42 +65,11 @@ namespace SoDa {
      * based on a complex multiply.
      */
     
-    std::complex<double> stepOscCD() {
-#ifdef USE_SINCOS_NCO
-      return stepOscCD_sincos();
-#else
-      return stepOscCD_complex();      
-#endif    
-    }    
+    std::complex<double> stepOscCD();
 
-    std::complex<double> stepOscCD_sincos() {
-      double s,c;
-#  if __linux__
-      sincos(ang, &s, &c);
-#  else
-      s = sin(ang); c = cos(ang); 
-#  endif	
-      ang = (ang > M_PI) ? (ang - (2.0 * M_PI)) : ang; 
-      idx = 0; 
+    std::complex<double> stepOscCD_sincos();
 
-      idx++; 
-      ang += phase_incr;
-      s = -s; 
-      std::complex<double> ret(c, s);
-      return ret; 
-    }
-
-    std::complex<double> stepOscCD_complex() {
-      std::complex<double> nval;
-      idx++;
-      nval = last * ejw;     
-      if(idx > 512) {
-	idx = 0; 
-	nval = nval / abs(nval);
-      }
-      last = nval;
-      return nval; 
-    }
+    std::complex<double> stepOscCD_complex();
     
     /**
      * @brief step the oscillator and produce a complex float result
@@ -117,11 +77,7 @@ namespace SoDa {
      *
      * This is a wrapper for stepOscCD
      */
-    std::complex<float> stepOscCF() {
-      std::complex<double> dv = stepOscCD();
-      std::complex<float> fv((float)dv.real(), (float)dv.imag());
-      return fv; 
-    }
+    std::complex<float> stepOscCF();
 
     /**
      * @brief step the oscillator and produce a real double result
@@ -129,20 +85,13 @@ namespace SoDa {
      *
      * This is a wrapper for stepOscCD
      */
-    double stepOscD() {
-      std::complex<double> dv = stepOscCD(); 
-      return dv.real(); 
-    }
+    double stepOscD();
 
     /**
      * @brief set the phase increment per step for the oscillator (1/freq)
      * @param _pi the phase increment
      */
-    void setPhaseIncr(double _pi) {
-      phase_incr = _pi;
-      ejw = exp(std::complex<double>(0.0, -phase_incr));
-    }
-    
+    void setPhaseIncr(double _pi);    
   private:
     double phase_incr;
     double ang; 
@@ -150,5 +99,3 @@ namespace SoDa {
     int idx; 
   };
 }
-
-#endif

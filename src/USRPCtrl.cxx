@@ -1,3 +1,4 @@
+
 /*
   Copyright (c) 2012,2026 Matthew H. Reilly (kb1vc)
   All rights reserved.
@@ -41,10 +42,11 @@
 
 #include <sys/time.h>
 
-const unsigned int SoDa::USRPCtrl::TX_RELAY_CTL = 0x1000;
-const unsigned int SoDa::USRPCtrl::TX_RELAY_MON = 0x0800;
+namespace SoDa {
+  const unsigned int USRPCtrl::TX_RELAY_CTL = 0x1000;
+  const unsigned int USRPCtrl::TX_RELAY_MON = 0x0800;
 
-const double SoDa::USRPCtrl::rxmode_offset = 1.0e6;
+  const double USRPCtrl::rxmode_offset = 1.0e6;
 
 namespace SoDa {
 
@@ -91,6 +93,7 @@ namespace SoDa {
       // B2xx needs a master clock rate of 50 MHz to generate a sample rate of 625 kS/s.
       // B2xx needs a master clock rate of 25 MHz to generate a sample rate of 625 kS/s.
       usrp->set_master_clock_rate(25.0e6);
+
       debugMsg(SoDa::Format("Initial setup %0").addS(usrp->get_pp_string()));
       is_B2xx = true;
       is_B210 = (motherboard_name == "B210");
@@ -103,21 +106,7 @@ namespace SoDa {
     // we need to setup the subdevices
     if(is_B2xx) {
       usrp->set_rx_subdev_spec(std::string("A:A"), 0);
-      std::cerr << "DISABLING TVRT LO" << std::endl;
-      if(0 && is_B210) {
-	debugMsg("Setup two subdevices -- TVRT_LO Capable");
-	usrp->set_tx_subdev_spec(std::string("A:A A:B"), 0);
-	tvrt_lo_capable = true;
-      }
-      else {
-	debugMsg("Setup one subdevice -- NOT TVRT_LO Capable");
-	usrp->set_tx_subdev_spec(std::string("A:A"), 0);
-	tvrt_lo_capable = false;
-      }
-    }
-    else {
-      debugMsg("Setup one subdevice -- NOT TVRT_LO Capable");
-      tvrt_lo_capable = false;
+      usrp->set_tx_subdev_spec(std::string("A:A"), 0);      
     }
 
     first_gettime = 0.0;
@@ -164,6 +153,10 @@ namespace SoDa {
     rx_rf_freq_range = usrp->get_rx_freq_range();
     tx_rf_freq_range = usrp->get_tx_freq_range();
 
+    // set the sample rates
+    usrp->set_rx_rate(params->getRXRate());
+    usrp->set_tx_rate(params->getTXRate());
+
     // setup the control IO pins (for TX/RX external relay)
     // Note that there are no GPIOs available for the B2xx right now.
     initControlGPIO();
@@ -176,6 +169,7 @@ namespace SoDa {
 
     // if we are in integer-N mode, setup the step table.
     testIntNMode(params->forceIntN(), params->forceFracN()); 
+
   }
 
   bool USRPCtrl::isLOLocked(RXTX rxtx) {
@@ -523,11 +517,13 @@ namespace SoDa {
       N = round(target_freq / steps[i]);
     
       double rf_freq = N * steps[i]; 
+
       debugMsg(SoDa::Format("\t\tTRY rf_freq = %0 step = %1\n") 
 	       .addF(rf_freq, 10, 6, 'e')
 	       .addF(steps[i], 10, 6, 'e'));
       if(fabs(rf_freq - avoid_freq) > 1.0e6) {
 	// this is an OK choice. 
+
 	debugMsg(SoDa::Format("\t\tACCEPT rf_freq = %0 step = %1\n")
 		 .addF(rf_freq, 10, 6, 'e')
 		 .addF(steps[i], 10, 6, 'e'));
@@ -624,6 +620,7 @@ namespace SoDa {
       if(tunres_int.actual_rf_freq != tunres_frac.actual_rf_freq) {
 	supports_IntN_Mode = true;
       }
+
 
       debugMsg(SoDa::Format("int rf = %0 frac rf = %1  tf = %2\n")
 	       .addF(tunres_int.actual_rf_freq, 10, 6, 'e')

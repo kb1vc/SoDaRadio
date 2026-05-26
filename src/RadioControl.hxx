@@ -44,9 +44,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
-#include "MultiMBox.hxx"
 #include "Command.hxx"
 #include "Params.hxx"
+
+#include <SoDa/Mailbox.hxx>
 
 namespace SoDa {
   /**
@@ -406,7 +407,7 @@ g     * 144.325 MHz in the spectrogram display.  The LO would need to be changed
      */
     double findGoodRXLO(double freq, double cur_lo_freq);
     
-    CmdMBox * cmd_stream; ///< command stream channel
+    CmdMBoxPtr cmd_stream; ///< command stream channel
     unsigned int subid;   ///< subscriber ID for this thread's connection to the command channel
 
     double first_gettime; ///< timestamps are relative to the first timestamp.

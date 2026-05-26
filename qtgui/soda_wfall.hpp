@@ -30,6 +30,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define SODAWFALL_H
 
 #include <QWidget>
+#include <qwt/qwt_interval.h>
 #include <qwt/qwt_plot.h>
 #include <qwt/qwt_plot_spectrogram.h>
 #include <qwt/qwt_raster_data.h>

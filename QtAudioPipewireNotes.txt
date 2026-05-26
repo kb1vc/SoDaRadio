@@ -1,0 +1,214 @@
+1. Installed gstreamer *
+this made all the gark here:
+
+sudo dnf install pulseaudio-qt-qt6-devel
+
+mhr@fedora:build> export QT_MEDIA_BACKEND=gstreamer
+
+==============
+
+mhr@fedora:build_qt6> ./cons6_audiodevices
+qt.multimedia.ffmpeg: Using Qt multimedia with FFmpeg version 7.1.2 GPL version 3 or later
+Failed to open VDPAU backend libvdpau_nvidia.so: cannot open shared object file: No such file or directory
+libva info: VA-API version 1.22.0
+libva info: Trying to open /usr/lib64/dri-nonfree/iHD_drv_video.so
+libva info: Trying to open /usr/lib64/dri-freeworld/iHD_drv_video.so
+libva info: Trying to open /usr/lib64/dri/iHD_drv_video.so
+libva info: Found init function __vaDriverInit_1_22
+libva info: va_openDriver() returns 0
+libva info: VA-API version 1.22.0
+libva info: Trying to open /usr/lib64/dri-nonfree/iHD_drv_video.so
+libva info: Trying to open /usr/lib64/dri-freeworld/iHD_drv_video.so
+libva info: Trying to open /usr/lib64/dri/iHD_drv_video.so
+libva info: Found init function __vaDriverInit_1_22
+libva info: va_openDriver() returns 0
+Input devices:
+Output devices:
+"device: Built-in Audio Analog Stereo"
+"device: ModemOutput"
+"device: NoMachine Output"
+"device: RadioOutput"
+
+=====
+
+turn into this:
+mhr@fedora:build> ./cons6_audiodevices
+libva info: VA-API version 1.22.0
+libva info: Trying to open /usr/lib64/dri-nonfree/iHD_drv_video.so
+libva info: Trying to open /usr/lib64/dri-freeworld/iHD_drv_video.so
+libva info: Trying to open /usr/lib64/dri/iHD_drv_video.so
+libva info: Found init function __vaDriverInit_1_22
+libva info: va_openDriver() returns 0
+libva info: VA-API version 1.22.0
+libva info: Trying to open /usr/lib64/dri-nonfree/iHD_drv_video.so
+libva info: Trying to open /usr/lib64/dri-freeworld/iHD_drv_video.so
+libva info: Trying to open /usr/lib64/dri/iHD_drv_video.so
+libva info: Found init function __vaDriverInit_1_22
+libva info: va_openDriver() returns 0
+libva info: VA-API version 1.22.0
+libva info: Trying to open /usr/lib64/dri-nonfree/iHD_drv_video.so
+libva info: Trying to open /usr/lib64/dri-freeworld/iHD_drv_video.so
+libva info: Trying to open /usr/lib64/dri/iHD_drv_video.so
+libva info: Found init function __vaDriverInit_1_22
+libva info: va_openDriver() returns 0
+qt.multimedia.gstreamer: Using Qt multimedia with GStreamer version: "GStreamer 1.26.10"
+Input devices:
+Output devices:
+"device: Built-in Audio Analog Stereo named alsa_output.pci-0000_00_1f.3.analog-stereo"
+"device: ModemOutput named ModemOutput"
+"device: NoMachine Output named nx_voice_out"
+"device: RadioOutput named RadioOutput"
+========
+
+root $ dnf install gstreamer*
+root $ dnf install gstreamer1-devel gstreamer1-plugins-base-tools gstreamer1-doc gstreamer1-plugins-base-devel  gstreamer1-plugins-good-extras gstreamer1-plugins-ugly  gstreamer1-plugins-bad-free-devel gstreamer1-plugins-bad-free-extras --skip-unavailable
+
+
+Now we get:
+=====================
+
+mhr@fedora:build> ./cons6_audiodevices
+qt.multimedia.gstreamer: Using Qt multimedia with GStreamer version: "GStreamer 1.26.10"
+Input devices:
+Output devices:
+"device: Built-in Audio Analog Stereo named alsa_output.pci-0000_00_1f.3.analog-stereo"
+"device: ModemOutput named ModemOutput"
+"device: NoMachine Output named nx_voice_out"
+"device: RadioOutput named RadioOutput"
+
+=============
+
+much less noise... 
+Getting there... 
+
+mhr@fedora:build> export -n QT_MEDIA_BACKEND
+
+== gets us back to the dump after ffmpeg.
+What other choices do I have for QT_MEDIA_BACKEND?
+
+mhr@fedora:build> export QT_AUDIO_BACKEND=pipewire
+
+didn't help
+
+installed kpipewire
+rebuild
+
+started the pipewire session:
+
+mhr@fedora:build> systemctl --user --now enable pipewire-media-session
+Created symlink '/proj/home/mhr/.config/systemd/user/pipewire-session-manager.service' → '/usr/lib/systemd/user/pipewire-media-session.service'.
+Created symlink '/proj/home/mhr/.config/systemd/user/pipewire.service.wants/pipewire-media-session.service' → '/usr/lib/systemd/user/pipewire-media-session.service'.
+mhr@fedora:build> ./cons6_audiodevices
+qt.multimedia.ffmpeg: Using Qt multimedia with FFmpeg version 7.1.2 GPL version 3 or later
+Failed to open VDPAU backend libvdpau_nvidia.so: cannot open shared object file: No such file or directory
+libva info: VA-API version 1.22.0
+libva info: Trying to open /usr/lib64/dri-nonfree/iHD_drv_video.so
+libva info: Trying to open /usr/lib64/dri-freeworld/iHD_drv_video.so
+libva info: Trying to open /usr/lib64/dri/iHD_drv_video.so
+libva info: Found init function __vaDriverInit_1_22
+libva info: va_openDriver() returns 0
+libva info: VA-API version 1.22.0
+libva info: Trying to open /usr/lib64/dri-nonfree/iHD_drv_video.so
+libva info: Trying to open /usr/lib64/dri-freeworld/iHD_drv_video.so
+libva info: Trying to open /usr/lib64/dri/iHD_drv_video.so
+libva info: Found init function __vaDriverInit_1_22
+libva info: va_openDriver() returns 0
+Input devices:
+"device: Built-in Audio Analog Stereo named alsa_input.pci-0000_00_1f.3.analog-stereo"
+Output devices:
+"device: Built-in Audio Analog Stereo named alsa_output.pci-0000_00_1f.3.analog-stereo"
+"device: ModemOutput named ModemOutput"
+"device: NoMachine Output named nx_voice_out"
+"device: RadioOutput named RadioOutput"
+
+!!!!!!!!!
+got an input device.  Alas, missing the radio output and modem output
+
+did this:
+mhr@fedora:build> export QT_MEDIA_BACKEND=gstreamer
+mhr@fedora:build> ./cons6_audiodevices
+qt.multimedia.gstreamer: Using Qt multimedia with GStreamer version: "GStreamer 1.26.10"
+Segmentation fault         (core dumped) ./cons6_audiodevices
+
+rebuild
+
+mhr@fedora:build> ./cons6_audiodevices
+qt.multimedia.gstreamer: Using Qt multimedia with GStreamer version: "GStreamer 1.26.10"
+Input devices:
+"device: Built-in Audio Analog Stereo named alsa_input.pci-0000_00_1f.3.analog-stereo"
+Output devices:
+"device: Anne’s MacBook Air (2) named raop_sink.Annes-MacBook-Air-2.local.192.168.1.195.7000"
+"device: Built-in Audio Analog Stereo named alsa_output.pci-0000_00_1f.3.analog-stereo"
+"device: ModemOutput named ModemOutput"
+"device: NoMachine Output named nx_voice_out"
+"device: RadioOutput named RadioOutput"
+
+installed wireplumber and did this:
+
+systemctl --user --now enable wireplumber
+Created symlink '/proj/home/mhr/.config/systemd/user/pipewire-session-manager.service' → '/usr/lib/systemd/user/wireplumber.service'.
+Created symlink '/proj/home/mhr/.config/systemd/user/pipewire.service.wants/wireplumber.service' → '/usr/lib/systemd/user/wireplumber.service'.
+
+got this: - a step backward
+
+mhr@fedora:build> ./cons6_audiodevices
+qt.multimedia.gstreamer: Using Qt multimedia with GStreamer version: "GStreamer 1.26.10"
+Input devices:
+Output devices:
+"device: Anne’s MacBook Air (2) named raop_sink.Annes-MacBook-Air-2.local.192.168.1.195.7000"
+"device: Built-in Audio Analog Stereo named alsa_output.pci-0000_00_1f.3.analog-stereo"
+"device: ModemOutput named ModemOutput"
+"device: NoMachine Output named nx_voice_out"
+"device: RadioOutput named RadioOutput"
+
+==================
+
+OK google AI to the rescue (hawk-ptuuuii).
+do This:
+#!/bin/bash
+
+#set up the mixed sound sink
+pactl load-module module-null-sink sink_name=RadioOutput \
+      sink_properties=device.description="RadioOutput"
+pactl load-module module-null-sink sink_name=ModemOutput \
+      sink_properties=device.description="ModemOutput"
+
+# set up the inputs
+pactl load-module module-null-sink media.class=Audio/Source/Virtual sink_name=ModemInput channel_map=front-left,front-right
+pactl load-module module-null-sink media.class=Audio/Source/Virtual sink_name=RadioInput channel_map=front-left,front-right
+
+# connect them
+pw-link RadioOutput:monitor_FL ModemInput:input_FL
+pw-link RadioOutput:monitor_FR ModemInput:input_FR
+
+pw-link ModemOutput:monitor_FL RadioInput:input_FL
+pw-link ModemOutput:monitor_FR RadioInput:input_FR
+
+# Alternatively we can
+#pactl load-module module-loopback source=RadioOutput:monitor_FL sink=ModemInput:input_FL
+#pactl load-module module-loopback source=RadioOutput:monitor_FR sink=ModemInput:input_FR
+
+#pactl load-module module-loopback source=ModemOutput:monitor_FL sink=RadioInput:input_FL
+#pactl load-module module-loopback source=ModemOutput:monitor_FR sink=RadioInput:input_FR
+
+================
+
+Then the Radio/Modume Output/Input devices are detected.
+
+But the system mic input may not be. In this case, go to system settings and select the microphone input. It will then be recognized as the default.  Dunno why.
+
+--
+
+It makes sense to do the
+export QT_MEDIA_BACKEND=gstreamer
+thing just to get rid of all the "ffmpeg can't find the whatever driver" babble.
+
+----
+
+To set up a microphone as default input:
+
+use pactl list short sources to find the likely device name
+then do this:
+
+> pactl set-default-source alsa_input.pci-0000_00_1f.3.analog-stereo
+

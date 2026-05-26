@@ -30,7 +30,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ui_mainwindow.h"
 #include <iostream>
 #include "soda_comboboxes.hpp"
-#include "soda_listener.hpp"
+#include "RadioListener.hpp"
 #include "../common/Navigation.hxx"
 
 void MainWindow::setupLogGPS()
@@ -44,9 +44,9 @@ void MainWindow::setupLogGPS()
   connect(ui->ToGrid_le, SIGNAL(textChanged(const QString &)), 
 	  this, SLOT(evalNav(const QString &)));
 
-  connect(listener, SIGNAL(repGPSTime(int, int, int)), 
+  connect(radio_listener, SIGNAL(repGPSTime(int, int, int)), 
 	  this, SLOT(updateTime(int, int, int)));
-  connect(listener, SIGNAL(repGPSLatLon(double, double)),
+  connect(radio_listener, SIGNAL(repGPSLatLon(double, double)),
 	  this, SLOT(updatePosition(double, double)));
 }
 

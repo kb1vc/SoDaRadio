@@ -1,9 +1,7 @@
-#ifndef AUDIO_PCM_HDR
-#define AUDIO_PCM_HDR
-
+#pragma once
 
 /*
-  Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2025, 2026 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -31,9 +29,12 @@
 */
 
 #include "SoDaBase.hxx"
-#include "BufferPool.hxx"
+#include <memory>
 
 namespace SoDa {
+  class AudioIfc;
+  typedef std::shared_ptr<AudioIfc> AudioIfcPtr;
+  
   /**
    * @brief Generic Audio Interface Class
    *
@@ -47,8 +48,8 @@ namespace SoDa {
    * unix domain socket interface to the Qt GUI, and TX audio is
    * captured from an AudioALSA object. 
    */
-  class AudioIfc : public SoDa::Base {
-  public:
+  class AudioIfc {
+  protected:
     /*
      * constructor
      * @param sample_rate in Hz -- 48000 is a good choice
@@ -57,22 +58,13 @@ namespace SoDa {
      */
     AudioIfc(unsigned int _sample_rate,
 	     unsigned int _sample_count_hint,
-	     const std::string & name = "AudioIfc") : SoDa::Base(name) {
-      rx_buffer_pool = NULL;
-      tx_buffer_pool = NULL;      
+	     const std::string & name = "AudioIfc") {
       sample_rate = _sample_rate;
       sample_count_hint = _sample_count_hint;
       datatype_size = sizeof(float);
     }
 
-    void setRXBufferPool(BufferPool<float> * bp) {
-      rx_buffer_pool = bp; 
-    }
-
-    void setTXBufferPool(BufferPool<float> * bp) {
-      tx_buffer_pool = bp; 
-    }
-    
+  public:    
     /**
      * send -- send a buffer to the audio output
      * @param buf buffer of type described by the DataFormat selected at init
@@ -95,13 +87,12 @@ namespace SoDa {
 
     /**
      * recv -- get a buffer of data from the audio input
-     * @param buf buffer of type described by the DataFormat selected at init
-     * @param len number of elements in the buffer to send
-     * @param when_ready if true, test with sendBufferReady and return 0 if not ready
+     * @param buf vector of float samples from the audio input device
+     * @param when_ready if true, test with recvBufferReady and return 0 if not ready
      * otherwise perform the recv regardless.
      * @return number of elements transferred to the audio output
      */
-    virtual int recv(void * buf, unsigned int len, bool when_ready = false) = 0;
+    virtual int recv(std::vector<float> & buf, bool when_ready = false) = 0;
 
     /**
      * recvBufferReady -- is there enough space in the audio device
@@ -177,11 +168,6 @@ namespace SoDa {
     float out_gain; 
 
     int datatype_size; 
-
-    BufferPool<float> * rx_buffer_pool;
-    BufferPool<float> * tx_buffer_pool;     
   };
 }
 
-
-#endif

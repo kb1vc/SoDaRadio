@@ -78,32 +78,32 @@ namespace SoDa {
 			     this);	
     }
     // I think this is the right place for this....
-    cmd_stream->put(new Command(Command::REP, Command::INIT_SETUP_COMPLETE, 0));
+    cmd_stream->put(Command::make(Command::REP, Command::INIT_SETUP_COMPLETE, 0));
     
     // do the initial commands
-    cmd_stream->put(new Command(Command::SET, Command::RX_SAMP_RATE,
+    cmd_stream->put(Command::make(Command::SET, Command::RX_SAMP_RATE,
 				params->getRXRate())); 
-    cmd_stream->put(new Command(Command::SET, Command::TX_SAMP_RATE,
+    cmd_stream->put(Command::make(Command::SET, Command::TX_SAMP_RATE,
 				params->getTXRate()));
 
     setSampleRate(params->getRXRate(), SoDa::RX);
     setSampleRate(params->getTXRate(), SoDa::TX);    
     
-    cmd_stream->put(new Command(Command::SET, Command::RX_ANT, 
+    cmd_stream->put(Command::make(Command::SET, Command::RX_ANT, 
 				params->getRXAnt())); 
     debugMsg(Format("Sending TX_ANT as [%0]\n").addS(params->getTXAnt()));
-    cmd_stream->put(new Command(Command::SET, Command::TX_ANT,
+    cmd_stream->put(Command::make(Command::SET, Command::TX_ANT,
 				params->getTXAnt()));
-    cmd_stream->put(new Command(Command::SET, Command::CLOCK_SOURCE,
+    cmd_stream->put(Command::make(Command::SET, Command::CLOCK_SOURCE,
 				params->getClockSource())); 
 
-    cmd_stream->put(new Command(Command::SET, Command::TX_RF_GAIN, 0.0)); 
-    cmd_stream->put(new Command(Command::SET, Command::RX_RF_GAIN, 0.0));
-    cmd_stream->put(new Command(Command::SET, Command::RX_AF_GAIN, 0.0));
+    cmd_stream->put(Command::make(Command::SET, Command::TX_RF_GAIN, 0.0)); 
+    cmd_stream->put(Command::make(Command::SET, Command::RX_RF_GAIN, 0.0));
+    cmd_stream->put(Command::make(Command::SET, Command::RX_AF_GAIN, 0.0));
 
     // transmitter is off
     tx_on = false; 
-    cmd_stream->put(new Command(Command::SET, Command::TX_STATE, 0)); 
+    cmd_stream->put(Command::make(Command::SET, Command::TX_STATE, 0)); 
   
     bool exitflag = false;
     unsigned int cmds_processed = 0;
@@ -122,7 +122,6 @@ namespace SoDa {
 	cmds_processed++; 
 	execCommand(cmd);
 	exitflag |= (cmd->target == Command::STOP); 
-	cmd_stream->free(cmd); 
       }
     }
   }
@@ -190,24 +189,24 @@ namespace SoDa {
       else {
 	debugMsg(Format("setting lo check freq to %0\n") .addF(cmd->dparms[0], 10, 6, 'e'));
 	setLOFreq(cmd->dparms[0], SoDa::RX);
-	cmd_stream->put(new Command(Command::GET, Command::LO_OFFSET, 0));
+	cmd_stream->put(Command::make(Command::GET, Command::LO_OFFSET, 0));
       }
       break;
 
     case Command::TX_TUNE_FREQ:
       setFreq(cmd->dparms[0], SoDa::TX);
-      cmd_stream->put(new Command(Command::REP, Command::TX_TUNE_FREQ, 
+      cmd_stream->put(Command::make(Command::REP, Command::TX_TUNE_FREQ, 
 				  cmd->dparms[0]));
       break; 
 
     case Command::RX_SAMP_RATE:
       setSampleRate(cmd->dparms[0], SoDa::RX);
-      cmd_stream->put(new Command(Command::REP, Command::RX_SAMP_RATE, 
+      cmd_stream->put(Command::make(Command::REP, Command::RX_SAMP_RATE, 
 				  getSampleRate(SoDa::RX)));
       break; 
     case Command::TX_SAMP_RATE:
       tx_samp_rate = cmd->dparms[0]; 
-      cmd_stream->put(new Command(Command::REP, Command::TX_SAMP_RATE, 
+      cmd_stream->put(Command::make(Command::REP, Command::TX_SAMP_RATE, 
 				  getSampleRate(SoDa::TX)));
       break;
     
@@ -216,14 +215,14 @@ namespace SoDa {
       // to the actual range;
       {
 	auto gain = setRFGain(cmd->dparms[0], SoDa::RX);
-	cmd_stream->put(new Command(Command::REP, Command::RX_RF_GAIN, 
+	cmd_stream->put(Command::make(Command::REP, Command::RX_RF_GAIN, 
 				    gain));
       }
       break; 
     case Command::TX_RF_GAIN:
       {
 	auto gain = setRFGain(cmd->dparms[0], SoDa::TX);
-	cmd_stream->put(new Command(Command::REP, Command::TX_RF_GAIN, 
+	cmd_stream->put(Command::make(Command::REP, Command::TX_RF_GAIN, 
 				    gain));
       }
       break; 
@@ -242,13 +241,13 @@ namespace SoDa {
 
     case Command::RX_ANT:
       setAntenna(cmd->sparm, SoDa::RX);
-      cmd_stream->put(new Command(Command::REP, Command::RX_ANT, getAntenna(SoDa::RX)));
+      cmd_stream->put(Command::make(Command::REP, Command::RX_ANT, getAntenna(SoDa::RX)));
       break; 
 
     case Command::TX_ANT:
       tx_ant = cmd->sparm; 
       setAntenna(cmd->sparm, SoDa::TX);
-      cmd_stream->put(new Command(Command::REP, Command::TX_ANT, getAntenna(SoDa::TX)));
+      cmd_stream->put(Command::make(Command::REP, Command::TX_ANT, getAntenna(SoDa::TX)));
       break;
 
     case Command::CLOCK_SOURCE:
@@ -268,52 +267,52 @@ namespace SoDa {
   
     switch (cmd->target) {
     case Command::RX_TUNE_FREQ:
-      cmd_stream->put(new Command(Command::REP, Command::RX_TUNE_FREQ, 
+      cmd_stream->put(Command::make(Command::REP, Command::RX_TUNE_FREQ, 
 				  cur_rx_freq));
       break; 
     case Command::TX_TUNE_FREQ:
-      cmd_stream->put(new Command(Command::REP, Command::TX_TUNE_FREQ, 
+      cmd_stream->put(Command::make(Command::REP, Command::TX_TUNE_FREQ, 
 				  cur_tx_freq));
       break; 
 
     case Command::RX_LO_FREQ:
-      cmd_stream->put(new Command(Command::REP, Command::RX_LO_FREQ, 
+      cmd_stream->put(Command::make(Command::REP, Command::RX_LO_FREQ, 
 				  cur_rx_lo_freq));
       break; 
     case Command::TX_LO_FREQ:
-      cmd_stream->put(new Command(Command::REP, Command::TX_LO_FREQ, 
+      cmd_stream->put(Command::make(Command::REP, Command::TX_LO_FREQ, 
 				  cur_tx_lo_freq));
       break; 
       
     case Command::RX_SAMP_RATE:
-      cmd_stream->put(new Command(Command::REP, Command::RX_SAMP_RATE, 
+      cmd_stream->put(Command::make(Command::REP, Command::RX_SAMP_RATE, 
 				  getSampleRate(SoDa::RX)));
       break; 
     case Command::TX_SAMP_RATE:
-      cmd_stream->put(new Command(Command::REP, Command::TX_SAMP_RATE, 
+      cmd_stream->put(Command::make(Command::REP, Command::TX_SAMP_RATE, 
 				  getSampleRate(SoDa::TX)));
       break;
 
     case Command::TX_GAIN_RANGE:
-      cmd_stream->put(new Command(Command::REP, Command::TX_GAIN_RANGE,
+      cmd_stream->put(Command::make(Command::REP, Command::TX_GAIN_RANGE,
 				  getGainRange(SoDa::TX)));
       break; 
 
     case Command::RX_GAIN_RANGE:
-      cmd_stream->put(new Command(Command::REP, Command::TX_GAIN_RANGE,
+      cmd_stream->put(Command::make(Command::REP, Command::TX_GAIN_RANGE,
 				  getGainRange(SoDa::RX)));
       break; 
       
     case Command::CLOCK_SOURCE:
-	  cmd_stream->put(new Command(Command::REP, Command::CLOCK_SOURCE,
+	  cmd_stream->put(Command::make(Command::REP, Command::CLOCK_SOURCE,
 				      getClockSource()));
 	  break; 
     case Command::HWMB_REP:
-      cmd_stream->put(new Command(Command::REP, Command::HWMB_REP,
+      cmd_stream->put(Command::make(Command::REP, Command::HWMB_REP,
 				  getHardwareDescription));
       reportAntennas();
-      cmd_stream->put(new Command(Command::GET, Command::LIST_MODES));
-      cmd_stream->put(new Command(Command::GET, Command::LIST_AF_FILTERS));    
+      cmd_stream->put(Command::make(Command::GET, Command::LIST_MODES));
+      cmd_stream->put(Command::make(Command::GET, Command::LIST_AF_FILTERS));    
       break; 
     default:
       break; 
@@ -334,14 +333,14 @@ namespace SoDa {
     for(auto ant: rx_ants) {
       debugMsg(Format("Sending RX antenna list element [%0]\n")
 	       .addS(ant));
-      cmd_stream->put(new Command(Command::REP, Command::RX_ANT_NAME, 
+      cmd_stream->put(Command::make(Command::REP, Command::RX_ANT_NAME, 
 				  ant)); 
     }
     std::vector<std::string> tx_ants = listAntennas(SoDa::TX);
     for(auto ant: tx_ants) {
       debugMsg(Format("Sending TX antenna list element [%0]\n")
 	       .addS(ant));
-      cmd_stream->put(new Command(Command::REP, Command::TX_ANT_NAME, 
+      cmd_stream->put(Command::make(Command::REP, Command::TX_ANT_NAME, 
 				  ant)); 
 
     }
@@ -370,10 +369,10 @@ namespace SoDa {
       cur_tx_freq = freq;
       // tell the TX IF to set its new IF frequency. Then wait for it
       // to respond with a report. 
-      cmd_stream->put(new Command(Command::SET, Command::TX_IF_FREQ, new_tx_if_freq));
-      cmd_stream->put(new Command(Command::REP, Command::TX_LO_FREQ,
+      cmd_stream->put(Command::make(Command::SET, Command::TX_IF_FREQ, new_tx_if_freq));
+      cmd_stream->put(Command::make(Command::REP, Command::TX_LO_FREQ,
 				  cur_tx_lo_freq));
-      cmd_stream->put(new Command(Command::REP, Command::TX_TUNE_FREQ,
+      cmd_stream->put(Command::make(Command::REP, Command::TX_TUNE_FREQ,
 				  cur_tx_lo_freq + new_tx_if_freq));
     }
     else { // rxtx is RX
@@ -384,7 +383,7 @@ namespace SoDa {
 	// retune the front end.
 	cur_rx_lo_freq = setLOFreq(fe_freq, SoDa::RX);
 	// we also need to tell everyone about the new center frequency for the IF stream
-	cmd_stream->put(new Command(Command::REP, Command::RX_CENTER_FREQ, 
+	cmd_stream->put(Command::make(Command::REP, Command::RX_CENTER_FREQ, 
 				    cur_rx_lo_freq));
       }
 
@@ -392,10 +391,10 @@ namespace SoDa {
       new_rx_if_freq = freq - cur_rx_lo_freq;
       // tell the RX IF to set its new IF frequency. Then wait for it
       // to respond with a report. 
-      cmd_stream->put(new Command(Command::SET, Command::RX_IF_FREQ, new_rx_if_freq));
-      cmd_stream->put(new Command(Command::REP, Command::RX_TUNE_FREQ, 
+      cmd_stream->put(Command::make(Command::SET, Command::RX_IF_FREQ, new_rx_if_freq));
+      cmd_stream->put(Command::make(Command::REP, Command::RX_TUNE_FREQ, 
 				  cur_rx_lo_freq + new_rx_if_freq));
-      cmd_stream->put(new Command(Command::REP, Command::RX_LO_FREQ, 
+      cmd_stream->put(Command::make(Command::REP, Command::RX_LO_FREQ, 
 				  cur_rx_lo_freq));
       
     }
@@ -421,7 +420,7 @@ namespace SoDa {
       setRFGain(tx_rf_gain, SoDa::TX);
       
       //   3. X Report the tx gain to the world
-      cmd_stream->put(new Command(Command::REP, Command::TX_RF_GAIN, 
+      cmd_stream->put(Command::make(Command::REP, Command::TX_RF_GAIN, 
 				  getGain(SoDa::TX)));
 
       //   4. X Set the tx local oscillator (in case it was in "tune remote mode"
@@ -434,7 +433,7 @@ namespace SoDa {
       // This will tell the RX unit to shut down (unless it is in full-dux) and then
       // the RX unit will send a Command::TX_ON_2 message to the TX unit. 
       // This avoids the race between CTRL and TX/RX units for setup and teardown....
-      cmd_stream->put(new Command(Command::SET, Command::TX_STATE, 
+      cmd_stream->put(Command::make(Command::SET, Command::TX_STATE, 
 				  Command::TX_ON_1, cmd->iparms[1]));
 
     }
@@ -455,7 +454,7 @@ namespace SoDa {
       // 6. X Send SET with Command::TX_OFF_1
       // and tell the RX unit to turn on the RX
       // This avoids the race between CTRL and TX/RX units for setup and teardown.... 
-      cmd_stream->put(new Command(Command::SET, Command::TX_STATE, 
+      cmd_stream->put(Command::make(Command::SET, Command::TX_STATE, 
 				  Command::TX_OFF_1, full_duplex));
     }
   }

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017,2018,2019,2020 Matthew H. Reilly (kb1vc)
+Copyright (c) 2017,2018,2019,2020,2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -38,7 +38,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QtGlobal>
 
 #include "soda_comboboxes.hpp"
-#include "soda_listener.hpp"
+#include "RadioListener.hpp"
 #include "../common/GuiParams.hxx"
 
 #include "SoDaLogo_Big.xpm"
@@ -49,14 +49,18 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   QMainWindow(parent),
   ui(new Ui::MainWindow)
 {
+  qDebug() << QString("MainWIndow about to start UI");  
   ui->setupUi(this);
-
+  qDebug() << QString("MainWIndow started UI");  
   // setup the listener. 
-  listener = new GUISoDa::Listener(this, QString::fromStdString(params.getServerSocketBasename())); 
+  radio_listener = new GUISoDa::RadioListener(this, QString::fromStdString(params.getServerSocketBasename())); 
 
   // setup the audio listener
+  qDebug() << QString("About to start AudioListener");
   audio_listener = new GUISoDa::AudioListener(this, QString::fromStdString(params.getServerSocketBasename()));
-  
+  qDebug() << QString("Started AudioListener");
+
+  setupBandConfig();  
   setupSpectrum();
   setupWaterFall();
     
@@ -65,42 +69,43 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   setupLogGPS();
 
   setupSettings();
-  setupBandConfig();
   setupLogEditor();
   setupStatus();
 
+  qDebug() << QString("Setup all the settings and UI components.");
+  
   this->setWindowIcon(QIcon(QPixmap(SoDaLogo_Big)));
   
   // connect(listener, SIGNAL(repHWMBVersion(const QString &)), 
   // 	  this, SLOT(setWindowTitle(const QString &)));
-  connect(listener, &GUISoDa::Listener::repHWMBVersion,
+  connect(radio_listener, &GUISoDa::RadioListener::repHWMBVersion,
 	  [=](const QString & hw) {
 	    this->setWindowTitle(QString("SoDa Radio V %1 -- SDR %2").arg(SoDaRadio_VERSION).arg(hw));
 	  });
 
-  connect(listener, SIGNAL(initSetupComplete()), 
+  connect(radio_listener, SIGNAL(initSetupComplete()), 
 	  this, SLOT(restoreSettings()));
 
-  connect(listener, SIGNAL(fatalError(const QString &)), 
+  connect(radio_listener, SIGNAL(fatalError(const QString &)), 
 	  this, SLOT(handleFatalError(const QString &)));
 
   // connect the audio listener to the rx selector combobox
   connect(ui->audioOut_cb, QOverload<int>::of(&QComboBox::currentIndexChanged),
 	  [=](int index) {
 	    int ridx = ((index >= 0) && (index < ui->audioOut_cb->count())) ? index : 0;
-	    audio_listener->getRX()->setRXDevice(ui->audioOut_cb->itemData(ridx).value<QAudioDeviceInfo>());
+	    audio_listener->getRX()->setRXDevice(ui->audioOut_cb->itemData(ridx).value<QAudioDevice>());
 	  });
 
   connect(audio_listener->getRX(), SIGNAL(bufferSlack(const QString &)), 
 	  ui->slack_lab, SLOT(setText(const QString &)));
 
-  connect(ui->Record_chk, &QCheckBox::stateChanged,
+  connect(ui->Record_chk, &QCheckBox::checkStateChanged,
 	  [=](int changed) {
 	    audio_listener->getRec()->record(changed != Qt::Unchecked);
 	  });
 
   connect(ui->RecordRF_chk, SIGNAL(stateChanged(int)),
-	  listener, SLOT(recordRF(int)));
+	  radio_listener, SLOT(recordRF(int)));
 
   connect(ui->recDir_btn, &QPushButton::clicked,
 	  [=]() {
@@ -111,22 +116,27 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   connect(ui->aboutSoDa_btn, SIGNAL(clicked(bool)), 
 	  this, SLOT(displayAppInfo(bool)));
 
+  qDebug() << QString("connected stuff");  
   settings_p = new QSettings("kb1vc.org", "SoDaRadioQT", this);
 
   current_band_selector = ui->bandSel_cb->currentText(); 
   auto_bandswitch_target = QString("");
 
-
-  listener->init();
-  listener->start();
+  qDebug() << QString("About to init radio_listener");  
+  radio_listener->init();
+  qDebug() << QString("About to start radio_listener");
+  radio_listener->start();
+  
+  qDebug() << QString("About to init audo_listener");        
   audio_listener->init();
+  qDebug() << QString("About to start audo_listener");      
   audio_listener->start();
-  
-  hlib_server = new HamlibServer(this, params.getHamlibPortNumber());
-  
-  hlib_server->start();
 
-  setupHamlib();  
+  qDebug() << QString("About to starting hamlib server");        
+  hlib_server = new HamlibServer(this, params.getHamlibPortNumber());
+  hlib_server->start();
+  setupHamlib();
+  qDebug() << QString("setup hamlib server");          
 }
 
 MainWindow::~MainWindow()
@@ -372,7 +382,8 @@ void MainWindow::widgetSaveRestore(QObject * op, const QString & par, bool save)
 	    (my_class == "QwtPlotPicker") ||	    	    
 	    (my_class == "QwtScaleWidget") ||
 	    (my_class == "QwtTextLabel")) {
-      // do nothing. 
+      // do nothing.
+      qDebug() << QString("my_class = [%1]\n").arg(my_class);
     }
     widgetSaveRestore((*cp), my_pathname, save);
   }

@@ -1,6 +1,6 @@
 #pragma once
 /*
-  Copyright (c) 2012,2017 Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2017, 2025 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -28,12 +28,18 @@
 */
 
 #include <string>
-#include "MultiMBox.hxx"
-#include <string.h>
 #include <memory>
+#include <string.h>
+
+#include <memory>
+#include <SoDa/MailBox.hxx>
 
 namespace SoDa
 {
+
+  class Command;
+  typedef std::shared_ptr<Command> CommandPtr;
+  
   /** This is a list of all the commands that can "do something"
    * to one or more components in the SoDa radio.
    * The base class defines all the command types in an
@@ -43,8 +49,7 @@ namespace SoDa
    * universal.)
    *
    */
-  class Command : public MBoxMessage
-  {
+  class Command {
   public:
     /**
      * @brief Commands are of the form, SET, GET, or REPort some
@@ -570,6 +575,8 @@ namespace SoDa
 	NOISE
       };
 
+
+  public:
     /**
      * Constructor for commands with no parameters
      *
@@ -584,6 +591,10 @@ namespace SoDa
       id = command_sequence_number++;
     }
 
+    static CommandPtr make(CmdType _ct, CmdTarget _tgt) {
+      return std::make_shared<Command>(_ct, _tgt);
+    }
+    
     /**
      * Constructor for commands with integer parameters
      *
@@ -610,6 +621,15 @@ namespace SoDa
       id = command_sequence_number++;
     }
 
+    static CommandPtr make(CmdType _ct, CmdTarget _tgt,
+			   int p0,
+			   int p1 = 0,
+			   int p2 = 0,
+			   int p3 = 0)
+    {
+      return std::make_shared<Command>(_ct, _tgt, p0, p1, p2, p3);
+    }
+    
     /**
      * Constructor for commands with double float parameters
      *
@@ -636,6 +656,14 @@ namespace SoDa
       id = command_sequence_number++;
     }
 
+    static CommandPtr make(CmdType _ct, CmdTarget _tgt,
+			   double p0,
+			   double p1 = 0.0,
+			   double p2 = 0.0,
+			   double p3 = 0.0) {
+      return std::make_shared<Command>(_ct, _tgt, p0, p1, p2, p3);
+    }
+    
     /**
      * Constructor for commands with a string parameter
      *
@@ -662,6 +690,12 @@ namespace SoDa
       id = command_sequence_number++;
     }
 
+    static CommandPtr make(CmdType _ct, CmdTarget _tgt, 
+			   const std::string &_str_arg, unsigned int _tag = 0)
+    {
+      return std::make_shared<Command>(_ct, _tgt, _str_arg, _tag);
+    }
+    
     /**
      * Constructor for commands with a string parameter
      *
@@ -687,6 +721,10 @@ namespace SoDa
       id = command_sequence_number++;
     }
 
+    static CommandPtr make(CmdType _ct, CmdTarget _tgt, const char *cp, unsigned int _tag = 0) {
+      return std::make_shared<Command>(_ct, _tgt, cp, _tag);
+    }
+    
     /**
      * Copy Constructor
      *
@@ -721,6 +759,10 @@ namespace SoDa
       tag = 0;
     }
 
+    static CommandPtr make() {
+      return std::make_shared<Command>();
+    }
+    
     /**
      * Destructor
      */
@@ -773,5 +815,4 @@ namespace SoDa
     static void initTableEntry(const std::string &, CmdTarget tgt);
   };
 } // namespace SoDa
-
 

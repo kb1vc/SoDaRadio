@@ -29,8 +29,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mainwindow.hpp"
 #include "ui_mainwindow.h"
 #include <iostream>
-#include "soda_comboboxes.hpp"
-#include "soda_listener.hpp"
+// #include "soda_comboboxes.hpp"
+// #include "soda_listener.hpp"
 
 void MainWindow::setupLogEditor()
 {

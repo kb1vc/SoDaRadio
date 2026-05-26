@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012, 2026 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -187,7 +187,7 @@ int SoDa::IP::NetSocket::get(void * ptr, unsigned int size)
       return 0; 
     }
     else {
-      perror("Oops -- socket get -- "); 
+      perror("Oops -- SoDa::IP::NetSocket::get -- "); 
       return stat;
     }
   }

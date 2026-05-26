@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2018 Matthew H. Reilly (kb1vc)
+Copyright (c) 2018, 2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -26,12 +26,9 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef IFRECORDER_HDR
-#define IFRECORDER_HDR
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
 #include "Params.hxx"
-#include "MultiMBox.hxx"
 #include "Command.hxx"
 
 #include <queue>
@@ -40,6 +37,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string>
 #include <fstream>
 
+#include <SoDa/MailBox.hxx>
 
 namespace SoDa {
   /**
@@ -67,17 +65,27 @@ namespace SoDa {
    * USB, and LSB modulation via the phasing method, since both I and Q
    * channels are available. AM is performed with a simple magnitude detector.
    */
+  class IFRecorder;
+  typedef std::shared_ptr<IFRecorder> IFRecorderPtr;
+
   class IFRecorder : public SoDa::Thread {
-  public:
+  protected:
     /**
      * @brief the constructor
      *
      * @param params command line parameter object
      **/
-    IFRecorder(Params * params);
+    IFRecorder(ParamsPtr params);
 
+  public:
+    static IFRecorderPtr make(ParamsPtr params) {
+      auto ret = std::shared_ptr<IFRecorder>(new IFRecorder(params));
+      ret->registerThread(ret);
+      return ret;
+    }
+    
     /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
+    void subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes);    
     
     /**
      * @brief the run method -- does the work of the audio receiver process
@@ -89,17 +97,17 @@ namespace SoDa {
      * @brief execute GET commands from the command channel
      * @param cmd the incoming command
      */
-    void execGetCommand(Command * cmd); 
+    void execGetCommand(CommandPtr cmd); 
     /**
      * @brief handle SET commands from the command channel
      * @param cmd the incoming command
      */
-    void execSetCommand(Command * cmd); 
+    void execSetCommand(CommandPtr cmd); 
     /**
      * @brief handle Report commands from the command channel
      * @param cmd the incoming command
      */
-    void execRepCommand(Command * cmd); 
+    void execRepCommand(CommandPtr cmd); 
 
     /**
      * @brief open an output stream to receive the RF samples
@@ -118,15 +126,12 @@ namespace SoDa {
 
     double current_rx_center_freq; 
 
-    DatMBox * rx_stream; ///< mailbox producing rx sample stream from USRP
-    CmdMBox * cmd_stream; ///< mailbox producing command stream from user
-    unsigned int rx_subs; ///< mailbox subscription ID for rx data stream
-    unsigned int cmd_subs; ///< mailbox subscription ID for command stream
+    CDatMBoxPtr rx_stream; ///< mailbox producing rx sample stream from USRP
+    CmdMBoxPtr cmd_stream; ///< mailbox producing command stream from user
+    CDatMBox::Subscription rx_subs; ///< mailbox subscription ID for rx data stream
+    CmdMBox::Subscription cmd_subs; ///< mailbox subscription ID for command stream
 
     std::ofstream ostr; ///< raw (binary) output stream.
     bool write_stream_on; ///< when true, write each incoming buffer to the output stream. 
   };
 }
-
-
-#endif

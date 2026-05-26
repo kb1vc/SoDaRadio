@@ -29,7 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mainwindow.hpp"
 #include "ui_mainwindow.h"
 #include <iostream>
-#include <QAudioDeviceInfo>
+#include <QAudioDevice>
 
 QString MainWindow::secondsToElapsed(int seconds)
 {
@@ -50,7 +50,7 @@ void MainWindow::setupStatus()
   
   ui->StartTime_lbl->setText(QDateTime::currentDateTime().toString("dd-MMM-yy HH:mm:ss t"));
   
-  connect(listener, &GUISoDa::Listener::repPTT,
+  connect(radio_listener, &GUISoDa::RadioListener::repPTT,
 	  [=](bool fl) {
 	    if(fl) {
 	      transmit_intervals++; 

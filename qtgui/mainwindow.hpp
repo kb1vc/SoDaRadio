@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017 Matthew H. Reilly (kb1vc)
+Copyright (c) 2017,2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -32,12 +32,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QMainWindow>
 #include <QCloseEvent>
 #include <QSettings>
-#include <QAudioDeviceInfo>
-#include "soda_listener.hpp"
+#include <QAudioDevice>
+
+#include "RadioListener.hpp"
 #include "../common/GuiParams.hxx"
-#include "soda_band.hpp"
-#include "soda_hamlib_server.hpp"
-#include "soda_audio_listener.hpp"
+#include "Band.hpp"
+#include "BandMap.hpp"
+#include "HamlibServer.hpp"
+#include "AudioListener.hpp"
+
 namespace Ui {
   class MainWindow;
 }
@@ -146,7 +149,7 @@ protected:
   
 private:
   void closeEvent(QCloseEvent * event) {
-    listener->closeRadio();
+    radio_listener->closeRadio();
     event->accept();
   }
 
@@ -164,7 +167,7 @@ private:
   
   Ui::MainWindow *ui;
 
-  GUISoDa::Listener * listener;
+  GUISoDa::RadioListener * radio_listener;
 
   GUISoDa::AudioListener * audio_listener;
 

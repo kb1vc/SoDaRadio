@@ -8,13 +8,13 @@ SET(SoDaRadio_SRCS
   
 SET(SoDaRadio_Lib_SRCS
   mainwindow.cpp
-  freqlabel.cpp
+  FreqLabel.cpp
   soda_logtable.cpp
   soda_wfall.cpp
   soda_spect.cpp
   soda_wfall_data.cpp
   soda_comboboxes.cpp
-  soda_listener.cpp
+  RadioListener.cpp
   ../src/Command.cxx
   main_setup_top.cpp
   main_setup_mid.cpp
@@ -31,24 +31,31 @@ SET(SoDaRadio_Lib_SRCS
   ../common/dem-gridlib.h    
   ../common/GuiParams.cxx
   ../common/GuiParams.hxx
-  soda_hamlib_server.cpp
-  soda_hamlib_handler.cpp
-  soda_hamlib_listener.cpp  
-  soda_audio_listener.cpp
+  HamlibServer.cpp
+  HamlibHandler.cpp
+  HamlibListener.cpp  
+  AudioListener.cpp
+  AudioRXListener.cpp
+  AudioServer.cpp  
+  AudioTXServer.cpp
+  AudioRecorder.cpp
+  Band.cpp
+  BandMap.cpp
   )
 
 SET(SoDaRadio_HDRS
   mainwindow.hpp
-  freqlabel.hpp
+  FreqLabel.hpp
   soda_logtable.hpp
   soda_spect.hpp
   soda_wfall.hpp
   soda_comboboxes.hpp
-  soda_listener.hpp
-  soda_hamlib_server.hpp
-  soda_hamlib_handler.hpp
-  soda_hamlib_listener.hpp
-  soda_audio_listener.hpp  
+  RadioListener.hpp
+  HamlibServer.hpp
+  HamlibHandler.hpp
+  HamlibListener.hpp
+  AudioRXListener.hpp
+  AudioRecorder.hpp
   )
 
 SET(SoDaRadio_NOMOC_HDRS
@@ -58,7 +65,8 @@ SET(SoDaRadio_NOMOC_HDRS
   soda_wfall_picker.hpp
   ../common/GuiParams.hxx
   ../src/Command.hxx  
-  soda_band.hpp
+  Band.hpp
+  BandMap.hpp
 )
 
 SET(SoDaRadio_UIS
@@ -71,20 +79,20 @@ SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 INCLUDE_DIRECTORIES(SYSTEM 
   ${SNDFILE_INCLUDE_DIRS}  
-  ${Qt5Widgets_INCLUDE_DIRS} 
+  ${Qt6Widgets_INCLUDE_DIRS} 
   ${CMAKE_CURRENT_SOURCE_DIR} 
   ${QWT_INCLUDE_DIRS}
   ${SoDaUtils_INCLUDE_DIR}  
   ${CMAKE_CURRENT_BINARY_DIR})
 
-ADD_DEFINITIONS(${Qt5Widgets_DEFINITIONS})
+ADD_DEFINITIONS(${Qt6Widgets_DEFINITIONS})
 
-QT5_WRAP_CPP(SoDaRadio_hdr_moc ${SoDaRadio_HDRS})
-QT5_WRAP_UI(SoDaRadio_form_moc ${SoDaRadio_UIS})
+QT6_WRAP_CPP(SoDaRadio_hdr_moc ${SoDaRadio_HDRS})
+QT6_WRAP_UI(SoDaRadio_form_moc ${SoDaRadio_UIS})
 
 # ADD_LIBRARY(mainwindow ${SoDaRadio_hdr_moc} ${SoDaRadio_form_moc})
 
-#QT5_USE_MODULES(mainwindow Widgets Core Gui)
+#QT6_USE_MODULES(mainwindow Widgets Core Gui)
 
 ADD_LIBRARY(SoDaRadio_Lib STATIC 
   ${SoDaRadio_Lib_SRCS} 
@@ -93,8 +101,8 @@ ADD_LIBRARY(SoDaRadio_Lib STATIC
 
 message("QWT_LIBRARIES = ${QWT_LIBRARIES}")
 TARGET_LINK_LIBRARIES(SoDaRadio_Lib m ${RT_LIB} 
-  Qt5::Widgets Qt5::PrintSupport
-  Qt5::Core Qt5::Gui Qt5::Network Qt5::Multimedia
+  Qt6::Widgets Qt6::PrintSupport
+  Qt6::Core Qt6::Gui Qt6::Network Qt6::Multimedia
   Threads::Threads
   ${SoDaUtils_LIBRARIES}  
   ${SNDFILE_LIBRARIES}  
@@ -108,12 +116,12 @@ TARGET_LINK_LIBRARIES(SoDaRadio SoDaRadio_Lib
     m ${RT_LIB}
     Threads::Threads
     ${SNDFILE_LIBRARIES}
-    ${SoDaUtils_LIBRARIES}
+    sodautils
     )
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt6Widgets_EXECUTABLE_COMPILE_FLAGS}")
 
-# QT5_USE_MODULES(SoDaRadio Core Gui Widgets PrintSupport Network Multimedia)
+# QT6_USE_MODULES(SoDaRadio Core Gui Widgets PrintSupport Network Multimedia)
 
 
 INSTALL(TARGETS SoDaRadio DESTINATION bin)

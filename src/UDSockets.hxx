@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012, Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012, 2025, 2026 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -25,9 +25,7 @@
   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-
-#ifndef UDSOCKETS_HDR
-#define UDSOCKETS_HDR
+#pragma once
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -37,11 +35,19 @@
 #include <sys/un.h>
 #include <unistd.h>
 
+#include <memory>
 #include <string>
 #include <iostream>
 
 namespace SoDa {
-  namespace UD {  // Unix Domain sockets. 
+  namespace UD {  // Unix Domain sockets.
+
+    class ServerSocket;
+    typedef std::shared_ptr<SoDa::UD::ServerSocket> ServerSocketPtr;
+
+    class ClientSocket;
+    typedef std::shared_ptr<SoDa::UD::ClientSocket> ClientSocketPtr;
+    
     class NetSocket {
     public:
       NetSocket() {
@@ -51,6 +57,7 @@ namespace SoDa {
 
     
       int put(const void * ptr, unsigned int size, bool len_prefix = true);
+
       int get(void * ptr, unsigned int size, bool len_prefix = true);
     
       int server_socket, conn_socket, portnum;
@@ -70,13 +77,19 @@ namespace SoDa {
 	unlink(mailbox_pathname.c_str()); 
 	std::cerr << "Closing server socket [" << mailbox_pathname << "]\n";
       }
-      bool isReady();
+
+      static ServerSocketPtr make(const std::string & path) {
+	return std::shared_ptr<ServerSocket>(new ServerSocket(path)); 
+      }
+
+      bool isReady(size_t required_len = 32);
 
       int get(void *ptr, unsigned int size, bool len_prefix = true) {
 	int rv = NetSocket::get(ptr, size, len_prefix);
 	if(rv < 0) ready = false;
 	return rv; 
       }
+      
       int put(const void *ptr, unsigned int size, bool len_prefix = true) {
 	if(!ready && !isReady()) {
 	  return 0; 
@@ -85,6 +98,7 @@ namespace SoDa {
 	if(rv < 0) ready = false;
 	return rv; 
       }
+      
       void setDebug(bool v) {
 	debug = v;
       }
@@ -101,6 +115,12 @@ namespace SoDa {
       ~ClientSocket() { 
 	close(conn_socket); 
       }
+
+      static ClientSocketPtr make(const std::string & path, 
+				  int startup_timeout_count = 1) {
+	return std::shared_ptr<ClientSocket>(new ClientSocket(path, startup_timeout_count)); 
+      }
+      
     private:
       struct hostent * server; 
       std::string mailbox_pathname; 
@@ -108,5 +128,3 @@ namespace SoDa {
   }
 }
 
-
-#endif

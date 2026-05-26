@@ -1,12 +1,12 @@
 #include "SoDaThread.hxx"
 #include "SoDaThreadRegistry.hxx"
 #include "Command.hxx"
-#include "MultiMBox.hxx"
 #include "Debug.hxx"
 #include "version.h"
 
 #include <string>
 #include <SoDa/Format.hxx>
+#include <SoDa/MailBox.hxx>
 
 #include <sys/types.h>
 #include <unistd.h>
@@ -16,16 +16,22 @@ extern "C" {
 #include <signal.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <pthread.h>
 }
 
 
-SoDa::Thread::Thread(const std::string & oname, const std::string & version) : SoDa::Base(oname), Debug(oname) {
-  
-  SoDa::ThreadRegistry::getRegistrar()->addThread(this, version);
-  thread_ptr = nullptr;
+SoDa::Thread::Thread(const std::string & oname, const std::string & version) : SoDa::Base(oname), Debug(oname), version(version) {
+  thread_ptr = nullptr;  
+
 }
 
-void SoDa::Thread::execCommand(Command * cmd) 
+void SoDa::Thread::registerThread(SoDa::ThreadPtr me) {
+  me->registerSelf(me);
+  SoDa::ThreadRegistry::addThread(me, version);
+
+}
+
+void SoDa::Thread::execCommand(CommandPtr cmd) 
 {
   switch (cmd->cmd) {
   case Command::GET:
@@ -42,10 +48,19 @@ void SoDa::Thread::execCommand(Command * cmd)
   }
 }
 
-
+uint32_t SoDa::Thread::getID() {
+  pthread_t tid = pthread_self();
+  //  pid_t pid = syscall(SYS_gettid);
+  return tid; 
+}
 void  SoDa::Thread::outerRun() {
+  
   hookSigSeg();
-  debugMsg(getObjName() + " starting.\n");
+  debugMsg(SoDa::Format("%0::outerRun pid %1 starting\n")
+	   .addS(getObjName())
+	   .addU(getID())
+	   .str());
+
   try {
     run(); 
   }
@@ -66,11 +81,14 @@ void  SoDa::Thread::outerRun() {
 
 void  SoDa::Thread::sigsegHandler(int sig)
 {
+  pthread_t tid = pthread_self();
+  
   std::cerr << "\n-----------"
 	    << "\n-----------"
 	    << "\n-----------"
 	    << "\n-----------"
-	    << " A SoDaThread caught a sig segv"
+	    << " A SoDaThread caught a sig segv "
+	    << tid 
 	    << "\n-----------"
 	    << "\n-----------"
 	    << "\n-----------"

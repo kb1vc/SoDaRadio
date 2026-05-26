@@ -33,14 +33,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iostream>
 
 #include "soda_comboboxes.hpp"
-#include "soda_listener.hpp"
+#include "RadioListener.hpp"
 
 void MainWindow::setupWaterFall()
 {
     connect(ui->waterfall_plt,SIGNAL(xClick(double)), this, SLOT(setRXFreq(double)));
-    connect(ui->waterfall_plt, &GUISoDa::WFall::xClick, listener, &GUISoDa::Listener::setRXFreq);
+    connect(ui->waterfall_plt, &GUISoDa::WFall::xClick, 
+	    radio_listener, &GUISoDa::RadioListener::setRXFreq);
+    
     connect(ui->waterfall_plt, SIGNAL(setSpectrumCenter(double)), 
-	  listener, SLOT(setSpectrumCenter(double)));  
+	  radio_listener, SLOT(setSpectrumCenter(double)));  
     
     connect(ui->wf_moveRight_btn, SIGNAL(clicked(bool)), 
 	    ui->waterfall_plt, SLOT(scrollRight(bool)));
@@ -64,22 +66,22 @@ void MainWindow::setupWaterFall()
     ui->wf_dynRange_cb->setCurrentIndex(0);
     ui->wf_freqSpan_cb->setCurrentIndex(0);
 
-    connect(listener, SIGNAL(configureSpectrum(double, double, long)),
+    connect(radio_listener, SIGNAL(configureSpectrum(double, double, long)),
 	    ui->waterfall_plt, SLOT(configureSpectrum(double, double, long)));
-    connect(listener, SIGNAL(updateData(double, float*)), 
+    connect(radio_listener, SIGNAL(updateData(double, float*)), 
 	    ui->waterfall_plt, SLOT(updateData(double, float*)));
 
     connect(ui->wf_RX2Center_btn, &QPushButton::clicked, 
 	    [this](bool v) { 
 	      (void) v;
-	      listener->setSpectrumCenter(listener->getRXFreq()); });
+	      radio_listener->setSpectrumCenter(radio_listener->getRXFreq()); });
 
     connect(ui->wf_updateRate_sl, SIGNAL(valueChanged(int)), 
-	    listener, SLOT(setSpectrumUpdateRate(int))); 
+	    radio_listener, SLOT(setSpectrumUpdateRate(int))); 
     connect(ui->wf_avgWindow_sl, SIGNAL(valueChanged(int)), 
-	    listener, SLOT(setSpectrumAvgWindow(int))); 
+	    radio_listener, SLOT(setSpectrumAvgWindow(int))); 
 
-    connect(listener, SIGNAL(repMarkerOffset(double, double)), 
+    connect(radio_listener, SIGNAL(repMarkerOffset(double, double)), 
 	    ui->waterfall_plt, SLOT(setMarkerOffset(double, double)));
 }
 
@@ -90,7 +92,7 @@ void MainWindow::setupSpectrum()
   ui->spectrum_plt->setFreqCenter(144.2e6);
   connect(ui->spectrum_plt, SIGNAL(xClick(double)), this, SLOT(setRXFreq(double)));
   connect(ui->spectrum_plt, SIGNAL(setSpectrumCenter(double)), 
-	  listener, SLOT(setSpectrumCenter(double)));  
+	  radio_listener, SLOT(setSpectrumCenter(double)));  
   connect(ui->sp_moveRight_btn, SIGNAL(clicked(bool)), 
 	  ui->spectrum_plt, SLOT(scrollRight(bool)));
   connect(ui->sp_moveLeft_btn, SIGNAL(clicked(bool)), 
@@ -111,19 +113,19 @@ void MainWindow::setupSpectrum()
   ui->spectrum_plt->setMarkerOffset(0,1e3);
 
 
-  connect(listener, SIGNAL(configureSpectrum(double, double, long)),
+  connect(radio_listener, SIGNAL(configureSpectrum(double, double, long)),
 	  ui->spectrum_plt, SLOT(configureSpectrum(double, double, long)));
-  connect(listener, SIGNAL(updateData(double, float*)), 
+  connect(radio_listener, SIGNAL(updateData(double, float*)), 
 	  ui->spectrum_plt, SLOT(updateData(double, float*)));
 
   connect(ui->sp_RX2Center_btn, &QPushButton::clicked, 
 	  [this](bool v) { 
 	    (void) v; 
-	    listener->setSpectrumCenter(listener->getRXFreq()); });
+	    radio_listener->setSpectrumCenter(radio_listener->getRXFreq()); });
   connect(ui->sp_avgWindow_sl, SIGNAL(valueChanged(int)), 
-	    listener, SLOT(setSpectrumAvgWindow(int))); 
+	    radio_listener, SLOT(setSpectrumAvgWindow(int))); 
 
-  connect(listener, SIGNAL(repMarkerOffset(double, double)), 
+  connect(radio_listener, SIGNAL(repMarkerOffset(double, double)), 
 	  ui->spectrum_plt, SLOT(setMarkerOffset(double, double)));
   
 }

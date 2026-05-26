@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019 Matthew H. Reilly (kb1vc)
+Copyright (c) 2019, 2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,9 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-
-#ifndef SODA_THREAD_REGISTRY_HDR
-#define SODA_THREAD_REGISTRY_HDR
+#pragma once
 
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
@@ -49,11 +47,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <list>
 
 namespace SoDa { 
+  class ThreadRegistry;
+  typedef std::shared_ptr<ThreadRegistry> ThreadRegistryPtr;
   
-  class ThreadRegistry : public std::list<SoDa::Thread *> {
+  class ThreadRegistry  {
   public:
 
-    static ThreadRegistry * getRegistrar();
+    static ThreadRegistryPtr getRegistrar();
 
     /**
      * @brief register a thread so that it can be connected and started
@@ -63,21 +63,39 @@ namespace SoDa {
      * (This must match the version the registry was built with.)
      *
      */
-    void addThread(SoDa::Thread * thread, const std::string & version);
+    static void addThread(SoDa::ThreadPtr thread, const std::string & version);
     
-    void apply(std::function<bool(SoDa::Thread *)> f);
+    static void apply(std::function<bool(SoDa::ThreadPtr)> f);
 
-    void subscribeThreads(const SoDa::MailBoxMap & mailbox_map);
-    void startThreads();
-    void joinThreads();
-    void shutDownThreads();
+    static void subscribeThreads(const std::vector<SoDa::MailBoxBasePtr> & mailboxes); 
+    static void startThreads();
+    static void joinThreads();
+    static void shutDownThreads();
+    
+  private:
+    /**
+     * @brief register a thread so that it can be connected and started
+     * 
+     * @param thread a thread object
+     * @param version the SoDaRadio version the thread object was built with
+     * (This must match the version the registry was built with.)
+     *
+     */
+    void priv_addThread(SoDa::ThreadPtr thread, const std::string & version);
+    
+    void priv_apply(std::function<bool(SoDa::ThreadPtr)> f);
+
+    void priv_subscribeThreads(const std::vector<SoDa::MailBoxBasePtr> & mailboxes); 
+    void priv_startThreads();
+    void priv_joinThreads();
+    void priv_shutDownThreads();
 
   private:
     ThreadRegistry() { }    
 
-    static ThreadRegistry * registrar; 
+    std::vector<SoDa::ThreadPtr> thread_list;
+    static ThreadRegistryPtr registrar; 
   };
 }
 
 
-#endif

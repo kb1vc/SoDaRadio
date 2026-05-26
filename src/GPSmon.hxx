@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012,2017 Matthew H. Reilly (kb1vc)
+Copyright (c) 2012,2017,2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -25,12 +25,11 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+#pragma once
 
-#ifndef GPS_MON_HDR
-#define GPS_MON_HDR
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
-#include "MultiMBox.hxx"
+
 #include "Command.hxx"
 #include "Params.hxx"
 #include "UI.hxx"
@@ -38,27 +37,38 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <time.h>
 #include <sys/time.h>
+#include <SoDa/MailBox.hxx>
 
 namespace SoDa {
-  class GPSmon : public SoDa::Thread {
-  public:
-    GPSmon(Params * params);
+  class GPSmon;
+  typedef std::shared_ptr<GPSmon> GPSmonPtr;
 
+
+
+  
+  class GPSmon : public SoDa::Thread {
+  protected:
+    GPSmon(ParamsPtr params);
+
+  public:
+    static GPSmonPtr make(ParamsPtr params) {
+      auto ret = std::shared_ptr<GPSmon>(new GPSmon(params));
+      ret->registerThread(ret);
+      return ret;
+    }
+    
     /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
+    void subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes);
     
     void run();
   private:
-    void execGetCommand(Command * cmd); 
-    void execSetCommand(Command * cmd); 
-    void execRepCommand(Command * cmd); 
+    void execGetCommand(CommandPtr cmd); 
+    void execSetCommand(CommandPtr cmd); 
+    void execRepCommand(CommandPtr cmd); 
 
-    CmdMBox *cmd_stream;
-    unsigned int cmd_subs;
+    CmdMBoxPtr cmd_stream;
+    CmdMBox::Subscription cmd_subs;
 
     GPSDShim * gps_shim; 
   }; 
 }
-
-
-#endif

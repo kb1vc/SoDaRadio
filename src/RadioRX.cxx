@@ -56,7 +56,7 @@ namespace SoDa {
     bool exitflag = false;
 
     while(!exitflag) {
-      Command * cmd = cmd_stream->get(cmd_subs);
+      CommandPtr  cmd = cmd_stream->get(cmd_subs);
       bool did_command = false;
       bool did_convert = false; 
       if(cmd != NULL) {
@@ -81,7 +81,7 @@ namespace SoDa {
     closeStream(); 
   }
 
-  void RadioRX::execCommand(Command * cmd)
+  void RadioRX::execCommand(CommandPtr  cmd)
   {
     switch (cmd->cmd) {
     case Command::GET:
@@ -99,7 +99,7 @@ namespace SoDa {
   }
 
 
-  void RadioRX::execSetCommand(Command * cmd)
+  void RadioRX::execSetCommand(CommandPtr  cmd)
   {
     switch(cmd->target) {
     case Command::RX_IF_FREQ:
@@ -119,7 +119,7 @@ namespace SoDa {
 	enableIFStreamer(cmd->iparms[1] > 0);
 
 	// tell the transmitter it can turn itself on now. 
-	cmd_stream->put(new Command(Command::SET, Command::TX_STATE, 
+	cmd_stream->put(Command::make(Command::SET, Command::TX_STATE, 
 				    Command::TX_ON_2), cmd->iparms[1]);
       }
       if(cmd->iparms[0] == Command::TX_OFF_1) {
@@ -130,7 +130,7 @@ namespace SoDa {
 	startStream();
 	enableIFStreamer(true); 
 	// tell the baseband unit that it is ready to start. 
-	cmd_stream->put(new Command(Command::SET, Command::TX_STATE, 
+	cmd_stream->put(Command::make(Command::SET, Command::TX_STATE, 
 				    Command::TX_OFF_2));
       }
       break; 
@@ -139,12 +139,12 @@ namespace SoDa {
     }
   }
 
-  void RadioRX::execGetCommand(Command * cmd)
+  void RadioRX::execGetCommand(CommandPtr  cmd)
   {
     (void) cmd; 
   }
 
-  void RadioRX::execRepCommand(Command * cmd)
+  void RadioRX::execRepCommand(CommandPtr  cmd)
   {
     (void) cmd; 
   }

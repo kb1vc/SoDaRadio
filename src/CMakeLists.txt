@@ -1,3 +1,4 @@
+FIND_PACKAGE(SoDaSignals REQUIRED)
 
 ########### next target ###############
 
@@ -12,11 +13,8 @@ set(SoDaServer_SRCS
     BaseBandTX.cxx
     UI.cxx
     Command.cxx
-    OSFilter.cxx
     HilbertTransformer.cxx
-    TDResamplerTables625x48.cxx
-    ReSampler.cxx
-    ReSamplers625x48.cxx
+    QuadratureOscillator.cxx
     Spectrogram.cxx
     CWGenerator.cxx
     GPSmon.cxx
@@ -36,15 +34,7 @@ set(SoDaServer_SRCS
 
 find_package(FFTW3f REQUIRED QUIET)
 
-set(SoDaServer_SRCS ${SoDaServer_SRCS} AudioQtRX.cxx)
-IF(ALSA_FOUND)
-  add_definitions(-DHAVE_LIBASOUND=1)
-  set(SoDaServer_SRCS ${SoDaServer_SRCS} AudioQtRXTX.cxx)
-  message("ALSA enabled -- TX is enabled in this configuration.")
-ELSE()
-  message("ALSA is disabled/not available -- TX is disabled in this configuration.")  
-ENDIF()
-
+set(SoDaServer_SRCS ${SoDaServer_SRCS} AudioQt.cxx)
 
 IF(HAVE_GPSLIB)
   ADD_DEFINITIONS(-DHAVE_GPSLIB=1)
@@ -68,8 +58,8 @@ add_definitions(-DHAVE_UHD=${HAVE_UHD})
 include_directories(SYSTEM 
   ${Radio_INCLUDE_DIRS} 
   ${ALSA_INCLUDE_DIRS} 
-  ${FFTW3F_INCLUDE_DIRS} 
-  ${SoDaUtils_INCLUDE_DIR} )
+  ${FFTW3F_INCLUDE_DIRS}  )
+##  ${SoDaUtils_INCLUDE_DIR} )
 
 
 
@@ -78,7 +68,7 @@ add_executable(SoDaServer ${SoDaServer_SRCS})
 
 target_link_libraries(SoDaServer ${RT_LIB}
   Threads::Threads
-  sodautils
+  sodasignals sodautils
     ${Radio_LIBRARIES} ${ALSA_LIBRARIES} ${FFTW3F_LIBRARIES} ${CMAKE_DL_LIBS})
 
 
@@ -95,6 +85,17 @@ SoDaThreadRegistry.cxx
 add_library(accessory SHARED ${simple_acc_SRCS})
 #target_link_libraries(accessory ${SoDaUtils_LIBRARIES})
 
+set(comm_mon_SRCS
+CommandMonitor.cxx
+SoDaThread.cxx
+SoDaBase.cxx
+Debug.cxx
+SoDaThreadRegistry.cxx
+)
+
+add_library(CommandMonitor SHARED ${comm_mon_SRCS})
+
+
 
 # Export header files that are required to build loadable modules
 set(Loadable_INCLS
@@ -103,7 +104,6 @@ set(Loadable_INCLS
   UDSockets.hxx
   IPSockets.hxx  
   Command.hxx
-  MultiMBox.hxx
   Debug.hxx
   )
 

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017 Matthew H. Reilly (kb1vc)
+Copyright (c) 2017,2025 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -30,26 +30,27 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ui_mainwindow.h"
 #include <iostream>
 #include "soda_comboboxes.hpp"
-#include "soda_listener.hpp"
-#include <QAudioDeviceInfo>
+#include "RadioListener.hpp"
+#include <QAudioDevice>
+#include <QMediaDevices>
 
 void MainWindow::setupSettings()
 {
   connect(ui->CWSpeed_sli, SIGNAL(valueChanged(int)), 
-	  listener, SLOT(setCWSpeed(int)));
+	  radio_listener, SLOT(setCWSpeed(int)));
   connect(ui->CWSpeed_sli, &QSlider::valueChanged,
 	  [=](int s) {
 	    ui->CWSpeed_lbl->setText(QString("%1").arg(s, 2));
 	  }); 
   connect(ui->Sidetone_sli, SIGNAL(valueChanged(int)), 
-	  listener, SLOT(setSidetoneVolume(int)));
+	  radio_listener, SLOT(setSidetoneVolume(int)));
   connect(ui->Sidetone_sli, &QSlider::valueChanged,
 	  [=](int s) {
 	    ui->Sidetone_lbl->setText(QString("%1").arg(s, 2));
 	  }); 
 
   connect(ui->TXPower_sli, SIGNAL(valueChanged(int)), 
-	  listener, SLOT(setTXGain(int)));
+	  radio_listener, SLOT(setTXGain(int)));
   connect(ui->TXPower_sli, &QSlider::valueChanged,
 	  [=](int s) {
 	    ui->TXPower_lbl->setText(QString("%1").arg(s, 3));
@@ -59,7 +60,7 @@ void MainWindow::setupSettings()
 	  ui->FromGrid_lab, SLOT(setText(const QString &)));
 
   connect(ui->externalRefClock_ck, SIGNAL(stateChanged(int)), 
-	  listener, SLOT(setClockRef(int)));
+	  radio_listener, SLOT(setClockRef(int)));
 
   connect(ui->openLog_btn, SIGNAL(clicked()),
 	  ui->LogView, SLOT(readLogReportDlg()));
@@ -75,29 +76,29 @@ void MainWindow::setupSettings()
 	  this, SLOT(restoreConfig_dlg()));  
 
   connect(ui->Squelch_sli, SIGNAL(valueChanged(int)), 
-	  listener, SLOT(setSquelchLevel(int)));
+	  radio_listener, SLOT(setSquelchLevel(int)));
   setupAudioDeviceList(); 
 }
 
 void MainWindow::setupAudioDeviceList() 
 {
-  const QAudioDeviceInfo & def_rx_dev_info = QAudioDeviceInfo::defaultOutputDevice(); 
-  ui->audioOut_cb->addItem(def_rx_dev_info.deviceName(), QVariant::fromValue(def_rx_dev_info));
+  const QAudioDevice & def_rx_dev_info = QMediaDevices::defaultAudioOutput(); 
+  ui->audioOut_cb->addItem(def_rx_dev_info.id(), QVariant::fromValue(def_rx_dev_info));
   QAudioFormat format = GUISoDa::AudioRXListener::createAudioFormat();
-  for(auto &rx_dev_info: QAudioDeviceInfo::availableDevices(QAudio::AudioOutput)) {
+  for(auto &rx_dev_info: QMediaDevices::audioOutputs()) {
     if(rx_dev_info.isFormatSupported(format) && (rx_dev_info != def_rx_dev_info)) {
-      ui->audioOut_cb->addItem(rx_dev_info.deviceName(), QVariant::fromValue(rx_dev_info));
+      ui->audioOut_cb->addItem(rx_dev_info.id(), QVariant::fromValue(rx_dev_info));
     }
   }
 
   // set the initial choice
   ui->audioOut_cb->setCurrentIndex(0);
 
-  const QAudioDeviceInfo & def_tx_dev_info = QAudioDeviceInfo::defaultInputDevice(); 
-  ui->audioIn_cb->addItem(def_tx_dev_info.deviceName(), QVariant::fromValue(def_tx_dev_info));
-  for(auto &tx_dev_info: QAudioDeviceInfo::availableDevices(QAudio::AudioInput)) {
+  const QAudioDevice & def_tx_dev_info = QMediaDevices::defaultAudioInput(); 
+  ui->audioIn_cb->addItem(def_tx_dev_info.id(), QVariant::fromValue(def_tx_dev_info));
+  for(auto &tx_dev_info: QMediaDevices::audioOutputs()) {
     if(tx_dev_info != def_tx_dev_info) {
-      ui->audioIn_cb->addItem(tx_dev_info.deviceName(), QVariant::fromValue(tx_dev_info));
+      ui->audioIn_cb->addItem(tx_dev_info.id(), QVariant::fromValue(tx_dev_info));
     }
   }
   

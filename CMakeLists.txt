@@ -30,10 +30,16 @@ ENDIF()
 
   
 PROJECT(SoDaRadio)
-
-SET(SoDaRadio_VERSION_MAJOR 8)
+# Huge bump in version -- replacing crufty stuff with new SoDaLibs
+# implementations of filters, resamplers, mailboxes, ....
+# version 10 moves TX audio from portaudio/whatever to Qt audio stream
+# 10.1.0 Fixed NBMF demod and a mistake in LSB demod. (LSB filter was
+# "on the wrong side" and nbmf demod had the squelch set wayyyyy too high.
+# there must have been something that changed higher-up in the chain.
+# 11.0 - Beginning of port to qt6 -- RX works now!
+SET(SoDaRadio_VERSION_MAJOR 11)
 SET(SoDaRadio_VERSION_MINOR 0)
-SET(SoDaRadio_VERSION_PATCH 1)
+SET(SoDaRadio_VERSION_PATCH 0)
 SET(SoDaRadio_VERSION "${SoDaRadio_VERSION_MAJOR}.${SoDaRadio_VERSION_MINOR}.${SoDaRadio_VERSION_PATCH}")
 
 set(SoDaRadio_PACKAGE_DESCRIPTION 
@@ -66,6 +72,7 @@ function (getListOfVarsStartingWith _prefix _varResult)
     set (${_varResult} ${_matchedVars} PARENT_SCOPE)
 endfunction()
 
+FIND_PACKAGE(Threads REQUIRED)
 
 # Package generation for the source tarball
 SET(CPACK_PACKAGE_VERSION_MAJOR ${SoDaRadio_VERSION_MAJOR})
@@ -84,7 +91,7 @@ set(CPACK_RPM_PACKAGE_LICENSE "BSD-2-Clause")
 set(CPACK_RPM_PACKAGE_GROUP "Applications/Communications")
 set(CPACK_RPM_PACKAGE_DESCRIPTION  ${SoDaRadio_PACKAGE_DESCRIPTION})
 # removed , libsndfile
-set(CPACK_RPM_PACKAGE_REQUIRES "boost >= 1.48, uhd >= 3.12.0, fftw-devel >= 3.3, qt5-qtbase >= 5.6, qwt-qt5 >= 6.1.2, gpsd >= 3.1, gpsd-libs >= 3.1, qt5-qtmultimedia")
+set(CPACK_RPM_PACKAGE_REQUIRES "uhd >= 3.12.0, fftw-devel >= 3.3, qt6-qtbase >= 5.6, qwt-qt6 >= 6.1.2, gpsd >= 3.1, gpsd-libs >= 3.1, qt6-qtmultimedia")
 set(CPACK_RPM_PACKAGE_RELOCATABLE TRUE)
 # RPM makes a hash out of the uhd dependency if we don't do this:
 set(CPACK_RPM_PACKAGE_AUTOREQPROV " no")
@@ -93,19 +100,30 @@ set(CPACK_DEBIAN_PACKAGE_DESCRIPTION ${SODA_PACKAGE_DESCRIPTION})
 set(CPACK_DEBIAN_PACKAGE_SECTION "hamradio")
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 #libsndfile1, 
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libuhd003 (>= 3.12), uhd-host (>= 3.12), libgps-dev (>= 3.1), gpsd (>= 3.1), libqt5multimedia5-plugins")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libuhd003 (>= 3.12), uhd-host (>= 3.12), libgps-dev (>= 3.1), gpsd (>= 3.1), libqt5multimedia6-plugins")
 
 INCLUDE(CPack)
 
 # optimizations
 IF(NOT CMAKE_BUILD_TYPE)
-  SET(CMAKE_BUILD_TYPE Release)
+  SET(CMAKE_BUILD_TYPE Debug)
 ENDIF()
 
 SET(CMAKE_CXX_FLAGS_DEBUG "-g")
 SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -ffast-math")
 
 MESSAGE("SoDaRadio_VERSION=[${SoDaRadio_VERSION}]")
+
+#FIND_PACKAGE(Boost 1.45 REQUIRED COMPONENTS
+#  program_options
+#  thread
+#  date_time
+#  system
+#  filesystem
+#  serialization
+#  regex
+#  QUIET)
+FIND_PACKAGE(Boost 1.75 REQUIRED) 
 
 FIND_PACKAGE(Git QUIET)
 
@@ -159,8 +177,6 @@ SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
 
 FIND_PACKAGE(SndFile REQUIRED)
 
-FIND_PACKAGE(Boost 1.45 REQUIRED COMPONENTS program_options thread date_time system filesystem serialization regex QUIET)
-
 IF(${NO_UHD})
   MESSAGE("libUHD Support disabled.")
   SET(HAVE_UHD 0)  
@@ -184,26 +200,27 @@ if(MACOSX)
   LIST(APPEND INCLUDE_DIRS ${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_DIR})
   LIST(APPEND LIBRARIES ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
 
-  FIND_PACKAGE(Qt5 REQUIRED COMPONENTS core network printsupport multimedia)
+  FIND_PACKAGE(Qt6 REQUIRED COMPONENTS core network printsupport multimedia)
 
   FIND_PACKAGE(Qwt REQUIRED)
 else()
-  FIND_PACKAGE(Qt5Widgets )
-  IF(Qt5Widgets_FOUND)
+  FIND_PACKAGE(Qt6Widgets )
+  IF(Qt6Widgets_FOUND)
     MESSAGE("Building qt gui")
-    FIND_PACKAGE(Qt5Core REQUIRED )
-    FIND_PACKAGE(Qt5Network REQUIRED )
-    FIND_PACKAGE(Qt5PrintSupport REQUIRED )
-    FIND_PACKAGE(Qt5Multimedia REQUIRED )                    
+    FIND_PACKAGE(Qt6Core REQUIRED )
+    FIND_PACKAGE(Qt6Network REQUIRED )
+    FIND_PACKAGE(Qt6PrintSupport REQUIRED )
+    FIND_PACKAGE(Qt6Multimedia REQUIRED )                    
     FIND_PACKAGE(Qwt REQUIRED)    
-    IF(Qt5Widgets_VERSION VERSION_LESS 5.7.0)
-      MESSAGE(FATAL_ERROR "Minimum supported Qt5 version is 5.7")
+    IF(Qt6Widgets_VERSION VERSION_LESS 5.7.0)
+      MESSAGE(FATAL_ERROR "Minimum supported Qt6 version is 5.7")
     ENDIF()
   ELSE()
-    MESSAGE(FATAL_ERROR "The Qt5Widgets library is required to build SoDaRadio")
+    MESSAGE(FATAL_ERROR "The Qt6Widgets library is required to build SoDaRadio")
   ENDIF()
 endif()
 
+#set(CMAKE_AUTOUIC ON)
 
 
 ## Need hamlib for just the include files to get hamlib codes for
@@ -248,7 +265,7 @@ include(${PROJECT_SOURCE_DIR}/cmake/Modules/BuildSoDaUtils.cmake)
 # This is the radio interface... 
 ADD_SUBDIRECTORY(src)
 
-ADD_SUBDIRECTORY(exp)
+## ADD_SUBDIRECTORY(exp)
 
 ADD_SUBDIRECTORY(examples)
 
