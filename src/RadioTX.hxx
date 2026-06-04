@@ -163,7 +163,6 @@ namespace SoDa {
      * @param out the output IQ buffer, CW_osc amplitude modulated by
      *        the envelope parameter
      * @param envelope float array of keyed waveform amplitudes
-     * @param env_len length of envelope array
      *
      */
     void doCW(CBufPtr out, FBufPtr envelope);

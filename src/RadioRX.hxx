@@ -90,14 +90,6 @@ namespace SoDa {
   protected:
     ParamsPtr params;
     /**
-     * @brief Parse an incoming command and dispatch.
-     *
-     * If a subclass needs to handle any command type, it
-     * should declare its own subExecCommand method.
-     *
-     * @param cmd a command record
-     */ 
-    /**
      * @brief Parse an incoming GET command and dispatch.
      *
      * If a subclass needs to handle any command type, it
