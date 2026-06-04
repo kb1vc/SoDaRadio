@@ -1,0 +1,265 @@
+/**
+ * @page SoDaCLI_manual SoDaCLI: Command-Line Interface to SoDaServer
+ *
+ * @tableofcontents
+ *
+ * @section sodacli_overview Overview
+ *
+ * SoDaCLI is a read-eval-print-loop (REPL) that connects to a running
+ * SoDaServer process and lets you send and receive @ref SoDa::Command
+ * messages from the command line.  It is useful for scripted testing,
+ * manual exploration of radio parameters, and regression harnesses.
+ *
+ * SoDaCLI talks to SoDaServer over the same Unix-domain command socket
+ * that the Qt GUI uses.  It can optionally launch SoDaServer itself
+ * before connecting.
+ *
+ * All input typed at the prompt and all messages received from the server
+ * are appended to @c CLIHarnessLog.md in the current working directory.
+ *
+ * @section sodacli_build Building
+ *
+ * SoDaCLI is built automatically as part of the normal CMake build:
+ * @code
+ *   cmake -B build .
+ *   cmake --build build --target SoDaCLI
+ * @endcode
+ *
+ * The resulting binary is @c build/TestCLI/SoDaCLI.
+ *
+ * @section sodacli_usage Usage
+ *
+ * Run the binary with no arguments.  You will see a short command summary
+ * and then the prompt:
+ * @code
+ *   $ ./SoDaCLI
+ *   SoDaCLI -- command line interface to SoDaServer
+ *     START [server-args]        -- launch server and connect
+ *     SET   <target> [I|D|S] v   -- send SET (int/double/string)
+ *     GET   <target>             -- send GET
+ *     REP   <target> [I|D|S] v   -- send REP
+ *     RUN   <filename>           -- execute script
+ *     QUIT                       -- send STOP and exit
+ *
+ *   SoDaCLI>
+ * @endcode
+ *
+ * Command verbs are case-insensitive.  Command target names (e.g.
+ * @c RX_TUNE_FREQ) are converted to upper-case automatically, so you
+ * may type them in any case.
+ *
+ * Blank lines and lines beginning with @c # are ignored, which makes
+ * script files readable.
+ *
+ * @section sodacli_commands Commands
+ *
+ * @subsection sodacli_start START
+ *
+ * @code
+ *   START [SoDaServer arguments...]
+ * @endcode
+ *
+ * Forks and execs @c SoDaServer (found via @c PATH) with the supplied
+ * arguments, then waits up to 30 seconds for the server's command socket
+ * file to appear, and finally connects to it.
+ *
+ * The socket base name is extracted from the @c --uds_name or @c -S
+ * argument if present; otherwise the SoDaServer default @c /tmp/SoDa_ is
+ * used, giving a command socket at @c /tmp/SoDa__cmd.
+ *
+ * Example — connect to a USRP at IP address 192.168.10.2:
+ * @code
+ *   START --radio USRP --devargs addr=192.168.10.2 --uds_name /tmp/MySoDa_
+ * @endcode
+ *
+ * @subsection sodacli_set SET
+ *
+ * @code
+ *   SET <target> [I|D|S] <value>
+ * @endcode
+ *
+ * Sends a SET command to SoDaServer.  The target name must appear in the
+ * @ref SoDa::Command::CmdTarget enumeration (see @ref Command.hxx).
+ *
+ * The optional type indicator selects the parameter encoding:
+ * - @c I — integer (enum names are also accepted, see @ref sodacli_enums)
+ * - @c D — double-precision float
+ * - @c S — character string
+ *
+ * When no type indicator is given the type is inferred from the value:
+ * - Known enum names → integer
+ * - Values containing @c . , @c e , or @c E → double
+ * - Anything else parseable as an integer → integer
+ * - Remaining tokens → string
+ *
+ * Examples:
+ * @code
+ *   SET RX_TUNE_FREQ 144215000.0
+ *   SET RX_TUNE_FREQ D 144.215e6
+ *   SET RX_MODE USB
+ *   SET RX_MODE I USB
+ *   SET TX_STATE TX_ON_1
+ *   SET TX_CW_SPEED I 20
+ *   SET TX_CW_TEXT S CQ
+ *   SET RX_RF_GAIN D 30.0
+ * @endcode
+ *
+ * @subsection sodacli_get GET
+ *
+ * @code
+ *   GET <target>
+ * @endcode
+ *
+ * Sends a GET request to SoDaServer.  The server will typically respond
+ * with a REP message on the command socket, which SoDaCLI prints
+ * automatically (see @ref sodacli_incoming).
+ *
+ * Example:
+ * @code
+ *   GET SDR_VERSION
+ *   GET HWMB_REP
+ *   GET RX_RF_GAIN
+ * @endcode
+ *
+ * @subsection sodacli_rep REP
+ *
+ * @code
+ *   REP <target> [I|D|S] <value>
+ * @endcode
+ *
+ * Sends a REP (report) command.  The syntax is identical to @c SET.
+ * REP is seldom needed from the CLI; it is included for completeness
+ * and for test harness use.
+ *
+ * @subsection sodacli_run RUN
+ *
+ * @code
+ *   RUN <filename>
+ * @endcode
+ *
+ * Opens @c filename and processes each line as if it were typed at the
+ * prompt.  The filename argument is case-sensitive on Linux.  Script
+ * execution stops immediately if a line causes an error; the file is
+ * then closed.
+ *
+ * Incoming server messages are drained after each script line.
+ *
+ * Example script file @c init.cli:
+ * @code
+ *   # Connect to USRP and configure initial state
+ *   START --radio USRP --uds_name /tmp/MySoDa_
+ *   SET RX_TUNE_FREQ 144215000.0
+ *   SET RX_MODE USB
+ *   SET RX_RF_GAIN D 30.0
+ *   GET SDR_VERSION
+ * @endcode
+ * Run it with:
+ * @code
+ *   SoDaCLI> RUN init.cli
+ * @endcode
+ *
+ * @subsection sodacli_quit QUIT
+ *
+ * @code
+ *   QUIT
+ * @endcode
+ *
+ * Sends @c SET @c STOP to SoDaServer, waits one second for any final
+ * messages, disconnects from the socket, then exits SoDaCLI.  If
+ * SoDaServer was started with the @c START command, the server process
+ * is also reaped.
+ *
+ * @section sodacli_incoming Incoming Messages
+ *
+ * While waiting for user input SoDaCLI polls the command socket for
+ * inbound messages from the server.  Any arriving SET, GET, or REP
+ * message is pretty-printed to stdout (using
+ * @ref SoDa::Command::toString()) and logged:
+ *
+ * @code
+ *   << REP SDR_VERSION S "SoDaRadio-2.x.y"
+ *   << REP HWMB_REP S "B200"
+ * @endcode
+ *
+ * After every command sent the socket is also drained, so short
+ * request-reply exchanges work naturally.
+ *
+ * @section sodacli_enums Parameter Types and Enum Names
+ *
+ * When a target takes an integer parameter drawn from a named
+ * enumeration you may supply the symbolic name instead of the integer.
+ * The following names are recognised:
+ *
+ * | Enumeration          | Names |
+ * |----------------------|-------|
+ * | ModulationType       | @c LSB @c USB @c CW_U @c CW_L @c AM @c WBFM @c NBFM |
+ * | RxTxState            | @c TX_OFF_0 @c TX_OFF_1 @c TX_OFF_2 @c TX_ON_0 @c TX_ON_1 @c TX_ON_2 |
+ * | ClockSource          | @c EXTERNAL @c INTERNAL |
+ * | TXAudioSelector      | @c MIC @c NOISE |
+ *
+ * For targets not listed above, supply the raw integer value.
+ *
+ * @section sodacli_targets Command Targets
+ *
+ * The full list of command targets is defined in @ref SoDa::Command::CmdTarget.
+ * Commonly used targets and their expected parameter types are:
+ *
+ * | Target             | Type   | Description |
+ * |--------------------|--------|-------------|
+ * | RX_TUNE_FREQ       | double | RX centre frequency (Hz) |
+ * | TX_TUNE_FREQ       | double | TX centre frequency (Hz) |
+ * | RX_MODE            | int    | Modulation mode (see ModulationType) |
+ * | TX_MODE            | int    | TX modulation mode |
+ * | RX_RF_GAIN         | double | RX front-end gain (dB) |
+ * | TX_RF_GAIN         | double | TX amplifier gain (dB) |
+ * | RX_AF_GAIN         | double | RX audio gain |
+ * | TX_STATE           | int    | Transmit on/off state (see RxTxState) |
+ * | TX_CW_SPEED        | int    | CW keyer speed (WPM) |
+ * | TX_CW_TEXT         | string | CW text to send (up to 8 chars) |
+ * | CLOCK_SOURCE       | int    | Reference clock (INTERNAL or EXTERNAL) |
+ * | SDR_VERSION        | —      | GET only; server reports version string |
+ * | HWMB_REP           | —      | GET only; server reports motherboard name |
+ * | STOP               | —      | Shut down all server threads |
+ *
+ * @section sodacli_log Log File
+ *
+ * SoDaCLI appends all session activity to @c CLIHarnessLog.md in the
+ * current working directory.  Each session begins with a Markdown
+ * heading:
+ *
+ * @code
+ *   # SoDaCLI Session
+ * @endcode
+ *
+ * Log entry prefixes:
+ * - @c INPUT: — a line typed by the user
+ * - @c SEND: — a command transmitted to the server
+ * - @c RECV: — a message received from the server
+ * - @c STATUS: — a connection lifecycle event
+ * - @c RUN: — a script file executed
+ * - @c ERROR: — a parse or I/O error
+ *
+ * @section sodacli_example_session Example Session
+ *
+ * @code
+ *   $ ./SoDaCLI
+ *   SoDaCLI> START --radio USRP --devargs addr=192.168.10.2
+ *   Waiting for server socket [/tmp/SoDa__cmd]...
+ *   Connected to SoDaServer
+ *
+ *   SoDaCLI> GET SDR_VERSION
+ *     >> GET SDR_VERSION
+ *     << REP SDR_VERSION S "SoDaRadio-2.5.0"
+ *
+ *   SoDaCLI> SET RX_TUNE_FREQ 144215000.0
+ *     >> SET RX_TUNE_FREQ D 1.44215e+08
+ *     << REP RX_LO_FREQ D 1.44e+08
+ *     << REP RX_IF_FREQ D 2.15e+04
+ *
+ *   SoDaCLI> SET RX_MODE USB
+ *     >> SET RX_MODE I 1
+ *
+ *   SoDaCLI> QUIT
+ *     >> SET STOP I 0
+ * @endcode
+ */
