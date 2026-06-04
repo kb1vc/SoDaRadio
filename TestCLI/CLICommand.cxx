@@ -28,6 +28,7 @@
 
 #include "CLICommand.hxx"
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <algorithm>
 #include <map>
@@ -130,6 +131,17 @@ SoDa::CommandPtr parseCommand(const std::string & verb, const std::string & rest
 
   std::string tu = targ_str;
   std::transform(tu.begin(), tu.end(), tu.begin(), ::toupper);
+
+  if(tu == "?") {
+    std::cout << verb << " targets:\n";
+    int col = 0;
+    for(const auto & kv : SoDa::Command::target_map_s2v) {
+      std::cout << "  " << std::left << std::setw(24) << kv.first;
+      if(++col % 4 == 0) std::cout << "\n";
+    }
+    if(col % 4 != 0) std::cout << "\n";
+    return nullptr;
+  }
 
   auto tit = SoDa::Command::target_map_s2v.find(tu);
   if(tit == SoDa::Command::target_map_s2v.end()) {

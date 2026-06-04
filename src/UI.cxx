@@ -422,7 +422,7 @@ void UI::subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes) {
       // 						     "CMDstream",
       // 						     cmd_stream));
       SoDa::MailBoxBase::connect<MailBox<CommandPtr>>(mbox_p,
-						     "CWTXstream",
+						     "CWTXTstream",
 						     cwtxt_stream);
       SoDa::MailBoxBase::connect<MailBox<CBufPtr>>(mbox_p,
 						   "IFstream",

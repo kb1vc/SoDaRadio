@@ -53,6 +53,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include <readline/readline.h>
+#include <readline/history.h>
+
 namespace {
 
 std::ofstream         log_stream;
@@ -64,6 +67,23 @@ bool                  quit_flag         = false;
 
 SoDaCLI::AudioOutThread * audio_out     = nullptr;
 SoDaCLI::AudioInThread  * audio_in      = nullptr;
+
+std::string           rl_pending_line;
+bool                  rl_line_ready    = false;
+
+void rlLineHandler(char * buf)
+{
+  if(buf == nullptr) {
+    // Ctrl-D: treat as QUIT
+    rl_pending_line = "QUIT";
+    rl_line_ready   = true;
+    return;
+  }
+  rl_pending_line = buf;
+  rl_line_ready   = true;
+  if(*buf) add_history(buf);
+  free(buf);
+}
 
 // -------------------------------------------------------------------
 void logLine(const std::string & prefix, const std::string & msg)
@@ -96,12 +116,21 @@ void doStart(const std::string & args_rest)
 
   server_pid = fork();
   if(server_pid == 0) {
-    std::vector<const char *> argv;
-    argv.push_back("SoDaServer");
-    for(auto & a : args) argv.push_back(a.c_str());
-    argv.push_back(nullptr);
-    execvp("SoDaServer", const_cast<char **>(argv.data()));
-    std::cerr << "exec SoDaServer failed: " << strerror(errno) << "\n";
+    // If the first token contains '/' treat it as the executable path;
+    // otherwise search PATH for "SoDaServer".
+    std::string exec_path = "SoDaServer";
+    std::vector<const char *> argv_vec;
+    if(!args.empty() && args[0].find('/') != std::string::npos) {
+      exec_path = args[0];
+      argv_vec.push_back(exec_path.c_str());
+      for(size_t i = 1; i < args.size(); i++) argv_vec.push_back(args[i].c_str());
+    } else {
+      argv_vec.push_back("SoDaServer");
+      for(auto & a : args) argv_vec.push_back(a.c_str());
+    }
+    argv_vec.push_back(nullptr);
+    execvp(exec_path.c_str(), const_cast<char **>(argv_vec.data()));
+    std::cerr << "exec " << exec_path << " failed: " << strerror(errno) << "\n";
     _exit(-1);
   }
   if(server_pid < 0) {
@@ -288,37 +317,67 @@ void processLine(const std::string & line, bool interactive)
 // -------------------------------------------------------------------
 void runREPL()
 {
-  std::string line;
+  rl_callback_handler_install("SoDaCLI> ", rlLineHandler);
+
   while(!quit_flag) {
-    std::cout << "SoDaCLI> " << std::flush;
+    fd_set rfds;
+    FD_ZERO(&rfds);
+    FD_SET(STDIN_FILENO, &rfds);
+    int maxfd = STDIN_FILENO;
 
     if(connected && cmd_socket != nullptr) {
-      while(!quit_flag) {
-        fd_set rfds;
-        FD_ZERO(&rfds);
-        FD_SET(STDIN_FILENO, &rfds);
-        FD_SET(cmd_socket->conn_socket, &rfds);
-        int maxfd = std::max(STDIN_FILENO, cmd_socket->conn_socket);
-        struct timeval tv;
-        tv.tv_sec  = 0;
-        tv.tv_usec = 100000;
-        select(maxfd + 1, &rfds, nullptr, nullptr, &tv);
-
-        if(FD_ISSET(cmd_socket->conn_socket, &rfds)) {
-          SoDaCLI::receiveCommands(cmd_socket, log_stream);
-        }
-        if(FD_ISSET(STDIN_FILENO, &rfds)) break;
-      }
+      FD_SET(cmd_socket->conn_socket, &rfds);
+      maxfd = std::max(maxfd, cmd_socket->conn_socket);
     }
 
-    if(quit_flag) break;
-    if(!std::getline(std::cin, line)) break;
-    processLine(line, true);
-    if(connected) SoDaCLI::receiveCommands(cmd_socket, log_stream);
+    struct timeval tv = { 0, 100000 };
+    select(maxfd + 1, &rfds, nullptr, nullptr, &tv);
 
-    // Give Qt's internal housekeeping a chance to run.
-    QCoreApplication::processEvents();
+    if(connected && cmd_socket != nullptr &&
+       FD_ISSET(cmd_socket->conn_socket, &rfds)) {
+      // Save whatever the user has typed so far, clear readline's line,
+      // print the server messages, then restore so the prompt + partial
+      // input reappear cleanly below the messages.
+      char * saved_line  = rl_copy_text(0, rl_end);
+      int    saved_point = rl_point;
+      rl_save_prompt();
+      rl_replace_line("", 0);
+      rl_redisplay();
+      SoDaCLI::receiveCommands(cmd_socket, log_stream);
+      std::cout.flush();
+      rl_restore_prompt();
+      rl_replace_line(saved_line, 0);
+      rl_point = saved_point;
+      rl_forced_update_display();
+      free(saved_line);
+    }
+
+    if(FD_ISSET(STDIN_FILENO, &rfds)) {
+      rl_callback_read_char();
+    }
+
+    if(rl_line_ready) {
+      rl_line_ready = false;
+      if(!quit_flag) {
+        processLine(rl_pending_line, true);
+        // Poll briefly so responses to fast commands appear before the next prompt.
+        if(connected && cmd_socket != nullptr) {
+          for(int i = 0; i < 5; i++) {
+            fd_set p; FD_ZERO(&p); FD_SET(cmd_socket->conn_socket, &p);
+            struct timeval t = { 0, 40000 }; // 40 ms per try, 200 ms total
+            if(select(cmd_socket->conn_socket + 1, &p, nullptr, nullptr, &t) > 0
+               && FD_ISSET(cmd_socket->conn_socket, &p))
+              SoDaCLI::receiveCommands(cmd_socket, log_stream);
+          }
+        }
+        std::cout.flush();
+        QCoreApplication::processEvents();
+        if(!quit_flag) rl_callback_handler_install("SoDaCLI> ", rlLineHandler);
+      }
+    }
   }
+
+  rl_callback_handler_remove();
 }
 
 } // anonymous namespace

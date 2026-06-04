@@ -69,7 +69,7 @@ namespace SoDa {
 
   void RadioControl::run()
   {
-    
+    std::cerr << "RadioControl is running.\n";
     if(cmd_stream == NULL) {
       throw SDR::Exception(Format("Never got command stream subscription\n"),
 			   getSelfPtr());
@@ -112,6 +112,9 @@ namespace SoDa {
 	sleep_ms(50);
       }
       else {
+	std::cerr << SoDa::Format("RadioControl got message [%0]\n")
+	  .addS(cmd->toString())
+	  ;
 	// process the command.
 	if((cmds_processed & 0xff) == 0) {
 	  debugMsg(Format("RadioControl processed %0 commands").addI(cmds_processed));
@@ -264,6 +267,8 @@ namespace SoDa {
   {
     int res;
 
+    std::cerr << "Radio Control: ";
+    std::cerr << cmd->toString(); 
     switch (cmd->target) {
     case Command::RX_TUNE_FREQ:
       cmd_stream->put(Command::make(Command::REP, Command::RX_TUNE_FREQ, 
@@ -312,6 +317,16 @@ namespace SoDa {
       reportAntennas();
       cmd_stream->put(Command::make(Command::GET, Command::LIST_MODES));
       cmd_stream->put(Command::make(Command::GET, Command::LIST_AF_FILTERS));    
+      break;
+    case Command::TX_ANT:
+      cmd_stream->put(Command::make(Command::REP, Command::TX_ANT,
+				    getAntenna(SoDa::TX)));
+      
+      break; 
+    case Command::RX_ANT:
+      cmd_stream->put(Command::make(Command::REP, Command::RX_ANT,
+				    getAntenna(SoDa::RX)));
+      
       break; 
     default:
       break; 

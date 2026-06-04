@@ -66,7 +66,8 @@ namespace SoDa {
   public:
     static USRPTXPtr make(ParamsPtr params, uhd::usrp::multi_usrp::sptr _usrp) {
       auto ret = std::shared_ptr<USRPTX>(new USRPTX(params, _usrp));
-      ret->self = ret; 
+      ret->self = ret;
+      ret->registerThread(ret);
       return ret;
     }
 

@@ -82,8 +82,9 @@ namespace SoDa {
   public:
     static USRPCtrlPtr make(ParamsPtr params) {
       auto ret = std::shared_ptr<USRPCtrl>(new USRPCtrl(params));
-      ret->self = ret; 
-      return ret; 
+      ret->self = ret;
+      ret->registerThread(ret);
+      return ret;
     }
     
     /// return a pointer to the multi_usrp object -- used by
