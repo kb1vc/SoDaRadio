@@ -54,7 +54,7 @@ namespace SoDa {
 
 
 
-  void SoDa::IFRecorder::execRepCommand(SoDa::Command * cmd)
+  void SoDa::IFRecorder::execRepCommand(SoDa::CommandPtr cmd)
   {
     switch (cmd->target) {
     case SoDa::Command::RX_TUNE_FREQ:
@@ -87,17 +87,6 @@ namespace SoDa {
     (void) cmd;
   }
 
-  void IFRecorder::execRepCommand(CommandPtr cmd)
-  {
-    switch (cmd->target) {
-    case Command::RX_FE_FREQ:
-      current_rx_center_freq = cmd->dparms[0];
-      break;
-    default:
-      // do nothing. 
-      break; 
-    }
-  }
 
   void IFRecorder::run()
   {
@@ -106,7 +95,7 @@ namespace SoDa {
     CommandPtr cmd; 
 
     if((cmd_stream == NULL) || (rx_stream == NULL)) {
-      throw Radio::Exception(std::string("Missing a stream connection.\n"), 
+      throw SDR::Exception(std::string("Missing a stream connection.\n"), 
 			     getSelfPtr());	
     }
   

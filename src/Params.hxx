@@ -64,6 +64,12 @@ namespace SoDa {
      */
     std::string getRadioArgs() const { return radio_args; }
 
+    /**
+     * @brief what radio are we trying to configure
+     * @return string identifying which radio type (USRP, Pluto, RTLSDR, ...)
+     */
+    std::string getRadioType() const { return radio_type; }
+
     
 
     /**
@@ -115,8 +121,6 @@ namespace SoDa {
     const std::vector<std::string> & getLibs();
     
     unsigned int getDebugLevel() const { return debug_level; }
-
-    std::string getRadioType() const { return radio_type; }
 
     std::string getGPSHostName() const { return gps_hostname; }
 

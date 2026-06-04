@@ -51,7 +51,7 @@ namespace SoDa {
     CommandPtr cmd, txtcmd; 
 
     if((cmd_stream == NULL) || (cw_env_stream == NULL) || (cwtxt_stream == NULL)) {
-      throw Radio::Exception(std::string("Missing a stream connection.\n"), 
+      throw SDR::Exception(std::string("Missing a stream connection.\n"), 
 			     getSelfPtr());	
     }
 

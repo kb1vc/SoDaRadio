@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012,2013,2014,2019, 2025 Matthew H. Reilly (kb1vc)
+Copyright (c) 2012,2013,2014,2019, 2025, 2026 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -216,10 +216,10 @@ namespace SoDa {
     std::string version; 
   };
 
-  class MissingMailBox : public Radio::Exception {
+  class MissingMailBox : public SDR::Exception {
   public:
     MissingMailBox(const std::string & mbox_name, BasePtr thrower) :
-      Radio::Exception(SoDa::Format("Mailbox %0 could not be found.").addS(mbox_name).str(),
+      SDR::Exception(SoDa::Format("Mailbox %0 could not be found.").addS(mbox_name).str(),
 		       thrower)
     {
     }

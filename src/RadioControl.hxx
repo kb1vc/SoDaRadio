@@ -46,10 +46,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "SoDaThread.hxx"
 #include "Command.hxx"
 #include "Params.hxx"
-
-#include <SoDa/Mailbox.hxx>
+#include "TRControl.hxx"
+#include <SoDa/MailBox.hxx>
 
 namespace SoDa {
+  class RadioControl;
+  typedef std::shared_ptr<RadioControl> RadioControlPtr;
+  
   /**
    *  @class RadioControl
    * 
@@ -71,7 +74,7 @@ namespace SoDa {
      * @param name the name given to the thread. 
      * and identification for the attached radio
      */
-    RadioControl(Params * params, const std::string & name);
+    RadioControl(ParamsPtr params, const std::string & name);
 
     /**
      * @brief start the thread
@@ -81,11 +84,18 @@ namespace SoDa {
      */
     void run() final;
 
+    /**
+     * @brief perform initialization. Not all modules need to implement this.
+     */
+    virtual void init() { }
+    
     /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
+    void subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes); 
+
+    virtual RadioControlPtr getSelfPtr() = 0;
     
   protected:
-    Params * params;
+    ParamsPtr params;
     /**
      * @brief Parse an incoming command and dispatch.
      *
@@ -94,7 +104,7 @@ namespace SoDa {
      *
      * @param cmd a command record
      */ 
-    virtual void execCommand(Command * cmd) final;
+    virtual void execCommand(CommandPtr cmd) final;
 
     /**
      * @brief Parse an incoming GET command and dispatch.
@@ -104,7 +114,7 @@ namespace SoDa {
      *
      * @param cmd a command record
      */ 
-    virtual void execGetCommand(Command * cmd) final; 
+    virtual void execGetCommand(CommandPtr cmd) final; 
 
     /**
      * @brief Parse an incoming SET command and dispatch.
@@ -114,7 +124,7 @@ namespace SoDa {
      *
      * @param cmd a command record
      */ 
-    void execSetCommand(Command * cmd) final; 
+    void execSetCommand(CommandPtr cmd) final; 
 
     /**
      * @brief Parse an incoming REPort command and dispatch.
@@ -124,7 +134,7 @@ namespace SoDa {
      *
      * @param cmd a command record
      */ 
-    void execRepCommand(Command * cmd) final; 
+    void execRepCommand(CommandPtr cmd) final; 
 
     /// get the number of seconds since the "Epoch"
     /// @return relative time in seconds
@@ -138,9 +148,8 @@ namespace SoDa {
      * @brief write all antenna names to the report message channel
      * Get these from the listAntennas call. 
      *
-     * @param rxtx select which port RX, or TX
      */
-    virtual void reportAntennas(SoDa::RXTX rxtx) final;
+    virtual void reportAntennas() final;
 
 
     /**
@@ -155,10 +164,10 @@ namespace SoDa {
     /// Methods that a radio MAY implement
     /// (see above)
     void auxRun() { }
-    void subExecGetCommand(Command * cmd) { }
-    void subExecSetCommand(Command * cmd) { }
-    void subExecRepCommand(Command * cmd) { }
-
+    void subExecGetCommand(CommandPtr cmd) { }
+    void subExecSetCommand(CommandPtr cmd) { }
+    void subExecRepCommand(CommandPtr cmd) { }
+    
 
   protected:
     /// Methods that ALL radios must implement.
@@ -190,6 +199,14 @@ namespace SoDa {
     virtual void setAntenna(const std::string & ant, SoDa::RXTX rxtx) = 0;
 
     /**
+     * Get the current selected antenna.
+     * @param rxtx rx/tx selection
+     * @return a string corresponding to the chosen antenna. It will be in the
+     * list returned by listAntennas.
+     */
+    virtual std::string getAntenna(SoDa::RXTX rxtx) = 0;
+    
+    /**
      * @brief Set the RX or TX sample rate
      *
      * @param rate sample rate (in samples/sec)
@@ -208,18 +225,27 @@ namespace SoDa {
     /**
      * @brief set tain on the RX or TX side
      *
+     * The radio implementation is responsible for mapping the gain
+     * to the appropriate control settings.
+     *
+     * The range for @c gain is -30 to 0 in dB. 0 is maximum power or maximum
+     * front end RX gain. The device may support a more limited range, say
+     * -15 to 0 dB. In this case, any gain value less than -15 is treated as
+     * -15. For devices that support a greater range, the supported range is still
+     * -30 to 0. 
+     *
      * @param gain gain - if not in range, we'll pick something good
      * @param rxtx  receive or transmit?
      * @return the actual gain setting
      */
     virtual float setRFGain(float gain, SoDa::RXTX rxtx) = 0;
-    
+
     /**
      * @brief Set the front-end (LO + DDS) frequency to 'freq'
      * This includes setting the PLL front end synthesizer
      * as well as the FPGA resident digital synthesizer.
      * 
-     * @param freq target frequency (analog LO and DDS in the FPGA)
+     * @param freq targeto frequency (analog LO and DDS in the FPGA)
      * @param rxtx select receiver or transmitter
      *
      * @return The actual LO frequency.
@@ -311,11 +337,21 @@ g     * 144.325 MHz in the spectrogram display.  The LO would need to be changed
     void setFreq(double freq, SoDa::RXTX rxtx);
     
     /// get the state of the TXEna bit
-    /// @return true if the TX relay is activated. 
+    /// @return true if the TX relay is activated.
     virtual bool getTXEna() = 0;
     /// get the state of the TX relay confirm bit
     /// @return true if the TX relay sense input is asserted
-    virtual bool getTXRelayOn() = 0; 
+    virtual bool getTXRelayOn() = 0;
+
+    /**
+     * @brief Enable or disable the transmit hardware chain,
+     * including the antenna relay and PA enable. In half-duplex
+     * mode the RX chain should also be muted.
+     *
+     * @param tx_on if true, enable the TX hardware; if false, disable it.
+     * @param full_duplex if true, leave the RX chain active while transmitting.
+     */
+    virtual void setTXEna(bool tx_on, bool full_duplex) = 0;
 
     ///
     /**
@@ -390,7 +426,8 @@ g     * 144.325 MHz in the spectrogram display.  The LO would need to be changed
      *
      * @return a string describing the hardware. 
      */
-    virtual std::string getHardwareDescription() = 0; 
+    virtual std::string getHardwareDescription() = 0;
+
 
   protected:
 
@@ -408,7 +445,7 @@ g     * 144.325 MHz in the spectrogram display.  The LO would need to be changed
     double findGoodRXLO(double freq, double cur_lo_freq);
     
     CmdMBoxPtr cmd_stream; ///< command stream channel
-    unsigned int subid;   ///< subscriber ID for this thread's connection to the command channel
+    CmdMBox::Subscription cmd_subs;   ///< subscriber ID for this thread's connection to the command channel
 
     double first_gettime; ///< timestamps are relative to the first timestamp.
 
@@ -419,13 +456,10 @@ g     * 144.325 MHz in the spectrogram display.  The LO would need to be changed
     // state of the box
     bool tx_on; ///< if true, we are transmitting.
 
-    /// All of the following are indexed by the channel number. 
     double cur_rx_lo_freq; ///< The current receiver LO frequency 
-    double new_rx_if_freq; ///< the last setting of the RX LO.
-    double cur_rx_if_freq; ///< the RX LO frequency reported by the RadioRX front end.
+    double cur_rx_if_freq; ///< difference between rx
     double cur_tx_lo_freq; ///< The current *requested* transmitter LO frequency 
-    double new_tx_if_freq; ///< the last setting of the TX LO.
-    double cur_tx_if_freq; ///< the TX LO frequency reported by the RadioRX front end.
+    double cur_tx_if_freq; ///< the TX LO frequency reported by the RadioTX front end.
 
     static const double tx_freq_rxmode_offset; ///< tx offset when in RX mode
 
@@ -443,32 +477,6 @@ g     * 144.325 MHz in the spectrogram display.  The LO would need to be changed
     
     // enables verbose messages
     bool debug_mode; ///< print stuff when we are in debug mode
-
-    // integer tuning mode is helped by a map of LO capabilities.
-
-    /// @brief applyTargetFreqCorrection adjusts the requested frequency,
-    /// if necessary, to avoid a birdie caused by a multiple of the step
-    /// size within the passband. It will also adjust the stepsize. 
-    /// @param target_freq -- target tuning frequency
-    /// @param avoid_freq -- the frequency that we must avoid by at least 1MHz
-    /// @param tune_req -- tune request record. 
-    void applyTargetFreqCorrection(double target_freq, 
-				   double avoid_freq, 
-				   uhd::tune_request_t * tune_req);
-
-
-    /// @brief Test for support for integer-N synthesis
-    /// @param force_int_N force LO tuning to use integer-N synthesis
-    /// @param force_frac_N force LO tuning to use fractional-N synthesis
-    void testIntNMode(bool force_int_N, bool force_frac_N);
-
-    bool supports_IntN_Mode;  ///< if true, this unit can tune the front-end LO 
-    ///< in integer-N mode (as opposed to fractional-N)
-    ///< to improve rejection of spurious signals and 
-    ///< drop the noise floor a bit.
-
-    /// external control widget for TR switching and other things. 
-    SoDa::TRControl * tr_control; 
   };
 }
 

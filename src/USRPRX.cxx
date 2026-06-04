@@ -43,7 +43,7 @@
 #include <fstream>
 
 namespace SoDa {
-  USRPRX::USRPRX(Params * params, uhd::usrp::multi_usrp::sptr _usrp) : 
+  USRPRX::USRPRX(ParamsPtr params, uhd::usrp::multi_usrp::sptr _usrp) : 
     RadioRX(params)
   {
 
@@ -96,19 +96,16 @@ namespace SoDa {
 
     if(audio_rx_stream_enabled) {
       // go get some data
-      // get a free buffer.
-      SoDa::Buf * buf = rx_stream->alloc();
-      if(buf == NULL) {
-	buf = new SoDa::Buf(rx_buffer_size); 
-      }
+      // get a new buffer.
+      SoDa::CBufPtr buf = SoDa::CBuf::make(rx_buffer_size);
 
-      if(buf == NULL) throw SDR::Exception("USRPRX couldn't allocate SoDa::Buf object", this); 
-      if(buf->getComplexBuf() == NULL) throw SDR::Exception("USRPRX allocated empty SoDa::Buf object", this);
+      if(buf == nullptr) throw SDR::Exception("USRPRX couldn't allocate SoDa::Buf object", self.lock()); 
+      if(buf->size() == 0) throw SDR::Exception("USRPRX allocated empty SoDa::Buf object", self.lock());
       
       unsigned int left = rx_buffer_size;
       unsigned int coll_so_far = 0;
       uhd::rx_metadata_t md;
-      std::complex<float> *dbuf = buf->getComplexBuf();
+      std::complex<float> *dbuf = buf->getBuf().data();
       while(left != 0) {
 	unsigned int got = rx_bits->recv(&(dbuf[coll_so_far]), left, md);
 	if(got == 0) {
@@ -124,19 +121,16 @@ namespace SoDa {
       // If the UI is listening, it will do an FFT on the buffer
       // and send the positive spectrum via the UI to any listener.
       // the UI does the FFT then puts it on its own ring.
-      if(enable_spectrum_report && (if_stream->getSubscriberCount() > 0)) {
+      if(enable_spectrum_report && (if_stream->subscriberCount() > 0)) {
 	// clone a buffer, cause we're going to modify
 	// it before the send is complete. 
-	SoDa::Buf * if_buf = if_stream->alloc();
-	if(if_buf == NULL) {
-	  if_buf = new SoDa::Buf(rx_buffer_size); 
-	}
+	auto if_buf = SoDa::CBuf::make(rx_buffer_size); 
 
 	if(if_buf->copy(buf)) {
 	  if_stream->put(if_buf);
 	}
 	else {
-	  throw SDR::Exception("SoDa::Buf Copy for IF stream failed", this);
+	  throw SDR::Exception("SoDa::Buf Copy for IF stream failed", self.lock());
 	}
       }
 
@@ -154,14 +148,13 @@ namespace SoDa {
     return did_work; 
   }
 
-  void USRPRX::doMixer(SoDa::Buf * inout)
+  void USRPRX::doMixer(SoDa::CBufPtr inout)
   {
     unsigned int i;
     std::complex<float> o;
-    std::complex<float> * ioa = inout->getComplexBuf();
-    for(i = 0; i < inout->getComplexMaxLen(); i++) {
+    for(i = 0; i < inout->size(); i++) {
       o = IF_osc.stepOscCF();
-      ioa[i] = ioa[i] * o; 
+      (*inout)[i] = (*inout)[i] * o; 
     }
   }
 
@@ -173,7 +166,7 @@ namespace SoDa {
     debugMsg(Format("Changed 3rdLO to freq = %0\n")
 	     .addF(IF_tuning, 10, 6, 'e'));
     // send a message back.
-    cmd_stream->put(new Command(Command::REP, Command::RX_IF_FREQ, IF_tuning));
+    cmd_stream->put(Command::make(Command::REP, Command::RX_IF_FREQ, IF_tuning));
   }
 
 
@@ -198,6 +191,11 @@ namespace SoDa {
   {
     usrp->issue_stream_cmd(uhd::stream_cmd_t::STREAM_MODE_STOP_CONTINUOUS, 0);
     audio_rx_stream_enabled = false;
+  }
+
+  void USRPRX::enableIFStreamer(bool enable)
+  {
+    enable_spectrum_report = enable;
   }
 
 }

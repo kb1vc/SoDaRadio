@@ -44,6 +44,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Params.hxx"
 #include <memory>
+#include <SoDa/MailBox.hxx>
 
 namespace SoDa {
 
@@ -55,20 +56,21 @@ namespace SoDa {
     /**
      * @brief create the base radio. 
      */
-    Radio(Params * params) {
+    Radio(ParamsPtr params) {
       // do nothing for now
     }
-      
-    /**
-     * @brief start the control, rx, tx, and any other hardware
-     * specific processes. Setup all state. 
-     */ 
-    virtual void start() = 0;
 
     /**
-     * @brief shutdown all threads and clean up any state
+     * @brief subscribe to all mailboxes for all subordinate (Ctrl, RX, TX) units
+     *
+     * @param mailboxes a list of all the mailboxes established by the SoDaServer
      */
-    virtual void stop() = 0;
+    void subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes); 
+    
+    /**
+     * @brief do whatever initialization we might need to do. 
+     */ 
+    virtual void init() = 0;
   };
 }
 

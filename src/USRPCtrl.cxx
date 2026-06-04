@@ -48,9 +48,7 @@ namespace SoDa {
 
   const double USRPCtrl::rxmode_offset = 1.0e6;
 
-namespace SoDa {
-
-  USRPCtrl::USRPCtrl(Params * _params) : RadioControl(_params, "USRPCtrl")
+  USRPCtrl::USRPCtrl(ParamsPtr _params) : RadioControl(_params, "USRPCtrl")
   {
   
     // turn off logging below ERROR
@@ -80,7 +78,7 @@ namespace SoDa {
     usrp = uhd::usrp::multi_usrp::make(params->getRadioArgs());
 
     if(usrp == NULL) {
-      throw SDR::Exception(SoDa::Format("Unable to allocate USRP unit with arguments = [%0]\n").addS(params->getRadioArgs()), this);
+      throw SDR::Exception(SoDa::Format("Unable to allocate USRP unit with arguments = [%0]\n").addS(params->getRadioArgs()), self.lock());
     }
 
     // We need to find out if this is a B2xx or something like it -- they don't
@@ -165,7 +163,7 @@ namespace SoDa {
     tr_control = TRControl::makeTRControl(usrp);     
 
     // turn off the transmitter
-    setTXEna(false);
+    locSetTXEna(false);
 
     // if we are in integer-N mode, setup the step table.
     testIntNMode(params->forceIntN(), params->forceFracN()); 
@@ -421,7 +419,7 @@ namespace SoDa {
     }
   }
 
-  void USRPCtrl::setTXEna(bool val)
+  void USRPCtrl::locSetTXEna(bool val)
   {
     unsigned short enabits = val ? TX_RELAY_CTL : 0;
     if(supports_tx_gpio) {
@@ -670,7 +668,16 @@ namespace SoDa {
     }
     return 1; 
   }
-
+  
+  std::string USRPCtrl::getAntenna(SoDa::RXTX rxtx) {
+    if(rxtx == SoDa::RX) {
+      return usrp->get_rx_antenna();
+    }
+    else {
+      return usrp->get_tx_antenna();
+    }
+  }
+    
   void USRPCtrl::setAntenna(const std::string & ant, SoDa::RXTX rxtx)
   {
     std::vector<std::string> ants; 

@@ -115,7 +115,7 @@ namespace SoDa {
     std::vector<float> audio_buf(audio_buffer_size);
 
     if((cmd_stream ==nullptr) || (tx_stream ==nullptr)) {
-      throw Radio::Exception(std::string("Missing a stream connection.\n"),
+      throw SDR::Exception(std::string("Missing a stream connection.\n"),
 			     getSelfPtr());	
     }
   

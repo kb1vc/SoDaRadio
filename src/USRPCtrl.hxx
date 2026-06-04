@@ -53,7 +53,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <uhd/types/tune_request.hpp>
 #include <uhd/types/tune_result.hpp>
 
-#include <SoDa/Mailbox.hxx>
+#include <SoDa/MailBox.hxx>
 
 #include <memory>
 
@@ -77,11 +77,13 @@ namespace SoDa {
     /// Build a USRPCtrl thread
     /// @param params Pointer to a parameter object with all the initial settings
     /// and identification for the attached USRP
-    USRPCtrl(Params * params);
+    USRPCtrl(ParamsPtr params);
 
   public:
-    static USRPCtrlPtr make(Params * params) {
-      return std::shared_ptr<USRPCtrl>(new USRPCtrl(params));
+    static USRPCtrlPtr make(ParamsPtr params) {
+      auto ret = std::shared_ptr<USRPCtrl>(new USRPCtrl(params));
+      ret->self = ret; 
+      return ret; 
     }
     
     /// return a pointer to the multi_usrp object -- used by
@@ -195,9 +197,17 @@ namespace SoDa {
      */
     Command::ClockSource getClockSource();
 
+    /**
+     * @brief get a pointer to myself (for things like exception handlers.)
+     *
+     * @return shared pointer to this unit
+     */
+    RadioControlPtr getSelfPtr() { return self.lock(); }
+
+    void setTXEna(bool tx_on, bool full_duplex) override { locSetTXEna(tx_on); }
     
   protected:
-    Params * params;
+    ParamsPtr params;
 
     /// The B200 and B210 need some special handling, as they
     /// don't have frontend lock indications (as of 3.7.0)
@@ -205,9 +215,6 @@ namespace SoDa {
     bool is_B2xx;
     bool is_B210; ///< the B210 has two tx channels -- use the second for a Transverter LO -- see USRPLO
 
-    /// get the number of seconds since the "Epoch"
-    /// @return relative time in seconds
-    double getTime();
 
     /// is the identified (rx or tx) front-end LO locked?
     /// If not, set the tuning frequency to "the right thing"
@@ -239,6 +246,13 @@ namespace SoDa {
      */
     void setAntenna(const std::string & ant, SoDa::RXTX rxtx);
 
+    /**
+     * Get the current selected antenna.
+     * @param rxtx rx/tx selection
+     * @return a string corresponding to the chosen antenna. It will be in the
+     * list returned by listAntennas.
+     */
+    std::string getAntenna(SoDa::RXTX rxtx);
 
     
 
@@ -276,9 +290,9 @@ namespace SoDa {
     /// get the state of the TX relay confirm bit
     /// @return true if the TX relay sense input is asserted
     bool getTXRelayOn(); 
-    /// turn TX on/off
+    /// hardware-level TX relay and front-end control
     /// @param val true to enable the transmitter, false otherwise.
-    void setTXEna(bool val);
+    void locSetTXEna(bool val);
 
     /// set TX enable property on front-end module -- not present in all 
     /// daughtercards... 
@@ -349,7 +363,10 @@ namespace SoDa {
     ///< drop the noise floor a bit.
 
     /// external control widget for TR switching and other things. 
-    SoDa::TRControl * tr_control; 
+    SoDa::TRControl * tr_control;
+
+    ///< A pointer to myself -- useful for exceptions and such
+    std::weak_ptr<USRPCtrl> self;
   };
 }
 

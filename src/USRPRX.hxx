@@ -30,13 +30,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "RadioRX.hxx"
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
-#include "MultiMBox.hxx"
+
 #include "Command.hxx"
 #include "Params.hxx"
 #include "UI.hxx"
 #include "QuadratureOscillator.hxx"
 #include <uhd/usrp/multi_usrp.hpp>
 #include <uhd/stream.hpp>
+
+#include <SoDa/MailBox.hxx>
 
 #include <memory>
 
@@ -58,10 +60,12 @@ namespace SoDa {
      *        about sample rates and other configuration details.
      * @param usrp a pointer to the UHD USRP object that we are streaming data from.
      */
-    USRPRX(Params * params, uhd::usrp::multi_usrp::sptr usrp);
+    USRPRX(ParamsPtr params, uhd::usrp::multi_usrp::sptr usrp);
   public:
-    static USRPRXPtr make(Params * params, uhd::usrp::multi_usrp::sptr _usrp) {
-      return std::shared_ptr<USRPRX>(new USRPRX(params, _usrp));
+    static USRPRXPtr make(ParamsPtr params, uhd::usrp::multi_usrp::sptr _usrp) {
+      auto ret = std::shared_ptr<USRPRX>(new USRPRX(params, _usrp));
+      ret->self = ret; 
+      return ret; 
     }
 
     /**
@@ -121,7 +125,7 @@ namespace SoDa {
      *
      * @param inout the input/output RF buffer
      */
-    void doMixer(SoDa::Buf * inout);
+    void doMixer(SoDa::CBufPtr inout);
 
     /**
      * @brief The USRP never stops the RX streamer once it starts. 
@@ -156,7 +160,8 @@ namespace SoDa {
 
     std::ofstream rf_dumpfile;
     std::ofstream if_dumpfile; 
-    
+
+    std::weak_ptr<USRPRX> self; 
   }; 
 }
 

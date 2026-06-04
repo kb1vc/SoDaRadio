@@ -240,27 +240,21 @@ int doWork(SoDa::ParamsPtr params)
   
   // These are the mailboxes that connect
   // the various widgets
-  // the rx and tx streams are vectors of complex floats.
-  // we don't declare the extent here, as it will be set
-  // by a negotiation.
-  auto rx_stream = SoDa::CDatMBox::make("RXstream");
-  auto tx_stream = SoDa::CDatMBox::make("TXstream");
-  auto if_stream = SoDa::CDatMBox::make("IFstream");
-  auto cw_env_stream = SoDa::FDatMBox::make("CWstream");
+  std::vector<SoDa::MailBoxBasePtr> mailboxes;
+  mailboxes.push_back(SoDa::CDatMBox::make("RXstream"));
+  mailboxes.push_back(SoDa::CDatMBox::make("TXstream"));
+  mailboxes.push_back(SoDa::CDatMBox::make("IFstream"));
+  mailboxes.push_back(SoDa::FDatMBox::make("CWstream"));
 
-  auto cmd_stream = SoDa::CmdMBox::make("CMDstream");
-  auto gps_stream = SoDa::CmdMBox::make("GPSstream");
-  auto cwtxt_stream = SoDa::CmdMBox::make("CWTXTstream");  
+  mailboxes.push_back(SoDa::CmdMBox::make("CMDstream"));
+  mailboxes.push_back(SoDa::CmdMBox::make("GPSstream"));
+  mailboxes.push_back(SoDa::CmdMBox::make("CWTXTstream"));  
+  
 
-  SoDa::ThreadPtr ctrl;
-  SoDa::ThreadPtr rx;
-  SoDa::ThreadPtr tx;
-
-
-  auto radio_p = SoDa::RadioModels::make(params.getRadioType(), &params);
+  auto radio_p = SoDa::RadioModels::make(params->getRadioType(), params);
 
   if(radio_p == nullptr) {
-    std::cerr << SoDa::Format("Radio type [%0] is not yet supported\nHit ^C to exit.\n")
+    std::cerr << SoDa::Format("Radio type [%0] is not yet supported\nServer will terminate.\n")
       .addS(params->getRadioType()); 
     exit(-1);
   }
@@ -332,7 +326,7 @@ int doWork(SoDa::ParamsPtr params)
   auto thread_registrar = SoDa::ThreadRegistry::getRegistrar();  
 
   // hook everyone up to the mailboxes. 
-  registrar->subscribeThreads(mailboxes);
+  thread_registrar->subscribeThreads(mailboxes);
   
   // Now start each of the activities -- they may or may not
   // implement the "start" method -- not all objects need to be threads.

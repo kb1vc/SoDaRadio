@@ -63,7 +63,7 @@ namespace SoDa {
      * registered with @c hardware_name.
      */
     static RadioPtr make(const std::string & hardware_name,
-			 Params * params);
+			 ParamsPtr params);
 
     static std::vector<std::string> getModels();
 
@@ -77,7 +77,7 @@ namespace SoDa {
     
     static bool init_complete;
     
-    static std::map<std::string, std::function<RadioPtr(Params * params)>> model_map; 
+    static std::map<std::string, std::function<RadioPtr(ParamsPtr params)>> model_map; 
   };
 }
 

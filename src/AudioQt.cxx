@@ -142,7 +142,7 @@ namespace SoDa {
     CommandPtr cmd; 
     FloatVecPtr cur_buf_ptr = nullptr;
     if(cmd_stream == nullptr) {
-      throw SoDa::Radio::Exception(std::string("Missing a stream connection.\n"),
+      throw SoDa::SDR::Exception(std::string("Missing a stream connection.\n"),
 			     getSelfPtr());	
     }
     

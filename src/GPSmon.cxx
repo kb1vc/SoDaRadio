@@ -43,7 +43,7 @@ void SoDa::GPSmon::run()
 
   if(cmd_stream == NULL) {
     throw SoDa::SDR::Exception(std::string("Missing a stream connection.\n"),
-			  this);	
+			       getSelfPtr());	
   }
   
   while(!exitflag) {

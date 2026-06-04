@@ -210,13 +210,13 @@ void RadioListener::setRXFreq(double freq) {
   // we get the LO freq and multiplier from the config band widget
   // Note that the LO is setup for "high side" injection so that
   // tuning works in the right direction.  
-  put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_RETUNE_FREQ, freq + transverter_lo_freq), __PRETTY_FUNCTION__);
+  put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_TUNE_FREQ, freq + transverter_lo_freq), __PRETTY_FUNCTION__);
 
   current_rx_freq = freq;   
 }
 
 void RadioListener::setTXFreq(double freq) {
-  put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_RETUNE_FREQ, freq + transverter_lo_freq), __PRETTY_FUNCTION__);
+  put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_TUNE_FREQ, freq + transverter_lo_freq), __PRETTY_FUNCTION__);
 
   current_tx_freq = freq; 
 }

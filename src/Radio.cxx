@@ -28,53 +28,55 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 /**
- *  @file USRPRadio.hxx
+ *  @file Radio.hxx
  *
- * @brief Create the Control, RX, and TX threads for the
- * USRP radio hardware.
+ * @brief Base class for all hardware modules (USRP, Pluto, RTLSDR, etc)
+ * that starts all required processes (e.g. USRPCtrl, USRPRX, USRPTX) that
+ * are particular to the hardware.
  *
+ * This class encapsulates the entirety of the hardware specific code for
+ * any radio. All interactions with the radio after this object is constructed
+ * are via the mailboxes. 
+ * 
  *  @author M. H. Reilly (kb1vc)
  *  @date   May 2026
  */
 
-#include "Radio.hxx"
 #include "Params.hxx"
-#include "USRPCtrl.hxx"
-#include "USRPRX.hxx"
-#include "USRPTX.hxx"
-
 #include <memory>
 
 namespace SoDa {
 
-  class USRPRadio;
-  typedef std::shared_ptr<USRPRadio> USRPRadioPtr;
+  class Radio;
+  typedef std::shared_ptr<Radio> RadioPtr;
   
-  class USRPRadio : public Radio {
+  class Radio {
   protected:
-    USRPRadio(ParamsPtr params);
-
-  public:
     /**
-     * @brief Create a radio object. 
-     *
-     * @param params list of initial settings and such. 
-     */ 
-    static RadioPtr make(ParamsPtr params) {
-      return std::shared_ptr<Radio>(new USRPRadio(params)); 
+     * @brief create the base radio. 
+     */
+    Radio(Params * params) {
+      // do nothing for now
+    }
+
+    /// implement the subscription method
+    void subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes) {
+      ctrl->subscribeToMailBoxes(mailboxes);
+      rx->subscribeToMailBoxes(mailboxes);
+      tx->subscribeToMailBoxes(mailboxes);      
     }
     
+    
     /**
-     * @brief initialize the control, rx, tx, and any other hardware
-     * specific processes.
-     *
+     * @brief start the control, rx, tx, and any other hardware
+     * specific processes. Setup all state. 
      */ 
-    void init();
+    virtual void start() = 0;
 
-  private:
-    USRPCtrlPtr ctrl;
-    USRPRXPtr rx;
-    USRPTXPtr tx; 
+    /**
+     * @brief shutdown all threads and clean up any state
+     */
+    virtual void stop() = 0;
   };
 }
 

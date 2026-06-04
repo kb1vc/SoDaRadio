@@ -29,6 +29,9 @@ set(SoDaServer_SRCS
     fix_gpsd_ugliness.cxx
     RadioModels.cxx
     USRPRadio.cxx
+    RadioControl.cxx
+    RadioRX.cxx
+    RadioTX.cxx
 )
 
 

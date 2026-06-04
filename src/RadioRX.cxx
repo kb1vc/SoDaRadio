@@ -32,43 +32,42 @@
 #include <fstream>
 
 namespace SoDa {
-  RadioRX::RadioRX(Params * params) :
+  RadioRX::RadioRX(ParamsPtr params) :
     Thread("RadioRX")
   {
+    current_IF_tuning = 0.0;
   }
 
 
   void RadioRX::run()
   {
     if(cmd_stream == NULL) {
-      throw SDR::Exception(std::string("Never got command stream subscription\n"), 
-			     this);	
+      throw SDR::Exception(std::string("Never got command stream subscription\n"),
+			     getSelfPtr());
     }
     if(rx_stream == NULL) {
       throw SDR::Exception(std::string("Never got rx stream subscription\n"),
-			     this);	
+			     getSelfPtr());
     }
     if(if_stream == NULL) {
       throw SDR::Exception(std::string("Never got if stream subscription\n"),
-			     this);	
+			     getSelfPtr());
     }
   
     bool exitflag = false;
 
     while(!exitflag) {
-      CommandPtr  cmd = cmd_stream->get(cmd_subs);
+      CommandPtr cmd;
       bool did_command = false;
-      bool did_convert = false; 
-      if(cmd != NULL) {
-	// process the command.
+      bool did_convert = false;
+      if(cmd_stream->get(cmd_subs, cmd)) {
 	execCommand(cmd);
-	exitflag |= (cmd->target == Command::STOP); 
-	cmd_stream->free(cmd);
-	did_command = true; 
+	exitflag |= (cmd->target == Command::STOP);
+	did_command = true;
       }
 
-      if(convert()) {
-	did_convert = true; 
+      if(downConvert()) {
+	did_convert = true;
       }
 
       // if we didn't do any work at all, go to sleep
@@ -78,37 +77,18 @@ namespace SoDa {
     }
 
     // once we get the stop message, quit. 
-    closeStream(); 
+    stopStream();
   }
 
-  void RadioRX::execCommand(CommandPtr  cmd)
-  {
-    switch (cmd->cmd) {
-    case Command::GET:
-      execGetCommand(cmd); 
-      break;
-    case Command::SET:
-      execSetCommand(cmd); 
-      break; 
-    case Command::REP:
-      execRepCommand(cmd); 
-      break;
-    default:
-      break; 
-    }
-  }
-
-
-  void RadioRX::execSetCommand(CommandPtr  cmd)
+  void RadioRX::execSetCommand(CommandPtr cmd)
   {
     switch(cmd->target) {
     case Command::RX_IF_FREQ:
       current_IF_tuning = cmd->dparms[0];
-      int unit_selector = int(cmd->dparms[1]);
       setNCOFreq(cmd->dparms[0]);
       break;
     case Command::TX_STATE: // SET TX_ON
-      if(cmd->iparms[0] == TX_ON_1) {
+      if(cmd->iparms[0] == Command::TX_ON_1) {
 	// stop the RX stream.
 	// some radios will ignore this. 
 	stopStream();
@@ -119,8 +99,8 @@ namespace SoDa {
 	enableIFStreamer(cmd->iparms[1] > 0);
 
 	// tell the transmitter it can turn itself on now. 
-	cmd_stream->put(Command::make(Command::SET, Command::TX_STATE, 
-				    Command::TX_ON_2), cmd->iparms[1]);
+	cmd_stream->put(Command::make(Command::SET, Command::TX_STATE,
+				    Command::TX_ON_2, cmd->iparms[1]));
       }
       if(cmd->iparms[0] == Command::TX_OFF_1) {
 	// start the RX stream.
@@ -139,27 +119,45 @@ namespace SoDa {
     }
   }
 
-  void RadioRX::execGetCommand(CommandPtr  cmd)
+  void RadioRX::execGetCommand(CommandPtr cmd)
   {
     (void) cmd; 
   }
 
-  void RadioRX::execRepCommand(CommandPtr  cmd)
+  void RadioRX::execRepCommand(CommandPtr cmd)
   {
     (void) cmd; 
   }
 
   /// implement the subscription method
-  void RadioRX::subscribeToMailBox(const std::string & mbox_name, 
-				   BaseMBox * mbox_p) {
-    if(connectMailBox<CmdMBox>(this, cmd_stream, "CMD", mbox_name, mbox_p)) {
+
+  /// implement the subscription method
+  void RadioRX::subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes) {
+    for(auto mbox_p : mailboxes) {
+      MailBoxBase::connect<MailBox<CommandPtr>>(mbox_p,
+                                                "CMDstream",
+                                                cmd_stream); 
+      MailBoxBase::connect<MailBox<CBufPtr>>(mbox_p,
+                                             "RXstream",
+                                             rx_stream); 
+      MailBoxBase::connect<MailBox<CBufPtr>>(mbox_p,
+                                             "IFstream",
+                                             if_stream); 
+    }
+
+    if(cmd_stream == nullptr) {
+      throw MissingMailBox("CMD", getSelfPtr());    
+    }
+    else {
       cmd_subs = cmd_stream->subscribe();
     }
-    if(connectMailBox<DatMBox>(this, rx_stream, "RX", mbox_name, mbox_p)) {
-      // we don't subscribe -- we publish
+
+    // we publish on these streams. 
+    if(rx_stream == nullptr) {
+      throw MissingMailBox("RX", getSelfPtr());
     }
-    if(connectMailBox<DatMBox>(this, if_stream, "IF", mbox_name, mbox_p)) {
-      // we don't subscribe -- we publish
+    if(if_stream == nullptr) {
+      throw MissingMailBox("IF", getSelfPtr());
     }
   }
 }

@@ -44,9 +44,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #pragma once
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
-#include "MultiMBox.hxx"
 #include "Command.hxx"
 #include "Params.hxx"
+
+#include <SoDa/MailBox.hxx>
 
 namespace SoDa {
   /**
@@ -56,6 +57,12 @@ namespace SoDa {
    *  requests from other components (including the SoDa::UI listener)
    *  and dumps status and completion reports back onto
    *  the command stream channel.
+   *
+   *  A Receiver does no processing to the incoming RF signal other than
+   * 1. optionally resample the input stream
+   * 2. publish it on the rx_stream
+   * 3. downsample it and publish that on the if_stream.
+   *
    */
   class RadioRX : public SoDa::Thread {
   public:
@@ -65,7 +72,7 @@ namespace SoDa {
      * @param params Pointer to a parameter object with all the initial settings
      * and identification for the attached USRP
      */
-    RadioRX(Params * params);
+    RadioRX(ParamsPtr params);
 
     /**
      * @brief start the thread
@@ -75,11 +82,13 @@ namespace SoDa {
      */
     void run() final;
 
-    /// implement the subscription method
-    void subscribeToMailBox(const std::string & mbox_name, BaseMBox * mbox_p);
+    /**
+     * @brief perform initialization. Not all modules need to implement this.
+     */
+    virtual void init() { }
     
   protected:
-    Params * params;
+    ParamsPtr params;
     /**
      * @brief Parse an incoming command and dispatch.
      *
@@ -88,8 +97,6 @@ namespace SoDa {
      *
      * @param cmd a command record
      */ 
-    virtual void execCommand(Command * cmd) final;
-
     /**
      * @brief Parse an incoming GET command and dispatch.
      *
@@ -97,8 +104,8 @@ namespace SoDa {
      * should declare its own subExecCommand method.
      *
      * @param cmd a command record
-     */ 
-    virtual void execGetCommand(Command * cmd) final; 
+     */
+    virtual void execGetCommand(CommandPtr cmd) final;
 
     /**
      * @brief Parse an incoming SET command and dispatch.
@@ -107,8 +114,8 @@ namespace SoDa {
      * should declare its own subExecSetCommand method.
      *
      * @param cmd a command record
-     */ 
-    virtual void execSetCommand(Command * cmd) final; 
+     */
+    virtual void execSetCommand(CommandPtr cmd) final;
 
     /**
      * @brief Parse an incoming REPort command and dispatch.
@@ -117,13 +124,21 @@ namespace SoDa {
      * should declare its own subExecRepCommand method.
      *
      * @param cmd a command record
-     */ 
-    virtual void execRepCommand(Command * cmd) final; 
+     */
+    virtual void execRepCommand(CommandPtr cmd) final;
 
     /// get the number of seconds since the "Epoch"
     /// @return relative time in seconds
     double getTime();
 
+
+    /**
+     * @brief SoDa Threads must subscribe to at least the control mailbox.
+     *
+     * @param mailboxes a list of all defined mailboxes. Choose your subscriptions.
+     */ 
+    virtual void subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes) final; 
+    
 
   private:
     // These are the command handlers. They call virtual methods provided
@@ -131,10 +146,10 @@ namespace SoDa {
     
     /// Methods that a radio MAY implement
     /// (see above)
-    void subExecCommand(Command * cmd) { }
-    void subExecGetCommand(Command * cmd) { }
-    void subExecSetCommand(Command * cmd) { }
-    void subExecRepCommand(Command * cmd) { }
+    virtual void subExecCommand(CommandPtr cmd) { }
+    virtual void subExecGetCommand(CommandPtr cmd) { }
+    virtual void subExecSetCommand(CommandPtr cmd) { }
+    virtual void subExecRepCommand(CommandPtr cmd) { }
     
     /// Methods that ALL radios must implement.
   public:
@@ -153,7 +168,7 @@ namespace SoDa {
      * @brief A receiver must accept input data from the rx_stream
      * and beat it against its NCO to produce output on its if_stream.
      * If the stream_processing flag is off, any rx_input data will be
-     * dumped. 
+     * dumped.
      *
      * @return true if the receiver had input data ready to convert, false otherwise.
      */
@@ -181,12 +196,15 @@ namespace SoDa {
      *
      * @param enable if true, send RF sample buffer onto if_stream, otherwise, don't. 
      */
-    virtual void enableIFStreamer(bool enable) = 0; 
+    virtual void enableIFStreamer(bool enable) = 0;
+    
   protected:
     
-    DatMBox * rx_stream;
-    DatMBox * if_stream; 
-    CmdMBox * cmd_stream;
-    unsigned int cmd_subs; 
+    CDatMBoxPtr rx_stream;
+    CDatMBoxPtr if_stream;
+    CmdMBoxPtr cmd_stream;
+    CmdMBox::Subscription cmd_subs;
+
+    double current_IF_tuning; ///< current IF NCO frequency
   };
 }

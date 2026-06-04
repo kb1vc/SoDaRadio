@@ -37,7 +37,7 @@ SoDa::Params::Params(int argc, char * argv[])
   cmd
     .addV<std::string>(&load_list, "load", 'l',
      "one or more shared library objects, each containing a SoDa::Thread object")
-    .add<std::string>(&radio_args, "uhdargs", 'u', "",
+    .add<std::string>(&radio_args, "devargs", 'u', "",
      "extra parameters to pass to device creator (e.g. device id, address, type)")
     .add<std::string>(&config_filename, "config", 'c', "~/.soda/config.xml",
      "configuration file for initial settings")

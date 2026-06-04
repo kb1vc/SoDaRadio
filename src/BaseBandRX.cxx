@@ -42,9 +42,9 @@ namespace SoDa {
 			 AudioIfcPtr _audio_ifc) : Thread("BaseBandRX")
   {
     audio_ifc = _audio_ifc; 
-    rx_stream = NULL;
+    rx_stream = nullptr;
 
-    cmd_stream = NULL;
+    cmd_stream = nullptr;
 
     // set up some convenient defaults
     rx_modulation = Command::USB;
@@ -348,28 +348,29 @@ namespace SoDa {
       rf_resampler->apply(rfbuf, dbufo->getBuf());
     }
  
-  switch(rx_modulation) {
-  case SoDa::Command::LSB:
-  case SoDa::Command::CW_L:
-    demodulateSSB(dbufo, SoDa::Command::LSB); 
-    break; 
-  case SoDa::Command::USB:
-  case SoDa::Command::CW_U:
-    demodulateSSB(dbufo, SoDa::Command::USB); 
-    break;
-  case SoDa::Command::NBFM:
-    demodulateNBFM(dbufo, SoDa::Command::NBFM, *cur_af_gain);
-    break; 
-  case SoDa::Command::WBFM:
-    demodulateWBFM(rxbuf, SoDa::Command::NBFM, *cur_af_gain);
-    break; 
-  case SoDa::Command::AM:
-    demodulateAM(dbufo); 
-    break; 
-  default:
-    // all other modes are unsupported just for now.
-    throw SoDa::SDR::Exception("Unsupported Modulation Mode in RX", this);
-    break; 
+    switch(rx_modulation) {
+    case SoDa::Command::LSB:
+    case SoDa::Command::CW_L:
+      demodulateSSB(dbufo, SoDa::Command::LSB); 
+      break; 
+    case SoDa::Command::USB:
+    case SoDa::Command::CW_U:
+      demodulateSSB(dbufo, SoDa::Command::USB); 
+      break;
+    case SoDa::Command::NBFM:
+      demodulateNBFM(dbufo, SoDa::Command::NBFM, *cur_af_gain);
+      break; 
+    case SoDa::Command::WBFM:
+      demodulateWBFM(rxbuf, SoDa::Command::NBFM, *cur_af_gain);
+      break; 
+    case SoDa::Command::AM:
+      demodulateAM(dbufo); 
+      break; 
+    default:
+      // all other modes are unsupported just for now.
+      throw SoDa::SDR::Exception("Unsupported Modulation Mode in RX", self.lock());
+      break; 
+    }
   }
 
   void BaseBandRX::repAFFilterShape() {
@@ -406,180 +407,39 @@ namespace SoDa {
       repAFFilterShape();    
       break;
     case Command::TX_MODE:
-      txmod = Command::ModulationType(cmd->iparms[0]);
-      if((txmod == Command::CW_L) || (txmod == Command::CW_U)) {
-	sidetone_stream_enabled = true;
+      switch(cmd->iparms[0]) {
+      case Command::TX_ON_1:
+	{
+	  txmod = Command::ModulationType(cmd->iparms[0]);
+	  if((txmod == Command::CW_L) || (txmod == Command::CW_U)) {
+	    sidetone_stream_enabled = true;
+	  }
+	  else {
+	    sidetone_stream_enabled = false;
+	    audio_rx_stream_enabled = false;
+	  }
+	  cmd_stream->put(Command::make(Command::SET, Command::TX_STATE,
+					Command::TX_ON_2, cmd->iparms[1]));
+	}
+	break;
+      case Command::TX_OFF_1:
+	debugMsg("In RX ON");
+	cur_af_gain = &af_gain; 
+	audio_rx_stream_enabled = true;
+	debugMsg("audio_rx_stream_enabled = true\n");      
+	break;
       }
-      else {
-	sidetone_stream_enabled = false; 
-      }
-    }
-    if(cmd->iparms[0] == 2) { // the CTRL unit has done the setup.... 
-      debugMsg("In RX ON");
-      cur_af_gain = &af_gain; 
-      audio_rx_stream_enabled = true;
-      debugMsg("audio_rx_stream_enabled = true\n");      
-    }
-    break;
-  case SoDa::Command::RX_AF_FILTER: // set af filter bw.
-    fbw = (SoDa::Command::AudioFilterBW) cmd->iparms[0];
-    if(filter_map.find(fbw) != filter_map.end()) {
-      cur_audio_filter = filter_map[fbw];
-      af_filter_selection = fbw; 
-    }
-    else {
-      // if unsupported -- use widest. 
-      cur_audio_filter = filter_map[SoDa::Command::BW_6000]; 
-      af_filter_selection = SoDa::Command::BW_6000;
-    }
-    {
-      cmd_stream->put(new Command(Command::REP, Command::RX_AF_FILTER, 
-				  af_filter_selection));
-      repAFFilterShape();
-    }
-    break; 
-  case SoDa::Command::RX_AF_GAIN: // set audio gain. 
-    af_gain = powf(10.0, 0.25 * (cmd->dparms[0] - 50.0));
-    cmd_stream->put(new Command(Command::REP, Command::RX_AF_GAIN, 
-				50. + 4.0 * log10(af_gain)));
-    break; 
-  case SoDa::Command::RX_AF_SIDETONE_GAIN: // set audio gain. 
-    af_sidetone_gain = powf(10.0, 0.25 * (cmd->dparms[0] - 50.0));
-    // we send out reports for hamlib and other listeners...
-    cmd_stream->put(new Command(Command::REP, Command::RX_AF_SIDETONE_GAIN, 
-				50. + 4.0 * log10(af_sidetone_gain)));
-    break;
-  case SoDa::Command::NBFM_SQUELCH:
-    nbfm_squelch_level = powf(10, 0.5 * cmd->dparms[0]) * ((float) audio_buffer_size);
-    break; 
-  default:
-    break; 
-  }
-}
-
-void SoDa::BaseBandRX::execGetCommand(SoDa::Command * cmd)
-{
-  switch (cmd->target) {
-  case SoDa::Command::RX_AF_FILTER: // set af filter bw.
-    cmd_stream->put(new Command(Command::REP, Command::RX_AF_FILTER, 
-				af_filter_selection));
-    break;
-  case SoDa::Command::RX_AF_GAIN: // set af filter bw.
-    cmd_stream->put(new Command(Command::REP, Command::RX_AF_GAIN, 
-				50.0 + 4.0 * log10(af_gain)));
-    break;
-  case SoDa::Command::DBG_REP: // report status
-    SoDa::Command::UnitSelector us;
-    us = SoDa::Command::UnitSelector(cmd->iparms[0]);
-    if(us == SoDa::Command::BaseBandRX) {
-      std::cerr << SoDa::Format("%0 ready_buffers.size = %1 free_buffers.size = %2\n")
-	.addS(getObjName())
-	.addI(readyAudioBuffers())
-	.addI(free_buffers.size());
-    }
-    break;
-  case SoDa::Command::LIST_MODES:
-    reportModes();
-    break;
-  case SoDa::Command::LIST_AF_FILTERS:
-    reportAFFilters();
-    break; 
-  default:
-    break; 
-  }
-
-}
-
-void SoDa::BaseBandRX::execRepCommand(SoDa::Command * cmd)
-{
-  (void) cmd; 
-}
-
-
-void SoDa::BaseBandRX::reportModes()
-{
-    cmd_stream->put(new Command(Command::REP, Command::MOD_SEL_ENTRY, 
-				"CW_U", ((int) SoDa::Command::CW_U)));
-    cmd_stream->put(new Command(Command::REP, Command::MOD_SEL_ENTRY, 
-				"USB", ((int) SoDa::Command::USB)));
-    cmd_stream->put(new Command(Command::REP, Command::MOD_SEL_ENTRY, 
-				"CW_L", ((int) SoDa::Command::CW_L)));
-    cmd_stream->put(new Command(Command::REP, Command::MOD_SEL_ENTRY, 
-				"LSB", ((int) SoDa::Command::LSB)));
-    cmd_stream->put(new Command(Command::REP, Command::MOD_SEL_ENTRY, 
-				"AM", ((int) SoDa::Command::AM)));
-    cmd_stream->put(new Command(Command::REP, Command::MOD_SEL_ENTRY, 
-				"WBFM", ((int) SoDa::Command::WBFM)));
-    cmd_stream->put(new Command(Command::REP, Command::MOD_SEL_ENTRY, 
-				"NBFM", ((int) SoDa::Command::NBFM)));
-}
-
-void SoDa::BaseBandRX::reportAFFilters()
-{
-    cmd_stream->put(new Command(Command::REP, Command::AF_FILT_ENTRY,
-				"100", ((int) SoDa::Command::BW_100)));
-    cmd_stream->put(new Command(Command::REP, Command::AF_FILT_ENTRY,
-				"500", ((int) SoDa::Command::BW_500)));
-    cmd_stream->put(new Command(Command::REP, Command::AF_FILT_ENTRY,
-				"2000", ((int) SoDa::Command::BW_2000)));
-    cmd_stream->put(new Command(Command::REP, Command::AF_FILT_ENTRY,
-				"6000", ((int) SoDa::Command::BW_6000)));
-    cmd_stream->put(new Command(Command::REP, Command::AF_FILT_ENTRY,
-				"WSPR", ((int) SoDa::Command::BW_WSPR)));
-    cmd_stream->put(new Command(Command::REP, Command::AF_FILT_ENTRY,
-				"PASS", ((int) SoDa::Command::BW_PASS)));
-}
-
-
-void SoDa::BaseBandRX::run()
-{
-  bool exitflag = false;
-  SoDa::Buf * rxbuf;
-  Command * cmd; 
-
-  int trim_count = 0; 
-  int add_count = 0;     
-
-  int null_audio_buf_count = 0;
-  int sleep_count = 0; 
-  int catchup_count = 0;
-
-  int restart_count = 0;
-
-  if((cmd_stream == NULL) || (rx_stream == NULL)) {
-    throw SoDa::SDR::Exception(std::string("Missing a stream connection.\n"),
-			  this);	
-  }
-  
-  
-  while(!exitflag) {
-    bool did_work = false;
-    bool did_audio_work = false; 
-
-    if((cmd = cmd_stream->get(cmd_subs)) != NULL) {
-      // process the command.
-      execCommand(cmd);
-      did_work = true; 
-      exitflag |= (cmd->target == Command::STOP); 
-      cmd_stream->free(cmd); 
-    }
-
-    // now look for incoming buffers from the rx_stream. 
-    int bcount = 0; 
-    for(bcount = 0; (bcount < 5) && ((rxbuf = rx_stream->get(rx_subs)) != NULL); bcount++) {
-      if(rxbuf == NULL) break; 
-      did_work = true; 
-      // if we're in TX mode, we should just pend silence and ignore the incoming buffer
-      // otherwise, demodulate it.
-
-      if(audio_rx_stream_enabled) {
-	// demodulate the buffer.
-	demodulate(rxbuf); 
+      break;
+    case SoDa::Command::RX_AF_FILTER: // set af filter bw.
+      fbw = (SoDa::Command::AudioFilterBW) cmd->iparms[0];
+      if(filter_map.find(fbw) != filter_map.end()) {
+	cur_audio_filter = filter_map[fbw];
+	af_filter_selection = fbw; 
       }
       else {
 	// if unsupported -- use widest. 
-	cur_audio_filter = filter_map[Command::BW_6000]; 
-	af_filter_selection = Command::BW_6000;
+	cur_audio_filter = filter_map[SoDa::Command::BW_6000]; 
+	af_filter_selection = SoDa::Command::BW_6000;
       }
       {
 	cmd_stream->put(Command::make(Command::REP, Command::RX_AF_FILTER, 
@@ -587,43 +447,45 @@ void SoDa::BaseBandRX::run()
 	repAFFilterShape();
       }
       break; 
-    case Command::RX_AF_GAIN: // set audio gain.  
-      af_gain = powf(10.0, 0.25 * (cmd->dparms[0] - 30.0));
+    case SoDa::Command::RX_AF_GAIN: // set audio gain. 
+      af_gain = powf(10.0, 0.25 * (cmd->dparms[0] - 50.0));
       cmd_stream->put(Command::make(Command::REP, Command::RX_AF_GAIN, 
-				    30. + 4.0 * log10(af_gain)));
+				    50. + 4.0 * log10(af_gain)));
       break; 
-    case Command::RX_AF_SIDETONE_GAIN: // set audio gain. 
-      af_sidetone_gain = powf(10.0, 0.25 * (cmd->dparms[0] - 30.0));
+    case SoDa::Command::RX_AF_SIDETONE_GAIN: // set audio gain. 
+      af_sidetone_gain = powf(10.0, 0.25 * (cmd->dparms[0] - 50.0));
       // we send out reports for hamlib and other listeners...
       cmd_stream->put(Command::make(Command::REP, Command::RX_AF_SIDETONE_GAIN, 
-				    30. + 4.0 * log10(af_sidetone_gain)));
+				    50. + 4.0 * log10(af_sidetone_gain)));
       break;
-    case Command::NBFM_SQUELCH:
-      // the squelch level from the gui is in the range 0 to 100
-      // we want a squelch level between 0.1e-3 and 100e-3
-      // thats a 10^3 range from -4 to -1
-      nbfm_squelch_level = powf(10,  0.03 * cmd->dparms[0] - 4);
+    case SoDa::Command::NBFM_SQUELCH:
+      nbfm_squelch_level = powf(10, 0.5 * cmd->dparms[0]) * ((float) audio_buffer_size);
       break; 
     default:
       break; 
     }
   }
 
-  void BaseBandRX::execGetCommand(CommandPtr cmd)
+  void SoDa::BaseBandRX::execGetCommand(SoDa::CommandPtr cmd)
   {
     switch (cmd->target) {
-    case Command::RX_AF_FILTER: // set af filter bw.
+    case SoDa::Command::RX_AF_FILTER: // set af filter bw.
       cmd_stream->put(Command::make(Command::REP, Command::RX_AF_FILTER, 
 				    af_filter_selection));
       break;
-    case Command::RX_AF_GAIN: // set af filter bw.
+    case SoDa::Command::RX_AF_GAIN: // set af filter bw.
       cmd_stream->put(Command::make(Command::REP, Command::RX_AF_GAIN, 
-				    30.0 + 4.0 * log10(af_gain)));
+				    50.0 + 4.0 * log10(af_gain)));
       break;
-    case Command::DBG_REP: // report status
-      Command::UnitSelector us;
-      us = Command::UnitSelector(cmd->iparms[0]);
-      // do nothing...
+    case SoDa::Command::DBG_REP: // report status
+      SoDa::Command::UnitSelector us;
+      us = SoDa::Command::UnitSelector(cmd->iparms[0]);
+      break;
+    case SoDa::Command::LIST_MODES:
+      reportModes();
+      break;
+    case SoDa::Command::LIST_AF_FILTERS:
+      reportAFFilters();
       break; 
     default:
       break; 
@@ -631,10 +493,47 @@ void SoDa::BaseBandRX::run()
 
   }
 
-  void BaseBandRX::execRepCommand(CommandPtr cmd)
+  void SoDa::BaseBandRX::execRepCommand(SoDa::CommandPtr cmd)
   {
     (void) cmd; 
   }
+
+
+  void SoDa::BaseBandRX::reportModes()
+  {
+    cmd_stream->put(Command::make(Command::REP, Command::MOD_SEL_ENTRY, 
+				  "CW_U", ((int) SoDa::Command::CW_U)));
+    cmd_stream->put(Command::make(Command::REP, Command::MOD_SEL_ENTRY, 
+				  "USB", ((int) SoDa::Command::USB)));
+    cmd_stream->put(Command::make(Command::REP, Command::MOD_SEL_ENTRY, 
+				  "CW_L", ((int) SoDa::Command::CW_L)));
+    cmd_stream->put(Command::make(Command::REP, Command::MOD_SEL_ENTRY, 
+				  "LSB", ((int) SoDa::Command::LSB)));
+    cmd_stream->put(Command::make(Command::REP, Command::MOD_SEL_ENTRY, 
+				  "AM", ((int) SoDa::Command::AM)));
+    cmd_stream->put(Command::make(Command::REP, Command::MOD_SEL_ENTRY, 
+				  "WBFM", ((int) SoDa::Command::WBFM)));
+    cmd_stream->put(Command::make(Command::REP, Command::MOD_SEL_ENTRY, 
+				  "NBFM", ((int) SoDa::Command::NBFM)));
+  }
+
+  void SoDa::BaseBandRX::reportAFFilters()
+  {
+    cmd_stream->put(Command::make(Command::REP, Command::AF_FILT_ENTRY,
+				  "100", ((int) SoDa::Command::BW_100)));
+    cmd_stream->put(Command::make(Command::REP, Command::AF_FILT_ENTRY,
+				  "500", ((int) SoDa::Command::BW_500)));
+    cmd_stream->put(Command::make(Command::REP, Command::AF_FILT_ENTRY,
+				  "2000", ((int) SoDa::Command::BW_2000)));
+    cmd_stream->put(Command::make(Command::REP, Command::AF_FILT_ENTRY,
+				  "6000", ((int) SoDa::Command::BW_6000)));
+    cmd_stream->put(Command::make(Command::REP, Command::AF_FILT_ENTRY,
+				  "WSPR", ((int) SoDa::Command::BW_WSPR)));
+    cmd_stream->put(Command::make(Command::REP, Command::AF_FILT_ENTRY,
+				  "PASS", ((int) SoDa::Command::BW_PASS)));
+  }
+
+
 
   void BaseBandRX::run()
   {
@@ -653,8 +552,8 @@ void SoDa::BaseBandRX::run()
 
     int debug_count = 0;
     
-    if((cmd_stream == NULL) || (rx_stream == NULL)) {
-      throw Radio::Exception(std::string("Missing a stream connection.\n"),
+    if((cmd_stream == nullptr) || (rx_stream == nullptr)) {
+      throw SDR::Exception(std::string("Missing a stream connection.\n"),
 			     getSelfPtr());	
     }
   
@@ -675,7 +574,7 @@ void SoDa::BaseBandRX::run()
       int bcount = 0; 
       for(bcount = 0; (bcount < 5) && rx_stream->get(rx_subs, rxbuf); bcount++) {
 	debug_count++; 
-	if(rxbuf == NULL) break; 
+	if(rxbuf == nullptr) break; 
 	did_work = true; 
 	// if we're in TX mode, we should just pend silence and ignore the incoming buffer
 	// otherwise, demodulate it.

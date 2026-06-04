@@ -57,9 +57,6 @@ extern "C" {
 
 
 namespace SoDa {
-  class Buf;
-  typedef std::shared_ptr<Buf> BufPtr;
-
   class FBuf;
   typedef std::shared_ptr<FBuf> FBufPtr; 
   
@@ -74,96 +71,13 @@ namespace SoDa {
 	      TXRX // the command/query/response relates to a transmitter and receiver
   };
   
-  /**
-   * The Buffer Class
-   *
-   * @class SoDa::Buf
-   *
-   * This is used to carry blocks of complex or real single precision
-   * floating point samples on the message ring. A SoDa::Buf can carry
-   * either complex or real values so that buffers for either use
-   * can be allocated from the same storage pool.  
-   *
-   */
-  class Buf {
-  protected:
-    /**
-     * constructor: Allocate a complex/real buffer of complex data values
-     *
-     * @param size the maximum number of single presion complex values the buffer can hold. 
-     */
-    Buf(unsigned int size);
-
-  public:
-
-    unsigned int size();
-      
-    void copy(BufPtr src);
-    
-    /**
-     * set the length of the buffer (in number of complex floats.)
-     * @param nl new length
-     */
-    virtual bool setComplexLen(unsigned int nl);
-    
-    /**
-     * set the length of the buffer (in number of floats.)
-     * @param nl new length
-     */
-    virtual bool setFloatLen(unsigned int nl);
-
-
-  protected:
-    std::vector<std::complex<float>> cdat; 
-    std::vector<float> fdat;
-
-    unsigned int r_size; 
-  };
-
-  /**
-   * @class FBuf
-   * @brief Buf specialized buffer for floats only.
-   */ 
-  class FBuf : public Buf {
-  public:
-    FBuf(unsigned int size);
-
-    static FBufPtr make(unsigned int _size);    
-    
-    bool setComplexLen(unsigned int nl);
-
-    std::vector<std::complex<float>> & getComplexBuf();
-
-    std::vector<float> & getBuf() { return fdat; }    
-
-    float & operator[](size_t index);
-  }; 
-
-
-  /**
-   * @class CBuf 
-   * @brief Buf specialized buffer for floats only.   
-   */ 
-  class CBuf : public Buf {
-  public:
-    CBuf(unsigned int size);
-
-    static CBufPtr make(unsigned int _size);        
-
-    bool setFloatLen(unsigned int nl);
-
-    std::vector<float> & getFloatBuf();
-    
-    std::vector<std::complex<float>> & getBuf() { return cdat; }
-
-    std::complex<float> & operator[](size_t index);
-  }; 
 
   /**
    * Mailboxes that carry commands only are of type CmdMBox
    */
   typedef SoDa::MailBox<CommandPtr> CmdMBox;
   typedef std::shared_ptr<CmdMBox> CmdMBoxPtr;
+  
   /**
    * Mailboxes that carry float or complex data are of type DatMBox
    */ 
@@ -321,4 +235,83 @@ namespace SoDa {
     
     
   }
+  /**
+   * The Buffer Class
+   *
+   * @class SoDa::Buf
+   *
+   * This is used to carry blocks of complex or real single precision
+   * floating point samples on the message ring. This is a baseclass
+   * and should never appear on its own. 
+   *
+   */
+  template<typename BaseT> class Buf {
+  protected:
+    /**
+     * constructor: Allocate a complex/real buffer of complex data values
+     *
+     * @param size the maximum number of single presion complex values the buffer can hold. 
+     */
+    Buf(unsigned int size) {
+      buf.resize(size);
+    };
+
+  public:
+
+    unsigned int size() { return buf.size(); }
+      
+    bool copy(const std::shared_ptr<Buf<BaseT>> & src) {
+      buf = src->buf;
+      return true; 
+    }
+    
+    /**
+     * set the length of the buffer (in number of complex floats.)
+     * @param size new length
+     */
+    bool setSize(size_t size) {
+      buf.resize(size);
+    }
+    
+    std::vector<BaseT> & getBuf() {
+      return buf; 
+    }
+
+    BaseT & operator[](size_t index) {
+      if(index < buf.size()) {
+	return buf[index];
+      }
+      else {
+	throw SDR::Exception(SoDa::Format("Buffer index %0 is out of range (>= %1)")
+			     .addI(index).addI(buf.size()).str());
+      }
+    }
+    
+  protected:
+    std::vector<BaseT> buf; 
+  };
+
+  /**
+   * @class FBuf
+   * @brief Buf specialized buffer for floats only.
+   */ 
+  class FBuf : public Buf<float> {
+  public:
+    FBuf(unsigned int size);
+
+    static FBufPtr make(unsigned int _size);    
+  }; 
+
+
+  /**
+   * @class CBuf 
+   * @brief Buf specialized buffer for floats only.   
+   */ 
+  class CBuf : public Buf<std::complex<float>> {
+  public:
+    CBuf(unsigned int size);
+
+    static CBufPtr make(unsigned int _size);        
+  }; 
+  
 }

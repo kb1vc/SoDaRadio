@@ -35,10 +35,9 @@
 namespace SoDa {
   const double RadioControl::tx_freq_rxmode_offset = 1.0e6;
 
-  RadioControl::RadioControl(Params * _params
+  RadioControl::RadioControl(ParamsPtr _params,
 			     const std::string & thread_name) : Thread(thread_name) {
     // initialize variables
-    last_rx_req_freq = 0.0; // at least this is a number...
     tx_on = false;
     first_gettime = 0.0;
     rx_rf_gain = 0.0;
@@ -52,20 +51,18 @@ namespace SoDa {
   }
   
   /// Subscribe to the command stream. 
-  void RadioControl::subscribeToMailBox(const std::string & mbox_name, 
-					BaseMBox * mbox_p) {
-    if(mbox_name == "CMD") {
-      CmdMBox * _cmd_stream = dynamic_cast<CmdMBox *>(mbox_p);
-      if(_cmd_stream != NULL) {
-	cmd_stream = _cmd_stream;
+  void RadioControl::subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes) {
+    for(auto mbox_p : mailboxes) {
+      MailBoxBase::connect<MailBox<CommandPtr>>(mbox_p,
+					       "CMDstream",
+					       cmd_stream);
+    }
 
-	// subscribe to the command stream.
-	subid = cmd_stream->subscribe();
-      }
-      else {
-	throw SDR::Exception(Format("Bad mailbox pointer for mailbox named = [%0]\n") 
-			       .addS(mbox_name) , this);	
-      }
+    if(cmd_stream == nullptr) {
+      throw MissingMailBox("CMD", getSelfPtr());    
+    }
+    else {
+      cmd_subs = cmd_stream->subscribe();
     }
   }
 
@@ -74,8 +71,8 @@ namespace SoDa {
   {
     
     if(cmd_stream == NULL) {
-      throw SDR::Exception(Format("Never got command stream subscription\n"), 
-			     this);	
+      throw SDR::Exception(Format("Never got command stream subscription\n"),
+			   getSelfPtr());
     }
     // I think this is the right place for this....
     cmd_stream->put(Command::make(Command::REP, Command::INIT_SETUP_COMPLETE, 0));
@@ -110,8 +107,8 @@ namespace SoDa {
     unsigned int loopcount = 0; 
     while(!exitflag) {
       loopcount++; 
-      Command * cmd = cmd_stream->get(subid);
-      if(cmd == NULL) {
+      CommandPtr cmd;
+      if(!cmd_stream->get(cmd_subs, cmd)) {
 	sleep_ms(50);
       }
       else {
@@ -135,7 +132,7 @@ namespace SoDa {
     return ret; 
   }
 
-  void RadioControl::execCommand(Command * cmd)
+  void RadioControl::execCommand(CommandPtr cmd)
   {
     switch (cmd->cmd) {
     case Command::GET:
@@ -169,7 +166,7 @@ namespace SoDa {
    * @li RX_ANT set the receive antenna port
    * @li TX_ANT set the transmit antenna port
    */
-  void RadioControl::execSetCommand(Command * cmd)
+  void RadioControl::execSetCommand(CommandPtr cmd)
   {
     double freq, fdiff; 
     if(cmd->cmd != Command::SET) {
@@ -179,12 +176,12 @@ namespace SoDa {
     double tmp;
     switch (cmd->target) {
     case Command::RX_TUNE_FREQ:
-      setFreq(cmd->dparms[0], SoDa::RX, char(cmd->dparms[1]));
+      setFreq(cmd->dparms[0], SoDa::RX);
       break; 
 
     case Command::LO_CHECK:
       if(cmd->dparms[0] == 0.0) {
-	setLOFreq(last_rx_lo_freq, SoDa::RX);
+	setLOFreq(cur_rx_lo_freq, SoDa::RX);
       }
       else {
 	debugMsg(Format("setting lo check freq to %0\n") .addF(cmd->dparms[0], 10, 6, 'e'));
@@ -231,27 +228,29 @@ namespace SoDa {
       if(cmd->iparms[0] == Command::TX_ON_0) {
 	// we're going to TX mode.
 	// This is the first stage.
-	setTXRXMode(Command::TX_ON_0, full_duplex);
+	setTXRXMode(Command::TX_ON_0, cmd->iparms[1]);
       }
       if(cmd->iparms[0] == 0) {
 	// going to receive mode
-	setTXRXMode(Command::TX_OFF_0, full_duplex);
+	setTXRXMode(Command::TX_OFF_0, cmd->iparms[1]);;
       }
       break; 
 
     case Command::RX_ANT:
       setAntenna(cmd->sparm, SoDa::RX);
-      cmd_stream->put(Command::make(Command::REP, Command::RX_ANT, getAntenna(SoDa::RX)));
+      cmd_stream->put(Command::make(Command::REP, Command::RX_ANT, 
+				    getAntenna(SoDa::RX)));
       break; 
 
     case Command::TX_ANT:
       tx_ant = cmd->sparm; 
       setAntenna(cmd->sparm, SoDa::TX);
-      cmd_stream->put(Command::make(Command::REP, Command::TX_ANT, getAntenna(SoDa::TX)));
+      cmd_stream->put(Command::make(Command::REP, Command::TX_ANT, 
+				    getAntenna(SoDa::TX)));
       break;
 
     case Command::CLOCK_SOURCE:
-      setClockSource(cmd->iparms[0]);
+      setClockSource(static_cast<Command::ClockSource>(cmd->iparms[0]));
       break;
       
     default:
@@ -261,18 +260,18 @@ namespace SoDa {
     subExecSetCommand(cmd);
   }
 
-  void RadioControl::execGetCommand(Command * cmd)
+  void RadioControl::execGetCommand(CommandPtr cmd)
   {
     int res;
-  
+
     switch (cmd->target) {
     case Command::RX_TUNE_FREQ:
       cmd_stream->put(Command::make(Command::REP, Command::RX_TUNE_FREQ, 
-				  cur_rx_freq));
+				  cur_rx_lo_freq + cur_rx_if_freq));
       break; 
     case Command::TX_TUNE_FREQ:
       cmd_stream->put(Command::make(Command::REP, Command::TX_TUNE_FREQ, 
-				  cur_tx_freq));
+				  cur_tx_lo_freq + cur_tx_if_freq));
       break; 
 
     case Command::RX_LO_FREQ:
@@ -295,12 +294,12 @@ namespace SoDa {
 
     case Command::TX_GAIN_RANGE:
       cmd_stream->put(Command::make(Command::REP, Command::TX_GAIN_RANGE,
-				  getGainRange(SoDa::TX)));
+				    -30.0, 0.0));
       break; 
 
     case Command::RX_GAIN_RANGE:
       cmd_stream->put(Command::make(Command::REP, Command::TX_GAIN_RANGE,
-				  getGainRange(SoDa::RX)));
+				    -30.0, 0.0));
       break; 
       
     case Command::CLOCK_SOURCE:
@@ -309,7 +308,7 @@ namespace SoDa {
 	  break; 
     case Command::HWMB_REP:
       cmd_stream->put(Command::make(Command::REP, Command::HWMB_REP,
-				  getHardwareDescription));
+				    getHardwareDescription()));
       reportAntennas();
       cmd_stream->put(Command::make(Command::GET, Command::LIST_MODES));
       cmd_stream->put(Command::make(Command::GET, Command::LIST_AF_FILTERS));    
@@ -321,7 +320,7 @@ namespace SoDa {
     subExecGetCommand(cmd);
   }
 
-  void RadioControl::execRepCommand(Command * cmd)
+  void RadioControl::execRepCommand(CommandPtr cmd)
   {
     subExecRepCommand(cmd);
   }
@@ -348,7 +347,7 @@ namespace SoDa {
 
   // return -1 if we don't need to reset the LO
   double RadioControl::findGoodRXLO(double freq, double cur_lo_freq) {
-    auto diff = freq - cur_freq;
+    auto diff = freq - cur_lo_freq;
     if((diff > 100e3) && (diff < 200e3)) {
       return -1.0; 
     }
@@ -365,15 +364,14 @@ namespace SoDa {
       // ask the device controller to set the TX lo.  Normally this should
       // be equal to freq and actual_lo_freq would be freq
       cur_tx_lo_freq = setLOFreq(freq, SoDa::TX);
-      new_tx_if_freq = freq - cur_tx_lo_freq;
-      cur_tx_freq = freq;
+      cur_tx_if_freq = freq - cur_tx_lo_freq;
       // tell the TX IF to set its new IF frequency. Then wait for it
       // to respond with a report. 
-      cmd_stream->put(Command::make(Command::SET, Command::TX_IF_FREQ, new_tx_if_freq));
+      cmd_stream->put(Command::make(Command::SET, Command::TX_IF_FREQ, cur_tx_if_freq));
       cmd_stream->put(Command::make(Command::REP, Command::TX_LO_FREQ,
 				  cur_tx_lo_freq));
       cmd_stream->put(Command::make(Command::REP, Command::TX_TUNE_FREQ,
-				  cur_tx_lo_freq + new_tx_if_freq));
+				  cur_tx_lo_freq + cur_tx_if_freq));
     }
     else { // rxtx is RX
       // if the requested frequency is between 100 kHz and 200 kHz above the LO
@@ -388,12 +386,12 @@ namespace SoDa {
       }
 
       // change the IF frequency    
-      new_rx_if_freq = freq - cur_rx_lo_freq;
+      cur_rx_if_freq = freq - cur_rx_lo_freq;
       // tell the RX IF to set its new IF frequency. Then wait for it
       // to respond with a report. 
-      cmd_stream->put(Command::make(Command::SET, Command::RX_IF_FREQ, new_rx_if_freq));
+      cmd_stream->put(Command::make(Command::SET, Command::RX_IF_FREQ, cur_rx_if_freq));
       cmd_stream->put(Command::make(Command::REP, Command::RX_TUNE_FREQ, 
-				  cur_rx_lo_freq + new_rx_if_freq));
+				  cur_rx_lo_freq + cur_rx_if_freq));
       cmd_stream->put(Command::make(Command::REP, Command::RX_LO_FREQ, 
 				  cur_rx_lo_freq));
       
@@ -409,7 +407,7 @@ namespace SoDa {
     }
   }
 
-  void RadioControl::setTXRXMode(RxTxState rxtxst, bool full_duplex) {
+  void RadioControl::setTXRXMode(Command::RxTxState rxtxst, bool full_duplex) {
     if(rxtxst == Command::TX_ON_0) {
       //   1. X turn the RX gain to 0 (temporarily)
       if(!full_duplex) {
@@ -417,11 +415,9 @@ namespace SoDa {
       }
 
       //   2. X set the TX gain to its current requested level
-      setRFGain(tx_rf_gain, SoDa::TX);
-      
       //   3. X Report the tx gain to the world
-      cmd_stream->put(Command::make(Command::REP, Command::TX_RF_GAIN, 
-				  getGain(SoDa::TX)));
+      auto gain = setRFGain(tx_rf_gain, SoDa::TX);
+      cmd_stream->put(Command::make(Command::REP, Command::TX_RF_GAIN, gain));
 
       //   4. X Set the tx local oscillator (in case it was in "tune remote mode"
       setLOFreq(cur_tx_lo_freq, SoDa::TX);
@@ -433,8 +429,8 @@ namespace SoDa {
       // This will tell the RX unit to shut down (unless it is in full-dux) and then
       // the RX unit will send a Command::TX_ON_2 message to the TX unit. 
       // This avoids the race between CTRL and TX/RX units for setup and teardown....
-      cmd_stream->put(Command::make(Command::SET, Command::TX_STATE, 
-				  Command::TX_ON_1, cmd->iparms[1]));
+      cmd_stream->put(Command::make(Command::SET, Command::TX_STATE,
+				  Command::TX_ON_1, (int)full_duplex));
 
     }
     else if(rxtxst == Command::TX_OFF_0) {
@@ -459,15 +455,6 @@ namespace SoDa {
     }
   }
   
-  double RadioControl::getTime()
-  {
-    double ret; 
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    ret = (((double) tv.tv_sec) - first_gettime) + 1.0e-6*((double) tv.tv_usec);
-    return ret; 
-  }
-
   bool RadioControl::setClockSource(Command::ClockSource src) {
     return true; 
   }

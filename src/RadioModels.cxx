@@ -50,7 +50,7 @@ namespace SoDa {
   // value add here and whatever you'd want to do is probably better done in
   // your ModelnameRadio.[ch]xx code. 
   
-  std::map<std::string, std::function<RadioPtr(Params * params)>> RadioModels::model_map;
+  std::map<std::string, std::function<RadioPtr(ParamsPtr params)>> RadioModels::model_map;
   bool RadioModels::init_complete = false;
   
   std::vector<std::string> RadioModels::getModels() {
@@ -69,7 +69,7 @@ namespace SoDa {
   }
   
   RadioPtr RadioModels::make(const std::string & hardware_name,
-			     Params * params) {
+			     ParamsPtr params) {
     // make sure the table has been setup. 
     if(!init_complete) {
       init();
