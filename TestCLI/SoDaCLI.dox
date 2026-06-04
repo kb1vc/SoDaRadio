@@ -34,12 +34,16 @@
  * @code
  *   $ ./SoDaCLI
  *   SoDaCLI -- command line interface to SoDaServer
- *     START [server-args]        -- launch server and connect
- *     SET   <target> [I|D|S] v   -- send SET (int/double/string)
- *     GET   <target>             -- send GET
- *     REP   <target> [I|D|S] v   -- send REP
- *     RUN   <filename>           -- execute script
- *     QUIT                       -- send STOP and exit
+ *     START [server-args]             -- launch server and connect
+ *     SET   <target> [I|D|S] v        -- send SET (int/double/string)
+ *     GET   <target>                  -- send GET
+ *     REP   <target> [I|D|S] v        -- send REP
+ *     AUDIO OUT  [device]             -- connect RX audio to speaker (muted)
+ *     AUDIO VOLUME <v>                -- set output volume [0.0-1.0]
+ *     AUDIO IN   [device]             -- connect mic audio to TX (muted)
+ *     AUDIO GAIN <g>                  -- set input gain multiplier
+ *     RUN   <filename>                -- execute script
+ *     QUIT                            -- send STOP and exit
  *
  *   SoDaCLI>
  * @endcode
@@ -158,6 +162,55 @@
  *   SoDaCLI> RUN init.cli
  * @endcode
  *
+ * @subsection sodacli_audio AUDIO
+ *
+ * @code
+ *   AUDIO OUT  [device]
+ *   AUDIO VOLUME <v>
+ *   AUDIO IN   [device]
+ *   AUDIO GAIN <g>
+ * @endcode
+ *
+ * Controls real-time audio I/O between SoDaCLI and SoDaServer.  Audio is
+ * exchanged as raw 32-bit float PCM samples at 48 000 Hz, mono, over
+ * Unix-domain sockets that SoDaServer creates alongside the command socket.
+ *
+ * Each audio direction runs in its own Qt thread with a private event loop,
+ * so audio processing never blocks the REPL.
+ *
+ * **AUDIO OUT [device]** — start receiving demodulated audio from SoDaServer
+ * and play it through the named output device.  The initial volume is 0
+ * (muted).  Use @c AUDIO @c VOLUME to unmute.  If @c device is omitted or
+ * @c "default", the system default output device is used.  A substring match
+ * (case-insensitive) against the device description is performed, so
+ * @c "Headphones" matches @c "Built-in Headphones".
+ *
+ * **AUDIO VOLUME v** — set playback volume to @c v, a linear floating-point
+ * factor in @c [0.0, 1.0].  This command is valid only after @c AUDIO @c OUT.
+ *
+ * **AUDIO IN [device]** — start capturing microphone audio and forwarding it
+ * to SoDaServer.  The initial gain is 0 (muted).  Use @c AUDIO @c GAIN to
+ * unmute.  Device matching follows the same rules as @c AUDIO @c OUT.
+ *
+ * **AUDIO GAIN g** — set the capture gain multiplier to @c g.  A value of
+ * @c 1.0 means unity gain; values above 1.0 amplify the captured samples.
+ * This command is valid only after @c AUDIO @c IN.
+ *
+ * The server's audio socket paths are derived from the socket base name in
+ * the same way as the command socket:
+ * - @c {basename}_rxa — server → CLI (receive audio, use with @c AUDIO @c OUT)
+ * - @c {basename}_txa — CLI → server (transmit audio, use with @c AUDIO @c IN)
+ *
+ * Example:
+ * @code
+ *   SoDaCLI> AUDIO OUT default
+ *   Audio output: Built-in Audio Analog Stereo
+ *   SoDaCLI> AUDIO VOLUME 0.8
+ *   SoDaCLI> AUDIO IN Focusrite
+ *   Audio input: Focusrite USB Audio
+ *   SoDaCLI> AUDIO GAIN 1.0
+ * @endcode
+ *
  * @subsection sodacli_quit QUIT
  *
  * @code
@@ -165,9 +218,9 @@
  * @endcode
  *
  * Sends @c SET @c STOP to SoDaServer, waits one second for any final
- * messages, disconnects from the socket, then exits SoDaCLI.  If
- * SoDaServer was started with the @c START command, the server process
- * is also reaped.
+ * messages, stops any active audio threads, disconnects from the socket,
+ * then exits SoDaCLI.  If SoDaServer was started with the @c START command,
+ * the server process is also reaped.
  *
  * @section sodacli_incoming Incoming Messages
  *

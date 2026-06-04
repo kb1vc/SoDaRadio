@@ -28,30 +28,20 @@
 
 /**
  * @file SoDaCLI.cxx
+ * @brief Main REPL for the SoDaServer command-line interface.
  *
- * @brief Command-line REPL interface to SoDaServer's command socket.
- *
- * Usage:
- *   START [SoDaServer args...]    -- launch server and connect
- *   SET  <target> [I|D|S] <val>  -- send SET command
- *   GET  <target>                 -- send GET command
- *   REP  <target> [I|D|S] <val>  -- send REP command
- *   RUN  <filename>               -- execute a script
- *   QUIT                          -- stop server (sends STOP) and exit
- *
- * Parameter types: I = integer, D = double, S = string.
- * Enum names (e.g. USB, TX_ON_1, EXTERNAL) are auto-resolved to integers.
- * Doubles are detected by presence of '.' or 'e'.
- *
- * All dialog is logged to CLIHarnessLog.md in the current directory.
+ * See @ref SoDaCLI_manual for the user documentation.
  */
+
+#include "CLICommand.hxx"
+#include "CLIAudio.hxx"
+
+#include <QCoreApplication>
 
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <string>
-#include <vector>
-#include <map>
 #include <algorithm>
 #include <cctype>
 #include <cstring>
@@ -63,174 +53,32 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include "Command.hxx"
-#include "UDSockets.hxx"
-
 namespace {
 
-std::ofstream log_stream;
+std::ofstream         log_stream;
+SoDa::UD::ClientSocket * cmd_socket     = nullptr;
+bool                  connected         = false;
+std::string           socket_basename   = "/tmp/SoDa_";
+pid_t                 server_pid        = -1;
+bool                  quit_flag         = false;
 
-void logLine(const std::string & prefix, const std::string & msg) {
-  if(log_stream.is_open()) {
-    log_stream << prefix << " " << msg << "\n";
-    log_stream.flush();
-  }
-}
-
-SoDa::UD::ClientSocket * cmd_socket = nullptr;
-bool connected = false;
-std::string socket_basename = "/tmp/SoDa_";
-pid_t server_pid = -1;
-bool quit_flag = false;
+SoDaCLI::AudioOutThread * audio_out     = nullptr;
+SoDaCLI::AudioInThread  * audio_in      = nullptr;
 
 // -------------------------------------------------------------------
-// Enum name -> integer resolver
-
-static std::map<std::string, int> buildEnumMap() {
-  std::map<std::string, int> m;
-  // ModulationType
-  m["LSB"] = SoDa::Command::LSB;
-  m["USB"] = SoDa::Command::USB;
-  m["CW_U"] = SoDa::Command::CW_U;
-  m["CW_L"] = SoDa::Command::CW_L;
-  m["AM"]   = SoDa::Command::AM;
-  m["WBFM"] = SoDa::Command::WBFM;
-  m["NBFM"] = SoDa::Command::NBFM;
-  // RxTxState
-  m["TX_OFF_0"] = SoDa::Command::TX_OFF_0;
-  m["TX_OFF_1"] = SoDa::Command::TX_OFF_1;
-  m["TX_OFF_2"] = SoDa::Command::TX_OFF_2;
-  m["TX_ON_0"]  = SoDa::Command::TX_ON_0;
-  m["TX_ON_1"]  = SoDa::Command::TX_ON_1;
-  m["TX_ON_2"]  = SoDa::Command::TX_ON_2;
-  // ClockSource
-  m["EXTERNAL"] = SoDa::Command::EXTERNAL;
-  m["INTERNAL"] = SoDa::Command::INTERNAL;
-  // TXAudioSelector
-  m["MIC"]   = SoDa::Command::MIC;
-  m["NOISE"] = SoDa::Command::NOISE;
-  return m;
-}
-
-static const std::map<std::string, int> enum_map = buildEnumMap();
-
-// -------------------------------------------------------------------
-// Parse one parameter token into a Command.
-// tok is the first token after the target name.
-// iss holds any remaining tokens on the line.
-SoDa::CommandPtr buildCommand(SoDa::Command::CmdType ct,
-                               SoDa::Command::CmdTarget targ,
-                               const std::string & tok,
-                               std::istringstream & iss)
+void logLine(const std::string & prefix, const std::string & msg)
 {
-  if(tok.empty()) {
-    return SoDa::Command::make(ct, targ);
-  }
-
-  // Explicit type indicator: single char I, D, or S (case-insensitive)
-  char tc = std::toupper((unsigned char)tok[0]);
-  if(tok.size() == 1 && (tc == 'I' || tc == 'D' || tc == 'S')) {
-    std::string val;
-    iss >> val;
-    if(tc == 'I') {
-      auto it = enum_map.find(val);
-      int v = (it != enum_map.end()) ? it->second : std::stoi(val);
-      return SoDa::Command::make(ct, targ, v);
-    }
-    if(tc == 'D') {
-      return SoDa::Command::make(ct, targ, std::stod(val));
-    }
-    // S
-    return SoDa::Command::make(ct, targ, val);
-  }
-
-  // Auto-detect: enum name (all uppercase letters/digits/underscores)
-  auto it = enum_map.find(tok);
-  if(it != enum_map.end()) {
-    return SoDa::Command::make(ct, targ, it->second);
-  }
-
-  // Auto-detect: double (has '.', 'e', or 'E')
-  if(tok.find('.') != std::string::npos ||
-     tok.find('e') != std::string::npos ||
-     tok.find('E') != std::string::npos) {
-    try {
-      return SoDa::Command::make(ct, targ, std::stod(tok));
-    } catch(...) {}
-  }
-
-  // Auto-detect: integer
-  try {
-    return SoDa::Command::make(ct, targ, std::stoi(tok));
-  } catch(...) {}
-
-  // Fall through: string
-  return SoDa::Command::make(ct, targ, tok);
-}
-
-SoDa::CommandPtr parseCommand(const std::string & verb, const std::string & rest)
-{
-  if(SoDa::Command::table_needs_init) SoDa::Command::initTables();
-
-  std::istringstream iss(rest);
-  std::string targ_str;
-  iss >> targ_str;
-
-  std::string tu = targ_str;
-  std::transform(tu.begin(), tu.end(), tu.begin(), ::toupper);
-
-  auto tit = SoDa::Command::target_map_s2v.find(tu);
-  if(tit == SoDa::Command::target_map_s2v.end()) {
-    std::cerr << "Unknown command target: [" << targ_str << "]\n";
-    logLine("ERROR:", "Unknown target: " + targ_str);
-    return nullptr;
-  }
-  auto targ = tit->second;
-
-  SoDa::Command::CmdType ct;
-  if(verb == "GET") ct = SoDa::Command::GET;
-  else if(verb == "SET") ct = SoDa::Command::SET;
-  else ct = SoDa::Command::REP;
-
-  if(ct == SoDa::Command::GET) {
-    return SoDa::Command::make(ct, targ);
-  }
-
-  std::string tok;
-  iss >> tok;
-  return buildCommand(ct, targ, tok, iss);
+  log_stream << prefix << " " << msg << "\n";
+  log_stream.flush();
 }
 
 // -------------------------------------------------------------------
-void receiveCommands()
-{
-  if(!connected || cmd_socket == nullptr) return;
-  SoDa::Command cmd;
-  while(cmd_socket->get(&cmd, sizeof(SoDa::Command)) > 0) {
-    std::string s = cmd.toString();
-    std::cout << "\n  << " << s << "\n";
-    logLine("RECV:", s);
-  }
-}
-
-void sendCommand(SoDa::CommandPtr cmd)
-{
-  if(!connected || cmd_socket == nullptr) {
-    std::cerr << "Not connected -- use START first\n";
-    return;
-  }
-  std::string s = cmd->toString();
-  std::cout << "  >> " << s << "\n";
-  logLine("SEND:", s);
-  cmd_socket->put(cmd.get(), sizeof(SoDa::Command));
-}
-
-// -------------------------------------------------------------------
+// Forward declaration
 void processLine(const std::string & line, bool interactive);
 
+// -------------------------------------------------------------------
 void doStart(const std::string & args_rest)
 {
-  // tokenize
   std::vector<std::string> args;
   {
     std::istringstream iss(args_rest);
@@ -238,7 +86,6 @@ void doStart(const std::string & args_rest)
     while(iss >> tok) args.push_back(tok);
   }
 
-  // extract socket basename
   socket_basename = "/tmp/SoDa_";
   for(size_t i = 0; i < args.size(); i++) {
     if((args[i] == "--uds_name" || args[i] == "-S") && i + 1 < args.size()) {
@@ -249,7 +96,6 @@ void doStart(const std::string & args_rest)
 
   server_pid = fork();
   if(server_pid == 0) {
-    // child: exec SoDaServer
     std::vector<const char *> argv;
     argv.push_back("SoDaServer");
     for(auto & a : args) argv.push_back(a.c_str());
@@ -286,11 +132,78 @@ void doStart(const std::string & args_rest)
   }
 
   cmd_socket = new SoDa::UD::ClientSocket(sock_path, 10);
-  connected = true;
+  connected  = true;
   std::cout << "Connected to SoDaServer\n";
   logLine("STATUS:", "connected to " + sock_path);
 }
 
+// -------------------------------------------------------------------
+void doAudio(const std::string & rest)
+{
+  std::istringstream iss(rest);
+  std::string subverb;
+  iss >> subverb;
+  std::transform(subverb.begin(), subverb.end(), subverb.begin(), ::toupper);
+
+  if(subverb == "OUT") {
+    if(!connected) { std::cerr << "Not connected -- use START first\n"; return; }
+
+    std::string devname;
+    std::getline(iss, devname);
+    // trim leading whitespace
+    auto first = devname.find_first_not_of(" \t");
+    devname = (first != std::string::npos) ? devname.substr(first) : "default";
+    if(devname.empty()) devname = "default";
+
+    if(audio_out) { audio_out->stopAudio(); delete audio_out; audio_out = nullptr; }
+
+    auto dev = SoDaCLI::findOutputDevice(devname);
+    std::cout << "Audio output: " << dev.description().toStdString() << "\n";
+    logLine("AUDIO_OUT:", dev.description().toStdString());
+
+    audio_out = new SoDaCLI::AudioOutThread(socket_basename + "_rxa", dev, 0.0f);
+    audio_out->start();
+
+  } else if(subverb == "IN") {
+    if(!connected) { std::cerr << "Not connected -- use START first\n"; return; }
+
+    std::string devname;
+    std::getline(iss, devname);
+    auto first = devname.find_first_not_of(" \t");
+    devname = (first != std::string::npos) ? devname.substr(first) : "default";
+    if(devname.empty()) devname = "default";
+
+    if(audio_in) { audio_in->stopAudio(); delete audio_in; audio_in = nullptr; }
+
+    auto dev = SoDaCLI::findInputDevice(devname);
+    std::cout << "Audio input: " << dev.description().toStdString() << "\n";
+    logLine("AUDIO_IN:", dev.description().toStdString());
+
+    audio_in = new SoDaCLI::AudioInThread(socket_basename + "_txa", dev, 0.0f);
+    audio_in->start();
+
+  } else if(subverb == "VOLUME") {
+    float gain = 0.0f;
+    iss >> gain;
+    if(audio_out) audio_out->setVolume(gain);
+    else std::cerr << "No audio output active -- use AUDIO OUT first\n";
+    logLine("AUDIO_VOLUME:", std::to_string(gain));
+
+  } else if(subverb == "GAIN") {
+    float gain = 0.0f;
+    iss >> gain;
+    if(audio_in) audio_in->setGain(gain);
+    else std::cerr << "No audio input active -- use AUDIO IN first\n";
+    logLine("AUDIO_GAIN:", std::to_string(gain));
+
+  } else {
+    std::cerr << "Unknown AUDIO subcommand [" << subverb
+              << "] -- try OUT, IN, VOLUME, GAIN\n";
+    logLine("ERROR:", "unknown AUDIO subcommand: " + subverb);
+  }
+}
+
+// -------------------------------------------------------------------
 void doRun(const std::string & filename)
 {
   logLine("RUN:", filename);
@@ -305,22 +218,25 @@ void doRun(const std::string & filename)
     std::cout << "  > " << line << "\n";
     processLine(line, false);
     if(quit_flag) break;
-    if(connected) receiveCommands();
+    if(connected) SoDaCLI::receiveCommands(cmd_socket, log_stream);
   }
 }
 
+// -------------------------------------------------------------------
 void doQuit()
 {
   logLine("STATUS:", "QUIT");
   if(connected && cmd_socket != nullptr) {
     auto stop = SoDa::Command::make(SoDa::Command::SET, SoDa::Command::STOP);
-    sendCommand(stop);
+    SoDaCLI::sendCommand(cmd_socket, stop, log_stream);
     sleep(1);
-    receiveCommands();
+    SoDaCLI::receiveCommands(cmd_socket, log_stream);
     delete cmd_socket;
     cmd_socket = nullptr;
-    connected = false;
+    connected  = false;
   }
+  if(audio_out) { audio_out->stopAudio(); delete audio_out; audio_out = nullptr; }
+  if(audio_in)  { audio_in->stopAudio();  delete audio_in;  audio_in  = nullptr; }
   if(server_pid > 0) {
     int wstatus;
     waitpid(server_pid, &wstatus, WNOHANG);
@@ -332,7 +248,6 @@ void doQuit()
 // -------------------------------------------------------------------
 void processLine(const std::string & line, bool interactive)
 {
-  // skip blank lines and comments
   std::string trimmed = line;
   size_t first = trimmed.find_first_not_of(" \t\r\n");
   if(first == std::string::npos) return;
@@ -349,22 +264,23 @@ void processLine(const std::string & line, bool interactive)
   std::transform(vu.begin(), vu.end(), vu.begin(), ::toupper);
 
   if(vu == "START") {
-    std::string rest;
-    std::getline(iss, rest);
+    std::string rest; std::getline(iss, rest);
     doStart(rest);
   } else if(vu == "SET" || vu == "GET" || vu == "REP") {
-    std::string rest;
-    std::getline(iss, rest);
-    auto cmd = parseCommand(vu, rest);
-    if(cmd) sendCommand(cmd);
+    if(!connected) { std::cerr << "Not connected -- use START first\n"; return; }
+    std::string rest; std::getline(iss, rest);
+    auto cmd = SoDaCLI::parseCommand(vu, rest);
+    if(cmd) SoDaCLI::sendCommand(cmd_socket, cmd, log_stream);
+  } else if(vu == "AUDIO") {
+    std::string rest; std::getline(iss, rest);
+    doAudio(rest);
   } else if(vu == "RUN") {
-    std::string filename;
-    iss >> filename;
+    std::string filename; iss >> filename;
     doRun(filename);
   } else if(vu == "QUIT") {
     doQuit();
   } else {
-    std::cerr << "Unknown verb [" << verb << "] -- try SET GET REP START RUN QUIT\n";
+    std::cerr << "Unknown verb [" << verb << "] -- try SET GET REP AUDIO START RUN QUIT\n";
     logLine("ERROR:", "unknown verb: " + verb);
   }
 }
@@ -373,12 +289,10 @@ void processLine(const std::string & line, bool interactive)
 void runREPL()
 {
   std::string line;
-
   while(!quit_flag) {
     std::cout << "SoDaCLI> " << std::flush;
 
     if(connected && cmd_socket != nullptr) {
-      // Wait for stdin, draining incoming socket data while we wait
       while(!quit_flag) {
         fd_set rfds;
         FD_ZERO(&rfds);
@@ -386,12 +300,12 @@ void runREPL()
         FD_SET(cmd_socket->conn_socket, &rfds);
         int maxfd = std::max(STDIN_FILENO, cmd_socket->conn_socket);
         struct timeval tv;
-        tv.tv_sec = 0;
+        tv.tv_sec  = 0;
         tv.tv_usec = 100000;
         select(maxfd + 1, &rfds, nullptr, nullptr, &tv);
 
         if(FD_ISSET(cmd_socket->conn_socket, &rfds)) {
-          receiveCommands();
+          SoDaCLI::receiveCommands(cmd_socket, log_stream);
         }
         if(FD_ISSET(STDIN_FILENO, &rfds)) break;
       }
@@ -400,26 +314,38 @@ void runREPL()
     if(quit_flag) break;
     if(!std::getline(std::cin, line)) break;
     processLine(line, true);
-    if(connected) receiveCommands();
+    if(connected) SoDaCLI::receiveCommands(cmd_socket, log_stream);
+
+    // Give Qt's internal housekeeping a chance to run.
+    QCoreApplication::processEvents();
   }
 }
 
 } // anonymous namespace
 
-int main(int /*argc*/, char * /*argv*/[])
+// -------------------------------------------------------------------
+int main(int argc, char * argv[])
 {
+  // QCoreApplication must exist before any Qt multimedia objects are created.
+  QCoreApplication app(argc, argv);
+
   log_stream.open("CLIHarnessLog.md", std::ios::app);
   log_stream << "\n# SoDaCLI Session\n\n";
 
-  std::cout << "SoDaCLI -- command line interface to SoDaServer\n"
-            << "  START [server-args]        -- launch server and connect\n"
-            << "  SET   <target> [I|D|S] v   -- send SET (int/double/string)\n"
-            << "  GET   <target>             -- send GET\n"
-            << "  REP   <target> [I|D|S] v   -- send REP\n"
-            << "  RUN   <filename>           -- execute script\n"
-            << "  QUIT                       -- send STOP and exit\n"
-            << "  Parameter types are auto-detected; enum names (USB, TX_ON_1, ...) "
-               "are accepted for integer params.\n\n";
+  std::cout
+    << "SoDaCLI -- command line interface to SoDaServer\n"
+    << "  START [server-args]             -- launch server and connect\n"
+    << "  SET   <target> [I|D|S] v        -- send SET (int/double/string)\n"
+    << "  GET   <target>                  -- send GET\n"
+    << "  REP   <target> [I|D|S] v        -- send REP\n"
+    << "  AUDIO OUT  [device]             -- connect RX audio to speaker (muted)\n"
+    << "  AUDIO VOLUME <v>                -- set output volume [0.0-1.0]\n"
+    << "  AUDIO IN   [device]             -- connect mic audio to TX (muted)\n"
+    << "  AUDIO GAIN <g>                  -- set input gain multiplier\n"
+    << "  RUN   <filename>                -- execute script\n"
+    << "  QUIT                            -- send STOP and exit\n"
+    << "  Device name: \"default\" or substring of device description.\n"
+    << "  Enum names (USB, TX_ON_1, ...) auto-resolve for integer params.\n\n";
 
   runREPL();
 
