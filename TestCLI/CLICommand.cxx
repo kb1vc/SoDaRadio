@@ -28,12 +28,12 @@
 
 #include "CLICommand.hxx"
 #include <iostream>
-#include <iomanip>
 #include <sstream>
 #include <algorithm>
 #include <map>
 #include <stdexcept>
 #include <cctype>
+#include <SoDa/Format.hxx>
 
 namespace SoDaCLI {
 
@@ -116,8 +116,8 @@ static SoDa::CommandPtr buildCommand(SoDa::Command::CmdType ct,
   catch(...) {}
 
   // Fall back to string — warn the user since this is likely a mistyped enum or number.
-  std::cerr << "Warning: [" << tok
-            << "] is not a recognised enum name or number; sending as string.\n";
+  std::cerr << SoDa::Format("Warning: [%0] is not a recognised enum name or number; sending as string.\n")
+               .addS(tok);
   return SoDa::Command::make(ct, targ, tok);
 }
 
@@ -135,22 +135,22 @@ SoDa::CommandPtr parseCommand(const std::string & verb, const std::string & rest
   std::transform(tu.begin(), tu.end(), tu.begin(), ::toupper);
 
   if(tu == "?") {
-    std::cout << verb << " targets:\n";
+    std::cout << SoDa::Format("%0 targets:\n").addS(verb);
     int col = 0;
     for(const auto & kv : SoDa::Command::target_map_s2v) {
-      std::cout << "  " << std::left << std::setw(24) << kv.first;
-      if(++col % 4 == 0) std::cout << "\n";
+      std::cout << SoDa::Format("  %0").addS(kv.first, -24);
+      if(++col % 4 == 0) std::cout << SoDa::Format("\n");
     }
-    if(col % 4 != 0) std::cout << "\n";
+    if(col % 4 != 0) std::cout << SoDa::Format("\n");
     return nullptr;
   }
 
-  auto tit = SoDa::Command::target_map_s2v.find(tu);
-  if(tit == SoDa::Command::target_map_s2v.end()) {
-    std::cerr << "Unknown command target: [" << targ_str << "]\n";
+  auto tab_it = SoDa::Command::target_map_s2v.find(tu);
+  if(tab_it == SoDa::Command::target_map_s2v.end()) {
+    std::cerr << SoDa::Format("Unknown command target: [%0]\n").addS(targ_str);
     return nullptr;
   }
-  auto targ = tit->second;
+  auto targ = tab_it->second;
 
   SoDa::Command::CmdType ct;
   if(verb == "GET")     ct = SoDa::Command::GET;
@@ -173,7 +173,7 @@ bool sendCommand(SoDa::UD::ClientSocket * sock,
                  std::ofstream & log)
 {
   std::string s = cmd->toString();
-  std::cout << "  >> " << s << "\n";
+  std::cout << SoDa::Format("  >> %0\n").addS(s);
   log << "SEND: " << s << "\n";
   log.flush();
   int r = sock->put(cmd.get(), sizeof(SoDa::Command));
@@ -190,7 +190,7 @@ bool receiveCommands(SoDa::UD::ClientSocket * sock,
   int r;
   while((r = sock->get(&cmd, sizeof(SoDa::Command))) > 0) {
     std::string s = cmd.toString();
-    std::cout << "\n  << " << s << "\n";
+    std::cout << SoDa::Format("\n  << %0\n").addS(s);
     log << "RECV: " << s << "\n";
     log.flush();
   }

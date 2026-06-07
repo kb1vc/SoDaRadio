@@ -39,6 +39,7 @@
 #include <QCoreApplication>
 
 #include <iostream>
+#include <SoDa/Format.hxx>
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -100,7 +101,7 @@ void logLine(const std::string & prefix, const std::string & msg)
 void disconnectServer()
 {
   if(!connected) return;
-  std::cerr << "\n[SoDaCLI] Server connection lost.\n";
+  std::cerr << SoDa::Format("\n[SoDaCLI] Server connection lost.\n");
   logLine("STATUS:", "server connection lost");
   delete cmd_socket;
   cmd_socket = nullptr;
@@ -150,16 +151,16 @@ void doStart(const std::string & args_rest)
     }
     argv_vec.push_back(nullptr);
     execvp(exec_path.c_str(), const_cast<char **>(argv_vec.data()));
-    std::cerr << "exec " << exec_path << " failed: " << strerror(errno) << "\n";
+    std::cerr << SoDa::Format("exec %0 failed: %1\n").addS(exec_path).addS(strerror(errno));
     _exit(-1);
   }
   if(server_pid < 0) {
-    std::cerr << "fork() failed: " << strerror(errno) << "\n";
+    std::cerr << SoDa::Format("fork() failed: %0\n").addS(strerror(errno));
     return;
   }
 
   std::string sock_path = socket_basename + "_cmd";
-  std::cout << "Waiting for server socket [" << sock_path << "]...\n";
+  std::cout << SoDa::Format("Waiting for server socket [%0]...\n").addS(sock_path);
   logLine("STATUS:", "waiting for " + sock_path);
 
   bool found = false;
@@ -168,7 +169,7 @@ void doStart(const std::string & args_rest)
     if(stat(sock_path.c_str(), &st) == 0) { found = true; break; }
     int wstatus;
     if(waitpid(server_pid, &wstatus, WNOHANG) > 0) {
-      std::cerr << "SoDaServer exited early (status " << wstatus << ")\n";
+      std::cerr << SoDa::Format("SoDaServer exited early (status %0)\n").addI(wstatus);
       server_pid = -1;
       return;
     }
@@ -176,13 +177,13 @@ void doStart(const std::string & args_rest)
   }
 
   if(!found) {
-    std::cerr << "Timed out waiting for server socket\n";
+    std::cerr << SoDa::Format("Timed out waiting for server socket\n");
     return;
   }
 
   cmd_socket = new SoDa::UD::ClientSocket(sock_path, 10);
   connected  = true;
-  std::cout << "Connected to SoDaServer\n";
+  std::cout << SoDa::Format("Connected to SoDaServer\n");
   logLine("STATUS:", "connected to " + sock_path);
 }
 
@@ -195,7 +196,7 @@ void doAudio(const std::string & rest)
   std::transform(subverb.begin(), subverb.end(), subverb.begin(), ::toupper);
 
   if(subverb == "OUT") {
-    if(!connected) { std::cerr << "Not connected -- use START first\n"; return; }
+    if(!connected) { std::cerr << SoDa::Format("Not connected -- use START first\n"); return; }
 
     std::string devname;
     std::getline(iss, devname);
@@ -207,14 +208,14 @@ void doAudio(const std::string & rest)
     if(audio_out) { audio_out->stopAudio(); delete audio_out; audio_out = nullptr; }
 
     auto dev = SoDaCLI::findOutputDevice(devname);
-    std::cout << "Audio output: " << dev.description().toStdString() << "\n";
+    std::cout << SoDa::Format("Audio output: %0\n").addS(dev.description().toStdString());
     logLine("AUDIO_OUT:", dev.description().toStdString());
 
     audio_out = new SoDaCLI::AudioOutThread(socket_basename + "_rxa", dev, 0.0f);
     audio_out->start();
 
   } else if(subverb == "IN") {
-    if(!connected) { std::cerr << "Not connected -- use START first\n"; return; }
+    if(!connected) { std::cerr << SoDa::Format("Not connected -- use START first\n"); return; }
 
     std::string devname;
     std::getline(iss, devname);
@@ -225,7 +226,7 @@ void doAudio(const std::string & rest)
     if(audio_in) { audio_in->stopAudio(); delete audio_in; audio_in = nullptr; }
 
     auto dev = SoDaCLI::findInputDevice(devname);
-    std::cout << "Audio input: " << dev.description().toStdString() << "\n";
+    std::cout << SoDa::Format("Audio input: %0\n").addS(dev.description().toStdString());
     logLine("AUDIO_IN:", dev.description().toStdString());
 
     audio_in = new SoDaCLI::AudioInThread(socket_basename + "_txa", dev, 0.0f);
@@ -235,15 +236,15 @@ void doAudio(const std::string & rest)
     float gain = 0.0f;
     iss >> gain;
     if(audio_out) audio_out->setVolume(gain);
-    else std::cerr << "No audio output active -- use AUDIO OUT first\n";
-    logLine("AUDIO_VOLUME:", std::to_string(gain));
+    else std::cerr << SoDa::Format("No audio output active -- use AUDIO OUT first\n");
+    logLine("AUDIO_VOLUME:", SoDa::Format("%0").addF(gain, 'e', 0, 6).str());
 
   } else if(subverb == "GAIN") {
     float gain = 0.0f;
     iss >> gain;
     if(audio_in) audio_in->setGain(gain);
-    else std::cerr << "No audio input active -- use AUDIO IN first\n";
-    logLine("AUDIO_GAIN:", std::to_string(gain));
+    else std::cerr << SoDa::Format("No audio input active -- use AUDIO IN first\n");
+    logLine("AUDIO_GAIN:", SoDa::Format("%0").addF(gain, 'e', 0, 6).str());
 
   } else if(subverb == "LIST") {
     SoDaCLI::listAudioDevices();
@@ -254,7 +255,7 @@ void doAudio(const std::string & rest)
       audio_tone->stopAudio();
       delete audio_tone;
       audio_tone = nullptr;
-      std::cout << "Audio tone stopped\n";
+      std::cout << SoDa::Format("Audio tone stopped\n");
       logLine("AUDIO_TEST:", "stopped");
     } else {
       std::string devname;
@@ -264,8 +265,8 @@ void doAudio(const std::string & rest)
       if(devname.empty()) devname = "default";
 
       auto dev = SoDaCLI::findOutputDevice(devname);
-      std::cout << "Audio tone (440 Hz, 0.2 amplitude) on: "
-                << dev.description().toStdString() << "\n";
+      std::cout << SoDa::Format("Audio tone (440 Hz, 0.2 amplitude) on: %0\n")
+                   .addS(dev.description().toStdString());
       logLine("AUDIO_TEST:", dev.description().toStdString());
 
       audio_tone = new SoDaCLI::AudioToneThread(dev);
@@ -273,8 +274,8 @@ void doAudio(const std::string & rest)
     }
 
   } else {
-    std::cerr << "Unknown AUDIO subcommand [" << subverb
-              << "] -- try OUT, IN, VOLUME, GAIN, LIST, TEST\n";
+    std::cerr << SoDa::Format("Unknown AUDIO subcommand [%0] -- try OUT, IN, VOLUME, GAIN, LIST, TEST\n")
+                 .addS(subverb);
     logLine("ERROR:", "unknown AUDIO subcommand: " + subverb);
   }
 }
@@ -285,13 +286,13 @@ void doRun(const std::string & filename)
   logLine("RUN:", filename);
   std::ifstream script(filename);
   if(!script.is_open()) {
-    std::cerr << "Cannot open script [" << filename << "]\n";
+    std::cerr << SoDa::Format("Cannot open script [%0]\n").addS(filename);
     logLine("ERROR:", "cannot open " + filename);
     return;
   }
   std::string line;
   while(std::getline(script, line)) {
-    std::cout << "  > " << line << "\n";
+    std::cout << SoDa::Format("  > %0\n").addS(line);
     processLine(line, false);
     if(quit_flag) break;
     if(connected && !SoDaCLI::receiveCommands(cmd_socket, log_stream)) { disconnectServer(); break; }
@@ -344,20 +345,23 @@ void processLine(const std::string & line, bool interactive)
     std::string rest; std::getline(iss, rest);
     doStart(rest);
   } else if(vu == "SET" || vu == "GET" || vu == "REP") {
-    if(!connected) { std::cerr << "Not connected -- use START first\n"; return; }
+    if(!connected) { std::cerr << SoDa::Format("Not connected -- use START first\n"); return; }
     std::string rest; std::getline(iss, rest);
     auto cmd = SoDaCLI::parseCommand(vu, rest);
     if(cmd && !SoDaCLI::sendCommand(cmd_socket, cmd, log_stream)) disconnectServer();
   } else if(vu == "AUDIO") {
     std::string rest; std::getline(iss, rest);
     doAudio(rest);
+  } else if(vu == "SLEEP") {
+    int secs = 0; iss >> secs;
+    if(secs > 0) sleep(secs);
   } else if(vu == "RUN") {
     std::string filename; iss >> filename;
     doRun(filename);
   } else if(vu == "QUIT" || vu == "EXIT") {
     doQuit();
   } else {
-    std::cerr << "Unknown verb [" << verb << "] -- try SET GET REP AUDIO START RUN QUIT\n";
+    std::cerr << SoDa::Format("Unknown verb [%0] -- try SET GET REP AUDIO START RUN SLEEP QUIT\n").addS(verb);
     logLine("ERROR:", "unknown verb: " + verb);
   }
 }
@@ -442,22 +446,23 @@ int main(int argc, char * argv[])
   log_stream.open("CLIHarnessLog.md", std::ios::app);
   log_stream << "\n# SoDaCLI Session\n\n";
 
-  std::cout
-    << "SoDaCLI -- command line interface to SoDaServer\n"
-    << "  START [server-args]             -- launch server and connect\n"
-    << "  SET   <target> [I|D|S] v        -- send SET (int/double/string)\n"
-    << "  GET   <target>                  -- send GET\n"
-    << "  REP   <target> [I|D|S] v        -- send REP\n"
-    << "  AUDIO LIST                      -- list available audio devices\n"
-    << "  AUDIO OUT  [device]             -- connect RX audio to speaker (muted)\n"
-    << "  AUDIO VOLUME <v>                -- set output volume [0.0-1.0]\n"
-    << "  AUDIO IN   [device]             -- connect mic audio to TX (muted)\n"
-    << "  AUDIO GAIN <g>                  -- set input gain multiplier\n"
-    << "  AUDIO TEST [device]             -- play 440 Hz tone at 0.2 amplitude (toggle)\n"
-    << "  RUN   <filename>                -- execute script\n"
-    << "  QUIT / EXIT                     -- send STOP and exit\n"
-    << "  Device name: \"default\" or substring of device description.\n"
-    << "  Enum names (USB, TX_ON_1, ...) auto-resolve for integer params.\n\n";
+  std::cout << SoDa::Format(
+    "SoDaCLI -- command line interface to SoDaServer\n"
+    "  START [server-args]             -- launch server and connect\n"
+    "  SET   <target> [I|D|S] v        -- send SET (int/double/string)\n"
+    "  GET   <target>                  -- send GET\n"
+    "  REP   <target> [I|D|S] v        -- send REP\n"
+    "  AUDIO LIST                      -- list available audio devices\n"
+    "  AUDIO OUT  [device]             -- connect RX audio to speaker (muted)\n"
+    "  AUDIO VOLUME <v>                -- set output volume [0.0-1.0]\n"
+    "  AUDIO IN   [device]             -- connect mic audio to TX (muted)\n"
+    "  AUDIO GAIN <g>                  -- set input gain multiplier\n"
+    "  AUDIO TEST [device]             -- play 440 Hz tone at 0.2 amplitude (toggle)\n"
+    "  RUN   <filename>                -- execute script\n"
+    "  SLEEP <n>                       -- pause for n seconds\n"
+    "  QUIT / EXIT                     -- send STOP and exit\n"
+    "  Device name: \"default\" or substring of device description.\n"
+    "  Enum names (USB, TX_ON_1, ...) auto-resolve for integer params.\n\n");
 
   runREPL();
 

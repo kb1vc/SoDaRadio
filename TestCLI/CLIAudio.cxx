@@ -45,6 +45,7 @@
 #include <cerrno>
 #include <cmath>
 #include <iostream>
+#include <SoDa/Format.hxx>
 
 namespace SoDaCLI {
 
@@ -123,21 +124,23 @@ void listAudioDevices()
   auto defaultOut = QMediaDevices::defaultAudioOutput();
   auto defaultIn  = QMediaDevices::defaultAudioInput();
 
-  std::cout << "Audio output devices:\n";
+  std::cout << SoDa::Format("Audio output devices:\n");
   for(const auto & dev : QMediaDevices::audioOutputs()) {
     bool isDefault = (dev.id() == defaultOut.id());
-    std::cout << (isDefault ? "  * " : "    ")
-              << dev.description().toStdString() << "\n";
+    std::cout << SoDa::Format("%0%1\n")
+                 .addS(isDefault ? "  * " : "    ")
+                 .addS(dev.description().toStdString());
   }
 
-  std::cout << "Audio input devices:\n";
+  std::cout << SoDa::Format("Audio input devices:\n");
   for(const auto & dev : QMediaDevices::audioInputs()) {
     bool isDefault = (dev.id() == defaultIn.id());
-    std::cout << (isDefault ? "  * " : "    ")
-              << dev.description().toStdString() << "\n";
+    std::cout << SoDa::Format("%0%1\n")
+                 .addS(isDefault ? "  * " : "    ")
+                 .addS(dev.description().toStdString());
   }
 
-  std::cout << "  (* = system default)\n";
+  std::cout << SoDa::Format("  (* = system default)\n");
 }
 
 // -------------------------------------------------------------------
@@ -217,14 +220,15 @@ void AudioOutThread::run()
       if(io && sink.state() != QAudio::StoppedState) {
         auto written = io->write(buf, static_cast<qint64>(n));
         if(written != static_cast<qint64>(n)) {
-          std::cerr << "AudioOut: short write to sink: " << written << " of " << n << " bytes\n";
+          std::cerr << SoDa::Format("AudioOut: short write to sink: %0 of %1 bytes\n")
+                       .addI((int)written).addI((int)n);
         }
       }
     } else if(n == 0) {
-      std::cerr << "AudioOut: server closed the audio socket\n";
+      std::cerr << SoDa::Format("AudioOut: server closed the audio socket\n");
       quit();
     } else if(errno != EAGAIN && errno != EWOULDBLOCK) {
-      std::cerr << "AudioOut: read error: " << ::strerror(errno) << "\n";
+      std::cerr << SoDa::Format("AudioOut: read error: %0\n").addS(::strerror(errno));
       quit();
     }
   });
@@ -234,12 +238,13 @@ void AudioOutThread::run()
   QObject::connect(&rms_timer, &QTimer::timeout, [&]() {
     if(rms_count > 0) {
       double rms = std::sqrt(rms_sum / static_cast<double>(rms_count));
-      std::cerr << "[AudioOut] RMS=" << rms
-                << "  (" << rms_count << " samples,  "
-                << (rms_count / SAMPLE_RATE) << "."
-                << ((rms_count % SAMPLE_RATE) * 10 / SAMPLE_RATE) << " s)\n";
+      std::cerr << SoDa::Format("[AudioOut] RMS=%0  (%1 samples,  %2.%3 s)\n")
+                   .addF(rms, 'e', 0, 6)
+                   .addI((int)rms_count)
+                   .addI((int)(rms_count / SAMPLE_RATE))
+                   .addI((int)((rms_count % SAMPLE_RATE) * 10 / SAMPLE_RATE));
     } else {
-      std::cerr << "[AudioOut] no samples received from server\n";
+      std::cerr << SoDa::Format("[AudioOut] no samples received from server\n");
     }
     rms_sum   = 0.0;
     rms_count = 0;
