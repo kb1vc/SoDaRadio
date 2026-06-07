@@ -233,19 +233,12 @@ void AudioOutThread::run()
     }
   });
 
-  // Every second: print RMS of samples received, then reset the accumulator.
+  // Every second: snapshot RMS into last_rms for AUDIO LEV queries.
   QTimer rms_timer;
   QObject::connect(&rms_timer, &QTimer::timeout, [&]() {
-    if(rms_count > 0) {
-      double rms = std::sqrt(rms_sum / static_cast<double>(rms_count));
-      std::cerr << SoDa::Format("[AudioOut] RMS=%0  (%1 samples,  %2.%3 s)\n")
-                   .addF(rms, 'e', 0, 6)
-                   .addI((int)rms_count)
-                   .addI((int)(rms_count / SAMPLE_RATE))
-                   .addI((int)((rms_count % SAMPLE_RATE) * 10 / SAMPLE_RATE));
-    } else {
-      std::cerr << SoDa::Format("[AudioOut] no samples received from server\n");
-    }
+    last_rms.store(rms_count > 0
+                   ? std::sqrt(rms_sum / static_cast<double>(rms_count))
+                   : -1.0);
     rms_sum   = 0.0;
     rms_count = 0;
   });

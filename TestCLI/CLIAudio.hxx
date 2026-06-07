@@ -111,6 +111,12 @@ namespace SoDaCLI {
     void setVolume(float v) { pending_volume.store(v); }
 
     /**
+     * @brief Return the RMS of samples received in the last completed second.
+     * Returns -1.0 if no data has been received yet.
+     */
+    double getRMS() const { return last_rms.load(); }
+
+    /**
      * @brief Stop the thread cleanly.
      */
     void stopAudio();
@@ -121,8 +127,9 @@ namespace SoDaCLI {
   private:
     std::string sock_path;
     QAudioDevice device;
-    std::atomic<float> pending_volume;
-    std::atomic<bool>  stop_flag;
+    std::atomic<float>  pending_volume;
+    std::atomic<bool>   stop_flag;
+    std::atomic<double> last_rms{-1.0};
   };
 
   // -------------------------------------------------------------------

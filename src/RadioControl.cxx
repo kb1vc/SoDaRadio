@@ -69,7 +69,6 @@ namespace SoDa {
 
   void RadioControl::run()
   {
-    std::cerr << "RadioControl is running.\n";
     if(cmd_stream == NULL) {
       throw SDR::Exception(Format("Never got command stream subscription\n"),
 			   getSelfPtr());
@@ -112,9 +111,6 @@ namespace SoDa {
 	sleep_ms(50);
       }
       else {
-	std::cerr << SoDa::Format("RadioControl got message [%0]\n")
-	  .addS(cmd->toString())
-	  ;
 	// process the command.
 	if((cmds_processed & 0xff) == 0) {
 	  debugMsg(Format("RadioControl processed %0 commands").addI(cmds_processed));
@@ -267,8 +263,6 @@ namespace SoDa {
   {
     int res;
 
-    std::cerr << "Radio Control: ";
-    std::cerr << cmd->toString(); 
     switch (cmd->target) {
     case Command::RX_TUNE_FREQ:
       cmd_stream->put(Command::make(Command::REP, Command::RX_TUNE_FREQ, 
@@ -279,7 +273,7 @@ namespace SoDa {
 				  cur_tx_lo_freq + cur_tx_if_freq));
       break; 
 
-    case Command::RX_LO_FREQ:
+    case Command::RX_LO_FREQ: 
       cmd_stream->put(Command::make(Command::REP, Command::RX_LO_FREQ, 
 				  cur_rx_lo_freq));
       break; 
@@ -379,7 +373,7 @@ namespace SoDa {
       // ask the device controller to set the TX lo.  Normally this should
       // be equal to freq and actual_lo_freq would be freq
       cur_tx_lo_freq = setLOFreq(freq, SoDa::TX);
-      cur_tx_if_freq = freq - cur_tx_lo_freq;
+      cur_tx_if_freq =  (freq - cur_tx_lo_freq);
       // tell the TX IF to set its new IF frequency. Then wait for it
       // to respond with a report. 
       cmd_stream->put(Command::make(Command::SET, Command::TX_IF_FREQ, cur_tx_if_freq));

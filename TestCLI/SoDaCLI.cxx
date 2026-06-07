@@ -96,6 +96,40 @@ void logLine(const std::string & prefix, const std::string & msg)
 }
 
 // -------------------------------------------------------------------
+// Send SIGTERM to the server; escalate to SIGKILL if it doesn't exit within
+// 2 seconds.  Idempotent — safe to call multiple times.
+// Registered with atexit() so it also fires on exit() and on normal return
+// from main(); sigHandler() calls it for SIGINT/SIGTERM/SIGHUP.
+void cleanupServer()
+{
+  if(server_pid <= 0) return;
+  pid_t pid = server_pid;
+  server_pid = -1;
+
+  ::kill(pid, SIGTERM);
+  for(int i = 0; i < 20; i++) {
+    int st;
+    if(::waitpid(pid, &st, WNOHANG) > 0) return;
+    ::usleep(100000);  // 100 ms
+  }
+  ::kill(pid, SIGKILL);
+  ::waitpid(pid, nullptr, 0);
+}
+
+// Signal handler for SIGINT, SIGTERM, SIGHUP.
+// Kills the server, then re-raises the signal with the default disposition
+// so the shell sees the correct exit status.
+void sigHandler(int sig)
+{
+  if(server_pid > 0) {
+    ::kill(server_pid, SIGTERM);
+    server_pid = -1;
+  }
+  ::signal(sig, SIG_DFL);
+  ::raise(sig);
+}
+
+// -------------------------------------------------------------------
 // Tear down the command socket without quitting the REPL.
 // Called whenever a socket read or write signals that the server is gone.
 void disconnectServer()
@@ -106,11 +140,7 @@ void disconnectServer()
   delete cmd_socket;
   cmd_socket = nullptr;
   connected  = false;
-  if(server_pid > 0) {
-    int wstatus;
-    waitpid(server_pid, &wstatus, WNOHANG);
-    server_pid = -1;
-  }
+  cleanupServer();
 }
 
 // -------------------------------------------------------------------
@@ -246,6 +276,15 @@ void doAudio(const std::string & rest)
     else std::cerr << SoDa::Format("No audio input active -- use AUDIO IN first\n");
     logLine("AUDIO_GAIN:", SoDa::Format("%0").addF(gain, 'e', 0, 6).str());
 
+  } else if(subverb == "LEV") {
+    if(!audio_out) { std::cerr << SoDa::Format("No audio output active -- use AUDIO OUT first\n"); return; }
+    double rms = audio_out->getRMS();
+    if(rms < 0.0)
+      std::cout << SoDa::Format("AudioOut: no samples received yet\n");
+    else
+      std::cout << SoDa::Format("AudioOut RMS: %0\n").addF(rms, 'e', 0, 6);
+    logLine("AUDIO_LEV:", rms < 0.0 ? "no data" : SoDa::Format("%0").addF(rms, 'e', 0, 6).str());
+
   } else if(subverb == "LIST") {
     SoDaCLI::listAudioDevices();
     logLine("AUDIO_LIST:", "listed devices");
@@ -274,9 +313,59 @@ void doAudio(const std::string & rest)
     }
 
   } else {
-    std::cerr << SoDa::Format("Unknown AUDIO subcommand [%0] -- try OUT, IN, VOLUME, GAIN, LIST, TEST\n")
+    std::cerr << SoDa::Format("Unknown AUDIO subcommand [%0] -- try OUT, IN, VOLUME, GAIN, LEV, LIST, TEST\n")
                  .addS(subverb);
     logLine("ERROR:", "unknown AUDIO subcommand: " + subverb);
+  }
+}
+
+// -------------------------------------------------------------------
+void doSweep(const std::string & rest)
+{
+  if(!connected) { std::cerr << SoDa::Format("Not connected -- use START first\n"); return; }
+
+  std::istringstream iss(rest);
+  double startfreq, stopfreq, stepsize;
+  if(!(iss >> startfreq >> stopfreq >> stepsize)) {
+    std::cerr << SoDa::Format("Usage: SWEEP <startfreq> <stopfreq> <stepsize>\n");
+    return;
+  }
+  if(stepsize == 0.0) {
+    std::cerr << SoDa::Format("Sweep stepsize must be non-zero\n");
+    return;
+  }
+  // Make step direction match start/stop order.
+  if((stopfreq > startfreq) != (stepsize > 0)) stepsize = -stepsize;
+
+  logLine("SWEEP:", SoDa::Format("%0 to %1 step %2")
+    .addF(startfreq, 'e', 0, 6).addF(stopfreq, 'e', 0, 6).addF(stepsize, 'e', 0, 6).str());
+
+  bool going_up = (stepsize > 0);
+  for(double freq = startfreq;
+      going_up ? (freq <= stopfreq) : (freq >= stopfreq);
+      freq += stepsize) {
+
+    double rms = audio_out ? audio_out->getRMS() : -1.0;
+    if(rms < 0.0)
+      std::cout << SoDa::Format("SWEEP %0 Hz  RMS: no data\n").addF(freq, 'e', 0, 6);
+    else
+      std::cout << SoDa::Format("SWEEP %0 Hz  RMS: %1\n").addF(freq, 'e', 0, 6).addF(rms, 'e', 0, 6);
+
+    auto cmd = SoDa::Command::make(SoDa::Command::SET, SoDa::Command::RX_TUNE_FREQ, freq);
+    if(!SoDaCLI::sendCommand(cmd_socket, cmd, log_stream)) { disconnectServer(); break; }
+
+    // Wait 100 ms; abort early if the user types anything.
+    fd_set rfds;
+    FD_ZERO(&rfds);
+    FD_SET(STDIN_FILENO, &rfds);
+    struct timeval tv = { 0, 100000 };
+    if(select(STDIN_FILENO + 1, &rfds, nullptr, nullptr, &tv) > 0) {
+      std::cout << SoDa::Format("\nSweep aborted at %0 Hz.\n").addF(freq, 'e', 0, 6);
+      break;
+    }
+
+    // Drain any server replies.
+    if(connected && !SoDaCLI::receiveCommands(cmd_socket, log_stream)) { disconnectServer(); break; }
   }
 }
 
@@ -315,11 +404,7 @@ void doQuit()
   if(audio_out)  { audio_out->stopAudio();  delete audio_out;  audio_out  = nullptr; }
   if(audio_in)   { audio_in->stopAudio();   delete audio_in;   audio_in   = nullptr; }
   if(audio_tone) { audio_tone->stopAudio(); delete audio_tone; audio_tone = nullptr; }
-  if(server_pid > 0) {
-    int wstatus;
-    waitpid(server_pid, &wstatus, WNOHANG);
-    server_pid = -1;
-  }
+  cleanupServer();
   quit_flag = true;
 }
 
@@ -352,6 +437,9 @@ void processLine(const std::string & line, bool interactive)
   } else if(vu == "AUDIO") {
     std::string rest; std::getline(iss, rest);
     doAudio(rest);
+  } else if(vu == "SWEEP") {
+    std::string rest; std::getline(iss, rest);
+    doSweep(rest);
   } else if(vu == "SLEEP") {
     int secs = 0; iss >> secs;
     if(secs > 0) sleep(secs);
@@ -361,7 +449,7 @@ void processLine(const std::string & line, bool interactive)
   } else if(vu == "QUIT" || vu == "EXIT") {
     doQuit();
   } else {
-    std::cerr << SoDa::Format("Unknown verb [%0] -- try SET GET REP AUDIO START RUN SLEEP QUIT\n").addS(verb);
+    std::cerr << SoDa::Format("Unknown verb [%0] -- try SET GET REP AUDIO SWEEP START RUN SLEEP QUIT\n").addS(verb);
     logLine("ERROR:", "unknown verb: " + verb);
   }
 }
@@ -439,6 +527,10 @@ void runREPL()
 int main(int argc, char * argv[])
 {
   signal(SIGPIPE, SIG_IGN);
+  signal(SIGINT,  sigHandler);
+  signal(SIGTERM, sigHandler);
+  signal(SIGHUP,  sigHandler);
+  atexit(cleanupServer);
 
   // QCoreApplication must exist before any Qt multimedia objects are created.
   QCoreApplication app(argc, argv);
@@ -455,9 +547,11 @@ int main(int argc, char * argv[])
     "  AUDIO LIST                      -- list available audio devices\n"
     "  AUDIO OUT  [device]             -- connect RX audio to speaker (muted)\n"
     "  AUDIO VOLUME <v>                -- set output volume [0.0-1.0]\n"
+    "  AUDIO LEV                       -- print RMS of last second of received audio\n"
     "  AUDIO IN   [device]             -- connect mic audio to TX (muted)\n"
     "  AUDIO GAIN <g>                  -- set input gain multiplier\n"
     "  AUDIO TEST [device]             -- play 440 Hz tone at 0.2 amplitude (toggle)\n"
+    "  SWEEP <start> <stop> <step>      -- step RX freq every 100 ms (any key aborts)\n"
     "  RUN   <filename>                -- execute script\n"
     "  SLEEP <n>                       -- pause for n seconds\n"
     "  QUIT / EXIT                     -- send STOP and exit\n"
