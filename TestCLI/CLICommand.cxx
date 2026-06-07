@@ -115,7 +115,9 @@ static SoDa::CommandPtr buildCommand(SoDa::Command::CmdType ct,
   try { return SoDa::Command::make(ct, targ, std::stoi(tok)); }
   catch(...) {}
 
-  // Fall back to string
+  // Fall back to string — warn the user since this is likely a mistyped enum or number.
+  std::cerr << "Warning: [" << tok
+            << "] is not a recognised enum name or number; sending as string.\n";
   return SoDa::Command::make(ct, targ, tok);
 }
 
@@ -166,7 +168,7 @@ SoDa::CommandPtr parseCommand(const std::string & verb, const std::string & rest
 
 // -------------------------------------------------------------------
 
-void sendCommand(SoDa::UD::ClientSocket * sock,
+bool sendCommand(SoDa::UD::ClientSocket * sock,
                  SoDa::CommandPtr cmd,
                  std::ofstream & log)
 {
@@ -174,21 +176,27 @@ void sendCommand(SoDa::UD::ClientSocket * sock,
   std::cout << "  >> " << s << "\n";
   log << "SEND: " << s << "\n";
   log.flush();
-  sock->put(cmd.get(), sizeof(SoDa::Command));
+  int r = sock->put(cmd.get(), sizeof(SoDa::Command));
+  return r >= 0;
 }
 
 // -------------------------------------------------------------------
 
-void receiveCommands(SoDa::UD::ClientSocket * sock,
+// Returns false if the socket signals that the server has gone away.
+bool receiveCommands(SoDa::UD::ClientSocket * sock,
                      std::ofstream & log)
 {
   SoDa::Command cmd;
-  while(sock->get(&cmd, sizeof(SoDa::Command)) > 0) {
+  int r;
+  while((r = sock->get(&cmd, sizeof(SoDa::Command))) > 0) {
     std::string s = cmd.toString();
     std::cout << "\n  << " << s << "\n";
     log << "RECV: " << s << "\n";
     log.flush();
   }
+  // r == 0 means EAGAIN (no data yet) — normal.
+  // r < 0 means a hard error — server gone.
+  return r >= 0;
 }
 
 } // namespace SoDaCLI

@@ -96,7 +96,7 @@ namespace SoDa {
 
     cmd_stream->put(Command::make(Command::SET, Command::TX_RF_GAIN, 0.0)); 
     cmd_stream->put(Command::make(Command::SET, Command::RX_RF_GAIN, 0.0));
-    cmd_stream->put(Command::make(Command::SET, Command::RX_AF_GAIN, 0.0));
+    cmd_stream->put(Command::make(Command::SET, Command::RX_AF_GAIN, 50.0));
 
     // transmitter is off
     tx_on = false; 

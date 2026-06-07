@@ -31,24 +31,30 @@
 #include <QAudioSink>
 #include <QAudioSource>
 #include <QAudioFormat>
-#include <QLocalSocket>
+#include <QSocketNotifier>
 #include <QMediaDevices>
 #include <QTimer>
 #include <QIODevice>
 #include <QString>
 #include <QDebug>
 
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <unistd.h>
+#include <cstring>
+#include <cerrno>
+#include <cmath>
 #include <iostream>
 
 namespace SoDaCLI {
 
-static constexpr int   SAMPLE_RATE   = 48000;
-static constexpr int   SAMPLE_BYTES  = static_cast<int>(sizeof(float));
-// half-second ring buffer gives headroom without ballooning latency
+static constexpr int   SAMPLE_RATE    = 48000;
+static constexpr int   SAMPLE_BYTES   = static_cast<int>(sizeof(float));
+// Half-second ring buffer: plenty of headroom without ballooning latency.
 static constexpr int   SINK_BUF_BYTES = SAMPLE_RATE * SAMPLE_BYTES / 2;
 
 // -------------------------------------------------------------------
-// Device discovery
+// Helpers
 
 static QAudioFormat makeFormat()
 {
@@ -58,6 +64,30 @@ static QAudioFormat makeFormat()
   fmt.setSampleFormat(QAudioFormat::Float);
   return fmt;
 }
+
+// Open a client-side AF_UNIX SOCK_STREAM connection to path.
+// Returns the connected fd on success, -1 on failure (errno set).
+static int connectUnixSocket(const std::string & path)
+{
+  int fd = ::socket(AF_UNIX, SOCK_STREAM, 0);
+  if(fd < 0) return -1;
+
+  struct sockaddr_un addr;
+  ::memset(&addr, 0, sizeof(addr));
+  addr.sun_family = AF_UNIX;
+  ::strncpy(addr.sun_path, path.c_str(), sizeof(addr.sun_path) - 1);
+
+  if(::connect(fd, reinterpret_cast<struct sockaddr *>(&addr), sizeof(addr)) < 0) {
+    int saved = errno;
+    ::close(fd);
+    errno = saved;
+    return -1;
+  }
+  return fd;
+}
+
+// -------------------------------------------------------------------
+// Device discovery
 
 QAudioDevice findOutputDevice(const std::string & name)
 {
@@ -85,6 +115,29 @@ QAudioDevice findInputDevice(const std::string & name)
   qWarning() << "Audio input device [" << QString::fromStdString(name)
              << "] not found -- using default";
   return QMediaDevices::defaultAudioInput();
+}
+
+// -------------------------------------------------------------------
+void listAudioDevices()
+{
+  auto defaultOut = QMediaDevices::defaultAudioOutput();
+  auto defaultIn  = QMediaDevices::defaultAudioInput();
+
+  std::cout << "Audio output devices:\n";
+  for(const auto & dev : QMediaDevices::audioOutputs()) {
+    bool isDefault = (dev.id() == defaultOut.id());
+    std::cout << (isDefault ? "  * " : "    ")
+              << dev.description().toStdString() << "\n";
+  }
+
+  std::cout << "Audio input devices:\n";
+  for(const auto & dev : QMediaDevices::audioInputs()) {
+    bool isDefault = (dev.id() == defaultIn.id());
+    std::cout << (isDefault ? "  * " : "    ")
+              << dev.description().toStdString() << "\n";
+  }
+
+  std::cout << "  (* = system default)\n";
 }
 
 // -------------------------------------------------------------------
@@ -123,14 +176,15 @@ void AudioOutThread::run()
     return;
   }
 
-  QLocalSocket socket;
-  socket.connectToServer(QString::fromStdString(sock_path));
-  if(!socket.waitForConnected(10000)) {
-    qCritical() << "AudioOut: cannot connect to socket ["
-                << QString::fromStdString(sock_path) << "]:"
-                << socket.errorString();
+  // Use a native AF_UNIX socket so there is no Qt path-translation layer
+  // between us and the server's UD::ServerSocket.
+  int sockfd = connectUnixSocket(sock_path);
+  if(sockfd < 0) {
+    qCritical() << "AudioOut: connect to [" << QString::fromStdString(sock_path)
+                << "] failed:" << ::strerror(errno);
     return;
   }
+  qDebug() << "AudioOut: connected to" << QString::fromStdString(sock_path);
 
   QAudioSink sink(device, fmt);
   sink.setBufferSize(SINK_BUF_BYTES);
@@ -139,16 +193,58 @@ void AudioOutThread::run()
 
   if(!io) {
     qCritical() << "AudioOut: QAudioSink::start() returned null";
+    ::close(sockfd);
     return;
   }
 
-  // Forward any audio arriving from the server straight to the sink.
-  QObject::connect(&socket, &QLocalSocket::readyRead, [&]() {
-    QByteArray data = socket.readAll();
-    if(io && sink.state() != QAudio::StoppedState) {
-      io->write(data);
+  // RMS accumulator — updated in the read callback, reported every second.
+  double rms_sum   = 0.0;
+  long   rms_count = 0;
+
+  // QSocketNotifier fires in the event loop when the socket fd is readable.
+  // This is the proper way to integrate a POSIX fd with a Qt event loop.
+  QSocketNotifier notifier(sockfd, QSocketNotifier::Read);
+  QObject::connect(&notifier, &QSocketNotifier::activated, [&](QSocketDescriptor, QSocketNotifier::Type) {
+    char buf[16384];
+    ssize_t n = ::read(sockfd, buf, sizeof(buf));
+    if(n > 0) {
+      // Accumulate RMS before writing to the sink.
+      const float * fp = reinterpret_cast<const float *>(buf);
+      long nf = n / SAMPLE_BYTES;
+      for(long i = 0; i < nf; i++) rms_sum += fp[i] * fp[i];
+      rms_count += nf;
+
+      if(io && sink.state() != QAudio::StoppedState) {
+        auto written = io->write(buf, static_cast<qint64>(n));
+        if(written != static_cast<qint64>(n)) {
+          std::cerr << "AudioOut: short write to sink: " << written << " of " << n << " bytes\n";
+        }
+      }
+    } else if(n == 0) {
+      std::cerr << "AudioOut: server closed the audio socket\n";
+      quit();
+    } else if(errno != EAGAIN && errno != EWOULDBLOCK) {
+      std::cerr << "AudioOut: read error: " << ::strerror(errno) << "\n";
+      quit();
     }
   });
+
+  // Every second: print RMS of samples received, then reset the accumulator.
+  QTimer rms_timer;
+  QObject::connect(&rms_timer, &QTimer::timeout, [&]() {
+    if(rms_count > 0) {
+      double rms = std::sqrt(rms_sum / static_cast<double>(rms_count));
+      std::cerr << "[AudioOut] RMS=" << rms
+                << "  (" << rms_count << " samples,  "
+                << (rms_count / SAMPLE_RATE) << "."
+                << ((rms_count % SAMPLE_RATE) * 10 / SAMPLE_RATE) << " s)\n";
+    } else {
+      std::cerr << "[AudioOut] no samples received from server\n";
+    }
+    rms_sum   = 0.0;
+    rms_count = 0;
+  });
+  rms_timer.start(1000);
 
   // Periodic: apply volume changes and check stop flag.
   QTimer vol_timer;
@@ -161,7 +257,7 @@ void AudioOutThread::run()
   exec();  // run the event loop
 
   sink.stop();
-  socket.disconnectFromServer();
+  ::close(sockfd);
 }
 
 // -------------------------------------------------------------------
@@ -200,24 +296,24 @@ void AudioInThread::run()
     return;
   }
 
-  QLocalSocket socket;
-  socket.connectToServer(QString::fromStdString(sock_path));
-  if(!socket.waitForConnected(10000)) {
-    qCritical() << "AudioIn: cannot connect to socket ["
-                << QString::fromStdString(sock_path) << "]:"
-                << socket.errorString();
+  int sockfd = connectUnixSocket(sock_path);
+  if(sockfd < 0) {
+    qCritical() << "AudioIn: connect to [" << QString::fromStdString(sock_path)
+                << "] failed:" << ::strerror(errno);
     return;
   }
+  qDebug() << "AudioIn: connected to" << QString::fromStdString(sock_path);
 
   QAudioSource source(device, fmt);
   QIODevice * io = source.start();  // pull mode: we read from io
 
   if(!io) {
     qCritical() << "AudioIn: QAudioSource::start() returned null";
+    ::close(sockfd);
     return;
   }
 
-  // Poll for captured samples, scale, and forward to server.
+  // Poll for captured samples, scale, and forward to the server socket.
   QTimer poll_timer;
   QObject::connect(&poll_timer, &QTimer::timeout, [&]() {
     if(stop_flag.load()) { quit(); return; }
@@ -235,15 +331,82 @@ void AudioInThread::run()
       for(int i = 0; i < n; i++) fp[i] *= g;
     }
 
-    socket.write(data);
-    socket.flush();
+    ::write(sockfd, data.constData(), static_cast<size_t>(data.size()));
   });
   poll_timer.start(5);  // 5 ms — well under the 48 ms frame budget
 
   exec();  // run the event loop
 
   source.stop();
-  socket.disconnectFromServer();
+  ::close(sockfd);
+}
+
+// -------------------------------------------------------------------
+// AudioToneThread
+
+AudioToneThread::AudioToneThread(const QAudioDevice & dev, QObject * parent)
+  : QThread(parent),
+    device(dev),
+    stop_flag(false)
+{
+}
+
+AudioToneThread::~AudioToneThread()
+{
+  stopAudio();
+}
+
+void AudioToneThread::stopAudio()
+{
+  stop_flag.store(true);
+  quit();
+  wait(3000);
+}
+
+void AudioToneThread::run()
+{
+  QAudioFormat fmt = makeFormat();
+
+  if(!device.isFormatSupported(fmt)) {
+    qCritical() << "AudioTone: device does not support float32/48kHz/mono";
+    return;
+  }
+
+  QAudioSink sink(device, fmt);
+  sink.setVolume(1.0);
+  QIODevice * io = sink.start();
+
+  if(!io) {
+    qCritical() << "AudioTone: QAudioSink::start() returned null";
+    return;
+  }
+
+  constexpr double FREQ      = 440.0;
+  constexpr float  AMP       = 0.2f;
+  constexpr int    CHUNK     = SAMPLE_RATE / 100;  // 10 ms at 48 kHz
+
+  double phase     = 0.0;
+  double phase_inc = 2.0 * M_PI * FREQ / SAMPLE_RATE;
+
+  QTimer timer;
+  QObject::connect(&timer, &QTimer::timeout, [&]() {
+    if(stop_flag.load()) { quit(); return; }
+
+    QByteArray data(CHUNK * SAMPLE_BYTES, 0);
+    float * fp = reinterpret_cast<float *>(data.data());
+    for(int i = 0; i < CHUNK; i++) {
+      fp[i] = AMP * static_cast<float>(std::sin(phase));
+      phase += phase_inc;
+      if(phase >= 2.0 * M_PI) phase -= 2.0 * M_PI;
+    }
+
+    if(io && sink.state() != QAudio::StoppedState) io->write(data);
+  });
+  timer.start(10);
+
+  exec();
+
+  sink.stop();
 }
 
 } // namespace SoDaCLI

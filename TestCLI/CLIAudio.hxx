@@ -69,6 +69,14 @@ namespace SoDaCLI {
    */
   QAudioDevice findInputDevice(const std::string & name);
 
+  /**
+   * @brief Print all available audio input and output devices to stdout.
+   *
+   * Each device is listed with its direction (IN/OUT) and description.
+   * The default device for each direction is marked with an asterisk.
+   */
+  void listAudioDevices();
+
   // -------------------------------------------------------------------
 
   /**
@@ -163,6 +171,38 @@ namespace SoDaCLI {
     QAudioDevice device;
     std::atomic<float> pending_gain;
     std::atomic<bool>  stop_flag;
+  };
+
+  // -------------------------------------------------------------------
+
+  /**
+   * @class AudioToneThread
+   * @brief Generates a 440 Hz sine wave and plays it through an audio output device.
+   *
+   * Used to verify that audio output is working independently of SoDaServer.
+   * Call start() to begin playback; call stopAudio() to stop.  Volume is fixed
+   * at 0.2 (20 % full scale).
+   */
+  class AudioToneThread : public QThread {
+    Q_OBJECT
+  public:
+    /**
+     * @param dev     Audio output device.
+     * @param parent  Optional Qt parent.
+     */
+    explicit AudioToneThread(const QAudioDevice & dev,
+                             QObject * parent = nullptr);
+    ~AudioToneThread();
+
+    /** @brief Stop the thread cleanly. */
+    void stopAudio();
+
+  protected:
+    void run() override;
+
+  private:
+    QAudioDevice device;
+    std::atomic<bool> stop_flag;
   };
 
 } // namespace SoDaCLI

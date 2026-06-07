@@ -1,0 +1,16 @@
+Sparky:
+
+Please add audio input and output to the CLI harness.
+
+We'll need some new commands
+1. AUDIO OUT <device-name> should connect the audio socket from SoDaServer to the selected audio device. Gain should be set to 0
+2. AUDIO VOLUME <gain> sets the gain on the scale used by the audio device.
+
+3. AUDIO IN <device-name> should connect the audio socket TO SoDaServer to the selected audio device. Gain should be set to 0
+4. AUDIO GAIN <gain> sets the gain for the audio input channel.
+
+Ask questions if you need to. Update the doxygen documentation.
+
+You may use Qt audio if that is the simplest path. I'd prefer that if
+you could, as the linux audio support is a steaming pile of waste
+matter.

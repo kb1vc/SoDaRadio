@@ -48,6 +48,7 @@
 #include <cerrno>
 
 #include <unistd.h>
+#include <signal.h>
 #include <sys/wait.h>
 #include <sys/select.h>
 #include <sys/types.h>
@@ -65,8 +66,9 @@ std::string           socket_basename   = "/tmp/SoDa_";
 pid_t                 server_pid        = -1;
 bool                  quit_flag         = false;
 
-SoDaCLI::AudioOutThread * audio_out     = nullptr;
-SoDaCLI::AudioInThread  * audio_in      = nullptr;
+SoDaCLI::AudioOutThread  * audio_out     = nullptr;
+SoDaCLI::AudioInThread   * audio_in      = nullptr;
+SoDaCLI::AudioToneThread * audio_tone    = nullptr;
 
 std::string           rl_pending_line;
 bool                  rl_line_ready    = false;
@@ -90,6 +92,24 @@ void logLine(const std::string & prefix, const std::string & msg)
 {
   log_stream << prefix << " " << msg << "\n";
   log_stream.flush();
+}
+
+// -------------------------------------------------------------------
+// Tear down the command socket without quitting the REPL.
+// Called whenever a socket read or write signals that the server is gone.
+void disconnectServer()
+{
+  if(!connected) return;
+  std::cerr << "\n[SoDaCLI] Server connection lost.\n";
+  logLine("STATUS:", "server connection lost");
+  delete cmd_socket;
+  cmd_socket = nullptr;
+  connected  = false;
+  if(server_pid > 0) {
+    int wstatus;
+    waitpid(server_pid, &wstatus, WNOHANG);
+    server_pid = -1;
+  }
 }
 
 // -------------------------------------------------------------------
@@ -225,9 +245,36 @@ void doAudio(const std::string & rest)
     else std::cerr << "No audio input active -- use AUDIO IN first\n";
     logLine("AUDIO_GAIN:", std::to_string(gain));
 
+  } else if(subverb == "LIST") {
+    SoDaCLI::listAudioDevices();
+    logLine("AUDIO_LIST:", "listed devices");
+
+  } else if(subverb == "TEST") {
+    if(audio_tone) {
+      audio_tone->stopAudio();
+      delete audio_tone;
+      audio_tone = nullptr;
+      std::cout << "Audio tone stopped\n";
+      logLine("AUDIO_TEST:", "stopped");
+    } else {
+      std::string devname;
+      std::getline(iss, devname);
+      auto first = devname.find_first_not_of(" \t");
+      devname = (first != std::string::npos) ? devname.substr(first) : "default";
+      if(devname.empty()) devname = "default";
+
+      auto dev = SoDaCLI::findOutputDevice(devname);
+      std::cout << "Audio tone (440 Hz, 0.2 amplitude) on: "
+                << dev.description().toStdString() << "\n";
+      logLine("AUDIO_TEST:", dev.description().toStdString());
+
+      audio_tone = new SoDaCLI::AudioToneThread(dev);
+      audio_tone->start();
+    }
+
   } else {
     std::cerr << "Unknown AUDIO subcommand [" << subverb
-              << "] -- try OUT, IN, VOLUME, GAIN\n";
+              << "] -- try OUT, IN, VOLUME, GAIN, LIST, TEST\n";
     logLine("ERROR:", "unknown AUDIO subcommand: " + subverb);
   }
 }
@@ -247,7 +294,7 @@ void doRun(const std::string & filename)
     std::cout << "  > " << line << "\n";
     processLine(line, false);
     if(quit_flag) break;
-    if(connected) SoDaCLI::receiveCommands(cmd_socket, log_stream);
+    if(connected && !SoDaCLI::receiveCommands(cmd_socket, log_stream)) { disconnectServer(); break; }
   }
 }
 
@@ -264,8 +311,9 @@ void doQuit()
     cmd_socket = nullptr;
     connected  = false;
   }
-  if(audio_out) { audio_out->stopAudio(); delete audio_out; audio_out = nullptr; }
-  if(audio_in)  { audio_in->stopAudio();  delete audio_in;  audio_in  = nullptr; }
+  if(audio_out)  { audio_out->stopAudio();  delete audio_out;  audio_out  = nullptr; }
+  if(audio_in)   { audio_in->stopAudio();   delete audio_in;   audio_in   = nullptr; }
+  if(audio_tone) { audio_tone->stopAudio(); delete audio_tone; audio_tone = nullptr; }
   if(server_pid > 0) {
     int wstatus;
     waitpid(server_pid, &wstatus, WNOHANG);
@@ -299,14 +347,14 @@ void processLine(const std::string & line, bool interactive)
     if(!connected) { std::cerr << "Not connected -- use START first\n"; return; }
     std::string rest; std::getline(iss, rest);
     auto cmd = SoDaCLI::parseCommand(vu, rest);
-    if(cmd) SoDaCLI::sendCommand(cmd_socket, cmd, log_stream);
+    if(cmd && !SoDaCLI::sendCommand(cmd_socket, cmd, log_stream)) disconnectServer();
   } else if(vu == "AUDIO") {
     std::string rest; std::getline(iss, rest);
     doAudio(rest);
   } else if(vu == "RUN") {
     std::string filename; iss >> filename;
     doRun(filename);
-  } else if(vu == "QUIT") {
+  } else if(vu == "QUIT" || vu == "EXIT") {
     doQuit();
   } else {
     std::cerr << "Unknown verb [" << verb << "] -- try SET GET REP AUDIO START RUN QUIT\n";
@@ -343,7 +391,7 @@ void runREPL()
       rl_save_prompt();
       rl_replace_line("", 0);
       rl_redisplay();
-      SoDaCLI::receiveCommands(cmd_socket, log_stream);
+      if(!SoDaCLI::receiveCommands(cmd_socket, log_stream)) disconnectServer();
       std::cout.flush();
       rl_restore_prompt();
       rl_replace_line(saved_line, 0);
@@ -366,8 +414,9 @@ void runREPL()
             fd_set p; FD_ZERO(&p); FD_SET(cmd_socket->conn_socket, &p);
             struct timeval t = { 0, 40000 }; // 40 ms per try, 200 ms total
             if(select(cmd_socket->conn_socket + 1, &p, nullptr, nullptr, &t) > 0
-               && FD_ISSET(cmd_socket->conn_socket, &p))
-              SoDaCLI::receiveCommands(cmd_socket, log_stream);
+               && FD_ISSET(cmd_socket->conn_socket, &p)
+               && !SoDaCLI::receiveCommands(cmd_socket, log_stream))
+              { disconnectServer(); break; }
           }
         }
         std::cout.flush();
@@ -385,6 +434,8 @@ void runREPL()
 // -------------------------------------------------------------------
 int main(int argc, char * argv[])
 {
+  signal(SIGPIPE, SIG_IGN);
+
   // QCoreApplication must exist before any Qt multimedia objects are created.
   QCoreApplication app(argc, argv);
 
@@ -397,12 +448,14 @@ int main(int argc, char * argv[])
     << "  SET   <target> [I|D|S] v        -- send SET (int/double/string)\n"
     << "  GET   <target>                  -- send GET\n"
     << "  REP   <target> [I|D|S] v        -- send REP\n"
+    << "  AUDIO LIST                      -- list available audio devices\n"
     << "  AUDIO OUT  [device]             -- connect RX audio to speaker (muted)\n"
     << "  AUDIO VOLUME <v>                -- set output volume [0.0-1.0]\n"
     << "  AUDIO IN   [device]             -- connect mic audio to TX (muted)\n"
     << "  AUDIO GAIN <g>                  -- set input gain multiplier\n"
+    << "  AUDIO TEST [device]             -- play 440 Hz tone at 0.2 amplitude (toggle)\n"
     << "  RUN   <filename>                -- execute script\n"
-    << "  QUIT                            -- send STOP and exit\n"
+    << "  QUIT / EXIT                     -- send STOP and exit\n"
     << "  Device name: \"default\" or substring of device description.\n"
     << "  Enum names (USB, TX_ON_1, ...) auto-resolve for integer params.\n\n";
 

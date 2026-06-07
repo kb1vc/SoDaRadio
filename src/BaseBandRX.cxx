@@ -351,15 +351,15 @@ namespace SoDa {
     switch(rx_modulation) {
     case SoDa::Command::LSB:
     case SoDa::Command::CW_L:
-      demodulateSSB(dbufo, SoDa::Command::LSB); 
-      break; 
+      demodulateSSB(dbufi, SoDa::Command::LSB);
+      break;
     case SoDa::Command::USB:
     case SoDa::Command::CW_U:
-      demodulateSSB(dbufo, SoDa::Command::USB); 
+      demodulateSSB(dbufi, SoDa::Command::USB);
       break;
     case SoDa::Command::NBFM:
       demodulateNBFM(dbufo, SoDa::Command::NBFM, *cur_af_gain);
-      break; 
+      break;   
     case SoDa::Command::WBFM:
       demodulateWBFM(rxbuf, SoDa::Command::NBFM, *cur_af_gain);
       break; 
@@ -403,15 +403,23 @@ namespace SoDa {
     Command::ModulationType txmod; 
     switch (cmd->target) {
     case Command::RX_MODE:
-      rx_modulation = Command::ModulationType(cmd->iparms[0]);
-      repAFFilterShape();    
+      {
+        int m = cmd->iparms[0];
+        if(m < Command::LSB || m > Command::NBFM) {
+          std::cerr << "BaseBandRX: ignoring invalid RX_MODE value " << m << "\n";
+          break;
+        }
+        rx_modulation = Command::ModulationType(m);
+        repAFFilterShape();
+      }
       break;
     case Command::TX_MODE:
       switch(cmd->iparms[0]) {
       case Command::TX_ON_1:
 	{
-	  txmod = Command::ModulationType(cmd->iparms[0]);
-	  if((txmod == Command::CW_L) || (txmod == Command::CW_U)) {
+	  // Use the stored rx_modulation to detect CW — do NOT cast the
+	  // RxTxState value (TX_ON_1=4) to ModulationType (which would give AM=4).
+	  if((rx_modulation == Command::CW_L) || (rx_modulation == Command::CW_U)) {
 	    sidetone_stream_enabled = true;
 	  }
 	  else {
@@ -424,9 +432,9 @@ namespace SoDa {
 	break;
       case Command::TX_OFF_1:
 	debugMsg("In RX ON");
-	cur_af_gain = &af_gain; 
+	cur_af_gain = &af_gain;
 	audio_rx_stream_enabled = true;
-	debugMsg("audio_rx_stream_enabled = true\n");      
+	debugMsg("audio_rx_stream_enabled = true\n");
 	break;
       }
       break;

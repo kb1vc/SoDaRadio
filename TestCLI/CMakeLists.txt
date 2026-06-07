@@ -6,7 +6,7 @@ set(SoDaCLI_SRCS
   ../src/UDSockets.cxx
 )
 
-find_package(Qt6 REQUIRED COMPONENTS Core Multimedia Network)
+find_package(Qt6 REQUIRED COMPONENTS Core Multimedia)
 find_library(READLINE_LIB NAMES readline HINTS /usr/lib64 REQUIRED)
 
 add_executable(SoDaCLI ${SoDaCLI_SRCS})
@@ -19,7 +19,6 @@ target_link_libraries(SoDaCLI
   sodautils
   Qt6::Core
   Qt6::Multimedia
-  Qt6::Network
   ${READLINE_LIB}
 )
 

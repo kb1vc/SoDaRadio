@@ -1,0 +1,22 @@
+Sparky: Talk like a caveman.
+
+And do this:
+
+I would like you to build a command line interface to the SoDaServer command socket. The interface should do these things:
+
+1. Start SodaServer witha "start" command that can accept all of the command line parameters used by SoDaServer as arguments.
+2. Connect to the SoDaServer sockets, especially the command socket. Incoming data from the waterfall and audio sockets can be dropped on the floor for now.
+3. Accept as input commands of the form:
+[SET, GET, REP] <command-name> { arguments ... }
+Where command-name is taken from the Command.hxx list. Arguments are as they are described in the Command.hxx documentation. The arguments may take symbolic form (for instance if the argument is normally an enum)  Ask questions if the documentation isn't clear.
+
+4. So there are five basic commands: START, SET, GET, REP, RUN, and QUIT. All inputs should be treated as case insensitive.
+
+5. The "RUN" command takes one (case sensitive) argument: the name of a file. This file should be read and used as input to the REPL.  Stop reading the file and close it if there is an error.
+
+6. Pretty print the contents of any SET, GET, or REP commands that arrive on the incoming CMD (UI?) socket.
+
+7. Do this in C++ please. Use the style that you see in the rest of this code. You may read the code in qtgui.
+
+8. Ask questions and log all of our dialog to a file "CLIHarnessLog.md"
+

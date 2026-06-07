@@ -38,10 +38,12 @@
  *     SET   <target> [I|D|S] v        -- send SET (int/double/string)
  *     GET   <target>                  -- send GET
  *     REP   <target> [I|D|S] v        -- send REP
+ *     AUDIO LIST                      -- list available audio devices
  *     AUDIO OUT  [device]             -- connect RX audio to speaker (muted)
  *     AUDIO VOLUME <v>                -- set output volume [0.0-1.0]
  *     AUDIO IN   [device]             -- connect mic audio to TX (muted)
  *     AUDIO GAIN <g>                  -- set input gain multiplier
+ *     AUDIO TEST [device]             -- play 440 Hz tone at 0.2 amplitude (toggle)
  *     RUN   <filename>                -- execute script
  *     QUIT                            -- send STOP and exit
  *
@@ -178,6 +180,12 @@
  * Each audio direction runs in its own Qt thread with a private event loop,
  * so audio processing never blocks the REPL.
  *
+ * **AUDIO LIST** — print all available audio output and input devices, one per
+ * line.  The system default device for each direction is marked with an
+ * asterisk.  Use the device description (or a unique substring of it) as the
+ * argument to @c AUDIO @c OUT or @c AUDIO @c IN.  This command does not
+ * require a server connection.
+ *
  * **AUDIO OUT [device]** — start receiving demodulated audio from SoDaServer
  * and play it through the named output device.  The initial volume is 0
  * (muted).  Use @c AUDIO @c VOLUME to unmute.  If @c device is omitted or
@@ -195,6 +203,13 @@
  * **AUDIO GAIN g** — set the capture gain multiplier to @c g.  A value of
  * @c 1.0 means unity gain; values above 1.0 amplify the captured samples.
  * This command is valid only after @c AUDIO @c IN.
+ *
+ * **AUDIO TEST [device]** — toggle a 440 Hz sine-wave tone at 0.2 amplitude
+ * (−14 dBFS) through the named output device.  Run a second time to stop.
+ * This command does not require a server connection; it is useful for verifying
+ * that audio output is working before connecting to SoDaServer.  Device matching
+ * follows the same rules as @c AUDIO @c OUT.  If @c device is omitted, the
+ * system default output device is used.
  *
  * The server's audio socket paths are derived from the socket base name in
  * the same way as the command socket:

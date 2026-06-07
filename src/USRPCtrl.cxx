@@ -680,27 +680,38 @@ namespace SoDa {
     
   void USRPCtrl::setAntenna(const std::string & ant, SoDa::RXTX rxtx)
   {
-    std::vector<std::string> ants; 
+    std::vector<std::string> ants;
 
-    ants = (rxtx == SoDa::RX) ? usrp->get_rx_antennas() : usrp->get_tx_antennas();  
+    ants = (rxtx == SoDa::RX) ? usrp->get_rx_antennas() : usrp->get_tx_antennas();
 
-    std::string choice = ants[0];
-
-    for(auto a: ants) {
-      if (ant == a) {
-	choice = ant; 
-	break; 
+    // Exact match first.
+    for(auto & a : ants) {
+      if(ant == a) {
+        if(rxtx == SoDa::RX) usrp->set_rx_antenna(a);
+        else                  usrp->set_tx_antenna(a);
+        return;
       }
     }
 
-    if(rxtx == SoDa::RX) {
-      usrp->set_rx_antenna(choice); 
+    // Case-insensitive match.
+    std::string ant_lc = ant;
+    std::transform(ant_lc.begin(), ant_lc.end(), ant_lc.begin(), ::tolower);
+    for(auto & a : ants) {
+      std::string a_lc = a;
+      std::transform(a_lc.begin(), a_lc.end(), a_lc.begin(), ::tolower);
+      if(ant_lc == a_lc) {
+        if(rxtx == SoDa::RX) usrp->set_rx_antenna(a);
+        else                  usrp->set_tx_antenna(a);
+        return;
+      }
     }
-    if(rxtx == SoDa::TX) {
-      usrp->set_tx_antenna(choice); 
-    }
-  
-    return; 
+
+    // No match: warn and list valid names.
+    std::string dir = (rxtx == SoDa::RX) ? "RX" : "TX";
+    std::cerr << "Warning: antenna \"" << ant << "\" not found for " << dir
+              << ". Valid names:";
+    for(auto & a : ants) std::cerr << " \"" << a << "\"";
+    std::cerr << ".  No change made.\n";
   }
 
   bool USRPCtrl::setClockSource(Command::ClockSource src) {

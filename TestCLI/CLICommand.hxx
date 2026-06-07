@@ -64,8 +64,9 @@ namespace SoDaCLI {
    * @param sock  Connected ClientSocket to SoDaServer.
    * @param cmd   Command to send.
    * @param log   Open log stream.
+   * @return true on success, false if the socket reported an error.
    */
-  void sendCommand(SoDa::UD::ClientSocket * sock,
+  bool sendCommand(SoDa::UD::ClientSocket * sock,
                    SoDa::CommandPtr cmd,
                    std::ofstream & log);
 
@@ -74,8 +75,9 @@ namespace SoDaCLI {
    *        print and log each one.
    * @param sock  Connected ClientSocket to SoDaServer.
    * @param log   Open log stream.
+   * @return true if the socket is still healthy, false if the server is gone.
    */
-  void receiveCommands(SoDa::UD::ClientSocket * sock,
+  bool receiveCommands(SoDa::UD::ClientSocket * sock,
                        std::ofstream & log);
 
 } // namespace SoDaCLI
