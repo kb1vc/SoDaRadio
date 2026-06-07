@@ -1,6 +1,6 @@
 #pragma once
 /*
-  Copyright (c) 2012,2017, 2025 Matthew H. Reilly (kb1vc)
+  Copyright (c) 2012,2017, 2025, 2026 Matthew H. Reilly (kb1vc)
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without
@@ -577,6 +577,8 @@ namespace SoDa
 
 
   public:
+    
+    
     /**
      * Constructor for commands with no parameters
      *
@@ -814,5 +816,202 @@ namespace SoDa
   private:
     static void initTableEntry(const std::string &, CmdTarget tgt);
   };
+
+  template<Command::CmdTarget Targ, int numargs> struct DoubleCommand : public Command {
+    template<typename... Args>
+    DoubleCommand(CmdType sgr, Args... dvs) : Command(sgr, Targ) {
+      static_assert(sizeof...(dvs) == numargs);
+      static_assert(numargs <= 4);
+      std::vector<double> vals = { static_cast<double>(dvs)... };
+      for(int i = 0; i < numargs; i++) {
+	dparms[i] = (i >= numargs) ? 0.0 : vals[i];
+      }
+      parm_type = 'D';
+    }
+    
+    template<typename... Args>
+    static CommandPtr make(CmdType sgr, Args... dvs) {
+      return std::make_shared<DoubleCommand<Targ, numargs>>(sgr, dvs...);
+    }
+  };
+
+  template<Command::CmdTarget Targ, int numargs> struct IntCommand : public Command {
+    template<typename... Args>
+    IntCommand(CmdType sgr, Args... ivs) : Command(sgr, Targ) {
+      static_assert(sizeof...(ivs) == numargs);
+      static_assert(numargs <= 4);
+      std::vector<int> vals = { static_cast<int>(ivs)... };
+      for(int i = 0; i < numargs; i++) {
+	iparms[i] = vals[i];
+      }
+      parm_type = 'I';
+    }
+
+    template<typename... Args>
+    static CommandPtr make(CmdType sgr, Args... ivs) {
+      return std::make_shared<IntCommand<Targ, numargs>>(sgr, ivs...);
+    }
+  };
+
+  template<Command::CmdTarget Targ, typename enum_type> struct EnumCommand : public Command {
+    EnumCommand(CmdType sgr, enum_type ev) : Command(sgr, Targ) {
+      iparms[0] = static_cast<int>(ev);
+      iparms[1] = iparms[2] = iparms[3] = 0;
+      parm_type = 'E';
+      std::string name = enumToString(ev);
+      ::strncpy(sparm + 4, name.c_str(), 59);
+      sparm[63] = '\0';
+    }
+
+    EnumCommand(CmdType sgr) : Command(sgr, Targ) {
+      iparms[0] = iparms[1] = iparms[2] = iparms[3] = 0;      
+    }
+    
+    static CommandPtr make(CmdType sgr, enum_type ev) {
+      return std::make_shared<EnumCommand<Targ, enum_type>>(sgr, ev);
+    }
+
+    static CommandPtr make(CmdType sgr) {
+      return std::make_shared<EnumCommand<Targ, enum_type>>(sgr);
+    }
+
+    std::string getEnumStr() {
+      return enumToString(static_cast<enum_type>(iparms[0]));
+    }
+    
+  };
+
+  template<Command::CmdTarget Targ> struct StringCommand : public Command {
+    StringCommand(CmdType sgr, const std::string & s, unsigned int tag = 0)
+      : Command(sgr, Targ, s, tag) {}
+    StringCommand(CmdType sgr) : Command(sgr, Targ) {}
+    static CommandPtr make(CmdType sgr, const std::string & s, unsigned int tag = 0) {
+      return std::make_shared<StringCommand<Targ>>(sgr, s, tag);
+    }
+    static CommandPtr make(CmdType sgr) {
+      return std::make_shared<StringCommand<Targ>>(sgr);
+    }
+  };
+
+  typedef DoubleCommand<Command::RX_TUNE_FREQ, 1> CmdRXTuneFreq;
+  typedef DoubleCommand<Command::RX_LO_FREQ, 1> CmdRXLOFreq;
+  typedef DoubleCommand<Command::RX_IF_FREQ, 1> CmdRXIFFreq;
+  typedef DoubleCommand<Command::RX_CENTER_FREQ, 1> CmdRXCenterFreq;
+  
+  typedef DoubleCommand<Command::TX_TUNE_FREQ, 1> CmdTXTuneFreq;
+  typedef DoubleCommand<Command::TX_LO_FREQ, 1> CmdTXLOFreq;
+  typedef DoubleCommand<Command::TX_IF_FREQ, 1> CmdTXIFFreq;
+
+  typedef EnumCommand<Command::RX_MODE, Command::ModulationType> CmdRXMode;
+  typedef EnumCommand<Command::TX_MODE, Command::ModulationType> CmdTXMode;
+  typedef EnumCommand<Command::TX_STATE, Command::RxTxState>     CmdTXState;
+  typedef EnumCommand<Command::CLOCK_SOURCE, Command::ClockSource> CmdClockSource;
+  typedef EnumCommand<Command::TX_AUDIO_IN, Command::TXAudioSelector> CmdTXAudioIn;
+
+  typedef IntCommand<Command::TX_BEACON,       1> CmdTXBeacon;
+  typedef IntCommand<Command::TX_CW_SPEED,     1> CmdTXCWSpeed;
+  typedef IntCommand<Command::TX_CW_MARKER,    1> CmdTXCWMarker;
+  typedef IntCommand<Command::TX_CW_FLUSHTEXT, 1> CmdTXCWFlushText;
+  typedef IntCommand<Command::TX_CW_EMPTY,     1> CmdTXCWEmpty;
+  typedef IntCommand<Command::TX_AUDIO_FILT_ENA, 1> CmdTXAudioFiltEna;
+  typedef IntCommand<Command::RX_AF_FILTER,    1> CmdRXAFFilter;
+  typedef IntCommand<Command::RX_AF_FILTER_SHAPE, 1> CmdRXAFFilterShape;
+  typedef IntCommand<Command::RX_BW,           1> CmdRXBW;
+  typedef IntCommand<Command::SPEC_BUF_LEN,    1> CmdSpecBufLen;
+  typedef IntCommand<Command::SPEC_AVG_WINDOW, 1> CmdSpecAvgWindow;
+  typedef IntCommand<Command::SPEC_UPDATE_RATE,1> CmdSpecUpdateRate;
+  typedef IntCommand<Command::GPS_LOCK,        1> CmdGPSLock;
+  typedef IntCommand<Command::DBG_REP,         1> CmdDbgRep;
+  typedef IntCommand<Command::GPS_UTC,         3> CmdGPSUTC;
+
+  typedef StringCommand<Command::RX_ANT>          CmdRXAnt;
+  typedef StringCommand<Command::TX_ANT>          CmdTXAnt;
+  typedef StringCommand<Command::TX_CW_TEXT>      CmdTXCWText;
+  typedef StringCommand<Command::SDR_VERSION>     CmdSDRVersion;
+  typedef StringCommand<Command::HWMB_REP>        CmdHWMBRep;
+  typedef StringCommand<Command::STATUS_MESSAGE>  CmdStatusMessage;
+  typedef StringCommand<Command::RF_RECORD_START> CmdRFRecordStart;
+  typedef StringCommand<Command::RX_ANT_NAME>     CmdRXAntName;
+  typedef StringCommand<Command::TX_ANT_NAME>     CmdTXAntName;
+  typedef StringCommand<Command::MOD_SEL_ENTRY>   CmdModSelEntry;
+  typedef StringCommand<Command::AF_FILT_ENTRY>   CmdAFFiltEntry;
+  typedef StringCommand<Command::CW_CHAR_SENT>    CmdCWCharSent;
+
+inline std::string enumToString(Command::CmdType v) {
+  switch(v) {
+  case Command::SET:  return "SET";
+  case Command::GET:  return "GET";
+  case Command::REP:  return "REP";
+  case Command::NONE: return "NONE";
+  default:            return "CmdType(" + std::to_string((int)v) + ")";
+  }
+}
+
+inline std::string enumToString(Command::ClockSource v) {
+  switch(v) {
+  case Command::EXTERNAL: return "EXTERNAL";
+  case Command::INTERNAL: return "INTERNAL";
+  default:                return "ClockSource(" + std::to_string((int)v) + ")";
+  }
+}
+
+inline std::string enumToString(Command::RxTxState v) {
+  switch(v) {
+  case Command::TX_OFF_0: return "TX_OFF_0";
+  case Command::TX_OFF_1: return "TX_OFF_1";
+  case Command::TX_OFF_2: return "TX_OFF_2";
+  case Command::TX_ON_0:  return "TX_ON_0";
+  case Command::TX_ON_1:  return "TX_ON_1";
+  case Command::TX_ON_2:  return "TX_ON_2";
+  default:                return "RxTxState(" + std::to_string((int)v) + ")";
+  }
+}
+
+inline std::string enumToString(Command::ModulationType v) {
+  switch(v) {
+  case Command::LSB:  return "LSB";
+  case Command::USB:  return "USB";
+  case Command::CW_U: return "CW_U";
+  case Command::CW_L: return "CW_L";
+  case Command::AM:   return "AM";
+  case Command::WBFM: return "WBFM";
+  case Command::NBFM: return "NBFM";
+  default:            return "ModulationType(" + std::to_string((int)v) + ")";
+  }
+}
+
+inline std::string enumToString(Command::AudioFilterBW v) {
+  switch(v) {
+  case Command::BW_100:  return "BW_100";
+  case Command::BW_500:  return "BW_500";
+  case Command::BW_2000: return "BW_2000";
+  case Command::BW_6000: return "BW_6000";
+  case Command::BW_PASS: return "BW_PASS";
+  case Command::BW_WSPR: return "BW_WSPR";
+  case Command::BW_NULL: return "BW_NULL";
+  default:               return "AudioFilterBW(" + std::to_string((int)v) + ")";
+  }
+}
+
+inline std::string enumToString(Command::UnitSelector v) {
+  switch(v) {
+  case Command::BaseBandRX: return "BaseBandRX";
+  case Command::BaseBandTX: return "BaseBandTX";
+  case Command::RFRX:       return "RFRX";
+  case Command::RFTX:       return "RFTX";
+  case Command::CWTX:       return "CWTX";
+  case Command::CTRL:       return "CTRL";
+  default:                  return "UnitSelector(" + std::to_string((int)v) + ")";
+  }
+}
+
+inline std::string enumToString(Command::TXAudioSelector v) {
+  switch(v) {
+  case Command::MIC:   return "MIC";
+  case Command::NOISE: return "NOISE";
+  default:             return "TXAudioSelector(" + std::to_string((int)v) + ")";
+  }
+}
+
 } // namespace SoDa
 

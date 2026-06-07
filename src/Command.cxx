@@ -213,7 +213,10 @@ std::string SoDa::Command::toString() const
     break; 
   case 'S':
     oss << " S \"" << sparm << "\"";
-    break; 
+    break;
+  case 'E':
+    oss << " E " << (sparm + 4);
+    break;
   }
   sp += oss.str();
   
