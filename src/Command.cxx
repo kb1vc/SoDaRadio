@@ -182,43 +182,47 @@ std::string SoDa::Command::toString() const
   if(table_needs_init) {
     initTables(); 
   }
-  std::string sp("");
-  std::ostringstream oss;
+
+  SoDa::Format fmt("%0 %1 %2 %3\n");
+
   switch(cmd) {
-  case SET: oss << "SET ";
+  case SET: 
+    fmt.addS("SET");
     break; 
-  case GET: oss << "GET ";
+  case GET:
+    fmt.addS("GET");
     break; 
-  case REP: oss <<  "REP ";
+  case REP:
+    fmt.addS("REP");
     break; 
   default:
+    fmt.addS("???");
     break; 
   }
 
   if(target_map_v2s.find(target) != target_map_v2s.end()) { 
-    oss << target_map_v2s[target];
+    fmt.addS(target_map_v2s[target]);
   }
   else {
-    oss << " [?" << target << "?] ";
+    fmt.addS("??????");
   }
 
-
+  fmt.addC(parm_type); 
   
   switch(parm_type) {
   case 'I':
-    oss << " I " << iparms[0]; 
+    fmt.addI(iparms[0]);
     break; 
   case 'D':
-    oss << " D " << dparms[0]; 
+    fmt.addF(dparms[0], 'e', 0, 9);
     break; 
   case 'S':
-    oss << " S \"" << sparm << "\"";
+    fmt.addS(sparm);
     break;
   case 'E':
-    oss << " E " << (sparm + 4);
+    fmt.addS(sparm + 4);
     break;
   }
-  sp += oss.str();
-  
-  return sp; 
+
+  return fmt.str();
 }

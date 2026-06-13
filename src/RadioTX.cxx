@@ -190,7 +190,12 @@ void SoDa::RadioTX::execSetCommand(CommandPtr cmd)
 	// fiddle this when we move it over to RadioTX. 
       transmitSwitch(true);
       cmd_stream->put(Command::make(Command::REP, Command::TX_STATE,
-				   tx_enabled ? Command::TX_ON_2 : Command::TX_OFF_2));
+				    Command::TX_ON_2));
+    }
+    if(cmd->iparms[0] == Command::TX_OFF_0) {
+      transmitSwitch(false); 
+      cmd_stream->put(Command::make(Command::REP, Command::TX_STATE,
+				    Command::TX_OFF_0));
     }
     break;
   case Command::TX_BEACON:

@@ -453,8 +453,6 @@ namespace SoDa {
       // 3. X Sets rx gain to current level
       setRFGain(rx_rf_gain, SoDa::RX);
 
-      // 4. X Sets tx frequency to tx_freq + an offset that gets the tx LO out of the RX passband
-      setLOFreq(cur_tx_lo_freq + tx_freq_rxmode_offset, SoDa::TX);
       
       // 6. X Send SET with Command::TX_OFF_1
       // and tell the RX unit to turn on the RX
@@ -462,6 +460,11 @@ namespace SoDa {
       cmd_stream->put(Command::make(Command::SET, Command::TX_STATE, 
 				  Command::TX_OFF_1, full_duplex));
     }
+    else if(rxtxst == Command::TX_OFF_2) {
+      // 4. X Sets tx frequency to tx_freq + an offset that gets the tx LO out of the RX passband
+      setLOFreq(cur_tx_lo_freq + tx_freq_rxmode_offset, SoDa::TX);
+    }
+    
   }
   
   bool RadioControl::setClockSource(Command::ClockSource src) {
