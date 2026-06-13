@@ -40,13 +40,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *  @author M. H. Reilly (kb1vc)
  *  @date   May 2026
+ *
+ *  @note Substantial parts written or modified by Claude Sonnet 4.6 (claude-sonnet-4-6)
  */
 
 #include "SoDaBase.hxx"
 #include "SoDaThread.hxx"
 #include "Command.hxx"
 #include "Params.hxx"
-#include "TRControl.hxx"
 #include <SoDa/MailBox.hxx>
 
 namespace SoDa {

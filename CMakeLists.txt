@@ -1,3 +1,4 @@
+# Substantial parts written or modified by Claude Sonnet 4.6 (claude-sonnet-4-6)
 CMAKE_MINIMUM_REQUIRED(VERSION 3.11.0) # this lets out really old distros like CentOS 6
 
 include(CMakePrintHelpers)
@@ -179,17 +180,18 @@ FIND_PACKAGE(SndFile REQUIRED)
 
 IF(${NO_UHD})
   MESSAGE("libUHD Support disabled.")
-  SET(HAVE_UHD 0)  
+  SET(HAVE_UHD 0)
 ELSE()
   # Enable UHD support
   FIND_PACKAGE(UHD "3.11" REQUIRED)
   IF(NOT UHD_FOUND)
     MESSAGE("UHD Library NOT FOUND!")
-    SET(HAVE_UHD 0)  
+    SET(HAVE_UHD 0)
   ELSE()
     SET(HAVE_UHD 1)
   ENDIF()
 ENDIF()
+
 
 
 if(MACOSX)
@@ -228,6 +230,22 @@ endif()
 find_package(PkgConfig)
 pkg_search_module(HAMLIB REQUIRED hamlib)
 pkg_search_module(GPSLIB OPTIONAL libgps)
+
+OPTION(NO_PLUTO "Disable ADALM-PLUTO / libiio support" OFF)
+
+IF(${NO_PLUTO})
+  MESSAGE("libiio / ADALM-PLUTO support disabled.")
+  SET(HAVE_PLUTO 0)
+ELSE()
+  pkg_check_modules(LIBIIO QUIET libiio)
+  IF(LIBIIO_FOUND)
+    SET(HAVE_PLUTO 1)
+    MESSAGE("libiio ${LIBIIO_VERSION} found -- ADALM-PLUTO support enabled.")
+  ELSE()
+    SET(HAVE_PLUTO 0)
+    MESSAGE("libiio NOT found -- ADALM-PLUTO support disabled.")
+  ENDIF()
+ENDIF()
 
 IF(DISABLE_ALSA)
   message("ALSA Disabled")

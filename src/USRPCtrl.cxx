@@ -330,6 +330,7 @@ namespace SoDa {
 		 .addF(txfreqs[0], 10, 6, 'e')
 		 .addF(txfreqs[1], 10, 6, 'e'));
       }
+      return last_tx_tune_result.actual_rf_freq + last_tx_tune_result.actual_dsp_freq;
     }
   }
 

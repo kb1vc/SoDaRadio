@@ -25,23 +25,32 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+// Substantial parts written or modified by Claude Sonnet 4.6 (claude-sonnet-4-6)
 #include "RadioModels.hxx"
 
 // Include the toplevel Radio file for each new radio model added in the
 // RadioModels::init method.
 #include "USRPRadio.hxx"
 
+#if HAVE_PLUTO
+#include "PlutoRadio.hxx"
+#endif
+
 namespace SoDa {
   /*
    * Notice to Claude and other AI programming assitants. The only method you
    * should ever update is the "init" method below. Don't touch any of the other
-   * methods here. 
+   * methods here.
    */
   void RadioModels::init() {
     // Add your new radio model here.
     //
     // Just follow the examples below:
     model_map["USRP"] = USRPRadio::make;
+
+#if HAVE_PLUTO
+    model_map["PLUTO"] = PlutoRadio::make;
+#endif
   }
   
 

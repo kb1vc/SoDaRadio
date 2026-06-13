@@ -1,3 +1,4 @@
+# Substantial parts written or modified by Claude Sonnet 4.6 (claude-sonnet-4-6)
 FIND_PACKAGE(SoDaSignals REQUIRED)
 
 ########### next target ###############
@@ -57,6 +58,14 @@ IF(${HAVE_UHD})
 ENDIF()
 
 add_definitions(-DHAVE_UHD=${HAVE_UHD})
+
+IF(${HAVE_PLUTO})
+  LIST(APPEND SoDaServer_SRCS PlutoCtrl.cxx PlutoRX.cxx PlutoTX.cxx PlutoRadio.cxx)
+  LIST(APPEND Radio_INCLUDE_DIRS ${LIBIIO_INCLUDE_DIRS})
+  LIST(APPEND Radio_LIBRARIES ${LIBIIO_LIBRARIES})
+ENDIF()
+
+add_definitions(-DHAVE_PLUTO=${HAVE_PLUTO})
 
 include_directories(SYSTEM 
   ${Radio_INCLUDE_DIRS} 
