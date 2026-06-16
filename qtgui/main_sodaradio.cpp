@@ -111,8 +111,9 @@ static QProcess * startupServer(QObject * parent, const QString & lock_file_name
   
   QString server_extra_args = ss2QS(p.getServerArgs());
   if(server_extra_args != "") {
-    server_args << server_extra_args; 
-  }  
+    for(const QString & arg : server_extra_args.split(' ', Qt::SkipEmptyParts))
+      server_args << arg;
+  }
 
   server_args << "--lockfile" << lock_file_name; 
   server_args.append("--lockfile");

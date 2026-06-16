@@ -171,12 +171,6 @@
 
 // the radio parts. 
 #include "Params.hxx" 
-// For USRP devices
-#if HAVE_UHD
-#  include "USRPCtrl.hxx"
-#  include "USRPRX.hxx"
-#  include "USRPTX.hxx"
-#endif
 
 #include "BaseBandRX.hxx"
 #include "BaseBandTX.hxx"
@@ -186,6 +180,7 @@
 #include "IFRecorder.hxx"
 #include "Command.hxx"
 #include "Debug.hxx"
+#include "RadioModels.hxx"
 
 #include "AudioQt.hxx"
 
@@ -255,7 +250,15 @@ int doWork(SoDa::ParamsPtr params)
 
   if(radio_p == nullptr) {
     std::cerr << SoDa::Format("Radio type [%0] is not yet supported\nServer will terminate.\n")
-      .addS(params->getRadioType()); 
+      .addS(params->getRadioType());
+    auto models = SoDa::RadioModels::getModels();
+    std::cerr << "Must be one of:\n";
+    std::string sp(" ");
+    for(auto & m : models) {
+      std::cerr << sp << m;
+      sp = ", ";
+    }
+    std::cerr << "\n";
     exit(-1);
   }
 

@@ -345,14 +345,14 @@ void UI::sendFFT(SoDa::CBufPtr buf)
     // correct it to be the start...
     idx -= required_spect_buckets / 2; 
     int sbuck_target = (int) spectrogram_buckets;
-    debugMsg(Format("UI::sendFFT spectrogram_buckets %0 spectrum_center_freq %1 baseband_rx_freq %2 hz_per_bucket %3 idx %4 sbucket_target %5\n")
-	     .addI(spectrogram_buckets)
-	     .addF(spectrum_center_freq, 'e', 10, 6)
-	     .addF(baseband_rx_freq, 'e', 10, 6)
-	     .addI(hz_per_bucket)
-	     .addI(idx)
-	     .addI(sbuck_target)
-	     );
+    // debugMsg(Format("UI::sendFFT spectrogram_buckets %0 spectrum_center_freq %1 baseband_rx_freq %2 hz_per_bucket %3 idx %4 sbucket_target %5\n")
+    // 	     .addI(spectrogram_buckets)
+    // 	     .addF(spectrum_center_freq, 'e', 10, 6)
+    // 	     .addF(baseband_rx_freq, 'e', 10, 6)
+    // 	     .addI(hz_per_bucket)
+    // 	     .addI(idx)
+    // 	     .addI(sbuck_target)
+    // 	     );
     if((idx < 0) || (idx > sbuck_target)) {
       slice = NULL; 
     }
