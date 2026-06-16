@@ -475,21 +475,14 @@ void runREPL()
 
     if(connected && cmd_socket != nullptr &&
        FD_ISSET(cmd_socket->conn_socket, &rfds)) {
-      // Save whatever the user has typed so far, clear readline's line,
-      // print the server messages, then restore so the prompt + partial
-      // input reappear cleanly below the messages.
-      char * saved_line  = rl_copy_text(0, rl_end);
-      int    saved_point = rl_point;
-      rl_save_prompt();
-      rl_replace_line("", 0);
-      rl_redisplay();
+      // Tell readline the cursor has moved to a new line, print server
+      // messages, then redraw the prompt + whatever the user has typed.
+      // This avoids the rl_save_prompt/rl_replace_line/rl_redisplay dance
+      // which crashes when called immediately after rl_callback_handler_install.
+      rl_on_new_line();
       if(!SoDaCLI::receiveCommands(cmd_socket, log_stream)) disconnectServer();
       std::cout.flush();
-      rl_restore_prompt();
-      rl_replace_line(saved_line, 0);
-      rl_point = saved_point;
       rl_forced_update_display();
-      free(saved_line);
     }
 
     if(FD_ISSET(STDIN_FILENO, &rfds)) {

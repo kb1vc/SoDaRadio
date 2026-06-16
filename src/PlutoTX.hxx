@@ -98,6 +98,10 @@ namespace SoDa {
     void pushToHW();
     void flushZeros();
 
+    // Number of kernel DMA buffers pipelined so the DAC never starves.
+    // (N_KERNEL_BUFS-1) buffers of headroom ≈ 143 ms before any underrun.
+    static constexpr unsigned int N_KERNEL_BUFS = 4;
+
     // IIO streaming objects — owned by this thread.
     iio_context * ctx;
     iio_device  * dev;         ///< cf-ad9361-dds-core-lpc

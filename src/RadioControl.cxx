@@ -183,7 +183,7 @@ namespace SoDa {
 	setLOFreq(cur_rx_lo_freq, SoDa::RX);
       }
       else {
-	debugMsg(Format("setting lo check freq to %0\n") .addF(cmd->dparms[0], 10, 6, 'e'));
+	debugMsg(Format("setting lo check freq to %0\n") .addF(cmd->dparms[0], 'e', 10, 6));
 	setLOFreq(cmd->dparms[0], SoDa::RX);
 	cmd_stream->put(Command::make(Command::GET, Command::LO_OFFSET, 0));
       }
@@ -357,14 +357,22 @@ namespace SoDa {
   // return -1 if we don't need to reset the LO
   double RadioControl::findGoodRXLO(double freq, double cur_lo_freq) {
     auto diff = freq - cur_lo_freq;
+    double retval;
     if((diff > 100e3) && (diff < 200e3)) {
-      return -1.0; 
+      retval = -1.0; 
     }
     else {
       // pick a spot half way between so that the IF ends up around
       // 150 kHz.
-      return freq - 150e3; 
+      retval = freq - 150e3; 
     }
+    
+    debugMsg(SoDa::Format("RadioControl::findGoodRXLO(%0, %1) returns %2\n")
+	     .addF(freq, 'e', 6)
+	     .addF(cur_lo_freq, 'e', 6)
+	     .addF(retval, 'e', 6));
+
+    return retval;
   }
 
   void RadioControl::setFreq(double freq, SoDa::RXTX rxtx) {

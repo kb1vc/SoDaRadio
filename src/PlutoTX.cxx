@@ -98,7 +98,11 @@ namespace SoDa {
     iio_channel_enable(tx_i_chan);
     iio_channel_enable(tx_q_chan);
 
-    // Non-cyclic buffer sized to the resampler output at 2.5 MSPS.
+    // Pipeline N_KERNEL_BUFS kernel DMA buffers so the DAC is always fed.
+    // iio_buffer_push() blocks only when all slots are full, meaning
+    // (N_KERNEL_BUFS-1) buffers worth of headroom before any underrun.
+    iio_device_set_kernel_buffers_count(dev, N_KERNEL_BUFS);
+
     txbuf = iio_device_create_buffer(dev, hw_buf_size, false);
     if (!txbuf) {
       iio_context_destroy(ctx); ctx = nullptr;
@@ -108,8 +112,8 @@ namespace SoDa {
         self.lock());
     }
 
-    debugMsg(SoDa::Format("PlutoTX: connected to %0, rs_in=%1 hw_buf=%2\n")
-             .addS(uri).addI((int)rs_in_size).addI((int)hw_buf_size));
+    debugMsg(SoDa::Format("PlutoTX: connected to %0, rs_in=%1 hw_buf=%2 kbufs=%3\n")
+             .addS(uri).addI((int)rs_in_size).addI((int)hw_buf_size).addI((int)N_KERNEL_BUFS));
   }
 
   PlutoTX::~PlutoTX()

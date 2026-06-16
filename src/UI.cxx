@@ -169,7 +169,7 @@ void UI::run()
 
     // if there are commands arriving from the socket port, handle them.
     if(got_new_netmsg) {
-      debugMsg(SoDa::Format("UI got message [%0]\n").addS(net_cmd->toString()));
+      debugMsg(SoDa::Format("UI net->CMD: %0\n").addS(net_cmd->toString()), 6);
       cmd_stream->put(net_cmd);
       didwork = true;
       if(net_cmd->target == SoDa::Command::TX_CW_EMPTY) {
@@ -184,23 +184,21 @@ void UI::run()
     }
 
     while(cmd_stream->get(cmd_subs, ring_cmd)) {
+      debugMsg(SoDa::Format("UI CMD ring: %0\n").addS(ring_cmd->toString()), 6);
       if(ring_cmd->cmd == SoDa::Command::REP) {
 	server_socket->put(ring_cmd.get(), sizeof(SoDa::Command));
       }
-      // if(net_cmd->target == SoDa::Command::TX_CW_EMPTY) {
-      // 	debugMsg("send TX_CW_EMPTY report to socket.\n"); 
-      // }
-      
-      execCommand(ring_cmd); 
-      didwork = true; 
+      execCommand(ring_cmd);
+      didwork = true;
     }
 
     while(gps_stream->get(gps_subs, ring_cmd)) {
+      debugMsg(SoDa::Format("UI GPS ring: %0\n").addS(ring_cmd->toString()), 6);
       if(ring_cmd->cmd == SoDa::Command::REP) {
 	server_socket->put(ring_cmd.get(), sizeof(SoDa::Command));
       }
-      execCommand(ring_cmd); 
-      didwork = true; 
+      execCommand(ring_cmd);
+      didwork = true;
     }
       
     
@@ -295,12 +293,12 @@ void UI::execGetCommand(CommandPtr cmd)
 void UI::execRepCommand(CommandPtr cmd)
 {
   switch(cmd->target) {
-  case SoDa::Command::RX_TUNE_FREQ:
+  case SoDa::Command::RX_LO_FREQ:
     // save the front end baseband frequency
     baseband_rx_freq = cmd->dparms[0];
     break;
   default:
-    break; 
+    break;
   }
 }
 
@@ -347,6 +345,14 @@ void UI::sendFFT(SoDa::CBufPtr buf)
     // correct it to be the start...
     idx -= required_spect_buckets / 2; 
     int sbuck_target = (int) spectrogram_buckets;
+    debugMsg(Format("UI::sendFFT spectrogram_buckets %0 spectrum_center_freq %1 baseband_rx_freq %2 hz_per_bucket %3 idx %4 sbucket_target %5\n")
+	     .addI(spectrogram_buckets)
+	     .addF(spectrum_center_freq, 'e', 10, 6)
+	     .addF(baseband_rx_freq, 'e', 10, 6)
+	     .addI(hz_per_bucket)
+	     .addI(idx)
+	     .addI(sbuck_target)
+	     );
     if((idx < 0) || (idx > sbuck_target)) {
       slice = NULL; 
     }
@@ -410,9 +416,6 @@ void UI::sendFFT(SoDa::CBufPtr buf)
 
 
 void UI::subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes) {
-    for(auto mbox_p : mailboxes) {
-      std::cerr << "Foo!";
-    }
     for(auto mbox_p : mailboxes) {
       SoDa::MailBoxBase::connect<MailBox<CommandPtr>>(mbox_p,
 					       "CMDstream",

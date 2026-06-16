@@ -118,6 +118,7 @@ static QProcess * startupServer(QObject * parent, const QString & lock_file_name
   server_args.append("--lockfile");
 
   QProcess * process = new QProcess(parent);
+  process->setProcessChannelMode(QProcess::ForwardedChannels);
   process->start(server_name, server_args);
   qDebug() << QString("started detached server\n");
   

@@ -164,7 +164,7 @@ namespace SoDa {
     // oscilator in terms of radians per sample
     IF_osc.setPhaseIncr(IF_tuning * 2.0 * M_PI / rx_sample_rate);
     debugMsg(Format("Changed 3rdLO to freq = %0\n")
-	     .addF(IF_tuning, 10, 6, 'e'));
+	     .addF(IF_tuning, 'e', 10, 6));
     // send a message back.
     cmd_stream->put(Command::make(Command::REP, Command::RX_IF_FREQ, IF_tuning));
   }
