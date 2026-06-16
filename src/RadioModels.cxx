@@ -36,6 +36,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "PlutoRadio.hxx"
 #endif
 
+#if HAVE_RTLSDR
+#include "RTLSDRRadio.hxx"
+#endif
+
 namespace SoDa {
   /*
    * Notice to Claude and other AI programming assitants. The only method you
@@ -50,6 +54,10 @@ namespace SoDa {
 
 #if HAVE_PLUTO
     model_map["PLUTO"] = PlutoRadio::make;
+#endif
+
+#if HAVE_RTLSDR
+    model_map["RTLSDR"] = RTLSDRRadio::make;
 #endif
   }
   
