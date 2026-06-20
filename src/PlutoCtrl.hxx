@@ -94,6 +94,16 @@ namespace SoDa {
 
     RadioControlPtr getSelfPtr() override { return self.lock(); }
 
+    /**
+     * @brief Set hardware sample rate before PlutoTX/PlutoRX create their DMA buffers.
+     *
+     * iio_buffer_push() silently fails if the DMA buffer is created before the
+     * ad9361-phy sampling_frequency attribute is written.  This override ensures
+     * the rate is written during PlutoRadio::init() (ctrl→rx→tx order) so that
+     * PlutoTX::init() sees a correctly configured DMA engine.
+     */
+    void init() override;
+
     // ---------------------------------------------------------------
     // RadioControl pure-virtual interface
     // ---------------------------------------------------------------

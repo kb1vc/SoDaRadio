@@ -152,7 +152,7 @@ namespace SoDa {
     }
     ssize_t ret = iio_buffer_push(txbuf);
     if (ret < 0) {
-      debugMsg(SoDa::Format("PlutoTX: iio_buffer_push failed: %0\n").addI((int)ret));
+      std::cerr << SoDa::Format("PlutoTX: iio_buffer_push failed: %0\n").addI((int)ret);
     }
   }
 
@@ -196,6 +196,11 @@ namespace SoDa {
       std::copy(accu.begin(), accu.begin() + rs_in_size, rs_in.begin());
       accu.erase(accu.begin(), accu.begin() + rs_in_size);
       hw_resampler->apply(rs_in, hw_cf);
+      if(push_count == 0) {
+        std::cerr << SoDa::Format("PlutoTX: first iio_buffer_push  hw_buf=%0\n")
+          .addI((int)hw_buf_size);
+      }
+      push_count++;
       pushToHW();
     }
 

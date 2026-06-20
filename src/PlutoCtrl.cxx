@@ -124,6 +124,17 @@ namespace SoDa {
     debugMsg(SoDa::Format("PlutoCtrl: connected to %0\n").addS(uri));
   }
 
+  void PlutoCtrl::init()
+  {
+    // Set 2.5 MSPS on the hardware NOW, before PlutoTX::init() creates the
+    // IIO DMA buffer.  If the buffer is created before the sample rate is
+    // written to ad9361-phy, iio_buffer_push() silently fails.
+    setSampleRate(params->getRXRate(), SoDa::RX);
+    setSampleRate(params->getTXRate(), SoDa::TX);
+    std::cerr << SoDa::Format("PlutoCtrl::init() set sample rate RX=%0 TX=%1\n")
+      .addF(params->getRXRate(), 'g').addF(params->getTXRate(), 'g');
+  }
+
   PlutoCtrl::~PlutoCtrl()
   {
     if (ctx) {
@@ -139,7 +150,15 @@ namespace SoDa {
   void PlutoCtrl::writeHWTXGain(double gain_db)
   {
     gain_db = std::max(TX_GAIN_MIN, std::min(0.0, gain_db));
-    iio_channel_attr_write_double(tx_phy_chan, "hardwaregain", gain_db);
+    int ret = iio_channel_attr_write_double(tx_phy_chan, "hardwaregain", gain_db);
+    if (ret < 0) {
+      std::cerr << SoDa::Format("PlutoCtrl: writeHWTXGain(%0) FAILED ret=%1\n")
+        .addF(gain_db, 'f', 2).addI(ret);
+    }
+    double actual = gain_db;
+    iio_channel_attr_read_double(tx_phy_chan, "hardwaregain", &actual);
+    std::cerr << SoDa::Format("PlutoCtrl: TX hardwaregain set=%0  actual=%1\n")
+      .addF(gain_db, 'f', 2).addF(actual, 'f', 2);
   }
 
   void PlutoCtrl::writeHWRXGain(double gain_db)

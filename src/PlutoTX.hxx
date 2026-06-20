@@ -119,5 +119,7 @@ namespace SoDa {
     std::vector<std::complex<float>> hw_cf;     ///< resampler output (at 2.5 MSPS)
 
     std::weak_ptr<PlutoTX> self;
+
+    unsigned int push_count = 0;  ///< total iio_buffer_push calls; used to log first push
   };
 }
