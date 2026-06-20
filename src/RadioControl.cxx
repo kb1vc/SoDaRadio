@@ -452,25 +452,25 @@ namespace SoDa {
     }
     else if(rxtxst == Command::TX_OFF_0) {
 
-      // 1. X Sets tx gain to 0
-      setRFGain(0.0, SoDa::TX);
-      
-      // 2.   Disable the transmitter and flip the antenna relay
-      setTXEna(false, full_duplex);            
+      // 1.   Mute TX to minimum gain and disable the transmitter / antenna relay.
+      //      Do NOT call setRFGain(0.0, TX) first — on Pluto, 0 dB is maximum power.
+      //      setTXEna(false) drives the gain to TX_GAIN_MIN (~-89.75 dB).
+      setTXEna(false, full_duplex);
+
+      // 2.   Shift the TX LO at least 1 MHz away from the RX passband immediately.
+      setLOFreq(cur_tx_lo_freq + tx_freq_rxmode_offset, SoDa::TX);
 
       // 3. X Sets rx gain to current level
       setRFGain(rx_rf_gain, SoDa::RX);
 
-      
-      // 6. X Send SET with Command::TX_OFF_1
+      // 4. X Send SET with Command::TX_OFF_1
       // and tell the RX unit to turn on the RX
-      // This avoids the race between CTRL and TX/RX units for setup and teardown.... 
-      cmd_stream->put(Command::make(Command::SET, Command::TX_STATE, 
+      // This avoids the race between CTRL and TX/RX units for setup and teardown....
+      cmd_stream->put(Command::make(Command::SET, Command::TX_STATE,
 				  Command::TX_OFF_1, full_duplex));
     }
     else if(rxtxst == Command::TX_OFF_2) {
-      // 4. X Sets tx frequency to tx_freq + an offset that gets the tx LO out of the RX passband
-      setLOFreq(cur_tx_lo_freq + tx_freq_rxmode_offset, SoDa::TX);
+      // LO offset already applied in TX_OFF_0; nothing else needed here.
     }
     
   }

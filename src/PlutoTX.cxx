@@ -97,12 +97,22 @@ namespace SoDa {
         self.lock());
     }
 
+    // Buffer creation is deferred to init() so PlutoCtrl::init() can set
+    // the 2.5 MSPS sample rate on ad9361-phy first.  Creating the IIO DMA
+    // buffer before the sample rate is established leaves it in a stale state
+    // and iio_buffer_push() silently fails.
+    debugMsg(SoDa::Format("PlutoTX: context open at %0, rs_in=%1 hw_buf=%2\n")
+             .addS(uri).addI((int)rs_in_size).addI((int)hw_buf_size));
+  }
+
+  void PlutoTX::init()
+  {
+    // Called after PlutoCtrl::init() has written 2.5 MSPS to ad9361-phy.
+    // Creating the buffer here ensures the DMA engine is configured for the
+    // correct sample rate.
     iio_channel_enable(tx_i_chan);
     iio_channel_enable(tx_q_chan);
 
-    // Pipeline N_KERNEL_BUFS kernel DMA buffers so the DAC is always fed.
-    // iio_buffer_push() blocks only when all slots are full, meaning
-    // (N_KERNEL_BUFS-1) buffers worth of headroom before any underrun.
     iio_device_set_kernel_buffers_count(dev, N_KERNEL_BUFS);
 
     txbuf = iio_device_create_buffer(dev, hw_buf_size, false);
@@ -114,8 +124,8 @@ namespace SoDa {
         self.lock());
     }
 
-    debugMsg(SoDa::Format("PlutoTX: connected to %0, rs_in=%1 hw_buf=%2 kbufs=%3\n")
-             .addS(uri).addI((int)rs_in_size).addI((int)hw_buf_size).addI((int)N_KERNEL_BUFS));
+    debugMsg(SoDa::Format("PlutoTX: TX buffer created, hw_buf=%0 kbufs=%1\n")
+             .addI((int)hw_buf_size).addI((int)N_KERNEL_BUFS));
   }
 
   PlutoTX::~PlutoTX()
@@ -140,7 +150,10 @@ namespace SoDa {
       *(int16_t *)(i_ptr + idx * step) = (int16_t)(hw_cf[idx].real() * 32767.0f);
       *(int16_t *)(q_ptr + idx * step) = (int16_t)(hw_cf[idx].imag() * 32767.0f);
     }
-    iio_buffer_push(txbuf);
+    ssize_t ret = iio_buffer_push(txbuf);
+    if (ret < 0) {
+      debugMsg(SoDa::Format("PlutoTX: iio_buffer_push failed: %0\n").addI((int)ret));
+    }
   }
 
   void PlutoTX::flushZeros()

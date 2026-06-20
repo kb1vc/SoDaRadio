@@ -67,9 +67,10 @@ namespace SoDa {
      */
     void subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes); 
     
+  public:
     /**
-     * @brief do whatever initialization we might need to do. 
-     */ 
+     * @brief do whatever initialization we might need to do.
+     */
     virtual void init() = 0;
   };
 }

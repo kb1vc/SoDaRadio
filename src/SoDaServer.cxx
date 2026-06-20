@@ -328,14 +328,20 @@ int doWork(SoDa::ParamsPtr params)
   // (Some may be loaded dynamically with the "--load" command line parameter.
   auto thread_registrar = SoDa::ThreadRegistry::getRegistrar();  
 
-  // hook everyone up to the mailboxes. 
+  // hook everyone up to the mailboxes.
   thread_registrar->subscribeThreads(mailboxes);
-  
+
+  // Initialize hardware: PlutoRadio::init() calls ctrl->init() (sets 2.5 MSPS),
+  // then rx->init() and tx->init() (create IIO DMA buffers).  Must run after
+  // subscribeThreads() (so cmd_stream is wired up) but before startThreads()
+  // (so txbuf is non-null when PlutoTX::run() begins).
+  radio_p->init();
+
   // Now start each of the activities -- they may or may not
   // implement the "start" method -- not all objects need to be threads.
 
   d.debugMsg("Starting Threads");
-  
+
   // start all the threads
   thread_registrar->startThreads();
 

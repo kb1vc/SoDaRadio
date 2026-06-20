@@ -75,7 +75,7 @@ namespace SoDa {
       return ret;
     }
 
-    void init() override { }
+    void init() override;
 
     /**
      * @brief Arm or disarm the IIO TX stream.

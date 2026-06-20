@@ -75,9 +75,9 @@ namespace SoDaCLI {
    *        print and log each one.
    * @param sock  Connected ClientSocket to SoDaServer.
    * @param log   Open log stream.
-   * @return true if the socket is still healthy, false if the server is gone.
+   * @return number of messages received (≥0), or -1 if the server is gone.
    */
-  bool receiveCommands(SoDa::UD::ClientSocket * sock,
-                       std::ofstream & log);
+  int receiveCommands(SoDa::UD::ClientSocket * sock,
+                      std::ofstream & log);
 
 } // namespace SoDaCLI

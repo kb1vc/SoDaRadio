@@ -475,14 +475,16 @@ void runREPL()
 
     if(connected && cmd_socket != nullptr &&
        FD_ISSET(cmd_socket->conn_socket, &rfds)) {
-      // Tell readline the cursor has moved to a new line, print server
-      // messages, then redraw the prompt + whatever the user has typed.
-      // This avoids the rl_save_prompt/rl_replace_line/rl_redisplay dance
-      // which crashes when called immediately after rl_callback_handler_install.
-      rl_on_new_line();
-      if(!SoDaCLI::receiveCommands(cmd_socket, log_stream)) disconnectServer();
-      std::cout.flush();
-      rl_forced_update_display();
+      // Print server messages; only redraw the prompt if something arrived
+      // so rapid empty-readable firings don't spam extra "SoDaCLI> " lines.
+      int n = SoDaCLI::receiveCommands(cmd_socket, log_stream);
+      if(n < 0) {
+        disconnectServer();
+      } else if(n > 0) {
+        rl_on_new_line();
+        std::cout.flush();
+        rl_forced_update_display();
+      }
     }
 
     if(FD_ISSET(STDIN_FILENO, &rfds)) {
@@ -499,9 +501,10 @@ void runREPL()
             fd_set p; FD_ZERO(&p); FD_SET(cmd_socket->conn_socket, &p);
             struct timeval t = { 0, 40000 }; // 40 ms per try, 200 ms total
             if(select(cmd_socket->conn_socket + 1, &p, nullptr, nullptr, &t) > 0
-               && FD_ISSET(cmd_socket->conn_socket, &p)
-               && !SoDaCLI::receiveCommands(cmd_socket, log_stream))
-              { disconnectServer(); break; }
+               && FD_ISSET(cmd_socket->conn_socket, &p)) {
+              if(SoDaCLI::receiveCommands(cmd_socket, log_stream) < 0)
+                { disconnectServer(); break; }
+            }
           }
         }
         std::cout.flush();

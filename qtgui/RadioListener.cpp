@@ -299,7 +299,7 @@ bool RadioListener::handleREP(const SoDa::Command & cmd)
     emit(initSetupComplete());
     break;
   case SoDa::Command::TX_STATE:
-    emit(repPTT(cmd.iparms[0] == 1));
+    emit(repPTT(cmd.iparms[0] >= SoDa::Command::TX_ON_0));
     break; 
   case SoDa::Command::GPS_UTC:
     emit(repGPSTime(cmd.iparms[0], cmd.iparms[1], cmd.iparms[2]));
@@ -366,8 +366,7 @@ void RadioListener::setClockRef(int external)
 
 void RadioListener::setPTT(bool on, bool full_duplex)
 {
-  int tx_state = on ? 1 : 0;
-  int duplex = full_duplex ? 1 : 0;
+  int tx_state = on ? SoDa::Command::TX_ON_0 : SoDa::Command::TX_OFF_0;
   put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_STATE, tx_state, full_duplex), __PRETTY_FUNCTION__);
 }
 

@@ -182,21 +182,23 @@ bool sendCommand(SoDa::UD::ClientSocket * sock,
 
 // -------------------------------------------------------------------
 
-// Returns false if the socket signals that the server has gone away.
-bool receiveCommands(SoDa::UD::ClientSocket * sock,
-                     std::ofstream & log)
+// Returns count of messages received (>=0), or -1 if the server is gone.
+int receiveCommands(SoDa::UD::ClientSocket * sock,
+                    std::ofstream & log)
 {
   SoDa::Command cmd;
   int r;
+  int count = 0;
   while((r = sock->get(&cmd, sizeof(SoDa::Command))) > 0) {
     std::string s = cmd.toString();
     std::cout << SoDa::Format("\n  << %0\n").addS(s);
     log << "RECV: " << s << "\n";
     log.flush();
+    count++;
   }
   // r == 0 means EAGAIN (no data yet) — normal.
   // r < 0 means a hard error — server gone.
-  return r >= 0;
+  return (r < 0) ? -1 : count;
 }
 
 } // namespace SoDaCLI
