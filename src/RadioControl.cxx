@@ -207,21 +207,19 @@ namespace SoDa {
       break;
     
     case Command::RX_RF_GAIN:
-      // dparameters ranges from 0 to 100... normalize this
-      // to the actual range;
       {
-	auto gain = setRFGain(cmd->dparms[0], SoDa::RX);
-	cmd_stream->put(Command::make(Command::REP, Command::RX_RF_GAIN, 
-				    gain));
+	rx_rf_gain = cmd->dparms[0];
+	auto gain = setRFGain(rx_rf_gain, SoDa::RX);
+	cmd_stream->put(Command::make(Command::REP, Command::RX_RF_GAIN, gain));
       }
-      break; 
+      break;
     case Command::TX_RF_GAIN:
       {
-	auto gain = setRFGain(cmd->dparms[0], SoDa::TX);
-	cmd_stream->put(Command::make(Command::REP, Command::TX_RF_GAIN, 
-				    gain));
+	tx_rf_gain = cmd->dparms[0];
+	auto gain = setRFGain(tx_rf_gain, SoDa::TX);
+	cmd_stream->put(Command::make(Command::REP, Command::TX_RF_GAIN, gain));
       }
-      break; 
+      break;
     case Command::TX_STATE: // SET Command::TX_ON
       debugMsg(Format("TX_STATE arg = %0\n").addI(cmd->iparms[0]));
       if(cmd->iparms[0] == Command::TX_ON_0) {

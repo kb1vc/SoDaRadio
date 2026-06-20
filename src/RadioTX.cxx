@@ -100,6 +100,12 @@ void SoDa::RadioTX::run()
       didwork = true;
       exitflag |= (cmd->target == Command::STOP);
     }
+    else if(tx_enabled && beacon_mode) {
+      // Carrier beacon: send full-amplitude signal regardless of modulation mode
+      doCW(cw_buf, beacon_env);
+      put(cw_buf);
+      didwork = true;
+    }
     else if(tx_enabled &&
 	    (tx_modulation != SoDa::Command::CW_L) &&
 	    (tx_modulation != SoDa::Command::CW_U)) {
@@ -110,7 +116,6 @@ void SoDa::RadioTX::run()
       }
     }
     else if(tx_enabled &&
-	    !beacon_mode &&
 	    ((tx_modulation == SoDa::Command::CW_L) ||
 	     (tx_modulation == SoDa::Command::CW_U))) {
       FBufPtr cwenv;
@@ -127,14 +132,6 @@ void SoDa::RadioTX::run()
 	  waiting_to_run_dry = false;
 	}
       }
-    }
-    else if(tx_enabled &&
-	    beacon_mode &&
-	    ((tx_modulation == SoDa::Command::CW_L) ||
-	     (tx_modulation == SoDa::Command::CW_U))) {
-      doCW(cw_buf, beacon_env);
-      put(cw_buf);
-      didwork = true;
     }
     else if(tx_enabled) {
       put(zero_buf);
@@ -200,6 +197,13 @@ void SoDa::RadioTX::execSetCommand(CommandPtr cmd)
     break;
   case Command::TX_BEACON:
     beacon_mode = (cmd->iparms[0] != 0);
+    if(beacon_mode &&
+       (tx_modulation != Command::CW_L) &&
+       (tx_modulation != Command::CW_U)) {
+      // Non-CW mode beacon: prime the CW oscillator so beacon tone is
+      // offset from LO and distinguishable from LO leakthrough.
+      setCWFreq(true, CW_tone_freq);
+    }
     break;
   case Command::TX_CW_EMPTY:
     waiting_to_run_dry = true; 

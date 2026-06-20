@@ -385,6 +385,7 @@ void RadioListener::setCarrier(bool on)
 {
   int carrier_state = on ? 1 : 0;
   put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_BEACON, carrier_state), __PRETTY_FUNCTION__);
+  setPTT(on, false);
 }
 
 void RadioListener::clearCWBuffer()
