@@ -74,7 +74,14 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
 
   qDebug() << QString("Setup all the settings and UI components.");
   
-  this->setWindowIcon(QIcon(QPixmap(SoDaLogo_Big)));
+  QPixmap logo_pixmap(SoDaLogo_Big);
+  QIcon app_icon(logo_pixmap);
+  this->setWindowIcon(app_icon);
+
+  tray_icon = new QSystemTrayIcon(this);
+  tray_icon->setIcon(app_icon);
+  tray_icon->setToolTip(QString("SoDaRadio"));
+  tray_icon->show();
   
   // connect(listener, SIGNAL(repHWMBVersion(const QString &)), 
   // 	  this, SLOT(setWindowTitle(const QString &)));
@@ -145,7 +152,7 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
 
 MainWindow::~MainWindow()
 {
-  saveConfig();
+  if (settings_loaded) saveConfig();
   delete ui;
 }
 
@@ -396,9 +403,10 @@ void MainWindow::widgetSaveRestore(QObject * op, const QString & par, bool save)
 void MainWindow::restoreSettings()
 {
   settings_p->beginGroup("Radio");
-  bandMapSaveRestore(band_map, false);  
+  bandMapSaveRestore(band_map, false);
   widgetSaveRestore(this, "SoDaRadioQT.", false);
   settings_p->endGroup();
+  settings_loaded = true;
 }
 
 void MainWindow::handleFatalError(const QString & err_string) 

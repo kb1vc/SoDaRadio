@@ -51,41 +51,45 @@ namespace GUISoDa {
     createSocket(tx_socket_name);
 
   
-    // create the default device
-    // find it:
-    auto default_device = QMediaDevices::defaultAudioOutput();
-    
-    initAudioDevice(default_device); 
+    auto default_device = QMediaDevices::defaultAudioInput();
+
+    initAudioDevice(default_device);
     
     return true; 
   }
 
   bool AudioTXServer::createSocket(const QString & tx_socket_name) {
-    // all sockets are "served" by the radio
-    // so we need to wait until the radio creates
-    // the socket. 
-    int wcount = 0; 
-    while(!QFile::exists(tx_socket_name)) {
-      QThread::sleep(5);
-      wcount++; 
-      if(wcount > 30) {
-	qDebug() << QString("Waited %1 seconds for socket file [%2] to be created.  Is the radio process dead?").arg(wcount * 5).arg(tx_socket_name);
-	emit(fatalError(QString("No socket file [%1] found after timeout of %2 seconds").arg(tx_socket_name).arg(wcount * 5)));
-	return false;       
-      }
-    }
+    socket_name = tx_socket_name;
+    socket_retry_count = 0;
 
-    audio_tx_socket->connectToServer(tx_socket_name);
-    while(!audio_tx_socket->waitForConnected(1000)) {
-      qDebug() << QString("AudioTXServer Waited for connection on local socket\n[%1]. Is something wrong?").arg(tx_socket_name);
-      qDebug() << audio_tx_socket->errorString();
-      QThread::sleep(5); // sleep for 5 seconds...    
-    }
+    connect(audio_tx_socket, SIGNAL(errorOccurred(QLocalSocket::LocalSocketError)),
+            this, SLOT(audioSocketError(QLocalSocket::LocalSocketError)));
 
-    connect(audio_tx_socket, SIGNAL(errorOccured(QLocalSocket::LocalSocketError)), 
-	    this, SLOT(audioSocketError(QLocalSocket::LocalSocketError)));
+    socket_poll_timer = new QTimer(this);
+    connect(socket_poll_timer, &QTimer::timeout, this, &AudioTXServer::tryConnectSocket);
+    socket_poll_timer->start(5000);
+    tryConnectSocket();
 
     return true;
+  }
+
+  void AudioTXServer::tryConnectSocket() {
+    if (audio_tx_socket->state() == QLocalSocket::ConnectedState) {
+      socket_poll_timer->stop();
+      return;
+    }
+
+    if (QFile::exists(socket_name)) {
+      socket_poll_timer->stop();
+      audio_tx_socket->connectToServer(socket_name);
+    } else {
+      socket_retry_count++;
+      if (socket_retry_count > 30) {
+        socket_poll_timer->stop();
+        emit fatalError(QString("No socket file [%1] found after timeout of %2 seconds")
+                        .arg(socket_name).arg(socket_retry_count * 5));
+      }
+    }
   }
 
   QAudioFormat AudioTXServer::createAudioFormat() {
@@ -108,26 +112,19 @@ namespace GUISoDa {
 
   
   bool AudioTXServer::initAudioDevice(const QAudioDevice & dev_info) {
-    // we don't want to do this while a transfer is in progress.
-    mutex.lock();
-    
-    // create the audio device.
+    QMutexLocker locker(&mutex);
+
     auto format = createAudioFormat();
 
-    // setup the format -- is it supported.  If not, we die
     if (!dev_info.isFormatSupported(format)) {
       qCritical() << "Default format (float 32, 48000 Hz, pcm) not supported - Don't know how this happened.";
-      return false; 
+      return false;
     }
-    
-    // set the format
-    audio_input_p.reset(new QAudioSource(dev_info, format)); 
 
-    // now we've got a new audio input device.  Connect it to
-    // us (we're a QIODevice and implement the WRITE operation.)
+    audio_input_p.reset(new QAudioSource(dev_info, format));
     audio_input_p->start(this);
-    
-    return true; 
+
+    return true;
   }
 
   qint64 AudioTXServer::readData(char * data, qint64 maxlen) {
@@ -139,33 +136,34 @@ namespace GUISoDa {
   quint64 debug_count = 0;
   qint64 samp_count = 0;
   qint64 AudioTXServer::writeData(const char * data, qint64 maxlen) {
-    // we don't want anyone fooling around with devices and sockets
-    // while we're doing this transfer
-    mutex.lock();
+    QMutexLocker locker(&mutex);
+
+    if (audio_tx_socket->state() != QLocalSocket::ConnectedState) {
+      return maxlen;
+    }
 
     samp_count += maxlen;
     if(debug_count % 512 == 0) {
       qInfo() << QString("sample count %1").arg(samp_count);
     }
-    debug_count++; 
-    
-    // just move the bits as they are.  Don't even look at them.
+    debug_count++;
+
     auto to_go = maxlen;
-    const char * cp = data; 
+    const char * cp = data;
     while(to_go > 0) {
       int wl = audio_tx_socket->write(cp, to_go);
       if(wl < 0) {
-	return maxlen - to_go;
+        return maxlen - to_go;
       }
       else {
-	to_go -= wl;
-	cp += wl;
+        to_go -= wl;
+        cp += wl;
       }
     }
 
     audio_tx_socket->flush();
-    
-    return maxlen; 
+
+    return maxlen;
   }
   
   void AudioTXServer::shutdown() {

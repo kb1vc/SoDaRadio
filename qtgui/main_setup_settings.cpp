@@ -82,23 +82,23 @@ void MainWindow::setupSettings()
 
 void MainWindow::setupAudioDeviceList() 
 {
-  const QAudioDevice & def_rx_dev_info = QMediaDevices::defaultAudioOutput(); 
-  ui->audioOut_cb->addItem(def_rx_dev_info.id(), QVariant::fromValue(def_rx_dev_info));
+  const QAudioDevice & def_rx_dev_info = QMediaDevices::defaultAudioOutput();
+  ui->audioOut_cb->addItem(def_rx_dev_info.description(), QVariant::fromValue(def_rx_dev_info));
   QAudioFormat format = GUISoDa::AudioRXListener::createAudioFormat();
   for(auto &rx_dev_info: QMediaDevices::audioOutputs()) {
     if(rx_dev_info.isFormatSupported(format) && (rx_dev_info != def_rx_dev_info)) {
-      ui->audioOut_cb->addItem(rx_dev_info.id(), QVariant::fromValue(rx_dev_info));
+      ui->audioOut_cb->addItem(rx_dev_info.description(), QVariant::fromValue(rx_dev_info));
     }
   }
 
   // set the initial choice
   ui->audioOut_cb->setCurrentIndex(0);
 
-  const QAudioDevice & def_tx_dev_info = QMediaDevices::defaultAudioInput(); 
-  ui->audioIn_cb->addItem(def_tx_dev_info.id(), QVariant::fromValue(def_tx_dev_info));
+  const QAudioDevice & def_tx_dev_info = QMediaDevices::defaultAudioInput();
+  ui->audioIn_cb->addItem(def_tx_dev_info.description(), QVariant::fromValue(def_tx_dev_info));
   for(auto &tx_dev_info: QMediaDevices::audioOutputs()) {
     if(tx_dev_info != def_tx_dev_info) {
-      ui->audioIn_cb->addItem(tx_dev_info.id(), QVariant::fromValue(tx_dev_info));
+      ui->audioIn_cb->addItem(tx_dev_info.description(), QVariant::fromValue(tx_dev_info));
     }
   }
   
@@ -121,6 +121,7 @@ void MainWindow::saveConfigAs_dlg()
 					       "", 
 					       tr("*.conf (*.conf);;All Files(*)"));
   if(!fname.isEmpty()) {
+    delete settings_p;
     settings_p = new QSettings(fname, QSettings::NativeFormat, this);
     saveConfig();
   }
@@ -133,6 +134,7 @@ void MainWindow::restoreConfig_dlg()
 					       "", 
 					       tr("*.conf (*.conf);;All Files(*)"));
   if(!fname.isEmpty()) {
+    delete settings_p;
     settings_p = new QSettings(fname, QSettings::NativeFormat, this);
     restoreSettings();
   }

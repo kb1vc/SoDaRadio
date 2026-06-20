@@ -37,6 +37,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QMediaDevices>
 #include <QCameraDevice>
 #include <QString>
+#include <QFile>
+#include <QTimer>
 #include <QtNetwork/QtNetwork>
 
 namespace GUISoDa {
@@ -205,21 +207,25 @@ namespace GUISoDa {
     void changeDevice(QAudioDevice & dev_info);
 
     /**
-     * @brief This closes out the audio device and the socket. 
+     * @brief This closes out the audio device and the socket.
      */
     void shutdown();
+
+  private slots:
+    void tryConnectSocket();
     
   private:
 
-    QString socket_name; 
-    QLocalSocket * audio_tx_socket;     
+    QString socket_name;
+    QLocalSocket * audio_tx_socket;
+    QTimer * socket_poll_timer;
+    int socket_retry_count;
 
     QAudioFormat audio_format;
     QScopedPointer<QAudioSource> audio_input_p;
 
     bool is_active;
 
-    // Let's make sure nothing gets ripped out from under anyone
-    QMutex mutex; 
+    QMutex mutex;
   };
 }

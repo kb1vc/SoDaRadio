@@ -33,6 +33,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QCloseEvent>
 #include <QSettings>
 #include <QAudioDevice>
+#include <QSystemTrayIcon>
 
 #include "RadioListener.hpp"
 #include "../common/GuiParams.hxx"
@@ -153,7 +154,9 @@ private:
     event->accept();
   }
 
-  QSettings * settings_p; 
+  QSettings * settings_p;
+  bool settings_loaded = false;
+  QSystemTrayIcon * tray_icon;
 
   // Band map
   //   QMap<QString, GUISoDa::Band> band_map;
