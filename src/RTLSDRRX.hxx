@@ -32,10 +32,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * @brief RadioRX implementation for RTL-SDR dongles.
  *
- * RTL-SDR hardware delivers interleaved uint8 I/Q samples (127 = 0).
- * RTLSDRRX reads synchronously at 2.048 MSPS, converts to complex<float>,
- * resamples 2.048 MSPS → 625 kSPS via SoDa::ReSampler, applies the IF NCO
- * mixer, and publishes 30000-sample CBufs to rx_stream.  Pre-mixer snapshots
+ * RTL-SDR hardware delivers interleaved uint8 I/Q samples (127.5 = 0).
+ * RTLSDRRX reads synchronously at 2.048 MSPS in READ_BYTES-byte chunks,
+ * accumulates converted complex<float> samples in raw_accu, resamples
+ * 2.048 MSPS → 625 kSPS via SoDa::ReSampler, applies the IF NCO mixer,
+ * and publishes 30000-sample CBufs to rx_stream.  Pre-mixer snapshots
  * are forwarded to if_stream for the spectrum display.
  *
  * @author M. H. Reilly (kb1vc)
@@ -50,6 +51,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vector>
 #include <complex>
 #include <memory>
+#include <mutex>
+#include <thread>
+#include <atomic>
 
 namespace SoDa {
 
@@ -75,34 +79,43 @@ namespace SoDa {
     void setNCOFreq(double freq) override;
     bool downConvert() override;
 
-    void startStream()    override { streaming = true;  }
-    void stopStream()     override { streaming = false; }
-    bool streamEnabled()  override { return streaming;  }
+    void startStream()   override;
+    void stopStream()    override;
+    bool streamEnabled() override { return streaming; }
     void enableIFStreamer(bool enable) override { if_streaming_enabled = enable; }
 
   private:
     void doMixer(std::vector<std::complex<float>> & buf);
+    static void asyncCallback(unsigned char* buf, uint32_t len, void* ctx);
 
     RTLSDRDevPtr rtl;
 
-    // Hardware sample rate (set to 2.048 MSPS).
-    static constexpr float HW_RATE = 2048000.0f;
+    static constexpr float        HW_RATE    = 2048000.0f;  // RTL2832U actual USB delivery rate
+    static constexpr unsigned int READ_BYTES = 16384;  // always divisible by 512
+    static constexpr unsigned int RAW_ACCU_MAX = 8;    // max resampler blocks to buffer (~400ms)
 
-    unsigned int hw_buf_size;   ///< resampler input size (at 2.048 MSPS)
-    unsigned int rs_out_size;   ///< resampler output size (at 625 kSPS)
-    unsigned int rf_buf_size;   ///< publish chunk size (30000)
+    unsigned int rs_in_size;   ///< exact resampler input size (at 2.048 MSPS)
+    unsigned int rs_out_size;  ///< resampler output size (at 625 kSPS)
+    unsigned int rf_buf_size;  ///< publish chunk size (30000 samples at 625 kSPS)
 
-    double rx_sample_rate;      ///< 625 kSPS — used for IF NCO phase increment
+    double rx_sample_rate;     ///< 625 kSPS — used for IF NCO phase increment
 
-    bool streaming;
+    std::atomic<bool> streaming{false};
     bool if_streaming_enabled;
 
-    SoDa::ReSamplerPtr hw_resampler;                    ///< 2.048 MSPS → 625 kSPS
+    std::atomic<unsigned int> diag_reads{0};  ///< async callback invocations
+    unsigned int diag_resamp_runs;            ///< total resampler invocations
+    unsigned int diag_published;              ///< total rf_buf_size blocks published
 
-    std::vector<uint8_t>              raw_buf;   ///< uint8 I/Q from librtlsdr
-    std::vector<std::complex<float>>  hw_cf;     ///< converted float I/Q (hw_buf_size)
-    std::vector<std::complex<float>>  rs_out;    ///< resampler output (rs_out_size)
-    std::vector<std::complex<float>>  accu;      ///< accumulator for 30000-sample publish
+    SoDa::ReSamplerPtr hw_resampler;  ///< 2.048 MSPS → 625 kSPS
+
+    std::mutex                          raw_accu_mutex;
+    std::vector<std::complex<float>>    raw_accu;  ///< IQ accumulator filled by async callback
+    std::vector<std::complex<float>>    rs_in;     ///< exact-size input to resampler (rs_in_size)
+    std::vector<std::complex<float>>    rs_out;    ///< resampler output (rs_out_size)
+    std::vector<std::complex<float>>    accu;      ///< accumulates resampled IQ for rf_buf_size publish
+
+    std::thread async_rx_thread;
 
     QuadratureOscillator IF_osc;
 

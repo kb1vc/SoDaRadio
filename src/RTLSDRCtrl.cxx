@@ -158,10 +158,11 @@ namespace SoDa {
   // Sample rate
   // ---------------------------------------------------------------
 
-  void RTLSDRCtrl::setSampleRate(float rate, SoDa::RXTX rxtx)
+  void RTLSDRCtrl::setSampleRate(float /* rate */, SoDa::RXTX rxtx)
   {
+    // RTL-SDR hardware always runs at HW_RATE; RTLSDRRX resamples to 625 kSPS.
     if (rxtx != SoDa::RX) return;
-    rtlsdr_set_sample_rate(rtl->dev, (uint32_t)std::round(rate));
+    rtlsdr_set_sample_rate(rtl->dev, (uint32_t)HW_RATE);
     rx_sample_rate = (float)rtlsdr_get_sample_rate(rtl->dev);
   }
 

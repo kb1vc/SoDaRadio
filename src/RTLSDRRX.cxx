@@ -39,35 +39,89 @@ namespace SoDa {
     : RadioRX(_params),
       rtl(dev_in),
       rx_sample_rate(_params->getRXRate()),
-      streaming(false),
-      if_streaming_enabled(true)
+      if_streaming_enabled(true),
+      diag_resamp_runs(0),
+      diag_published(0)
   {
-    // Build 2.048 MSPS → 625 kSPS resampler.  ts=0.0485 matches PlutoRX.
-    hw_resampler = SoDa::ReSampler::make(HW_RATE, 625000.0f, 0.0485f);
-    hw_buf_size  = hw_resampler->getInputBufferSize();
-    rs_out_size  = hw_resampler->getOutputBufferSize();
     rf_buf_size  = _params->getRFBufferSize();
 
-    // raw_buf holds interleaved uint8 I/Q; 2 bytes per complex sample.
-    // Round up to the nearest 512-byte transfer boundary required by librtlsdr.
-    unsigned int raw_bytes = hw_buf_size * 2u;
-    if (raw_bytes % 512 != 0)
-      raw_bytes = ((raw_bytes / 512) + 1) * 512;
-    hw_buf_size = raw_bytes / 2;  // adjust to match rounded size
+    uint32_t hi_buf_size = uint32_t((HW_RATE / rx_sample_rate) * rf_buf_size);
 
-    raw_buf.resize(raw_bytes);
-    hw_cf.resize(hw_buf_size);
+    hw_resampler = SoDa::ReSampler::make(HW_RATE, 625000.0f, hi_buf_size);  // 2.048 MSPS → 625 kSPS
+    rs_in_size   = hw_resampler->getInputBufferSize();
+    rs_out_size  = hw_resampler->getOutputBufferSize();
+
+    rs_in.resize(rs_in_size);
     rs_out.resize(rs_out_size);
 
-    debugMsg(SoDa::Format("RTLSDRRX: hw_buf=%0 rs_out=%1 rf_buf=%2\n")
-             .addI((int)hw_buf_size)
+    debugMsg(SoDa::Format("RTLSDRRX: rs_in=%0 rs_out=%1 rf_buf=%2 read_bytes=%3\n")
+             .addI((int)rs_in_size)
              .addI((int)rs_out_size)
-             .addI((int)rf_buf_size));
+             .addI((int)rf_buf_size)
+             .addI((int)READ_BYTES));
   }
 
   void RTLSDRRX::init()
   {
+    // rtlsdr_reset_buffer and streaming start are handled in startStream().
+  }
+
+  // ---------------------------------------------------------------
+  // Async USB collection thread
+  // ---------------------------------------------------------------
+
+  void RTLSDRRX::asyncCallback(unsigned char* buf, uint32_t len, void* ctx)
+  {
+    RTLSDRRX* self = static_cast<RTLSDRRX*>(ctx);
+    if (!self->streaming) return;
+
+    unsigned int n_cf = len / 2;
+
+    std::lock_guard<std::mutex> lock(self->raw_accu_mutex);
+
+    // Drop oldest block if buffer is growing too large (protects against
+    // latency runaway if downConvert() falls behind).
+    if (self->raw_accu.size() > self->rs_in_size * RAW_ACCU_MAX) {
+      self->raw_accu.erase(self->raw_accu.begin(),
+                           self->raw_accu.begin() + self->rs_in_size);
+    }
+
+    for (unsigned int i = 0; i < n_cf; i++) {
+      self->raw_accu.emplace_back(
+        ((float)buf[2*i]   - 127.5f) / 127.5f,
+        ((float)buf[2*i+1] - 127.5f) / 127.5f);
+    }
+
+    self->diag_reads++;
+  }
+
+  void RTLSDRRX::startStream()
+  {
+    // Stop any existing async thread cleanly before restarting.
+    if (async_rx_thread.joinable()) {
+      streaming = false;
+      rtlsdr_cancel_async(rtl->dev);
+      async_rx_thread.join();
+    }
+
+    {
+      std::lock_guard<std::mutex> lock(raw_accu_mutex);
+      raw_accu.clear();
+    }
+
     rtlsdr_reset_buffer(rtl->dev);
+    streaming = true;
+
+    async_rx_thread = std::thread([this]() {
+      rtlsdr_read_async(rtl->dev, asyncCallback, this, 0, READ_BYTES);
+    });
+  }
+
+  void RTLSDRRX::stopStream()
+  {
+    streaming = false;
+    rtlsdr_cancel_async(rtl->dev);
+    if (async_rx_thread.joinable()) async_rx_thread.join();
   }
 
   // ---------------------------------------------------------------
@@ -81,49 +135,47 @@ namespace SoDa {
     cmd_stream->put(Command::make(Command::REP, Command::RX_IF_FREQ, freq));
   }
 
-  // ---------------------------------------------------------------
-  // Per-sample IF mixer
-  // ---------------------------------------------------------------
-
   void RTLSDRRX::doMixer(std::vector<std::complex<float>> & buf)
   {
     for (auto & s : buf) s *= IF_osc.stepOscCF();
   }
 
   // ---------------------------------------------------------------
-  // Main sample pump
+  // Processing
   // ---------------------------------------------------------------
 
   bool RTLSDRRX::downConvert()
   {
-    // Read one block of uint8 I/Q from the dongle.  This call blocks until
-    // the hardware delivers raw_buf.size() bytes (≈ hw_buf_size / HW_RATE seconds).
-    int n_read = 0;
-    int rc = rtlsdr_read_sync(rtl->dev,
-                              raw_buf.data(),
-                              (int)raw_buf.size(),
-                              &n_read);
-    if (rc < 0 || n_read <= 0) {
-      debugMsg(SoDa::Format("RTLSDRRX: read_sync error rc=%0\n").addI(rc));
-      return false;
-    }
-
     if (!streaming) return false;
 
-    // Convert uint8 interleaved I/Q → complex<float>.
-    // RTL-SDR: value 127/128 maps to 0.0; full scale is ±127.5.
-    unsigned int n_cf = (unsigned int)n_read / 2;
-    if (n_cf > hw_buf_size) n_cf = hw_buf_size;
-    for (unsigned int i = 0; i < n_cf; i++) {
-      hw_cf[i] = std::complex<float>(
-        ((float)raw_buf[2*i]   - 127.5f) / 127.5f,
-        ((float)raw_buf[2*i+1] - 127.5f) / 127.5f);
+    // Grab one resampler-sized block from the async accumulator.
+    {
+      std::lock_guard<std::mutex> lock(raw_accu_mutex);
+      if (raw_accu.size() < rs_in_size) return false;
+
+      std::copy(raw_accu.begin(), raw_accu.begin() + rs_in_size, rs_in.begin());
+      raw_accu.erase(raw_accu.begin(), raw_accu.begin() + rs_in_size);
+    }
+
+    // Periodic status dump every 10000 resampler runs (~8 minutes at 625 kSPS/30000).
+    if ((diag_resamp_runs % 10000) == 0) {
+      size_t accu_snap;
+      {
+        std::lock_guard<std::mutex> lock(raw_accu_mutex);
+        accu_snap = raw_accu.size();
+      }
+      debugMsg(SoDa::Format("RTLSDRRX diag: callbacks=%0 accu=%1 resamp_runs=%2 published=%3\n")
+               .addI((int)diag_reads.load())
+               .addI((int)accu_snap)
+               .addI((int)diag_resamp_runs)
+               .addI((int)diag_published));
     }
 
     // Decimate 2.048 MSPS → 625 kSPS.
-    hw_resampler->apply(hw_cf, rs_out);
+    hw_resampler->apply(rs_in, rs_out);
+    diag_resamp_runs++;
 
-    // Forward pre-mixer snapshot to the spectrum display.
+    // Forward pre-mixer snapshot to spectrum display.
     if (if_streaming_enabled && if_stream->subscriberCount() > 0) {
       CBufPtr if_buf = SoDa::CBuf::make(rs_out_size);
       auto & if_data = if_buf->getBuf();
@@ -134,7 +186,7 @@ namespace SoDa {
     // Apply IF NCO mixer.
     doMixer(rs_out);
 
-    // Accumulate resampler output, then publish in rf_buf_size-sample chunks.
+    // Accumulate resampled output; publish in rf_buf_size-sample chunks.
     accu.insert(accu.end(), rs_out.begin(), rs_out.end());
 
     bool published = false;
@@ -144,6 +196,7 @@ namespace SoDa {
       std::copy(accu.begin(), accu.begin() + rf_buf_size, data.begin());
       accu.erase(accu.begin(), accu.begin() + rf_buf_size);
       rx_stream->put(buf);
+      diag_published++;
       published = true;
     }
 

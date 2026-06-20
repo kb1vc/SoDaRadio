@@ -61,12 +61,12 @@ namespace SoDa {
     std::string uri = buildPlutoURI(params->getRadioArgs());
 
     // Build the 2.5 MSPS → 625 kSPS resampler.
-    // ts=0.0485 → in=121032, out=30258 (slightly over 30000; any surplus is
-    // absorbed by the accumulator without ever starving BaseBandRX).
-    hw_resampler = SoDa::ReSampler::make(2500000.0f, 625000.0f, 0.0485f);
+    rf_buf_size  = params->getRFBufferSize();             // 30000
+    uint32_t sample_bufsize = uint32_t(rf_buf_size * 2.5e6 / 0.625e6);
+    hw_resampler = SoDa::ReSampler::make(2500000.0f, 625000.0f, sample_bufsize);
+    
     hw_buf_size  = hw_resampler->getInputBufferSize();   // samples at 2.5 MSPS
     rs_out_size  = hw_resampler->getOutputBufferSize();  // samples at 625 kSPS
-    rf_buf_size  = params->getRFBufferSize();             // 30000
 
     hw_cf.resize(hw_buf_size);
     rs_out.resize(rs_out_size);

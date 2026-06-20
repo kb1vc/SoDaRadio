@@ -234,9 +234,12 @@ void RadioListener::setTXGain(int gain) {
 }
 
 void RadioListener::setAFGain(int gain) {
-  double dgain = gain; 
-  // this is a little complex...
-  dgain = 50.0 * (log10(dgain) / log10(100.0));
+  if (gain <= 0) gain = 1;  // prevent log10(0) → -inf
+  // Map slider 1..100 → dgain 0..60.5.
+  // BaseBandRX converts dgain via af_gain = 10^(0.25*(dgain-50)).
+  // At slider=100: dgain=60.5 → af_gain≈316 (+50 dB).
+  // At slider=49:  dgain≈50  → af_gain=1.0 (unity).
+  double dgain = 60.5 * (log10((double)gain) / log10(100.0));
   put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_AF_GAIN, dgain), __PRETTY_FUNCTION__);
 }
 

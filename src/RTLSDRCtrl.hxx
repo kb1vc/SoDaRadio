@@ -96,6 +96,8 @@ namespace SoDa {
     void setTXEna(bool, bool) override { }
 
   private:
+    static constexpr float HW_RATE = 2048000.0f;  ///< RTL2832U actual USB delivery rate (2.048 MSPS)
+
     RTLSDRDevPtr rtl;
 
     double rx_lo_freq;         ///< last RX center frequency written (Hz)

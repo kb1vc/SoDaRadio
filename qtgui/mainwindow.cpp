@@ -129,7 +129,11 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   
   qDebug() << QString("About to init audo_listener");        
   audio_listener->init();
-  qDebug() << QString("About to start audo_listener");      
+  if(ui->audioOut_cb->count() > 0) {
+    audio_listener->getRX()->setRXDevice(
+      ui->audioOut_cb->itemData(ui->audioOut_cb->currentIndex()).value<QAudioDevice>());
+  }
+  qDebug() << QString("About to start audo_listener");
   audio_listener->start();
 
   qDebug() << QString("About to starting hamlib server");        

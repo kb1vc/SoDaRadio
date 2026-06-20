@@ -81,20 +81,23 @@ namespace GUISoDa {
       }
     }
 
+    qInfo() << QString("AudioRXListener::init: connecting to [%1]").arg(rx_socket_name);
     audio_rx_socket->connectToServer(rx_socket_name);
     while(!audio_rx_socket->waitForConnected(30000)) {
       qDebug() << QString("AudioRXListener Waited for connection on local socket\n[%1]. Is something wrong?").arg(rx_socket_name);
       qDebug() << audio_rx_socket->errorString();
-      QThread::sleep(5); // sleep for 5 seconds...    
+      QThread::sleep(5); // sleep for 5 seconds...
     }
+    qInfo() << QString("AudioRXListener::init: connected to [%1] state=%2")
+               .arg(rx_socket_name).arg((int)audio_rx_socket->state());
 
-    connect(audio_rx_socket, SIGNAL(readyRead()), 
+    connect(audio_rx_socket, SIGNAL(readyRead()),
 	    this, SLOT(processRXAudio()));
 
-    connect(audio_rx_socket, SIGNAL(errorOccurred(QLocalSocket::LocalSocketError)), 
+    connect(audio_rx_socket, SIGNAL(errorOccurred(QLocalSocket::LocalSocketError)),
 	    this, SLOT(audioSocketError(QLocalSocket::LocalSocketError)));
 
-    return true; 
+    return true;
   }
 
   qint64 AudioRXListener::writeData(const char * data, qint64 maxlen) {
@@ -105,14 +108,9 @@ namespace GUISoDa {
 
 
   void AudioRXListener::processRXAudio() {
-    // we've got an incoming buffer. 
-    // copy it to the circular buffer.  (Note that this copy 
-    // is not the most time-efficient choice, but the simplicity
-    // and reduced bug count from this approach is compelling. 
-    // The total transfer load to/from this buffer is about 
-    // 400KB/sec.  The CircularBuffer object has been measured
-    // at way above 300MB/sec on a really old Intel desktop 
-    // (a 2010 edition i7). 
+    if(bytes_sent_count == 0) {
+      qInfo() << QString("AudioRXListener::processRXAudio: first socket data arrived");
+    }
     qint64 len = audio_rx_socket->bytesAvailable();
 
     while(len > 0) {
@@ -192,8 +190,11 @@ namespace GUISoDa {
 
     // tell the audio device where to find the QIODevice.
     audio_rx_output->start(this);
-    return true; 
-  }	
+    qInfo() << QString("AudioRXListener::initAudio: sink started on [%1] state=%2")
+               .arg(dev_info.description())
+               .arg((int)audio_rx_output->state());
+    return true;
+  }
 
 
   void  AudioRXListener::setAudioGain(float gain)
@@ -212,34 +213,33 @@ namespace GUISoDa {
   }
 
 
-  qint64 AudioRXListener::readData(char * data, qint64 max_len) 
+  qint64 AudioRXListener::readData(char * data, qint64 max_len)
   {
-    // we may have run out of data.  If so, return silence. 
-    // and stuff silence into the output stream until we get ahead of the game
-    // a little bit. 
+    static qint64 read_call_count = 0;
     size_t avail = audio_cbuffer_p->numElements();
 
-    // Qt Audio under Mac doesn't go through ALSA, so is much better
-    // behaved. It won't call readData if we have nothing to offer.
-    // and will buffer what it gets. 
-    if((MACOSX == 0) && (avail < max_len)) {
-      // we're below the acceptable reserver... stuff some silence
-      // into the output buffers until we're 
-      //    qInfo() << QString("[%3] Audio device attempts to read [%1] bytes, only [%2] available.")
-      //      .arg(max_len).arg(avail).arg(QDateTime::currentDateTime().toString("HH:mm:ss.zzz t"));
-      // stuff some silence in here.. 
-      qint64 fill_len = max_len >> 2; 
-      memset(data, 0, fill_len); 
+    if((read_call_count & 0x3ff) == 0) {
+      qInfo() << QString("AudioRXListener::readData call#%1 avail=%2 max_len=%3")
+                 .arg(read_call_count).arg(avail).arg(max_len);
+    }
+    read_call_count++;
+
+    if((MACOSX == 0) && (avail < (size_t)max_len)) {
+      qint64 fill_len = max_len >> 2;
+      memset(data, 0, fill_len);
       return fill_len;
     }
     else {
       int ret = (qint64) audio_cbuffer_p->get(data, max_len);
       float * fdat = (float*) data;
-      float sum = 0.0; 
+      float sum = 0.0;
       for(int i = 0; i < ret / 4; i++) {
-	sum += fdat[i]; 
+	sum += fabs(fdat[i]);
       }
-      return ret; 
+      if((read_call_count & 0x3ff) == 1) {
+        qInfo() << QString("AudioRXListener::readData ret=%1 sum=%2").arg(ret).arg(sum);
+      }
+      return ret;
     }
   }
 
@@ -252,20 +252,21 @@ namespace GUISoDa {
     if(new_state == QAudio::StoppedState) {
       switch (audio_rx_output->error()) {
       case QAudio::UnderrunError:
-	qDebug() << QString("AudioRXListener under-run. Attempting reset.");
-	audio_rx_output->reset();
-	break; 
+	qInfo() << QString("AudioRXListener under-run. Restarting sink.");
+	audio_rx_output->start(this);
+	break;
       case QAudio::IOError:
-	qDebug() << QString("AudioRXListener IO error. Attempting reset.");
-	audio_rx_output->reset();
-	break; 
+	qInfo() << QString("AudioRXListener IO error. Restarting sink.");
+	audio_rx_output->start(this);
+	break;
       case QAudio::OpenError:
-	qFatal("AudioRXListener got a OpenError of some sort on the audio output device.");      
-	break; 
+	qFatal("AudioRXListener got a OpenError of some sort on the audio output device.");
+	break;
       default:
-	// all other errors are fatal, except the crap from audio alsa.. 
-	qInfo("AudioRXListener got a bothersome error (not fatal, not io, not under-run) of some sort on the audio output device.");
-	break; 
+	qInfo() << QString("AudioRXListener sink stopped, state=%1 error=%2 -- restarting.")
+                   .arg((int)audio_rx_output->state()).arg((int)audio_rx_output->error());
+	audio_rx_output->start(this);
+	break;
       }
     }
   }

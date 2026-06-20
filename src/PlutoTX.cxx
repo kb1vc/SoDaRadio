@@ -55,7 +55,9 @@ namespace SoDa {
     // Build the 625 kSPS → 2.5 MSPS interpolator.
     // ts=0.0480 → in=29780, out=119120.  Incoming CBufs are 30000 samples,
     // so the accumulator usually has enough for one push per put() call.
-    hw_resampler = SoDa::ReSampler::make(625000.0f, 2500000.0f, 0.0480f);
+    uint32_t rf_buf_size  = params->getRFBufferSize();             // 30000
+
+    hw_resampler = SoDa::ReSampler::make(625000.0f, 2500000.0f, rf_buf_size);
     rs_in_size   = hw_resampler->getInputBufferSize();   // 29780
     hw_buf_size  = hw_resampler->getOutputBufferSize();  // 119120
 
