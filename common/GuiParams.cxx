@@ -52,6 +52,8 @@ SoDa::GuiParams::GuiParams(int argc, char ** argv)
      "Audio device name for ALSA audio.")
     .add<unsigned int>(&debug_level, "debug", 'D', 0,
      "Enable debug messages for value > 0.  Higher values may produce more detail.")
+    .add<std::string>(&radio_name, "radio-name", 'n', "",
+     "Radio model name used in config file path (e.g. PLUTO -> ~/.config/kb1vc.org/PLUTO_SoDaRadioQT.conf)")
     ;
 
   if(!cmd.parse(argc, argv)) {

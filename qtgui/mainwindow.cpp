@@ -138,7 +138,11 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
 	  this, SLOT(displayAppInfo(bool)));
 
   qDebug() << QString("connected stuff");  
-  settings_p = new QSettings("kb1vc.org", "SoDaRadioQT", this);
+  QString radio_name = QString::fromStdString(params.getRadioName());
+  QString settings_app = radio_name.isEmpty()
+    ? QString("SoDaRadioQT")
+    : radio_name.toUpper() + QString("_SoDaRadioQT");
+  settings_p = new QSettings("kb1vc.org", settings_app, this);
 
   current_band_selector = ui->bandSel_cb->currentText(); 
   auto_bandswitch_target = QString("");

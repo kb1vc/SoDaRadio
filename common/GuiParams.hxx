@@ -45,6 +45,7 @@ namespace SoDa {
     std::string getUHDArgs() const { return uhd_args; }
     unsigned int getDebugLevel() const { return debug_level; }
     std::string getAudioPortName() const { return audio_portname; }
+    std::string getRadioName() const { return radio_name; }
 
     unsigned int getHamlibPortNumber() const { return hamlib_portnumber; }
     
@@ -61,12 +62,13 @@ namespace SoDa {
     std::string server_name;     ///< Where do we find the server?
     std::string server_args; ///< server control arguments.
     // message socket params
-    std::string server_sock_basename; 
-    std::string config_filename; 
+    std::string server_sock_basename;
+    std::string config_filename;
     std::string log_filename;
     std::string uhd_args;
     unsigned int debug_level; ///< 0 => no debug messages .. more detail with higher values
-    std::string audio_portname; 
+    std::string audio_portname;
+    std::string radio_name; ///< model name for per-radio config file (e.g. "PLUTO")
 
     unsigned int hamlib_portnumber;
   };
