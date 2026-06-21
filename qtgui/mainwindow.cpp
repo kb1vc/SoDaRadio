@@ -219,14 +219,15 @@ void MainWindow::widgetSaveRestore(QObject * op, const QString & par, bool save)
       }
     }
     else if(my_class == "QSlider") {
-      if(QSlider * cb = qobject_cast<QSlider*>(*cp)) {      
+      if(QSlider * cb = qobject_cast<QSlider*>(*cp)) {
 	if(save) {
 	  double cv = cb->value();
 	  settings_p->setValue(my_pathname, cv);
 	}
 	else {
-	  // restore!
-	  double nvalue = settings_p->value(my_pathname, 0).toDouble();
+	  // restore! Fall back to the widget's current value (set from the .ui
+	  // file) so new sliders don't get silently defaulted to 0.
+	  double nvalue = settings_p->value(my_pathname, (double)cb->value()).toDouble();
 	  cb->setValue(nvalue);
 	}
       }

@@ -147,9 +147,10 @@ namespace SoDa {
     }
     
     // now poll various places
-    unsigned int samples_left = 0;
-    unsigned int samples_so_far = 0;
-    
+    // track progress in bytes (floats are 4 bytes each)
+    unsigned int bytes_left = 0;
+    unsigned int bytes_so_far = 0;
+
     while(!exit_flag) {
       if(cmd_stream->get(cmd_subs, cmd)) {
 	exit_flag |= (cmd->target == Command::STOP);
@@ -161,25 +162,25 @@ namespace SoDa {
 	  if(cur_buf_ptr == nullptr) {
 	    cur_buf_ptr = getFreeBuffer();
 	    cur_buf_ptr->resize(sample_count_hint);
-	    samples_left = sample_count_hint;
-	    samples_so_far = 0; 
+	    bytes_left = sample_count_hint * sizeof(float);
+	    bytes_so_far = 0;
 	  }
 	  // now get a buffer full.
-	  // this is ugly, but it is how we deal with avoiding a copy.
-	  auto bstart = (cur_buf_ptr->data() + samples_so_far);
-	  int stat = audio_tx_socket->get(bstart, samples_left, false);
+	  // bstart is a byte pointer into the float buffer
+	  auto bstart = reinterpret_cast<uint8_t*>(cur_buf_ptr->data()) + bytes_so_far;
+	  int stat = audio_tx_socket->get(bstart, bytes_left, false);
 	  if(stat > 0) {
-	    samples_so_far += stat;
-	    samples_left -= stat;
-	    if(samples_left == 0) {
-	      std::lock_guard<std::mutex> tx_data_lock(tx_data_mutex);	      
+	    bytes_so_far += stat;
+	    bytes_left -= stat;
+	    if(bytes_left == 0) {
+	      std::lock_guard<std::mutex> tx_data_lock(tx_data_mutex);
 	      incoming_audio_bufs.push(cur_buf_ptr);
-	      cur_buf_ptr = nullptr; 
+	      cur_buf_ptr = nullptr;
 	    }
 	  }
 	}
       }
-    }  
+    }
   }
   
   FloatVecPtr AudioQt::getFreeBuffer() {

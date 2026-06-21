@@ -121,6 +121,10 @@ namespace GUISoDa {
       return false;
     }
 
+    // QIODevice must be open before QAudioSource::start() will call writeData()
+    if (!isOpen()) {
+      open(QIODevice::WriteOnly);
+    }
     audio_input_p.reset(new QAudioSource(dev_info, format));
     audio_input_p->start(this);
 

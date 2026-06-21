@@ -103,7 +103,8 @@ namespace GUISoDa {
     void setRXGain(int gain);
     void setTXGain(int gain);
     void setAFGain(int gain);
-    void setAFSidetoneGain(int gain);  
+    void setTXAFGain(int gain);
+    void setAFSidetoneGain(int gain);
 
     void setRXAnt(const QString & antname);
     void setTXAnt(const QString & antname);

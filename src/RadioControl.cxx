@@ -227,9 +227,9 @@ namespace SoDa {
 	// This is the first stage.
 	setTXRXMode(Command::TX_ON_0, cmd->iparms[1]);
       }
-      if(cmd->iparms[0] == 0) {
+      if(cmd->iparms[0] == Command::TX_OFF_0) {
 	// going to receive mode
-	setTXRXMode(Command::TX_OFF_0, cmd->iparms[1]);;
+	setTXRXMode(Command::TX_OFF_0, cmd->iparms[1]);
       }
       break; 
 

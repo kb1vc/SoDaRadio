@@ -243,6 +243,13 @@ void RadioListener::setAFGain(int gain) {
   put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_AF_GAIN, dgain), __PRETTY_FUNCTION__);
 }
 
+void RadioListener::setTXAFGain(int gain) {
+  // Slider 0-100; server applies gain = 10^(0.1*(dparms[0]-50)).
+  // At 50: unity gain.  At 60: +20dB.  At 40: -20dB.
+  double dgain = (double)gain;
+  put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_AF_GAIN, dgain), __PRETTY_FUNCTION__);
+}
+
 void RadioListener::setAFSidetoneGain(int gain) {
   double dgain = gain;   
   put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_AF_SIDETONE_GAIN, dgain), __PRETTY_FUNCTION__);

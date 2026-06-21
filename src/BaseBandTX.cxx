@@ -105,9 +105,12 @@ namespace SoDa {
     // enable the audio filter by default.
     tx_audio_filter_ena = true; 
 
-    mic_gain = 0.8;  //  was ... 0.4;
+    mic_gain = 0.8;
 
     fm_mic_gain = 0.8;
+
+    // af_gain starts at unity; the GUI adjusts it via TX_AF_GAIN.
+    af_gain = 1.0;
   }
 
   void BaseBandTX::run()
@@ -141,49 +144,49 @@ namespace SoDa {
     // first wake up the audio channel
     audio_ifc->wakeIn();  
 
+    unsigned int bbtx_put_count = 0;
+    unsigned int bbtx_recv_count = 0;
+
     while(!exitflag) {
       if(cmd_stream->get(cmd_subs, cmd)) {
 	// process the command.
 	execCommand(cmd);
-	exitflag |= (cmd->target == Command::STOP); 
+	exitflag |= (cmd->target == Command::STOP);
       }
       else if (!tx_stream_on || cw_tx_mode) {
-	// read audio information and throw it away. 
+	// read audio information and throw it away.
 	audio_ifc->recv(audio_buf, true);
-	usleep(1000); 
+	usleep(1000);
       }
       else {
 	// If we're in TX mode that isn't CW....
 	// get an input audio buffer.
-	if (tx_stream_on && audio_ifc->recv(audio_buf, true)) { 
-	  CBufPtr txbuf =nullptr; 
-	  std::vector<float> * audio_tx_buffer = & audio_buf; 
+	int recv_ret = audio_ifc->recv(audio_buf, true);
+	if(bbtx_recv_count < 5) {
+	  std::cerr << SoDa::Format("BaseBandTX: recv ret=%0 tx_mode=%1 tx_stream_on=%2\n")
+	    .addI(recv_ret).addI((int)tx_mode).addI((int)tx_stream_on);
+	}
+	if (tx_stream_on && recv_ret) {
+	  CBufPtr txbuf =nullptr;
+	  std::vector<float> * audio_tx_buffer = & audio_buf;
 
 	  if(tx_noise_source_ena) {
-	    audio_tx_buffer = &noise_buffer; 	  
+	    audio_tx_buffer = &noise_buffer;
 	  }
 
-	  // If we're using NOISE, we don't want to overwrite the 
-	  // noise buffer with a filtered noise sequence.  Instead,
-	  // if we're using NOISE and filtering, we'll dump the 
-	  // filters into the audio buffer, then point back to 
-	  // the audio buffer. 
-	  // If we aren't using NOISE, then this is all hunky dory too. 
-	  // If we're using NOISE and we aren't filtering, then audio_tx_buffer
-	  // still points to the NOISE buffer. 
 	  if(tx_audio_filter_ena) {
 	    tx_audio_filter->apply(*audio_tx_buffer, audio_buf);
-	    audio_tx_buffer = & audio_buf; 
+	    audio_tx_buffer = & audio_buf;
 	  }
-	
+
 	  if(tx_mode == Command::USB) {
-	    txbuf = modulateAM(*audio_tx_buffer, true, false); 
+	    txbuf = modulateAM(*audio_tx_buffer, true, false);
 	  }
 	  else if(tx_mode == Command::LSB) {
-	    txbuf = modulateAM(*audio_tx_buffer, false, true); 
+	    txbuf = modulateAM(*audio_tx_buffer, false, true);
 	  }
 	  else if(tx_mode == Command::AM) {
-	    txbuf = modulateAM(*audio_tx_buffer, false, false); 
+	    txbuf = modulateAM(*audio_tx_buffer, false, false);
 	  }
 	  else if(tx_mode == Command::NBFM) {
 	    txbuf = modulateFM(*audio_tx_buffer, nbfm_deviation);
@@ -192,10 +195,16 @@ namespace SoDa {
 	    txbuf = modulateFM(*audio_tx_buffer, wbfm_deviation);
 	  }
 	  if(txbuf !=nullptr) {
-	    tx_stream->put(txbuf); 
+	    if(bbtx_put_count == 0) {
+	      std::cerr << SoDa::Format("BaseBandTX: first tx_stream put  tx_mode=%0\n")
+		.addI((int)tx_mode);
+	    }
+	    bbtx_put_count++;
+	    bbtx_recv_count++;
+	    tx_stream->put(txbuf);
 	  }
-	}      
-	usleep(1000); 
+	}
+	usleep(1000);
       }
     }
   }
@@ -207,31 +216,33 @@ namespace SoDa {
     /// If the modulation scheme is USB or SSB,
     /// we need to make an analytic signal from the scalar real audio_buf.
   
+    float total_gain = mic_gain * af_gain;
+
     if(is_usb || is_lsb) {
-      /// If we're looking at USB, then for I = sin(w), Q => cos(w)
-      /// for LSB I = sin(w), Q => -cos(w)
-      hilbert->apply(audio_buf, audio_IQ_buf, is_lsb, mic_gain);
+      hilbert->apply(audio_buf, audio_IQ_buf, is_lsb, total_gain);
     }
     else {
-      /// if neither is_usb is_lsb is true, then we want to produce
-      /// an AM envelope.  Put the same signal in both I and Q.
       unsigned int i;
       for(i = 0; i < audio_buffer_size; i++) {
-	audio_IQ_buf[i] = std::complex<float>(audio_buf[i], 0.0) * mic_gain;
+	audio_IQ_buf[i] = std::complex<float>(audio_buf[i], 0.0) * total_gain;
       }
     }
 
-  
+    static unsigned int am_diag_count = 0;
+    if(am_diag_count < 3) {
+      float peak = 0.0f;
+      for(unsigned int i = 0; i < audio_buffer_size; i++) {
+	float a = fabsf(audio_buf[i]);
+	if(a > peak) peak = a;
+      }
+      std::cerr << SoDa::Format("BaseBandTX: modulateAM peak_audio=%0 total_gain=%1\n")
+	.addF(peak, 'f', 4).addF(total_gain, 'f', 4);
+      am_diag_count++;
+    }
 
-    /// Now that the I/Q channels have been populated, get a transmit buffer. 
-    /// and upsample the I/Q audio up to the RF rate.
     CBufPtr txbuf = CBuf::make(tx_buffer_size);
-  
-    /// Upsample the IQ audio (at 48KS/s) to the RF sample rate of 625 KS/s
-    interpolator->apply(audio_IQ_buf, txbuf->getBuf()); 
-
-    /// pass the newly created and filled buffer back to the caller
-    return txbuf; 
+    interpolator->apply(audio_IQ_buf, txbuf->getBuf());
+    return txbuf;
   }
 
 
@@ -241,7 +252,7 @@ namespace SoDa {
     unsigned int i;
   
     for(i=0; i < audio_buffer_size; i++) {
-      double audio_amp = audio_buf[i] * fm_mic_gain;
+      double audio_amp = audio_buf[i] * fm_mic_gain * af_gain;
 
       // apply a little clipping here.. better to sound
       // bad than to bleed into the neighboring channel.
@@ -285,25 +296,23 @@ namespace SoDa {
       }
       break; 
     case Command::TX_STATE: // SET TX_ON
+      std::cerr << SoDa::Format("BaseBandTX: TX_STATE iparms[0]=%0 tx_stream_on=%1 cw_tx_mode=%2\n")
+	.addI(cmd->iparms[0]).addI((int)tx_stream_on).addI((int)cw_tx_mode);
       // transition from RX to TX
-      if(cmd->iparms[0] == 3) {
+      if(cmd->iparms[0] == (int)Command::TX_ON_0) {
 	tx_on = true;
 	if(!cw_tx_mode) {
-	  // Wake up the audio interface. 
-	  // actually, never need to do this, as we never let it sleep
-	  // audio_ifc->wakeIn();
-	  tx_stream_on = true; 
+	  audio_ifc->wakeIn();
+	  tx_stream_on = true;
 	}
       }
 
       // transition from TX to RX
-      if(cmd->iparms[0] == 0) {
+      if(cmd->iparms[0] == (int)Command::TX_OFF_0) {
 	tx_on = false;
 	if(tx_stream_on) {
-	  // Put the audio interface to sleep
-	  // and flush the input buffer	
-	  audio_ifc->sleepIn(); 
-	  tx_stream_on = false; 
+	  audio_ifc->sleepIn();
+	  tx_stream_on = false;
 	}
       }
       break;
