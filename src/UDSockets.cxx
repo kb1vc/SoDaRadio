@@ -222,22 +222,34 @@ namespace SoDa {
       left = rsize;
     }
 
-    char * bptr = (char*) ptr; 
+    char * bptr = (char*) ptr;
     while(left > 0) {
       int ls = read(conn_socket, bptr, left);
       if(ls < 0) {
 	if((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
-	  continue; 
+	  // For length-prefixed messages we must finish the message once we
+	  // started it, so spin until the rest arrives.  For raw streaming
+	  // (len_prefix=false) the caller knows how to accumulate partials --
+	  // return what we have so the caller can poll for other work (like
+	  // a STOP command) instead of spinning here.
+	  if(len_prefix) continue;
+	  return ret_size;
 	}
 	else {
 	  perror("Ooops -- read buffer continued");
 	  return ls;
 	}
       }
+      else if(ls == 0) {
+	// EOF -- peer has closed the connection.  Returning ret_size (which
+	// may be 0) prevents the read loop from spinning forever on a dead
+	// socket.
+	return ret_size;
+      }
       else {
 	left -= ls;
-	bptr += ls; 
-	ret_size += ls; 
+	bptr += ls;
+	ret_size += ls;
       }
     }
   

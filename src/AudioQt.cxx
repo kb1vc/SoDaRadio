@@ -33,6 +33,7 @@
 
 #define _USE_MATH_DEFINES
 #include <cmath>
+#include <unistd.h>
 
 
 namespace SoDa {
@@ -152,34 +153,33 @@ namespace SoDa {
     unsigned int bytes_so_far = 0;
 
     while(!exit_flag) {
+      bool didwork = false;
       if(cmd_stream->get(cmd_subs, cmd)) {
 	exit_flag |= (cmd->target == Command::STOP);
+	didwork = true;
       }
-      else {
-	// we don't want to block on an empty input
-	// from the audio source, so we test
-	if(audio_tx_socket->isReady()) {
-	  if(cur_buf_ptr == nullptr) {
-	    cur_buf_ptr = getFreeBuffer();
-	    cur_buf_ptr->resize(sample_count_hint);
-	    bytes_left = sample_count_hint * sizeof(float);
-	    bytes_so_far = 0;
-	  }
-	  // now get a buffer full.
-	  // bstart is a byte pointer into the float buffer
-	  auto bstart = reinterpret_cast<uint8_t*>(cur_buf_ptr->data()) + bytes_so_far;
-	  int stat = audio_tx_socket->get(bstart, bytes_left, false);
-	  if(stat > 0) {
-	    bytes_so_far += stat;
-	    bytes_left -= stat;
-	    if(bytes_left == 0) {
-	      std::lock_guard<std::mutex> tx_data_lock(tx_data_mutex);
-	      incoming_audio_bufs.push(cur_buf_ptr);
-	      cur_buf_ptr = nullptr;
-	    }
+      if(!exit_flag && audio_tx_socket->isReady()) {
+	if(cur_buf_ptr == nullptr) {
+	  cur_buf_ptr = getFreeBuffer();
+	  cur_buf_ptr->resize(sample_count_hint);
+	  bytes_left = sample_count_hint * sizeof(float);
+	  bytes_so_far = 0;
+	}
+	// bstart is a byte pointer into the float buffer
+	auto bstart = reinterpret_cast<uint8_t*>(cur_buf_ptr->data()) + bytes_so_far;
+	int stat = audio_tx_socket->get(bstart, bytes_left, false);
+	if(stat > 0) {
+	  bytes_so_far += stat;
+	  bytes_left -= stat;
+	  didwork = true;
+	  if(bytes_left == 0) {
+	    std::lock_guard<std::mutex> tx_data_lock(tx_data_mutex);
+	    incoming_audio_bufs.push(cur_buf_ptr);
+	    cur_buf_ptr = nullptr;
 	  }
 	}
       }
+      if(!didwork) usleep(500);
     }
   }
   
