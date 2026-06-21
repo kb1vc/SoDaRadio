@@ -137,6 +137,9 @@ namespace SoDa {
 
   PlutoCtrl::~PlutoCtrl()
   {
+    if (tx_phy_chan) writeHWTXGain(TX_GAIN_MIN);
+    if (rx_lo_chan)  iio_channel_attr_write(rx_lo_chan, "powerdown", "1");
+    if (tx_lo_chan)  iio_channel_attr_write(tx_lo_chan, "powerdown", "1");
     if (ctx) {
       iio_context_destroy(ctx);
       ctx = nullptr;

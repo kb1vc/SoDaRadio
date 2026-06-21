@@ -130,8 +130,10 @@ namespace SoDa {
 
   PlutoTX::~PlutoTX()
   {
-    if (txbuf) { iio_buffer_destroy(txbuf); txbuf = nullptr; }
-    if (ctx)   { iio_context_destroy(ctx);  ctx   = nullptr; }
+    if (txbuf)    { iio_buffer_destroy(txbuf);       txbuf    = nullptr; }
+    if (tx_i_chan){ iio_channel_disable(tx_i_chan);   tx_i_chan = nullptr; }
+    if (tx_q_chan){ iio_channel_disable(tx_q_chan);   tx_q_chan = nullptr; }
+    if (ctx)      { iio_context_destroy(ctx);         ctx      = nullptr; }
   }
 
   // ---------------------------------------------------------------

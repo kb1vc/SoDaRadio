@@ -100,13 +100,19 @@ static QProcess * startupServer(QObject * parent, const QString & lock_file_name
 
   server_args << "--uds_name" << ss2QS(p.getServerSocketBasename());
 
+  // forward the radio type to the server
+  QString radio_name = ss2QS(p.getRadioName());
+  if(radio_name != "") {
+    server_args << "--radio" << radio_name.toUpper();
+  }
+
   // now add the uhd args
   QString uhd_args = ss2QS(p.getUHDArgs());
   if(uhd_args != "") {
-    server_args << "--uhdargs" << uhd_args; 
+    server_args << "--uhdargs" << uhd_args;
   }
   if(p.getDebugLevel() > 0) {
-    server_args << "--debug" << QString("%1").arg(p.getDebugLevel()); 
+    server_args << "--debug" << QString("%1").arg(p.getDebugLevel());
   }
   
   QString server_extra_args = ss2QS(p.getServerArgs());

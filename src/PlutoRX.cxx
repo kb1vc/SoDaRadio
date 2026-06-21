@@ -114,8 +114,10 @@ namespace SoDa {
 
   PlutoRX::~PlutoRX()
   {
-    if (rxbuf) { iio_buffer_destroy(rxbuf); rxbuf = nullptr; }
-    if (ctx)   { iio_context_destroy(ctx);  ctx   = nullptr; }
+    if (rxbuf)    { iio_buffer_destroy(rxbuf);       rxbuf    = nullptr; }
+    if (rx_i_chan){ iio_channel_disable(rx_i_chan);   rx_i_chan = nullptr; }
+    if (rx_q_chan){ iio_channel_disable(rx_q_chan);   rx_q_chan = nullptr; }
+    if (ctx)      { iio_context_destroy(ctx);         ctx      = nullptr; }
   }
 
   // ---------------------------------------------------------------

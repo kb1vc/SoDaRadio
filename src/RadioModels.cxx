@@ -50,7 +50,15 @@ namespace SoDa {
     // Add your new radio model here.
     //
     // Just follow the examples below:
+#if HAVE_UHD    
     model_map["USRP"] = USRPRadio::make;
+    // multiple names because most USRPs I see use the UBX
+    // module and tune 10 MHz to 6 GHz.
+    // The B2xx series tunes from 60 on up. So to get HF
+    // we use a up/down converter. That means that the band
+    // tables for a B200 are different from those of an N200/UBX or E310 or...
+    model_map["USRPB200"] = USRPRadio::make;
+#endif    
 
 #if HAVE_PLUTO
     model_map["PLUTO"] = PlutoRadio::make;
