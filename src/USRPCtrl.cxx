@@ -438,13 +438,17 @@ namespace SoDa {
 
     // if we're enabling, set the power, freq, and other stuff
     if(val) {
-      sleep_us(400);    
+      sleep_us(400);
       // set the tx antenna
       setAntenna(tx_ant, SoDa::TX);
+      // write the TX gain now that tx_on is true
+      usrp->set_tx_gain(tx_rf_gain);
+      std::cerr << SoDa::Format("USRPCtrl: setTXEna TX gain set to %0\n")
+        .addF(tx_rf_gain, 'f', 2);
     }
 
     if(!val) {
-      tr_control->setTXOff(); 
+      tr_control->setTXOff();
     }
   }
 

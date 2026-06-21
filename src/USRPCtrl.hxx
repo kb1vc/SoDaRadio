@@ -205,7 +205,10 @@ namespace SoDa {
      */
     RadioControlPtr getSelfPtr() { return self.lock(); }
 
-    void setTXEna(bool tx_on, bool full_duplex) override { locSetTXEna(tx_on); }
+    void setTXEna(bool enable, bool full_duplex) override {
+      tx_on = enable;   // update RadioControl::tx_on so setRFGain(TX) guard works
+      locSetTXEna(enable);
+    }
     
   protected:
     ParamsPtr params;
