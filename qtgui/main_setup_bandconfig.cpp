@@ -92,15 +92,19 @@ void MainWindow::bandMapSaveRestore(GUISoDa::BandMap & bmap, bool save)
   }
   else {
     bmap.restoreBands(settings_p);
-    // now load the comboboxes
-    GUISoDa::BandMap::BandMapIterator bmi(bmap); 
-    // clear the two band selectors.
+    // build a list sorted by band index, then populate the comboboxes
+    QList<QPair<int, QString>> sorted_bands;
+    GUISoDa::BandMap::BandMapIterator bmi(bmap);
+    while(bmi.hasNext()) {
+      bmi.next();
+      sorted_bands.append(qMakePair(bmi.value().index(), bmi.key()));
+    }
+    std::sort(sorted_bands.begin(), sorted_bands.end());
     ui->BCBandSel_cb->clear();
     ui->bandSel_cb->clear();
-    while(bmi.hasNext()) {
-      bmi.next();            
-      ui->BCBandSel_cb->addItem(bmi.key());
-      ui->bandSel_cb->addItem(bmi.key());
+    for(const auto & p : sorted_bands) {
+      ui->BCBandSel_cb->addItem(p.second);
+      ui->bandSel_cb->addItem(p.second);
     }
     // add a new band at the end of the band config selector
     ui->BCBandSel_cb->addItem("Create Band");
