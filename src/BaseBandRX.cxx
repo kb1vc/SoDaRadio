@@ -429,7 +429,7 @@ namespace SoDa {
 	    audio_rx_stream_enabled = false;
 	  }
 	  cmd_stream->put(Command::make(Command::SET, Command::TX_STATE,
-					Command::TX_ON_2, cmd->iparms[1]));
+					Command::TX_ON_2, 0));
 	}
 	break;
       case Command::TX_OFF_1:

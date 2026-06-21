@@ -153,9 +153,9 @@ namespace SoDa {
   
     switch(cmd->target) {
     case Command::TX_STATE:
-      if(cmd->iparms[0] == 3) tx_on = true;
-      else tx_on = false; 
-      break; 
+      // TX_ON_0/1/2 are >= TX_ON_0; TX_OFF_0/1/2 are < TX_ON_0.
+      tx_on = (cmd->iparms[0] >= (int)Command::TX_ON_0);
+      break;
     case Command::TX_BEACON:
       if(cmd->iparms[0] == 1) {
 	old_txmode_is_cw = txmode_is_cw; 

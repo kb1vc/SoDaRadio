@@ -445,7 +445,7 @@ namespace SoDa {
       // the RX unit will send a Command::TX_ON_2 message to the TX unit. 
       // This avoids the race between CTRL and TX/RX units for setup and teardown....
       cmd_stream->put(Command::make(Command::SET, Command::TX_STATE,
-				  Command::TX_ON_1, (int)full_duplex));
+				  Command::TX_ON_1, 0));
 
     }
     else if(rxtxst == Command::TX_OFF_0) {
@@ -465,7 +465,7 @@ namespace SoDa {
       // and tell the RX unit to turn on the RX
       // This avoids the race between CTRL and TX/RX units for setup and teardown....
       cmd_stream->put(Command::make(Command::SET, Command::TX_STATE,
-				  Command::TX_OFF_1, full_duplex));
+				  Command::TX_OFF_1, 0));
     }
     else if(rxtxst == Command::TX_OFF_2) {
       // LO offset already applied in TX_OFF_0; nothing else needed here.

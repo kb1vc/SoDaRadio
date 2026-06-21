@@ -190,26 +190,19 @@ void CWGenerator::setCWSpeed(unsigned int wpm)
 
 void CWGenerator::appendToOut(std::vector<float> & v)
 {
-  // ok.  What we're trying to do here is to fill "cur_buf" with
-  // the samples in v.  Once cur_buf is filled, we'll put it on
-  // the message ring, and create a new buffer.
-
-  // because of the way the messaging works, cur_buf is really
-  // a pointer to a buffer message object. It contains an actual
-  // vector of floats (or complex floats).  That's the thing
-  // that we're filling up.
-
-  // We'll do this the simplest way possible first.
-  std::vector<float> & curvec = cur_buf->getBuf();
+  // Fill cur_buf with samples from v.  When cur_buf is full, put it on
+  // the stream and allocate a fresh one.
+  // NOTE: do NOT cache cur_buf->getBuf() as a reference across the boundary —
+  // assigning to a C++ reference does not rebind it, so a stale reference
+  // would write into the already-submitted buffer (zeros) instead of the
+  // new one, silencing everything after the first block.
   for(auto vv : v) {
-    curvec[cur_buf_idx] = vv;
+    cur_buf->getBuf()[cur_buf_idx] = vv;
     cur_buf_idx++;
     if(cur_buf_idx == env_buf_len) {
-      // send the buffer
       env_stream->put(cur_buf);
       cur_buf = SoDa::FBuf::make(env_buf_len);
       cur_buf_idx = 0;
-      curvec = cur_buf->getBuf();
     }
   }
 }

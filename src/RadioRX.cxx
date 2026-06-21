@@ -100,7 +100,7 @@ namespace SoDa {
 
 	// tell the transmitter it can turn itself on now. 
 	cmd_stream->put(Command::make(Command::SET, Command::TX_STATE,
-				    Command::TX_ON_2, cmd->iparms[1]));
+				    Command::TX_ON_2, 0));
       }
       if(cmd->iparms[0] == Command::TX_OFF_1) {
 	// start the RX stream.

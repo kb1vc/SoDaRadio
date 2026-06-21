@@ -93,6 +93,7 @@ void SoDa::RadioTX::run()
 
   bool exitflag = false;
   unsigned int beacon_push_count = 0;
+  unsigned int cw_push_count = 0;
   while(!exitflag) {
     bool didwork = false;
     CommandPtr cmd;
@@ -126,13 +127,20 @@ void SoDa::RadioTX::run()
 	     (tx_modulation == SoDa::Command::CW_U))) {
       FBufPtr cwenv;
       if(cw_env_stream->get(cw_subs, cwenv)) {
+	if(cw_push_count == 0) {
+	  std::cerr << SoDa::Format("RadioTX: CW first envelope  tx_mod=%0\n")
+	    .addI((int)tx_modulation);
+	}
+	cw_push_count++;
 	doCW(cw_buf, cwenv);
 	put(cw_buf);
 	didwork = true;
       }
       else {
+	// No envelope yet — keep TX stream alive with silence.
 	doCW(cw_buf, zero_env);
 	put(cw_buf);
+	didwork = true;
 	if(waiting_to_run_dry) {
 	  cmd_stream->put(Command::make(Command::REP, Command::TX_CW_EMPTY, 0));
 	  waiting_to_run_dry = false;
