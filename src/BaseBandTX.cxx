@@ -76,8 +76,8 @@ namespace SoDa {
 
     tx_stream_on = false;
 
-    // create the IQ buffer.
-    audio_IQ_buf.resize(8*audio_buffer_size);
+    // create the IQ buffer -- must match interpolator->getInputBufferSize() exactly.
+    audio_IQ_buf.resize(audio_buffer_size);
 
     // create the Hilbert transformer
     hilbert = HilbertTransformer::make(audio_buffer_size);
