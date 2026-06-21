@@ -57,13 +57,6 @@ void MainWindow::setupTopControls()
   connect(ui->AFGain_slide, SIGNAL(valueChanged(int)),
 	  radio_listener, SLOT(setAFGain(int)));
 
-  connect(ui->TXAFGain_slide, SIGNAL(valueChanged(int)),
-	  radio_listener, SLOT(setTXAFGain(int)));
-  connect(ui->TXAFGain_slide, &QSlider::valueChanged,
-	  [=](int s) {
-	    ui->TXAFGain_lbl->setText(QString("%1").arg(s, 3));
-	  });
-
   connect(ui->RXFreq_lab, SIGNAL(newFreq(double)), 
 	  this, SLOT(setRXFreq(double))); 
 

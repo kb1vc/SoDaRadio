@@ -60,6 +60,12 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   audio_listener = new GUISoDa::AudioListener(this, QString::fromStdString(params.getServerSocketBasename()));
   qDebug() << QString("Started AudioListener");
 
+  // setup the TX audio server (captures mic/virtual-device audio and ships it
+  // to the radio server's _txa unix socket)
+  qDebug() << QString("About to start AudioTXServer");
+  audio_tx_server = new GUISoDa::AudioTXServer(this, QString::fromStdString(params.getServerSocketBasename()));
+  qDebug() << QString("Started AudioTXServer");
+
   setupBandConfig();  
   setupSpectrum();
   setupWaterFall();
@@ -101,6 +107,14 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
 	  [=](int index) {
 	    int ridx = ((index >= 0) && (index < ui->audioOut_cb->count())) ? index : 0;
 	    audio_listener->getRX()->setRXDevice(ui->audioOut_cb->itemData(ridx).value<QAudioDevice>());
+	  });
+
+  // connect the TX audio server to the tx input device combobox
+  connect(ui->audioIn_cb, QOverload<int>::of(&QComboBox::currentIndexChanged),
+	  [=](int index) {
+	    int ridx = ((index >= 0) && (index < ui->audioIn_cb->count())) ? index : 0;
+	    QAudioDevice dev = ui->audioIn_cb->itemData(ridx).value<QAudioDevice>();
+	    audio_tx_server->changeDevice(dev);
 	  });
 
   connect(audio_listener->getRX(), SIGNAL(bufferSlack(const QString &)), 

@@ -228,17 +228,18 @@ namespace SoDa {
       }
     }
 
+    // Periodic peak diagnostic — every ~5s of TX (100 buffers @ ~50ms each)
     static unsigned int am_diag_count = 0;
-    if(am_diag_count < 3) {
+    if((am_diag_count % 100) == 0) {
       float peak = 0.0f;
       for(unsigned int i = 0; i < audio_buffer_size; i++) {
 	float a = fabsf(audio_buf[i]);
 	if(a > peak) peak = a;
       }
-      std::cerr << SoDa::Format("BaseBandTX: modulateAM peak_audio=%0 total_gain=%1\n")
-	.addF(peak, 'f', 4).addF(total_gain, 'f', 4);
-      am_diag_count++;
+      std::cerr << SoDa::Format("BaseBandTX: modulateAM peak_audio=%0 af_gain=%1 mic_gain=%2\n")
+	.addF(peak, 'e', 4).addF(af_gain, 'e', 4).addF(mic_gain, 'f', 4);
     }
+    am_diag_count++;
 
     CBufPtr txbuf = CBuf::make(tx_buffer_size);
     interpolator->apply(audio_IQ_buf, txbuf->getBuf());

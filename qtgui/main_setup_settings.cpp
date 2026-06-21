@@ -49,12 +49,19 @@ void MainWindow::setupSettings()
 	    ui->Sidetone_lbl->setText(QString("%1").arg(s, 2));
 	  }); 
 
-  connect(ui->TXPower_sli, SIGNAL(valueChanged(int)), 
+  connect(ui->TXPower_sli, SIGNAL(valueChanged(int)),
 	  radio_listener, SLOT(setTXGain(int)));
   connect(ui->TXPower_sli, &QSlider::valueChanged,
 	  [=](int s) {
 	    ui->TXPower_lbl->setText(QString("%1").arg(s, 3));
-	  }); 
+	  });
+
+  connect(ui->TXAFGain_slide, SIGNAL(valueChanged(int)),
+	  radio_listener, SLOT(setTXAFGain(int)));
+  connect(ui->TXAFGain_slide, &QSlider::valueChanged,
+	  [=](int s) {
+	    ui->TXAFGain_lbl->setText(QString("%1").arg(s, 3));
+	  });
   
   connect(ui->FromGrid_le, SIGNAL(textChanged(const QString &)),
 	  ui->FromGrid_lab, SLOT(setText(const QString &)));
@@ -96,7 +103,7 @@ void MainWindow::setupAudioDeviceList()
 
   const QAudioDevice & def_tx_dev_info = QMediaDevices::defaultAudioInput();
   ui->audioIn_cb->addItem(def_tx_dev_info.description(), QVariant::fromValue(def_tx_dev_info));
-  for(auto &tx_dev_info: QMediaDevices::audioOutputs()) {
+  for(auto &tx_dev_info: QMediaDevices::audioInputs()) {
     if(tx_dev_info != def_tx_dev_info) {
       ui->audioIn_cb->addItem(tx_dev_info.description(), QVariant::fromValue(tx_dev_info));
     }

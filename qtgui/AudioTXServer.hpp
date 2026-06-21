@@ -213,6 +213,7 @@ namespace GUISoDa {
 
   private slots:
     void tryConnectSocket();
+    void audioSocketError(QLocalSocket::LocalSocketError err);
     
   private:
 

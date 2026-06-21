@@ -36,6 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QSystemTrayIcon>
 
 #include "RadioListener.hpp"
+#include "AudioTXServer.hpp"
 #include "../common/GuiParams.hxx"
 #include "Band.hpp"
 #include "BandMap.hpp"
@@ -174,7 +175,9 @@ private:
 
   GUISoDa::AudioListener * audio_listener;
 
-  GUISoDa::HamlibServer * hlib_server; 
+  GUISoDa::AudioTXServer * audio_tx_server;
+
+  GUISoDa::HamlibServer * hlib_server;
 
   // UI wide state -- this doesn't really fit anywhere else.
   void setTXRXOffset(double v) { tx_rx_offset = v; }

@@ -29,6 +29,7 @@
 #include "AudioTXServer.hpp"
 #include <QMessageBox>
 #include <cstring>
+#include <iostream>
 #include <QDateTime>
 #include <QFileDialog>
 #include <QByteArray>
@@ -128,6 +129,9 @@ namespace GUISoDa {
     audio_input_p.reset(new QAudioSource(dev_info, format));
     audio_input_p->start(this);
 
+    std::cerr << "AudioTXServer: capturing from ["
+              << dev_info.description().toStdString() << "]\n";
+
     return true;
   }
 
@@ -172,8 +176,23 @@ namespace GUISoDa {
   
   void AudioTXServer::shutdown() {
     is_active = false;
-    
+
     audio_input_p.reset(nullptr);
     audio_tx_socket->close();
+  }
+
+  void AudioTXServer::changeDevice(QAudioDevice & dev_info) {
+    QMutexLocker locker(&mutex);
+    if (audio_input_p) {
+      audio_input_p->stop();
+      audio_input_p.reset(nullptr);
+    }
+    locker.unlock();
+    initAudioDevice(dev_info);
+  }
+
+  void AudioTXServer::audioSocketError(QLocalSocket::LocalSocketError err) {
+    std::cerr << "AudioTXServer socket error [" << err << "] on ["
+              << socket_name.toStdString() << "]\n";
   }
 }
