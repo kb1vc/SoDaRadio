@@ -40,12 +40,12 @@ namespace GUISoDa {
   void BandMap::restoreBands(QSettings * set_p) {
     int size = set_p->beginReadArray("Bands");
     for(int i = 0; i < size; i++) {
-      Band b; 
+      Band b;
       set_p->setArrayIndex(i);
       QString dname = set_p->value("Name").toString();
-      b.restore(set_p); 
+      b.restore(set_p);
       QString bn = b.name();
-      (*this)[b.name()] = b; 
+      (*this)[b.name()] = b;
     }
     set_p->endArray();
   }

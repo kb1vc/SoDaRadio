@@ -143,7 +143,7 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   connect(ui->aboutSoDa_btn, SIGNAL(clicked(bool)), 
 	  this, SLOT(displayAppInfo(bool)));
 
-  qDebug() << QString("connected stuff");  
+  qDebug() << QString("connected stuff");
   QString radio_name = QString::fromStdString(params.getRadioName());
   QString settings_app = radio_name.isEmpty()
     ? QString("SoDaRadioQT")

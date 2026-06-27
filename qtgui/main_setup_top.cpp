@@ -29,8 +29,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mainwindow.hpp"
 #include "ui_mainwindow.h"
 #include <iostream>
+#include <cmath>
 #include "soda_comboboxes.hpp"
 #include "RadioListener.hpp"
+#include "soda_spect.hpp"
+#include "soda_wfall.hpp"
 
 void MainWindow::setupTopControls()
 {
@@ -127,7 +130,7 @@ void MainWindow::updateBandDisplay(double freq)
 
 void MainWindow::setRXFreq_nocross(double freq)
 {
-  // tell the radio. 
+  // tell the radio.
   radio_listener->setRXFreq(freq);
 
   // tell the hamlib listener
@@ -136,14 +139,25 @@ void MainWindow::setRXFreq_nocross(double freq)
   }
 
   // tell the waterfall
-  ui->waterfall_plt->setFreqMarker(freq); 
+  ui->waterfall_plt->setFreqMarker(freq);
 
   // tell the spectrum plot
   ui->spectrum_plt->setFreqMarker(freq);
-  
-  // tell the RX freq display
-  ui->RXFreq_lab->setFreq(freq); 
 
+  // tell the RX freq display
+  ui->RXFreq_lab->setFreq(freq);
+
+  // If the new RX freq falls outside either spectrum display's visible
+  // window, ask the radio to re-center its spectrum stream on the new
+  // frequency.  configureSpectrum will then re-center both displays.
+  double sp_half = 0.5 * ui->spectrum_plt->freqSpan();
+  double wf_half = 0.5 * ui->waterfall_plt->freqSpan();
+  bool out_of_view =
+    (std::fabs(freq - ui->spectrum_plt->freqCenter())  > sp_half) ||
+    (std::fabs(freq - ui->waterfall_plt->freqCenter()) > wf_half);
+  if (out_of_view) {
+    radio_listener->setSpectrumCenter(freq);
+  }
 }
 
 void MainWindow::setTXFreq_nocross(double freq)

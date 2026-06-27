@@ -2596,7 +2596,7 @@
             </font>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Select RX Frequency&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;MB1&lt;/span&gt; increment/decrement selected digit&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;MB3&lt;/span&gt; left half -- move digit selector left&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;MB3&lt;/span&gt; right half -- move digit selector right&lt;/p&gt;&lt;p&gt;Increment by clicking &lt;span style=&quot; font-weight:600;&quot;&gt;MB1&lt;/span&gt; in the top half of the digit. Decrement by clicking &lt;span style=&quot; font-weight:600;&quot;&gt;MB1&lt;/span&gt; in the bottom half of the digit.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Select RX Frequency&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click &lt;span style=&quot; font-weight:600;&quot;&gt;MB1&lt;/span&gt; on the &lt;span style=&quot; font-style:italic;&quot;&gt;top half&lt;/span&gt; of a digit to increment it, the &lt;span style=&quot; font-style:italic;&quot;&gt;bottom half&lt;/span&gt; to decrement it.&lt;/p&gt;&lt;p&gt;Scroll the mouse wheel over a digit to increment / decrement it.&lt;/p&gt;&lt;p&gt;Carries propagate to the digit on the left.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="toolTipDuration">
             <number>0</number>
@@ -2647,7 +2647,7 @@
             </font>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Select TX Frequency&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;MB1&lt;/span&gt; increment/decrement selected digit&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;MB3&lt;/span&gt; left half -- move digit selector left&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;MB3&lt;/span&gt; right half -- move digit selector right&lt;/p&gt;&lt;p&gt;Increment by clicking &lt;span style=&quot; font-weight:600;&quot;&gt;MB1 &lt;/span&gt;in the top half of the digit. Decrement by clicking &lt;span style=&quot; font-weight:600;&quot;&gt;MB1 &lt;/span&gt;in the bottom half of the digit.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Select TX Frequency&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Click &lt;span style=&quot; font-weight:600;&quot;&gt;MB1&lt;/span&gt; on the &lt;span style=&quot; font-style:italic;&quot;&gt;top half&lt;/span&gt; of a digit to increment it, the &lt;span style=&quot; font-style:italic;&quot;&gt;bottom half&lt;/span&gt; to decrement it.&lt;/p&gt;&lt;p&gt;Scroll the mouse wheel over a digit to increment / decrement it.&lt;/p&gt;&lt;p&gt;Carries propagate to the digit on the left.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="toolTipDuration">
             <number>0</number>

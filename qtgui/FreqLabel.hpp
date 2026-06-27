@@ -31,44 +31,62 @@
 #include <QWidget>
 #include <Qt>
 #include <QMouseEvent>
-#include <iostream>
+#include <QWheelEvent>
+#include <QPaintEvent>
+#include <QResizeEvent>
+#include <QPoint>
+#include <QRect>
+#include <vector>
 
 namespace GUISoDa {
 
   class FreqLabel : public QLabel {
     Q_OBJECT
- 
+
   public:
     explicit FreqLabel(QWidget * parent = Q_NULLPTR,
-		       Qt::WindowFlags f = Qt::WindowFlags());
+                       Qt::WindowFlags f = Qt::WindowFlags());
     ~FreqLabel();
 
-
-    double getFreq() const {
-      return frequency; 
-    }
+    double getFreq() const { return frequency; }
 
     void setFreqUpdate(double freq);
-    
+
   signals:
     void newFreq(double freq);
 
   public slots:
-    void setFreq(double freq); 
+    void setFreq(double freq);
 
   protected:
-    void mousePressEvent(QMouseEvent * event);
+    void paintEvent(QPaintEvent * event) override;
+    void mousePressEvent(QMouseEvent * event) override;
+    void mouseMoveEvent(QMouseEvent * event) override;
+    void wheelEvent(QWheelEvent * event) override;
+    void leaveEvent(QEvent * event) override;
+    void resizeEvent(QResizeEvent * event) override;
+    QSize sizeHint() const override;
+    QSize minimumSizeHint() const override;
 
-    double updateFrequency();
-  
   private:
-    double frequency;  // in hz
-    long int_freq, frac_freq; // in MHz. 
+    double frequency;        // in Hz
 
-    QString freq2String();
+    struct DigitSlot {
+      QRect rect;            // hit rect in widget coords
+      long long weight_hz;   // power-of-10 weight in Hz (1, 10, 100, ..., 10^10)
+      int digit_value;       // 0..9
+    };
+    std::vector<DigitSlot> digit_rects;
+    QRect comma_rect;
+    QRect dot_rect;
+    QRect space_rect;
 
-    int incdec_position; 
+    int hover_index;         // -1 if none, else index into digit_rects
+    QPoint last_mouse_pos;
 
-    int disp_w, disp_h; // width and height of actual string.
-  }; 
+    void rebuildLayout();
+    int hitDigit(const QPoint & p) const;
+    void applyDelta(long long delta_hz);
+    void clampFrequency();
+  };
 }

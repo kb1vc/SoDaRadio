@@ -30,6 +30,7 @@
 #include "version.h"
 
 #include <SoDa/MailBox.hxx>
+#include <deque>
 
 namespace SoDa {
 
@@ -130,41 +131,58 @@ void UI::run()
   unsigned int socket_empty_count = 0;
   unsigned int iter_count = 0;
   bool new_connection = true; ;
+
+  // Buffer for REP commands that arrive before the GUI client connects.
+  // Slow radio backends (e.g., USRP UHD probe) may finish their initial
+  // setup -- including INIT_SETUP_COMPLETE, antenna names, and other
+  // one-shot reports -- before the client socket is ready; without this
+  // buffer those messages are silently dropped by ServerSocket::put.
+  std::deque<SoDa::CommandPtr> pending_rep;
+  const size_t pending_rep_cap = 4096;
+
   while(1) {
     iter_count++;
     bool didwork = false;
-    bool got_new_netmsg = false; 
-    // listen on the socket.
+    bool got_new_netmsg = false;
+    bool sock_ready = server_socket->isReady();
 
-    if(server_socket->isReady()) {
+    if(sock_ready) {
       if(new_connection) {
 	updateSpectrumState();
 
 	std::string vers= SoDa::Format("%0 Git %1")
 	  .addS(SoDaRadio_VERSION)
 	  .addS(SoDaRadio_GIT_ID).str();
-	
+
 	SoDa::CommandPtr vers_cmd = SoDa::Command::make(Command::REP,
 						     Command::SDR_VERSION,
 						     vers.c_str());
 	server_socket->put(vers_cmd.get(), sizeof(SoDa::Command));
-	new_connection = false; 
+
+	// Flush any REP commands that arrived before the client was ready.
+	while(!pending_rep.empty()) {
+	  SoDa::CommandPtr c = pending_rep.front();
+	  pending_rep.pop_front();
+	  server_socket->put(c.get(), sizeof(SoDa::Command));
+	}
+
+	new_connection = false;
       }
-      
+
       if(net_cmd == NULL) {
 	net_cmd = SoDa::Command::make();
       }
       int stat = server_socket->get(net_cmd.get(), sizeof(SoDa::Command));
       if(stat <= 0) {
-	socket_empty_count++; 
+	socket_empty_count++;
       }
       else {
 	socket_read_count++;
-	got_new_netmsg = true; 
+	got_new_netmsg = true;
       }
     }
     else {
-      new_connection = true; 
+      new_connection = true;
     }
 
     // if there are commands arriving from the socket port, handle them.
@@ -173,20 +191,25 @@ void UI::run()
       cmd_stream->put(net_cmd);
       didwork = true;
       if(net_cmd->target == SoDa::Command::TX_CW_EMPTY) {
-       	debugMsg("got TX_CW_EMPTY command from socket.\n"); 
+       	debugMsg("got TX_CW_EMPTY command from socket.\n");
       }
       if(net_cmd->target == SoDa::Command::STOP) {
-	// relay "stop" commands to the GPS unit. 
+	// relay "stop" commands to the GPS unit.
 	gps_stream->put(SoDa::Command::make(Command::SET, Command::STOP, 0));
 	break;
       }
-      net_cmd = NULL; 
+      net_cmd = NULL;
     }
 
     while(cmd_stream->get(cmd_subs, ring_cmd)) {
       debugMsg(SoDa::Format("UI CMD ring: %0\n").addS(ring_cmd->toString()), 6);
       if(ring_cmd->cmd == SoDa::Command::REP) {
-	server_socket->put(ring_cmd.get(), sizeof(SoDa::Command));
+	if(sock_ready) {
+	  server_socket->put(ring_cmd.get(), sizeof(SoDa::Command));
+	}
+	else if(pending_rep.size() < pending_rep_cap) {
+	  pending_rep.push_back(ring_cmd);
+	}
       }
       execCommand(ring_cmd);
       didwork = true;
@@ -195,7 +218,12 @@ void UI::run()
     while(gps_stream->get(gps_subs, ring_cmd)) {
       debugMsg(SoDa::Format("UI GPS ring: %0\n").addS(ring_cmd->toString()), 6);
       if(ring_cmd->cmd == SoDa::Command::REP) {
-	server_socket->put(ring_cmd.get(), sizeof(SoDa::Command));
+	if(sock_ready) {
+	  server_socket->put(ring_cmd.get(), sizeof(SoDa::Command));
+	}
+	else if(pending_rep.size() < pending_rep_cap) {
+	  pending_rep.push_back(ring_cmd);
+	}
       }
       execCommand(ring_cmd);
       didwork = true;

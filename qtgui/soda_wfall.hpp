@@ -66,6 +66,7 @@ namespace GUISoDa {
     ~WFall();
 
     double freqCenter() { return center_freq; }
+    double freqSpan() { return freq_span; }
 
     void handleMouseEvent(const QMouseEvent * ev) {
       // if we get here, the user clicked MB3 in the window -- 

@@ -27,157 +27,252 @@
 */
 
 #include <cmath>
-#include <iostream>
+#include <QPainter>
+#include <QPalette>
+#include <QFontMetrics>
 
 #include "FreqLabel.hpp"
 
 namespace GUISoDa {
 
-  FreqLabel::FreqLabel(QWidget * parent,
-		       Qt::WindowFlags f)
-    : QLabel(parent), incdec_position(2)
+  // Slot 0 is the leftmost (10 GHz) digit; slot 10 is the rightmost (1 Hz).
+  // Comma between slot 1 and slot 2; decimal point between slot 4 and slot 5;
+  // space between slot 7 and slot 8.
+  static const long long kSlotWeights[11] = {
+    10000000000LL, // 10 GHz
+     1000000000LL, //  1 GHz
+      100000000LL, // 100 MHz
+       10000000LL, //  10 MHz
+        1000000LL, //   1 MHz
+         100000LL, // 100 kHz
+          10000LL, //  10 kHz
+           1000LL, //   1 kHz
+            100LL, // 100 Hz
+             10LL, //  10 Hz
+              1LL  //   1 Hz
+  };
+
+  FreqLabel::FreqLabel(QWidget * parent, Qt::WindowFlags f)
+    : QLabel(parent), frequency(0.0), hover_index(-1)
   {
     (void) f;
+    setMouseTracking(true);
+    // We render the digits ourselves; the .ui-supplied text is ignored.
+    QLabel::setText(QString());
     setFreq(144.295e6);
-
-    setTextFormat(Qt::RichText);
   }
 
   FreqLabel::~FreqLabel() {}
 
-  QString FreqLabel::freq2String() {
-    QString ret; 
-    int num_digs; 
-    unsigned long ifrac = frac_freq;
-    // start at the left hand side
-    for(num_digs = 0; num_digs < 6; num_digs++) {
-      int dig = ifrac % 10;
-      ifrac = ifrac / 10;
-      if(num_digs == 3) ret = " " + ret; 
-      if(incdec_position == num_digs) {
-	ret = "<u>" + QString::number(dig) + "</u>" + ret;      
-      }
-      else {
-	ret = QString::number(dig) + ret;
-      }
-    }
-
-    // add the decimal point
-    ret = "." + ret; 
-
-    unsigned long ifreq = int_freq;
-    for(; num_digs < 11; num_digs++) {
-      int dig = ifreq % 10;
-      ifreq = ifreq / 10;
-
-      if(((num_digs % 3) == 0) && (num_digs > 6)) {
-	ret = "," + ret; 
-      }
-      if(incdec_position == num_digs) {
-	ret = "<u>" + QString::number(dig) + "</u>" + ret;      
-      }
-      else {
-	ret = QString::number(dig) + ret;
-      }   
-    }
-
-    while(ret.size() < 14) {
-      ret = " " + ret;
-    }
-    return ret; 
+  void FreqLabel::clampFrequency()
+  {
+    if (frequency < 0.0) frequency = 0.0;
+    // 99,999.999 999 MHz upper bound (matches original 5-digit integer field)
+    const double max_hz = 99999999999.0;
+    if (frequency > max_hz) frequency = max_hz;
   }
 
   void FreqLabel::setFreq(double hzfreq)
   {
-    double freq = hzfreq * 1e-6; 
-    frequency = hzfreq; 
-
-    int_freq = lround(floor(freq));
-    double fr = freq - floor(freq);
-    frac_freq = lround(fr * 1e6);
-    QString flab = freq2String();
-
-    setText(flab);
-
-    // now set the text width/height
-    QRect r = fontMetrics().boundingRect(flab);
-    disp_w = r.width();
-    disp_h = r.height();
+    frequency = hzfreq;
+    clampFrequency();
+    rebuildLayout();
+    update();
   }
 
-  void FreqLabel::mousePressEvent(QMouseEvent * event) 
+  void FreqLabel::setFreqUpdate(double hzfreq)
   {
-    int px = event->x();
-    int py = event->y();
-    int wh = height();
-    int ww = width();
-
-    unsigned long incr = 0;
-    if(event->button() == Qt::LeftButton) {
-      if(py > (wh >> 1)) {
-	incr = incr - 1;
-      }
-      else if(py < (wh >> 1)) {
-	incr = incr + 1;
-      }
-    }
-
-    if(event->button() == Qt::RightButton) {
-      if(px < (ww >> 1)) {
-	incdec_position += 1;
-	if(incdec_position > 10) incdec_position = 10;
-      }
-      else if(px > (ww >> 1)) {
-	incdec_position -= 1;
-	if(incdec_position < 0) incdec_position = 0;
-      }
-    }
-
-    if(incr != 0) {
-      if(incdec_position < 6) {
-	for(int i = 0; i < incdec_position; i++) {
-	  incr = incr * 10;
-	}
-	frac_freq += incr;
-      }
-      else {
-	for(int i = 6; i < incdec_position; i++) {
-	  incr = incr * 10;
-	}
-	int_freq += incr;
-	if(int_freq < 0) {
-	  int_freq -= incr;
-	  // move adj to right
-	  incdec_position -= 1;
-	}
-      }
-    }
-    if(frac_freq >= 1000000) {
-      frac_freq -= 1000000;
-      int_freq += 1;
-    }
-    if(frac_freq < 0) {
-      frac_freq += 1000000;
-      int_freq -= 1;
-    }
-
-    if(int_freq > 99999) int_freq = 99999;
-    if(int_freq < 0) int_freq = 0;
-
-    setFreq(updateFrequency());
-
+    setFreq(hzfreq);
     emit newFreq(frequency);
   }
 
-  void FreqLabel::setFreqUpdate(double freq) {
-    setFreq(freq); 
-    emit(newFreq(frequency));
+  void FreqLabel::rebuildLayout()
+  {
+    digit_rects.clear();
+    if (width() <= 0 || height() <= 0) return;
+
+    QFontMetrics fm(font());
+    int digit_w = fm.horizontalAdvance(QChar('0'));
+    int comma_w = fm.horizontalAdvance(QChar(','));
+    int dot_w   = fm.horizontalAdvance(QChar('.'));
+    int space_w = fm.horizontalAdvance(QChar(' '));
+    if (digit_w <= 0) digit_w = 1;
+
+    int total_w = 11 * digit_w + comma_w + dot_w + space_w;
+    int x = (width() - total_w) / 2;
+    int y = 0;
+    int h = height();
+
+    long long ifq = (long long) llround(frequency);
+
+    auto digit_at = [&](long long w) -> int {
+      return (int)((ifq / w) % 10);
+    };
+
+    // Slots 0..1 (10 GHz, 1 GHz)
+    for (int i = 0; i < 2; i++) {
+      digit_rects.push_back({QRect(x, y, digit_w, h), kSlotWeights[i], digit_at(kSlotWeights[i])});
+      x += digit_w;
+    }
+    comma_rect = QRect(x, y, comma_w, h);
+    x += comma_w;
+    // Slots 2..4 (100 MHz, 10 MHz, 1 MHz)
+    for (int i = 2; i < 5; i++) {
+      digit_rects.push_back({QRect(x, y, digit_w, h), kSlotWeights[i], digit_at(kSlotWeights[i])});
+      x += digit_w;
+    }
+    dot_rect = QRect(x, y, dot_w, h);
+    x += dot_w;
+    // Slots 5..7 (100 kHz, 10 kHz, 1 kHz)
+    for (int i = 5; i < 8; i++) {
+      digit_rects.push_back({QRect(x, y, digit_w, h), kSlotWeights[i], digit_at(kSlotWeights[i])});
+      x += digit_w;
+    }
+    space_rect = QRect(x, y, space_w, h);
+    x += space_w;
+    // Slots 8..10 (100 Hz, 10 Hz, 1 Hz)
+    for (int i = 8; i < 11; i++) {
+      digit_rects.push_back({QRect(x, y, digit_w, h), kSlotWeights[i], digit_at(kSlotWeights[i])});
+      x += digit_w;
+    }
   }
 
-  double FreqLabel::updateFrequency() {
-    double dif = ((double) int_freq);
-    double dff = 1e-6 * ((double) frac_freq);
-    frequency = (dif + dff) * 1e6;
-    return frequency; 
+  int FreqLabel::hitDigit(const QPoint & p) const
+  {
+    for (size_t i = 0; i < digit_rects.size(); i++) {
+      if (digit_rects[i].rect.contains(p)) return (int)i;
+    }
+    return -1;
+  }
+
+  void FreqLabel::applyDelta(long long delta_hz)
+  {
+    frequency += (double) delta_hz;
+    clampFrequency();
+    rebuildLayout();
+    update();
+    emit newFreq(frequency);
+  }
+
+  void FreqLabel::paintEvent(QPaintEvent * event)
+  {
+    (void) event;
+    if (digit_rects.empty()) rebuildLayout();
+    if (digit_rects.empty()) return;
+
+    QPainter painter(this);
+    painter.setFont(font());
+
+    QColor base_color = palette().color(foregroundRole());
+    QColor dim_color = base_color;
+    dim_color.setAlpha(80);
+    QColor highlight = palette().color(QPalette::Highlight);
+
+    // Leading zeros in the integer field (slots 0..4) are dimmed up to but
+    // not including the most-significant nonzero digit; if the whole integer
+    // part is zero, only the 1-MHz digit is shown bright.
+    int first_significant = 4;
+    for (int i = 0; i < 5; i++) {
+      if (digit_rects[i].digit_value != 0) { first_significant = i; break; }
+    }
+
+    // Draw separators
+    painter.setPen((first_significant <= 1) ? base_color : dim_color);
+    painter.drawText(comma_rect, Qt::AlignCenter, QStringLiteral(","));
+    painter.setPen(base_color);
+    painter.drawText(dot_rect, Qt::AlignCenter, QStringLiteral("."));
+    // (no glyph drawn for the kHz/Hz space)
+
+    // Draw digits
+    for (int i = 0; i < (int)digit_rects.size(); i++) {
+      QColor c = base_color;
+      if (i < first_significant) c = dim_color;
+      if (i == hover_index)      c = highlight;
+      painter.setPen(c);
+      painter.drawText(digit_rects[i].rect, Qt::AlignCenter,
+                       QString::number(digit_rects[i].digit_value));
+    }
+
+    // Hover affordance: a thin colored bar above (inc) or below (dec)
+    // the digit under the cursor, signalling what a click will do.
+    if (hover_index >= 0 && hover_index < (int)digit_rects.size()) {
+      const QRect & r = digit_rects[hover_index].rect;
+      bool top = last_mouse_pos.y() < r.center().y();
+      int bar_h = qMax(2, r.height() / 14);
+      QRect bar = top
+        ? QRect(r.left(), r.top(), r.width(), bar_h)
+        : QRect(r.left(), r.bottom() - bar_h + 1, r.width(), bar_h);
+      painter.fillRect(bar, highlight);
+    }
+  }
+
+  void FreqLabel::mousePressEvent(QMouseEvent * event)
+  {
+    if (event->button() != Qt::LeftButton) {
+      event->ignore();
+      return;
+    }
+    int idx = hitDigit(event->pos());
+    if (idx < 0) {
+      event->ignore();
+      return;
+    }
+    bool top = event->pos().y() < digit_rects[idx].rect.center().y();
+    long long delta = digit_rects[idx].weight_hz * (top ? 1 : -1);
+    applyDelta(delta);
+  }
+
+  void FreqLabel::mouseMoveEvent(QMouseEvent * event)
+  {
+    last_mouse_pos = event->pos();
+    hover_index = hitDigit(last_mouse_pos);
+    update();
+  }
+
+  void FreqLabel::wheelEvent(QWheelEvent * event)
+  {
+    QPoint pos = event->position().toPoint();
+    int idx = hitDigit(pos);
+    if (idx < 0) {
+      event->ignore();
+      return;
+    }
+    int notches = event->angleDelta().y() / 120;
+    if (notches == 0) {
+      event->ignore();
+      return;
+    }
+    applyDelta(digit_rects[idx].weight_hz * notches);
+    event->accept();
+  }
+
+  void FreqLabel::leaveEvent(QEvent * event)
+  {
+    (void) event;
+    hover_index = -1;
+    update();
+  }
+
+  void FreqLabel::resizeEvent(QResizeEvent * event)
+  {
+    QLabel::resizeEvent(event);
+    rebuildLayout();
+  }
+
+  QSize FreqLabel::sizeHint() const
+  {
+    QFontMetrics fm(font());
+    int digit_w = fm.horizontalAdvance(QChar('0'));
+    int comma_w = fm.horizontalAdvance(QChar(','));
+    int dot_w   = fm.horizontalAdvance(QChar('.'));
+    int space_w = fm.horizontalAdvance(QChar(' '));
+    int total_w = 11 * digit_w + comma_w + dot_w + space_w;
+    int h = fm.height();
+    return QSize(total_w + 8, h + 4);
+  }
+
+  QSize FreqLabel::minimumSizeHint() const
+  {
+    return sizeHint();
   }
 }
