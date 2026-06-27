@@ -35,6 +35,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Params.hxx"
 #include "UI.hxx"
 #include "QuadratureOscillator.hxx"
+#include <SoDa/ReSampler.hxx>
+#include <vector>
+#include <complex>
 #include <uhd/usrp/multi_usrp.hpp>
 #include <uhd/stream.hpp>
 
@@ -160,9 +163,19 @@ namespace SoDa {
     int scount;
 
     std::ofstream rf_dumpfile;
-    std::ofstream if_dumpfile; 
+    std::ofstream if_dumpfile;
 
-    std::weak_ptr<USRPRX> self; 
-  }; 
+    std::weak_ptr<USRPRX> self;
+
+    // Optional 4:1 downsampling — active when hw wire rate is 2.5 MS/s
+    bool             needs_resample;
+    SoDa::ReSamplerPtr hw_resampler;
+    std::vector<std::complex<float>> hw_cf;    ///< raw samples at hw rate
+    std::vector<std::complex<float>> rs_out;   ///< decimated output at 625 kS/s
+    std::vector<std::complex<float>> accu;     ///< accumulator → rf_buf_size chunks
+    unsigned int     hw_buf_size;  ///< samples per recv at hw rate
+    unsigned int     rs_out_size;  ///< resampler output block size
+    unsigned int     rf_buf_size;  ///< publish chunk (30000 samples at 625 kS/s)
+  };
 }
 

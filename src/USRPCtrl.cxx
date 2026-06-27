@@ -151,9 +151,17 @@ namespace SoDa {
     rx_rf_freq_range = usrp->get_rx_freq_range();
     tx_rf_freq_range = usrp->get_tx_freq_range();
 
-    // set the sample rates
-    usrp->set_rx_rate(params->getRXRate());
-    usrp->set_tx_rate(params->getTXRate());
+    // Probe whether the target IF rate is supported; fall back to 2.5 MS/s if not.
+    double hw_rate = params->getRXRate();  // 625000
+    uhd::meta_range_t rx_rates = usrp->get_rx_rates(0);
+    if (rx_rates.start() > hw_rate) {
+        hw_rate = 2500000.0;
+        std::cerr << SoDa::Format("USRPCtrl: 625 kS/s not supported (min=%0 S/s); using 2.5 MS/s with 4:1 resampling\n")
+            .addF(rx_rates.start(), 'g');
+        params->setHWSampleRate(hw_rate);
+    }
+    usrp->set_rx_rate(hw_rate);
+    usrp->set_tx_rate(hw_rate);
 
     // setup the control IO pins (for TX/RX external relay)
     // Note that there are no GPIOs available for the B2xx right now.

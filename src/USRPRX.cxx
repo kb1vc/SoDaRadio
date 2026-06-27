@@ -28,6 +28,7 @@
 
 #include "USRPRX.hxx"
 #include "QuadratureOscillator.hxx"
+#include <algorithm>
 
 #include <uhd/version.hpp>
 #include <uhd/utils/safe_main.hpp>
@@ -63,9 +64,27 @@ namespace SoDa {
     ui = NULL; 
 
     rx_sample_rate = params->getRXRate();
-    rx_buffer_size = params->getRFBufferSize(); 
+    rx_buffer_size = params->getRFBufferSize();
 
-    // we aren't receiving yet. 
+    rf_buf_size = params->getRFBufferSize();  // 30000
+
+    double hw_rate = params->getHWSampleRate();
+    needs_resample = (hw_rate != params->getRXRate());
+
+    if (needs_resample) {
+        uint32_t sample_bufsize = uint32_t(rf_buf_size * hw_rate / params->getRXRate());
+        hw_resampler = SoDa::ReSampler::make((float)hw_rate, (float)params->getRXRate(), sample_bufsize);
+        hw_buf_size  = hw_resampler->getInputBufferSize();
+        rs_out_size  = hw_resampler->getOutputBufferSize();
+        hw_cf.resize(hw_buf_size);
+        rs_out.resize(rs_out_size);
+        std::cerr << SoDa::Format("USRPRX: 4:1 resampler enabled hw_buf=%0 rs_out=%1 rf=%2\n")
+            .addI((int)hw_buf_size).addI((int)rs_out_size).addI((int)rf_buf_size);
+    } else {
+        hw_buf_size = rx_buffer_size;  // existing path, no resampler
+    }
+
+    // we aren't receiving yet.
     audio_rx_stream_enabled = false;
 
     // wake up in USB mode
@@ -92,60 +111,85 @@ namespace SoDa {
 
   bool USRPRX::downConvert()
   {
-    bool did_work = false; 
+    bool did_work = false;
 
-    if(audio_rx_stream_enabled) {
-      // go get some data
-      // get a new buffer.
-      SoDa::CBufPtr buf = SoDa::CBuf::make(rx_buffer_size);
+    if (!audio_rx_stream_enabled) return false;
 
-      if(buf == nullptr) throw SDR::Exception("USRPRX couldn't allocate SoDa::Buf object", self.lock()); 
-      if(buf->size() == 0) throw SDR::Exception("USRPRX allocated empty SoDa::Buf object", self.lock());
-      
-      unsigned int left = rx_buffer_size;
-      unsigned int coll_so_far = 0;
-      uhd::rx_metadata_t md;
-      std::complex<float> *dbuf = buf->getBuf().data();
-      while(left != 0) {
-	unsigned int got = rx_bits->recv(&(dbuf[coll_so_far]), left, md);
-	if(got == 0) {
-	  debugMsg("****************************************");
-	  debugMsg(Format("RECV got error -- md = [%0]\n").addS(md.to_pp_string()));
-	  debugMsg("****************************************");	  
-	}
-	coll_so_far += got;
-	left -= got;
-      }
+    if (needs_resample) {
+        // Recv hw_buf_size samples at 2.5 MS/s
+        unsigned int left = hw_buf_size;
+        unsigned int coll = 0;
+        uhd::rx_metadata_t md;
+        while (left != 0) {
+            unsigned int got = rx_bits->recv(&hw_cf[coll], left, md);
+            if (got == 0) {
+                debugMsg(Format("USRPRX: recv got 0 -- md=[%0]\n").addS(md.to_pp_string()));
+            }
+            coll += got;
+            left -= got;
+        }
 
-      // If the anybody cares, send the IF buffer out.
-      // If the UI is listening, it will do an FFT on the buffer
-      // and send the positive spectrum via the UI to any listener.
-      // the UI does the FFT then puts it on its own ring.
-      if(enable_spectrum_report && (if_stream->subscriberCount() > 0)) {
-	// clone a buffer, cause we're going to modify
-	// it before the send is complete. 
-	auto if_buf = SoDa::CBuf::make(rx_buffer_size); 
+        // Decimate 4:1 to 625 kS/s
+        hw_resampler->apply(hw_cf, rs_out);
 
-	if(if_buf->copy(buf)) {
-	  if_stream->put(if_buf);
-	}
-	else {
-	  throw SDR::Exception("SoDa::Buf Copy for IF stream failed", self.lock());
-	}
-      }
+        // Forward pre-mixer IF snapshot
+        if (enable_spectrum_report && (if_stream->subscriberCount() > 0)) {
+            CBufPtr if_buf = SoDa::CBuf::make(rs_out_size);
+            auto & if_data = if_buf->getBuf();
+            std::copy(rs_out.begin(), rs_out.end(), if_data.begin());
+            if_stream->put(if_buf);
+        }
 
-      // support debug... 
-      scount++;
+        // Apply IF NCO mixer
+        for (auto & s : rs_out) s *= IF_osc.stepOscCF();
 
-      // tune it down with the IF oscillator
-      doMixer(buf); 
-      // now put the baseband signal on the ring.
-      rx_stream->put(buf);
+        // Accumulate and publish in rf_buf_size chunks
+        accu.insert(accu.end(), rs_out.begin(), rs_out.end());
+        while (accu.size() >= rf_buf_size) {
+            CBufPtr buf = SoDa::CBuf::make(rf_buf_size);
+            auto & data = buf->getBuf();
+            std::copy(accu.begin(), accu.begin() + rf_buf_size, data.begin());
+            accu.erase(accu.begin(), accu.begin() + rf_buf_size);
+            rx_stream->put(buf);
+            did_work = true;
+        }
+    } else {
+        // Original path — recv directly at 625 kS/s
+        SoDa::CBufPtr buf = SoDa::CBuf::make(rx_buffer_size);
+        if (buf == nullptr) throw SDR::Exception("USRPRX couldn't allocate SoDa::Buf object", self.lock());
+        if (buf->size() == 0) throw SDR::Exception("USRPRX allocated empty SoDa::Buf object", self.lock());
 
-      did_work = true; 
+        unsigned int left = rx_buffer_size;
+        unsigned int coll_so_far = 0;
+        uhd::rx_metadata_t md;
+        std::complex<float> *dbuf = buf->getBuf().data();
+        while (left != 0) {
+            unsigned int got = rx_bits->recv(&(dbuf[coll_so_far]), left, md);
+            if (got == 0) {
+                debugMsg("****************************************");
+                debugMsg(Format("RECV got error -- md = [%0]\n").addS(md.to_pp_string()));
+                debugMsg("****************************************");
+            }
+            coll_so_far += got;
+            left -= got;
+        }
+
+        if (enable_spectrum_report && (if_stream->subscriberCount() > 0)) {
+            auto if_buf = SoDa::CBuf::make(rx_buffer_size);
+            if (if_buf->copy(buf)) {
+                if_stream->put(if_buf);
+            } else {
+                throw SDR::Exception("SoDa::Buf Copy for IF stream failed", self.lock());
+            }
+        }
+
+        scount++;
+        doMixer(buf);
+        rx_stream->put(buf);
+        did_work = true;
     }
-  
-    return did_work; 
+
+    return did_work;
   }
 
   void USRPRX::doMixer(SoDa::CBufPtr inout)

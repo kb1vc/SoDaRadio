@@ -107,6 +107,9 @@ namespace SoDa {
      */
     double getTXRate() const { return 625000; }
 
+    double getHWSampleRate() const { return hw_sample_rate; }
+    void setHWSampleRate(double r) { hw_sample_rate = r; }
+
     double getAudioSampleRate() const { return 48000.0 ; }
     unsigned int getRFBufferSize() const { return (unsigned int) 30000; }
     unsigned int getAFBufferSize() const { return (unsigned int) 2304; }
@@ -167,6 +170,8 @@ namespace SoDa {
     bool force_frac_N_mode;
     bool force_integer_N_mode;
 
-    unsigned int debug_level; 
+    unsigned int debug_level;
+
+    double hw_sample_rate;  ///< actual hardware wire rate (may be 2.5 MS/s when 625 kS/s unsupported)
   };
 }

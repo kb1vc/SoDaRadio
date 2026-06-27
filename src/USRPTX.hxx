@@ -29,6 +29,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "SoDaBase.hxx"
 #include "Params.hxx"
 #include "RadioTX.hxx"
+#include <SoDa/ReSampler.hxx>
+#include <vector>
+#include <complex>
 
 #include <uhd/usrp/multi_usrp.hpp>
 #include <uhd/stream.hpp>
@@ -111,12 +114,21 @@ namespace SoDa {
     
   private:
     uhd::usrp::multi_usrp::sptr usrp; ///< the radio.
-    
+
     uhd::stream_args_t * stream_args;
     uhd::tx_streamer::sptr tx_bits; ///< USRP (UHD) transmit stream handle
     uhd::tx_metadata_t tx_md; ///< metadata describing USRP transmit buffer
 
     std::weak_ptr<USRPTX> self;
-  }; 
+
+    // Optional 4:1 upsampling — active when hw wire rate is 2.5 MS/s
+    bool             needs_resample;
+    SoDa::ReSamplerPtr hw_resampler;
+    std::vector<std::complex<float>> accu;    ///< accumulator for 625 kS/s input
+    std::vector<std::complex<float>> rs_in;   ///< one resampler input block
+    std::vector<std::complex<float>> hw_cf;   ///< resampler output at 2.5 MS/s
+    unsigned int     rs_in_size;   ///< resampler input block size (625 kS/s)
+    unsigned int     hw_buf_size;  ///< resampler output / UHD send size (2.5 MS/s)
+  };
 
 }

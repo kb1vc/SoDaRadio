@@ -65,6 +65,8 @@ SoDa::Params::Params(int argc, char * argv[])
   // do we need a help message?
   if(!cmd.parse(argc, argv)) exit(-1);
 
+  hw_sample_rate = 625000.0;
+
   // set the present variables
   if(!force_integer_N_mode && !force_frac_N_mode) {
     force_integer_N_mode = true; 

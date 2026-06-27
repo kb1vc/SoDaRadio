@@ -32,6 +32,7 @@
 #include <uhd/utils/safe_main.hpp>
 #include <uhd/utils/thread.hpp>
 #include <uhd/usrp/multi_usrp.hpp>
+#include <SoDa/Format.hxx>
 
 
 namespace SoDa {
@@ -44,34 +45,74 @@ namespace SoDa {
     stream_args = new uhd::stream_args_t("fc32", "sc16");
     stream_args->channels.push_back(0);
 
-    tx_bits = usrp->get_tx_stream(*stream_args);   
+    tx_bits = usrp->get_tx_stream(*stream_args);
+
+    uint32_t rf_buf_size = params->getRFBufferSize();
+    double hw_rate = params->getHWSampleRate();
+    needs_resample = (hw_rate != params->getTXRate());
+
+    if (needs_resample) {
+        hw_resampler = SoDa::ReSampler::make((float)params->getTXRate(), (float)hw_rate, rf_buf_size);
+        rs_in_size   = hw_resampler->getInputBufferSize();
+        hw_buf_size  = hw_resampler->getOutputBufferSize();
+        rs_in.resize(rs_in_size);
+        hw_cf.resize(hw_buf_size);
+        std::cerr << SoDa::Format("USRPTX: 4:1 resampler enabled rs_in=%0 hw_buf=%1\n")
+            .addI((int)rs_in_size).addI((int)hw_buf_size);
+    }
   }
 
   bool USRPTX::put(CBufPtr buf) {
-    auto tbuf = buf->getBuf();
-    std::vector<std::complex<float> *> buffers(1);
-    buffers[0] = tbuf.data();
-    tx_bits->send(buffers, tbuf.size(), tx_md);
-    tx_md.start_of_burst = false; 
+    if (!needs_resample) {
+        // Direct path — send 625 kS/s samples straight to the USRP
+        auto tbuf = buf->getBuf();
+        std::vector<std::complex<float> *> buffers(1);
+        buffers[0] = tbuf.data();
+        tx_bits->send(buffers, tbuf.size(), tx_md);
+        tx_md.start_of_burst = false;
+        return true;
+    }
+
+    // Accumulate then resample 625 kS/s → 2.5 MS/s
+    const auto & data = buf->getBuf();
+    accu.insert(accu.end(), data.begin(), data.end());
+
+    while (accu.size() >= rs_in_size) {
+        std::copy(accu.begin(), accu.begin() + rs_in_size, rs_in.begin());
+        accu.erase(accu.begin(), accu.begin() + rs_in_size);
+        hw_resampler->apply(rs_in, hw_cf);
+        std::vector<std::complex<float> *> buffers(1);
+        buffers[0] = hw_cf.data();
+        tx_bits->send(buffers, hw_buf_size, tx_md);
+        tx_md.start_of_burst = false;
+    }
     return true;
   }
 
   bool USRPTX::transmitSwitch(bool tx_on)
   {
-    if(tx_on) {
-      if(tx_enabled) return true;
-      tx_md.start_of_burst = true;
-      tx_md.end_of_burst = false;
-      tx_md.has_time_spec = false; 
-      tx_enabled = true; 
+    if (tx_on) {
+        if (tx_enabled) return true;
+        tx_md.start_of_burst = true;
+        tx_md.end_of_burst = false;
+        tx_md.has_time_spec = false;
+        tx_enabled = true;
+    } else {
+        if (!tx_enabled) return false;
+        if (needs_resample && !accu.empty()) {
+            // Flush accumulator with zeros so DAC goes quiet cleanly
+            accu.resize(rs_in_size, {0.0f, 0.0f});
+            std::copy(accu.begin(), accu.begin() + rs_in_size, rs_in.begin());
+            hw_resampler->apply(rs_in, hw_cf);
+            std::vector<std::complex<float> *> buffers(1);
+            buffers[0] = hw_cf.data();
+            tx_bits->send(buffers, hw_buf_size, tx_md);
+            accu.clear();
+        }
+        tx_md.end_of_burst = true;
+        put(zero_buf);
+        tx_enabled = false;
     }
-    else {
-      if(!tx_enabled) return false;
-      tx_md.end_of_burst = true;
-      put(zero_buf);
-      tx_enabled = false;
-    }
-    
     return tx_enabled;
   }
 
