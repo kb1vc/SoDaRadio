@@ -1084,7 +1084,7 @@
           <item>
            <widget class="QGroupBox" name="groupBox_6">
             <property name="title">
-             <string>USRP</string>
+             <string>Reference Oscillator</string>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout">
              <item>
@@ -1096,7 +1096,7 @@
                 </sizepolicy>
                </property>
                <property name="toolTip">
-                <string>Use external 10MHz reference for USRP master clock.</string>
+                <string>Use external frequency reference for radio master clock.</string>
                </property>
                <property name="text">
                 <string>External Reference</string>

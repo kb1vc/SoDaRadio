@@ -215,14 +215,7 @@ namespace GUISoDa {
 
   qint64 AudioRXListener::readData(char * data, qint64 max_len)
   {
-    static qint64 read_call_count = 0;
     size_t avail = audio_cbuffer_p->numElements();
-
-    if((read_call_count & 0x3ff) == 0) {
-      qInfo() << QString("AudioRXListener::readData call#%1 avail=%2 max_len=%3")
-                 .arg(read_call_count).arg(avail).arg(max_len);
-    }
-    read_call_count++;
 
     if((MACOSX == 0) && (avail < (size_t)max_len)) {
       qint64 fill_len = max_len >> 2;
@@ -235,9 +228,6 @@ namespace GUISoDa {
       float sum = 0.0;
       for(int i = 0; i < ret / 4; i++) {
 	sum += fabs(fdat[i]);
-      }
-      if((read_call_count & 0x3ff) == 1) {
-        qInfo() << QString("AudioRXListener::readData ret=%1 sum=%2").arg(ret).arg(sum);
       }
       return ret;
     }

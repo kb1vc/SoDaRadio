@@ -106,7 +106,8 @@ public slots:
   void updateTime(int h, int m, int s);
   void updatePosition(double lat, double lon);
 
-  void restoreSettings(); 
+  void restoreSettings();
+  void setTXEnabled(bool enabled);
   void saveConfig();
   void saveConfigAs_dlg();
   void restoreConfig_dlg();

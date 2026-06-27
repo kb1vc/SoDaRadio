@@ -141,20 +141,12 @@ namespace GUISoDa {
     return 0;
   }
 
-  quint64 debug_count = 0;
-  qint64 samp_count = 0;
   qint64 AudioTXServer::writeData(const char * data, qint64 maxlen) {
     QMutexLocker locker(&mutex);
 
     if (audio_tx_socket->state() != QLocalSocket::ConnectedState) {
       return maxlen;
     }
-
-    samp_count += maxlen;
-    if(debug_count % 512 == 0) {
-      qInfo() << QString("sample count %1").arg(samp_count);
-    }
-    debug_count++;
 
     auto to_go = maxlen;
     const char * cp = data;

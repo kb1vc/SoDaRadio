@@ -39,8 +39,8 @@ namespace GUISoDa {
 
 bool RadioListener::init()
 {
-  tx_gain_min = 0; 
-  tx_gain_max = 100; 
+  tx_gain_min = 0;
+  tx_gain_max = 100;
   cmd_socket = new QLocalSocket(this);
   // first wait for the file to be created
   QString cmd_socket_name = socket_basename + "_cmd"; 
@@ -288,7 +288,7 @@ bool RadioListener::handleREP(const SoDa::Command & cmd)
     break; 
   case SoDa::Command::TX_ANT_NAME:
     emit(addTXAntName(QString(cmd.sparm)));
-    break; 
+    break;
   case SoDa::Command::SPEC_DIMS: // 1 1 neither works 0 0 wfall works 0 1 neither works 1 0 both work (!)
     emit(configureSpectrum(cmd.dparms[0] - 1.0 * transverter_lo_freq, cmd.dparms[1], ((long) cmd.dparms[2])));
     setupSpectrumBuffer(cmd.dparms[0] - 0.0 * transverter_lo_freq, cmd.dparms[1], (long) cmd.dparms[2]);

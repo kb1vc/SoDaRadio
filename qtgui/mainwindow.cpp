@@ -96,8 +96,14 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
 	    this->setWindowTitle(QString("SoDa Radio V %1 -- SDR %2").arg(SoDaRadio_VERSION).arg(hw));
 	  });
 
-  connect(radio_listener, SIGNAL(initSetupComplete()), 
+  connect(radio_listener, SIGNAL(initSetupComplete()),
 	  this, SLOT(restoreSettings()));
+
+  // Start with all TX controls disabled.  If the radio reports any TX
+  // antenna, we know it's a transmit-capable rig and re-enable them.
+  setTXEnabled(false);
+  connect(radio_listener, &GUISoDa::RadioListener::addTXAntName,
+	  [this](const QString &) { setTXEnabled(true); });
 
   connect(radio_listener, SIGNAL(fatalError(const QString &)), 
 	  this, SLOT(handleFatalError(const QString &)));
@@ -426,6 +432,42 @@ void MainWindow::restoreSettings()
   widgetSaveRestore(this, "SoDaRadioQT.", false);
   settings_p->endGroup();
   settings_loaded = true;
+}
+
+void MainWindow::setTXEnabled(bool enabled)
+{
+  // Enable or grey out every transmit-related control.  Called with
+  // false at startup; flipped to true when the radio reports any TX
+  // antenna name (RX-only rigs never send one).
+  QWidget * tx_widgets[] = {
+    ui->PTT_btn,
+    ui->TXState_lab,
+    ui->TXFreq_box,
+    ui->TXAnt_sel,
+    ui->CWCurLine_le,
+    ui->CWOutBound_te,
+    ui->Exchange_btn,
+    ui->MyInfo_btn,
+    ui->MyCall_btn,
+    ui->MyGrid_btn,
+    ui->CWQSL_btn,
+    ui->CW73_btn,
+    ui->CWBK_btn,
+    ui->CWV_btn,
+    ui->RptCount_spin,
+    ui->RptCount_lab,
+    ui->Carrier_btn,
+    ui->ClrBuff_btn,
+    ui->groupBox_9,    // TX Input (settings panel)
+    ui->TXPower_box,
+    ui->TXAFGain_box,
+    ui->CWSpeed_box,
+    ui->Sidetone_box
+  };
+
+  for (QWidget * w : tx_widgets) {
+    if (w) w->setEnabled(enabled);
+  }
 }
 
 void MainWindow::handleFatalError(const QString & err_string) 
