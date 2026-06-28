@@ -10,8 +10,9 @@ if(NOT DEFINED CMAKE_SUPPRESS_DEVELOPER_WARNINGS)
   set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS 1 CACHE INTERNAL "No dev warnings")
 endif()
    
-OPTION(BUILD_RPM "Build an RPM package for this platform, or something like it." OFF)
-OPTION(BUILD_DEB "Build a Debian package for this platform, or something like it." OFF)
+OPTION(BUILD_RPM     "Build a binary RPM package (Fedora) via 'make package'." OFF)
+OPTION(BUILD_DEB     "Build a binary Debian package (Ubuntu) via 'make package'." OFF)
+OPTION(BUILD_SRC_DEB "Build an Ubuntu/Debian source package via 'make package_src_deb'." OFF)
 OPTION(BUILD_UNIT_TESTS "Build the unit tests -- not normally useful" OFF)
 
 IF(CMAKE_VERSION VERSION_GREATER 3.0.0)
@@ -48,24 +49,42 @@ set(SoDaRadio_PACKAGE_DESCRIPTION
   "a general purpose transmitter/receiver using the "
   "Ettus Research USRP hardware.")
 
+# Select package generators.  RPM and DEB can be enabled together.
+set(CPACK_GENERATOR "")
 IF(BUILD_RPM)
-  set(CPACK_GENERATOR "RPM")
+  list(APPEND CPACK_GENERATOR "RPM")
+ENDIF()
+IF(BUILD_DEB)
+  list(APPEND CPACK_GENERATOR "DEB")
 ENDIF()
 
-IF(${BUILD_DEB})
-  set(CPACK_GENERATOR "DEB")
-ENDIF()
-
-# Find the platform release name
+# Find the platform release name.  Prefer lsb_release; fall back to
+# /etc/os-release (lsb_release is no longer installed by default on
+# minimal Fedora/Debian images).
 FIND_PROGRAM(LSB_RELEASE lsb_release)
-EXECUTE_PROCESS(COMMAND ${LSB_RELEASE} -is
-  OUTPUT_VARIABLE OS_RELEASE_NAME
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-EXECUTE_PROCESS(COMMAND ${LSB_RELEASE} -rs
-  OUTPUT_VARIABLE OS_RELEASE_VERSION
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+IF(LSB_RELEASE)
+  EXECUTE_PROCESS(COMMAND ${LSB_RELEASE} -is
+    OUTPUT_VARIABLE OS_RELEASE_NAME
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+  EXECUTE_PROCESS(COMMAND ${LSB_RELEASE} -rs
+    OUTPUT_VARIABLE OS_RELEASE_VERSION
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+ELSEIF(EXISTS "/etc/os-release")
+  file(STRINGS "/etc/os-release" _os_release_lines)
+  foreach(_line IN LISTS _os_release_lines)
+    if(_line MATCHES "^ID=\"?([^\"]+)\"?$")
+      set(OS_RELEASE_NAME "${CMAKE_MATCH_1}")
+    elseif(_line MATCHES "^VERSION_ID=\"?([^\"]+)\"?$")
+      set(OS_RELEASE_VERSION "${CMAKE_MATCH_1}")
+    endif()
+  endforeach()
+ENDIF()
+IF(NOT OS_RELEASE_NAME)
+  SET(OS_RELEASE_NAME "unknown")
+ENDIF()
+IF(NOT OS_RELEASE_VERSION)
+  SET(OS_RELEASE_VERSION "0")
+ENDIF()
 
 function (getListOfVarsStartingWith _prefix _varResult)
     get_cmake_property(_vars VARIABLES)
@@ -75,35 +94,131 @@ endfunction()
 
 FIND_PACKAGE(Threads REQUIRED)
 
-# Package generation for the source tarball
+# ---------------------------------------------------------------------------
+# Common CPack settings
+# ---------------------------------------------------------------------------
 SET(CPACK_PACKAGE_VERSION_MAJOR ${SoDaRadio_VERSION_MAJOR})
 SET(CPACK_PACKAGE_VERSION_MINOR ${SoDaRadio_VERSION_MINOR})
 SET(CPACK_PACKAGE_VERSION_PATCH ${SoDaRadio_VERSION_PATCH})
 SET(CPACK_PACKAGE_VERSION ${SoDaRadio_VERSION})
 SET(CPACK_PACKAGE_NAME "SoDaRadio")
 SET(CPACK_PACKAGE_RELEASE 1)
-SET(CPACK_PACKAGE_CONTACT "Matt Reilly kb1vc")
-SET(CPACK_PACKAGE_VENDOR "Matt Reilly -- radiogeek381@gmail.com")
+SET(CPACK_PACKAGE_CONTACT "Matt Reilly <radiogeek381@gmail.com>")
+SET(CPACK_PACKAGE_VENDOR "Matt Reilly")
+SET(CPACK_PACKAGE_HOMEPAGE_URL "https://kb1vc.github.io/SoDaRadio/")
+SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY
+  "Software-defined radio for USRP, ADALM-Pluto, and RTL-SDR hardware")
+SET(CPACK_PACKAGE_DESCRIPTION ${SoDaRadio_PACKAGE_DESCRIPTION})
+IF(EXISTS "${PROJECT_SOURCE_DIR}/COPYING")
+  SET(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/COPYING")
+ENDIF()
+# Default file name (the generators below override this with their own
+# conventions: name-ver-rel.arch.rpm  and  name_ver_arch.deb).
 SET(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_PACKAGE_RELEASE}.${CMAKE_SYSTEM_PROCESSOR}.${OS_RELEASE_NAME}-${OS_RELEASE_VERSION}")
-SET(CPACK_PACKAGING_INSTALL_PREFIX "/usr")
+# Both the RPM and DEB generators default the install prefix to /usr, so we
+# don't set CPACK_PACKAGING_INSTALL_PREFIX globally -- setting it would also
+# bleed into the source-package generator and prefix every source file with
+# /usr/.
 
+# ---------------------------------------------------------------------------
+# RPM (Fedora) settings
+# ---------------------------------------------------------------------------
 set(CPACK_RPM_PACKAGE_RELEASE "1")
 set(CPACK_RPM_PACKAGE_LICENSE "BSD-2-Clause")
 set(CPACK_RPM_PACKAGE_GROUP "Applications/Communications")
-set(CPACK_RPM_PACKAGE_DESCRIPTION  ${SoDaRadio_PACKAGE_DESCRIPTION})
-# removed , libsndfile
-set(CPACK_RPM_PACKAGE_REQUIRES "uhd >= 3.12.0, fftw-devel >= 3.3, qt6-qtbase >= 5.6, qwt-qt6 >= 6.1.2, gpsd >= 3.1, gpsd-libs >= 3.1, qt6-qtmultimedia")
+set(CPACK_RPM_PACKAGE_URL "${CPACK_PACKAGE_HOMEPAGE_URL}")
+set(CPACK_RPM_PACKAGE_SUMMARY "${CPACK_PACKAGE_DESCRIPTION_SUMMARY}")
+set(CPACK_RPM_PACKAGE_DESCRIPTION ${SoDaRadio_PACKAGE_DESCRIPTION})
 set(CPACK_RPM_PACKAGE_RELOCATABLE TRUE)
-# RPM makes a hash out of the uhd dependency if we don't do this:
-set(CPACK_RPM_PACKAGE_AUTOREQPROV " no")
- 
-set(CPACK_DEBIAN_PACKAGE_DESCRIPTION ${SODA_PACKAGE_DESCRIPTION})
+# Runtime dependencies on Fedora.  We disable auto-requires because rpm
+# turns the absolute uhd version into an unsatisfiable expression
+# otherwise.
+set(CPACK_RPM_PACKAGE_AUTOREQPROV "no")
+set(CPACK_RPM_PACKAGE_REQUIRES
+  "uhd >= 3.12.0, "
+  "fftw-libs >= 3.3, "
+  "qt6-qtbase >= 6.2, "
+  "qt6-qtmultimedia >= 6.2, "
+  "qwt-qt6 >= 6.1.2, "
+  "gpsd >= 3.1, "
+  "gpsd-libs >= 3.1, "
+  "hamlib, "
+  "libsndfile, "
+  "boost-system")
+string(REPLACE ";" "" CPACK_RPM_PACKAGE_REQUIRES "${CPACK_RPM_PACKAGE_REQUIRES}")
+set(CPACK_RPM_FILE_NAME
+  "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_RPM_PACKAGE_RELEASE}.${CMAKE_SYSTEM_PROCESSOR}.rpm")
+
+# ---------------------------------------------------------------------------
+# DEB (Ubuntu / Debian) settings
+# ---------------------------------------------------------------------------
+# Debian convention is an all-lowercase package name.
+set(CPACK_DEBIAN_PACKAGE_NAME "sodaradio")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "${CPACK_PACKAGE_CONTACT}")
 set(CPACK_DEBIAN_PACKAGE_SECTION "hamradio")
+set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
+set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "${CPACK_PACKAGE_HOMEPAGE_URL}")
+set(CPACK_DEBIAN_PACKAGE_DESCRIPTION
+  "${CPACK_PACKAGE_DESCRIPTION_SUMMARY}\n SoDaRadio is a software defined radio implementation of a general\n purpose transmitter/receiver supporting Ettus USRP, ADALM-Pluto, and\n RTL-SDR hardware.")
+# Let dpkg-shlibdeps derive the .so library dependencies from the built
+# binaries -- this avoids hard-coding distro-specific package names
+# (e.g. libuhdNNN where the soname version changes per release).
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
-#libsndfile1, 
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libuhd003 (>= 3.12), uhd-host (>= 3.12), libgps-dev (>= 3.1), gpsd (>= 3.1), libqt5multimedia6-plugins")
+# Add packages that aren't picked up by shlibdeps (firmware/daemon
+# helpers).  These are merged with the shlibdeps results.
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "uhd-host (>= 3.12), gpsd (>= 3.1)")
+set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
 
 INCLUDE(CPack)
+
+# ---------------------------------------------------------------------------
+# Ubuntu / Debian source package  ('make package_src_deb')
+# ---------------------------------------------------------------------------
+# Stages a clean copy of the source tree, drops in a configured debian/
+# directory built from packaging/debian/, and runs dpkg-source -b to
+# produce  sodaradio_<ver>-1.dsc / .debian.tar.xz / .orig.tar.xz  ready
+# for upload to a PPA or rebuild with sbuild / pbuilder.
+IF(BUILD_SRC_DEB)
+  # Generate the changelog with the current version and RFC 5322 date.
+  execute_process(COMMAND date "-R"
+                  OUTPUT_VARIABLE DEB_CHANGELOG_DATE
+                  OUTPUT_STRIP_TRAILING_WHITESPACE)
+  CONFIGURE_FILE(
+    "${PROJECT_SOURCE_DIR}/packaging/debian/changelog.in"
+    "${PROJECT_BINARY_DIR}/debian/changelog"
+    @ONLY)
+  # The static debian/ files just get copied across.
+  FILE(COPY
+    "${PROJECT_SOURCE_DIR}/packaging/debian/control"
+    "${PROJECT_SOURCE_DIR}/packaging/debian/rules"
+    "${PROJECT_SOURCE_DIR}/packaging/debian/copyright"
+    DESTINATION "${PROJECT_BINARY_DIR}/debian"
+    USE_SOURCE_PERMISSIONS)
+  FILE(COPY
+    "${PROJECT_SOURCE_DIR}/packaging/debian/source"
+    DESTINATION "${PROJECT_BINARY_DIR}/debian")
+
+  ADD_CUSTOM_TARGET(package_src_deb
+    COMMAND ${CMAKE_COMMAND}
+      -DSRC_DIR=${PROJECT_SOURCE_DIR}
+      -DBIN_DIR=${PROJECT_BINARY_DIR}
+      -DDEBIAN_DIR=${PROJECT_BINARY_DIR}/debian
+      -DDEB_SRC_NAME=sodaradio
+      -DVERSION=${SoDaRadio_VERSION}
+      -P ${PROJECT_SOURCE_DIR}/cmake/scripts/build_src_deb.cmake
+    COMMENT "Building Ubuntu/Debian source package (dpkg-source -b)"
+    VERBATIM)
+ENDIF()
+
+# Install COPYING and README into the package as documentation.
+IF(EXISTS "${PROJECT_SOURCE_DIR}/COPYING")
+  INSTALL(FILES "${PROJECT_SOURCE_DIR}/COPYING"
+    DESTINATION "share/doc/SoDaRadio")
+ENDIF()
+IF(EXISTS "${PROJECT_SOURCE_DIR}/README")
+  INSTALL(FILES "${PROJECT_SOURCE_DIR}/README"
+    DESTINATION "share/doc/SoDaRadio")
+ENDIF()
 
 # optimizations
 IF(NOT CMAKE_BUILD_TYPE)

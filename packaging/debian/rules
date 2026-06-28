@@ -1,0 +1,11 @@
+#!/usr/bin/make -f
+# Debian build rules for sodaradio.
+# Driven by debhelper with the cmake buildsystem.
+
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
+%:
+	dh $@ --buildsystem=cmake
+
+override_dh_auto_configure:
+	dh_auto_configure -- -DCMAKE_BUILD_TYPE=Release
