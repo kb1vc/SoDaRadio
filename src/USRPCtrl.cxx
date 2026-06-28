@@ -168,7 +168,7 @@ namespace SoDa {
     initControlGPIO();
 
     // setup a widget to control external devices 
-    tr_control = TRControl::makeTRControl(usrp);     
+    tr_control = USRPTRControl::makeUSRPTRControl(usrp);     
 
     // turn off the transmitter
     locSetTXEna(false);

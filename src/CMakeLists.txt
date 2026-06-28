@@ -44,7 +44,7 @@ ENDIF()
 
 IF(${HAVE_UHD})
   LIST(APPEND SoDaServer_SRCS
-    TRControl.cxx
+    USRPTRControl.cxx
     N200Control.cxx
     B200Control.cxx
     USRPRadio.cxx

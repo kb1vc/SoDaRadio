@@ -47,12 +47,12 @@
 
 namespace SoDa 
 {
-  B200Control::B200Control(uhd::usrp::multi_usrp::sptr _usrp, int _mboard) : TRControl() {
+  B200Control::B200Control(uhd::usrp::multi_usrp::sptr _usrp, int _mboard) : USRPTRControl() {
     usrp = _usrp;
     mboard = _mboard; 
   
     //new
-    PropTree tree(usrp, "TRControl");
+    PropTree tree(usrp, "USRPTRControl");
     B200Control::modelname = tree.getStringProp("name", "unknown");
     if ((modelname == std::string("B200")) ) {
         B200_type = SoDa_B200_type_t::eB200;};

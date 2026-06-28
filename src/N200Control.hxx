@@ -28,7 +28,7 @@
 
 #pragma once
 
-#include "TRControl.hxx"
+#include "USRPTRControl.hxx"
 #include "IPSockets.hxx"
 #include <string>
 #include <list>
@@ -43,7 +43,7 @@ namespace SoDa {
    * @brief Transmit/Receive switch control for N200/N210 via the 
    * GPS serial or EXP serial io port.  (Default is GPS port). 
    */
-  class N200Control : public TRControl {
+  class N200Control : public USRPTRControl {
   public:
     /**
      * @brief constructor

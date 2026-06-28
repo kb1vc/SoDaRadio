@@ -26,7 +26,7 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "TRControl.hxx"
+#include "USRPTRControl.hxx"
 #include "N200Control.hxx"
 #include "B200Control.hxx"
 #include "PropTree.hxx"
@@ -41,9 +41,9 @@
 
 namespace SoDa { 
 
-  TRControl * TRControl::makeTRControl(uhd::usrp::multi_usrp::sptr usrp, int mboard) {
+  USRPTRControl * USRPTRControl::makeUSRPTRControl(uhd::usrp::multi_usrp::sptr usrp, int mboard) {
     // first figure out what kind of device we are... 
-    PropTree tree(usrp, "TRControl");
+    PropTree tree(usrp, "USRPTRControl");
     std::string modelname = tree.getStringProp("name", "unknown");
 
     // now do something different for each one... 

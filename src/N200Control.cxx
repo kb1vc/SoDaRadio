@@ -46,7 +46,7 @@ namespace SoDa
   N200Control::N200Control(uhd::usrp::multi_usrp::sptr _usrp,
 			   int _mboard,
 			   std::string ip_addr_str, 
-			   unsigned int portnum) : TRControl() {
+			   unsigned int portnum) : USRPTRControl() {
 
     mboard = _mboard; 
     usrp = _usrp; 

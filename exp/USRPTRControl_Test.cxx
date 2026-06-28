@@ -96,7 +96,7 @@ int main(int argc, char ** argv)
   }
 
 
-  SoDa::TRControl * ctrl = SoDa::TRControl::makeTRControl(usrp); 
+  SoDa::USRPTRControl * ctrl = SoDa::USRPTRControl::makeUSRPTRControl(usrp); 
  
   sleep(5);
 

@@ -121,22 +121,22 @@ target_link_libraries(SerialDev_Test ${TEST_LIBS})
 
 ########### next target ###############
 
-set(TRControl_Test_SRCS
-    TRControl_Test.cxx
+set(USRPTRControl_Test_SRCS
+    USRPTRControl_Test.cxx
     ../src/N200Control.hxx
     ../src/N200Control.cxx
-    ../src/TRControl.hxx
-    ../src/TRControl.cxx
+    ../src/USRPTRControl.hxx
+    ../src/USRPTRControl.cxx
     ../src/IPSockets.hxx
     ../src/IPSockets.cxx
     ../src/B200Control.hxx
     ../src/B200Control.cxx)
 
-add_executable(TRControl_Test EXCLUDE_FROM_ALL ${TRControl_Test_SRCS})
+add_executable(USRPTRControl_Test EXCLUDE_FROM_ALL ${USRPTRControl_Test_SRCS})
 
-target_link_libraries(TRControl_Test ${TEST_LIBS})
+target_link_libraries(USRPTRControl_Test ${TEST_LIBS})
 
-#install(TARGETS TRControl_Test DESTINATION tests)
+#install(TARGETS USRPTRControl_Test DESTINATION tests)
 
 
 ########### next target ###############

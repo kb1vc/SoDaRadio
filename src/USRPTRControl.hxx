@@ -26,8 +26,8 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef TR_CONTROL_HDR
-#define TR_CONTROL_HDR
+#ifndef USRP_TR_CONTROL_HDR
+#define USRP_TR_CONTROL_HDR
 
 #include <uhd/usrp/multi_usrp.hpp>
 
@@ -48,9 +48,9 @@ namespace SoDa {
    * However, ALL subclasses of Control.hxx must do something useful for
    * setTXOn(), setTXOff(), getTX().  
    */
-  class TRControl {
+  class USRPTRControl {
   public:
-    TRControl() {
+    USRPTRControl() {
     }
 
     /**
@@ -102,16 +102,16 @@ namespace SoDa {
      * @brief make the appropriate TR control widget given a pointer to a 
      * USRP device.  This will be connected to the selected mboard. 
      */
-    static TRControl * makeTRControl(uhd::usrp::multi_usrp::sptr usrp, int mboard = 0); 
+    static USRPTRControl * makeUSRPTRControl(uhd::usrp::multi_usrp::sptr usrp, int mboard = 0); 
     
   }; 
 
   /**
    * a null control class that returns happily for everyone. 
    */
-  class NoopControl : public TRControl {
+  class NoopControl : public USRPTRControl {
   public:
-    NoopControl() : TRControl() {
+    NoopControl() : USRPTRControl() {
     }
     bool setTXOn() { return true; }
     bool setTXOff() { return true; }
@@ -122,4 +122,4 @@ namespace SoDa {
 
 }
 
-#endif // TR_CONTROL_HDR
+#endif // USRP_TR_CONTROL_HDR

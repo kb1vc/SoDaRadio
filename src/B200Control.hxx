@@ -29,7 +29,7 @@
 #ifndef B200Serial_HDR
 #define B200Serial_HDR
 
-#include "TRControl.hxx"
+#include "USRPTRControl.hxx"
 #include "IPSockets.hxx"
 #include <string>
 #include <list>
@@ -71,7 +71,7 @@ namespace SoDa {
    * On TRANSMIT, pin 3 of J400 will be pulled LOW.  On RECEIVE
    * pin 1 of J400 will be pulled HIGH.  
    */
-  class B200Control : public TRControl {
+  class B200Control : public USRPTRControl {
   public:
     /**
      * @brief constructor

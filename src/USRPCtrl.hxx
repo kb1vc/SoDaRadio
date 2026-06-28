@@ -41,7 +41,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "SoDaThread.hxx"
 #include "Command.hxx"
 #include "Params.hxx"
-#include "TRControl.hxx"
+#include "USRPTRControl.hxx"
 #include "RadioControl.hxx"
 #include "PropTree.hxx"
 #include <uhd/version.hpp>
@@ -367,7 +367,7 @@ namespace SoDa {
     ///< drop the noise floor a bit.
 
     /// external control widget for TR switching and other things. 
-    SoDa::TRControl * tr_control;
+    SoDa::USRPTRControl * tr_control;
 
     ///< A pointer to myself -- useful for exceptions and such
     std::weak_ptr<USRPCtrl> self;
