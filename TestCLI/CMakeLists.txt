@@ -16,7 +16,7 @@ set_target_properties(SoDaCLI PROPERTIES AUTOMOC ON)
 target_include_directories(SoDaCLI PRIVATE ../src)
 
 target_link_libraries(SoDaCLI
-  sodautils
+  SoDaUtils::sodautils
   Qt6::Core
   Qt6::Multimedia
   ${READLINE_LIB}

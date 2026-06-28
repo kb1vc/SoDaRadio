@@ -4,11 +4,10 @@ find_package(FFTW3f REQUIRED QUIET)
 
 add_definitions(-DHAVE_LIBASOUND=1)
 
-include_directories(SYSTEM ${UHD_INCLUDE_DIRS} ${ALSA_INCLUDE_DIRS} ${FFTW3F_INCLUDE_DIRS}
-  ${SoDaUtils_INCLUDE_DIR}
+include_directories(SYSTEM ${UHD_INCLUDE_DIRS} ${FFTW3F_INCLUDE_DIRS}
   ../src ../common)
 
-set(TEST_LIBS ${UHD_LIBRARIES} ${ALSA_LIBRARIES} ${FFTW3F_LIBRARIES} ${SoDaUtils_LIBRARIES})
+set(TEST_LIBS ${UHD_LIBRARIES} ${FFTW3F_LIBRARIES} SoDaUtils::sodautils)
 
 ########### next target ###############
 

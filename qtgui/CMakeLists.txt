@@ -77,12 +77,10 @@ SET(CMAKE_AUTOMOC ON)
 SET(CMAKE_AUTOUIC ON)
 SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-INCLUDE_DIRECTORIES(SYSTEM 
-  ${SNDFILE_INCLUDE_DIRS}  
-  ${Qt6Widgets_INCLUDE_DIRS} 
-  ${CMAKE_CURRENT_SOURCE_DIR} 
+INCLUDE_DIRECTORIES(SYSTEM
+  ${Qt6Widgets_INCLUDE_DIRS}
+  ${CMAKE_CURRENT_SOURCE_DIR}
   ${QWT_INCLUDE_DIRS}
-  ${SoDaUtils_INCLUDE_DIR}  
   ${CMAKE_CURRENT_BINARY_DIR})
 
 ADD_DEFINITIONS(${Qt6Widgets_DEFINITIONS})
@@ -100,24 +98,22 @@ ADD_LIBRARY(SoDaRadio_Lib STATIC
   ${SoDaRadio_form_moc})
 
 message("QWT_LIBRARIES = ${QWT_LIBRARIES}")
-TARGET_LINK_LIBRARIES(SoDaRadio_Lib m ${RT_LIB} 
+TARGET_LINK_LIBRARIES(SoDaRadio_Lib m ${RT_LIB}
   Qt6::Widgets Qt6::PrintSupport
   Qt6::Core Qt6::Gui Qt6::Network Qt6::Multimedia
   Threads::Threads
-  ${SoDaUtils_LIBRARIES}  
-  ${SNDFILE_LIBRARIES}  
-  ${QWT_LIBRARIES} )
+  SoDaUtils::sodautils
+  ${QWT_LIBRARIES})
 
 ADD_EXECUTABLE(SoDaRadio ${SoDaRadio_SRCS})
 
 TARGET_COMPILE_OPTIONS(SoDaRadio BEFORE PUBLIC -Wno-deprecated-declarations)
 
 TARGET_LINK_LIBRARIES(SoDaRadio SoDaRadio_Lib
-    m ${RT_LIB}
-    Threads::Threads
-    ${SNDFILE_LIBRARIES}
-    sodautils
-    )
+  m ${RT_LIB}
+  Threads::Threads
+  SoDaUtils::sodautils
+  )
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt6Widgets_EXECUTABLE_COMPILE_FLAGS}")
 
