@@ -27,52 +27,43 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <QObject>
-#include <QIODevice>
-#include <QAudioOutput>
+#include <QThread>
+#include <QFile>
 #include <QString>
-#include <QtNetwork/QtNetwork>
-
-#include <iostream>
-#include <fstream>
-#include <errno.h>
-#include <sndfile.h>
+#include <QWidget>
 #include "../common/CircularBuffer.hxx"
 
 namespace GUISoDa {
 
-  // put the recorder in its own thread, so if something goes wrong
-  // we don't zorch the rest of the radio. 
+  // Records received audio to a WAV file.  Runs in its own thread so a
+  // slow filesystem write can't stall the GUI.
   class AudioRecorder : public QThread {
     Q_OBJECT
-    
+
   public:
     AudioRecorder(int _sample_rate);
-    ~AudioRecorder() {
-      if(snd_file != NULL) {
-	sf_close(snd_file); 
-	delete rec_buffer; 
-      }
-    }
+    ~AudioRecorder();
 
   public slots:
-    void getRecDirectory(QWidget * par); 
-    
-    // write buffer to circular buffer or to file. 
-    void saveData(float * buf, qint64 len); 
+    void getRecDirectory(QWidget * par);
 
-    // start/stop recording
-    void record(bool on); 
-    
+    // Buffer audio continuously; flush to file when recording is active.
+    void saveData(float * buf, qint64 len);
+
+    // Start (on=true) or stop (on=false) recording.
+    void record(bool on);
+
   protected:
-    void openSoundFile(const QString & fname); 
-    
-    QString record_directory; 
-    QString current_file; 
-    
-    SNDFILE * snd_file; 
-    int sample_rate; 
-    
-    SoDa::CircularBuffer<float> * rec_buffer; 
-  }; 
+    void openWavFile(const QString & fname);
+    void finalizeWavFile();
+    void writeSamples(const float * buf, int len);
+
+    QString record_directory;
+
+    QFile   wav_file;
+    quint32 data_bytes_written;
+    int     sample_rate;
+
+    SoDa::CircularBuffer<float> * rec_buffer;
+  };
 }

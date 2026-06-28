@@ -27,98 +27,130 @@
 */
 
 #include "AudioRecorder.hpp"
-#include <QMessageBox>
-#include <cstring>
+#include <QDataStream>
 #include <QDateTime>
 #include <QFileDialog>
 #include <QByteArray>
+#include <algorithm>
 
 namespace GUISoDa {
 
   AudioRecorder::AudioRecorder(int _sample_rate)
+    : sample_rate(_sample_rate), data_bytes_written(0),
+      record_directory("./")
   {
-    sample_rate = _sample_rate; 
-    snd_file = NULL; 
-
-    record_directory = QString("./");
-
-    // store 5 seconds worth of audio
-    rec_buffer = new SoDa::CircularBuffer<float>(sample_rate * 5);   
+    // Pre-record circular buffer: keep the last 5 seconds so recording
+    // starts slightly before the user hits the button.
+    rec_buffer = new SoDa::CircularBuffer<float>(sample_rate * 5);
   }
 
-  void AudioRecorder::openSoundFile(const QString & fname)
+  AudioRecorder::~AudioRecorder()
   {
-    //// NOTE!  Since this manipulates snd_file, it must interlock against
-    //// saveData -- this works just fine as long as the two methods are 
-    //// only ever called as or from a slot.  
-
-    SF_INFO info; 
-    info.samplerate = sample_rate; 
-    info.channels = 1; 
-    // FLAC is lossless and a bit more compact than ulaw/wave
-    // info.format = SF_FORMAT_WAV | SF_FORMAT_PCM_16 | SF_FORMAT_ULAW;
-    info.format = SF_FORMAT_FLAC | SF_FORMAT_PCM_16;
-    QByteArray ba = fname.toLatin1(); 
-    snd_file = sf_open(ba.data(), SFM_WRITE, &info); 
-    // fail silently. 
+    finalizeWavFile();
+    delete rec_buffer;
   }
 
-  void AudioRecorder::record(bool on) 
+  // Write a 44-byte RIFF/WAV header with placeholder sizes (filled on close).
+  // Format: 16-bit signed PCM, mono, little-endian.
+  void AudioRecorder::openWavFile(const QString & fname)
   {
-    //// NOTE!  Since this manipulates snd_file, it must interlock against
-    //// saveData -- this works just fine as long as the two methods are 
-    //// only ever called as slots.  
-    // stop recording, regardless of what just happened. 
-    if(snd_file != NULL) {
-      sf_close(snd_file); 
-      snd_file = NULL; 
+    wav_file.setFileName(fname);
+    if (!wav_file.open(QIODevice::WriteOnly)) return;
+
+    data_bytes_written = 0;
+
+    QDataStream ds(&wav_file);
+    ds.setByteOrder(QDataStream::LittleEndian);
+
+    // RIFF chunk
+    ds.writeRawData("RIFF", 4);
+    ds << quint32(0);                       // placeholder: file size - 8
+    ds.writeRawData("WAVE", 4);
+    // fmt sub-chunk
+    ds.writeRawData("fmt ", 4);
+    ds << quint32(16);                      // sub-chunk size (PCM)
+    ds << quint16(1);                       // audio format: PCM
+    ds << quint16(1);                       // channels: mono
+    ds << quint32(sample_rate);
+    ds << quint32(sample_rate * 2);         // byte rate (16-bit = 2 bytes/sample)
+    ds << quint16(2);                       // block align
+    ds << quint16(16);                      // bits per sample
+    // data sub-chunk
+    ds.writeRawData("data", 4);
+    ds << quint32(0);                       // placeholder: data size in bytes
+  }
+
+  // Seek back and fill in the two size fields, then close.
+  void AudioRecorder::finalizeWavFile()
+  {
+    if (!wav_file.isOpen()) return;
+
+    quint32 data_size = data_bytes_written;
+    quint32 riff_size = 36 + data_size;    // 44-byte header - 8 = 36
+
+    // Patch RIFF size at offset 4
+    wav_file.seek(4);
+    QDataStream ds(&wav_file);
+    ds.setByteOrder(QDataStream::LittleEndian);
+    ds << riff_size;
+
+    // Patch data size at offset 40
+    wav_file.seek(40);
+    ds << data_size;
+
+    wav_file.close();
+  }
+
+  // Convert float [-1,1] samples to 16-bit signed PCM and append to file.
+  void AudioRecorder::writeSamples(const float * buf, int len)
+  {
+    QByteArray pcm(len * 2, Qt::Uninitialized);
+    qint16 * out = reinterpret_cast<qint16 *>(pcm.data());
+    for (int i = 0; i < len; i++) {
+      float s = std::max(-1.0f, std::min(1.0f, buf[i]));
+      out[i] = static_cast<qint16>(s * 32767.0f);
     }
-  
-    if(on) {
-      // if we're turning the recorder on, 
-      // create a new file name. 
+    wav_file.write(pcm);
+    data_bytes_written += static_cast<quint32>(len * 2);
+  }
 
-      QString fname = QString("%1/%2.%3").arg(record_directory).arg(QDateTime::currentDateTime().toString("dd-MMM-yy_HHmmss")).arg("flac");
-    
-      // open the sound file.     
-      openSoundFile(fname); 
+  void AudioRecorder::record(bool on)
+  {
+    // Always close any open file first.
+    finalizeWavFile();
+
+    if (on) {
+      QString fname = QString("%1/%2.wav")
+        .arg(record_directory)
+        .arg(QDateTime::currentDateTime().toString("dd-MMM-yy_HHmmss"));
+      openWavFile(fname);
     }
   }
 
-  void AudioRecorder::saveData(float * buf, qint64 len) 
+  void AudioRecorder::saveData(float * buf, qint64 len)
   {
-    if(snd_file != NULL) {
-      // we're writing a sound file -- is this the first buffer 
-      // to arrive?  If so, dump the circular buffer first...
+    if (wav_file.isOpen()) {
+      // First buffer after record() — flush the pre-record circular buffer.
       if (rec_buffer->numElements() != 0) {
-	// dump the circular buffer to the sound file. 
-	// 4K elements at a time. 
-	float ibuf[4096]; 
-	int len; 
-	while((len = rec_buffer->get(ibuf, 4096)) > 0) {
-	  int rv = sf_write_float(snd_file, ibuf, len); 
-	}
+        float ibuf[4096];
+        int n;
+        while ((n = rec_buffer->get(ibuf, 4096)) > 0)
+          writeSamples(ibuf, n);
       }
-
-      // now the circular buffer is empty (and it will stay that
-      // way for a while. 
-      // dump the incoming buffer to the sound file.
-      int rv = sf_write_float(snd_file, buf, len); 
-    }
-    else {
-      // we aren't recording, save the last samples. 
-      rec_buffer->put(buf, len); 
+      writeSamples(buf, static_cast<int>(len));
+    } else {
+      // Not recording: keep a rolling window of recent audio.
+      rec_buffer->put(buf, len);
     }
   }
 
   void AudioRecorder::getRecDirectory(QWidget * par)
   {
-    QString rec_dir = QFileDialog::getExistingDirectory(par, tr("Select Recording Directory"), 
-							record_directory,
-							QFileDialog::ShowDirsOnly | 
-							QFileDialog::DontResolveSymlinks);
-    if(!(rec_dir.isNull() || rec_dir.isEmpty())) {
-      record_directory = rec_dir; 
-    }
+    QString dir = QFileDialog::getExistingDirectory(par,
+      tr("Select Recording Directory"),
+      record_directory,
+      QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    if (!dir.isNull() && !dir.isEmpty())
+      record_directory = dir;
   }
 }

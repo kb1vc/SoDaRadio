@@ -37,7 +37,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iostream>
 #include <fstream>
 #include <errno.h>
-#include <sndfile.h>
 #include "../common/CircularBuffer.hxx"
 
 #include "AudioRXListener.hpp"
