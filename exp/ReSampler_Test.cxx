@@ -43,6 +43,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdio.h>
 
 #include <sys/time.h>
+#include <SoDa/Format.hxx>
 
  // test program to checkout the antialiasing capability of the
  // resamplers. 
@@ -143,9 +144,11 @@ void test625x48()
 
   for(i = 0; i < 30000; i++) {
     int j = i + 30000; 
-    std::cout << boost::format("%d %f %f %f ") % i % in[j] % cin[j].real() % cin[j].imag();
+    std::cout << SoDa::Format("%0 %1 %2 %3 ")
+                    .addI(i).addF(in[j]).addF(cin[j].real()).addF(cin[j].imag());
     if(i < 2304) {
-      std::cout << boost::format("%f %f %f\n") % out[i] % cout[i].real() % cout[i].imag(); 
+      std::cout << SoDa::Format("%0 %1 %2\n")
+                      .addF(out[i]).addF(cout[i].real()).addF(cout[i].imag());
     }
     else {
       std::cout << std::endl; 
@@ -190,8 +193,8 @@ void aliasingPlot()
 	}
       }
     }
-    to << boost::format("%f %f\n") % test_freq % (10.0 * log10(energy));
-    std::cout << boost::format("%f %f\n") % test_freq % (10.0 * log10(energy));
+    to << SoDa::Format("%0 %1\n").addF(test_freq).addF(10.0 * log10(energy));
+    std::cout << SoDa::Format("%0 %1\n").addF(test_freq).addF(10.0 * log10(energy));
     if(test_freq < 0.0) {
       if(test_freq > -10.0) test_freq = 10.0;
       else test_freq *= (1.0 / 1.05); 

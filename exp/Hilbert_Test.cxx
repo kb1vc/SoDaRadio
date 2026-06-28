@@ -35,7 +35,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <time.h>
 #include <fftw3.h>
 #include <math.h>
-#include <boost/format.hpp>
+#include <SoDa/Format.hxx>
 
 #include <stdio.h>
 #include <fcntl.h>
@@ -71,14 +71,14 @@ public:
   }
 
   void dump(ostream & os, const std::string & tag) {
-    os << boost::format("%s %f %d\n") % tag % (min - bucket_size) % underflow;
+    os << SoDa::Format("%0 %1 %2\n").addS(tag).addF(min - bucket_size).addI(underflow);
     unsigned int i;
     for(i = 0; i < num_buckets; i++) {
       if(buckets[i] == 0) continue;
-      float b = min + ((float) i) * bucket_size; 
-      os << boost::format("%s %f %d\n") % tag % b % buckets[i]; 
+      float b = min + ((float) i) * bucket_size;
+      os << SoDa::Format("%0 %1 %2\n").addS(tag).addF(b).addI(buckets[i]);
     }
-    os << boost::format("%s %f %d\n") % tag % (max + bucket_size) % overflow; 
+    os << SoDa::Format("%0 %1 %2\n").addS(tag).addF(max + bucket_size).addI(overflow);
   }
 
   unsigned int num_buckets;
@@ -163,8 +163,11 @@ int dumpTest(int argc, char * argv[])
 
     if(k > -1) {
       for(i = 0; i < BUFLEN; i++) {
-	std::cout << boost::format("ZZZ: %d %f %f  %f %f %f %f\n")
-	  % (i + k * BUFLEN) % outbuf[i].real() % outbuf[i].imag() % coutbuf[i].real() % coutbuf[i].imag() % checkbuf[i].real() % checkbuf[i].imag(); 
+	std::cout << SoDa::Format("ZZZ: %0 %1 %2  %3 %4 %5 %6\n")
+	  .addI(i + k * BUFLEN)
+	  .addF(outbuf[i].real()).addF(outbuf[i].imag())
+	  .addF(coutbuf[i].real()).addF(coutbuf[i].imag())
+	  .addF(checkbuf[i].real()).addF(checkbuf[i].imag());
       }
     }
   }
@@ -205,8 +208,11 @@ int dumpTest(int argc, char * argv[])
     // dump the output
     if(k > -1) {
       for(i = 0; i < BUFLEN; i++) {
-	std::cout << boost::format("MMM: %d %f %f %f %f %f %f\n")
-	  % (i + k * BUFLEN) % outbuf[i].real() % outbuf[i].imag() % cinbuf[i].real() % cinbuf[i].imag() % checkbuf[i].real() % checkbuf[i].imag(); 
+	std::cout << SoDa::Format("MMM: %0 %1 %2 %3 %4 %5 %6\n")
+	  .addI(i + k * BUFLEN)
+	  .addF(outbuf[i].real()).addF(outbuf[i].imag())
+	  .addF(cinbuf[i].real()).addF(cinbuf[i].imag())
+	  .addF(checkbuf[i].real()).addF(checkbuf[i].imag());
       }
     }
   }
@@ -306,20 +312,20 @@ int doSSBTest(int argc, char * argv[])
 	usb_sum_err.record(usb_sum / norm); 
 	lsb_diff_err.record(lsb_diff / norm);
 #if 0
-	std::cerr << boost::format("%d %f %f %f %f %f %f %f %f %f %f\n") %
-	  (j + k * buflen) %
-	  usb_sum % lsb_diff %
-	  usb_outbuf[j].real() % usb_outbuf[j].imag() % 
-	  lsb_outbuf[j].real() % lsb_outbuf[j].imag() %
-	  analytic_U_inbuf[j].real() % analytic_U_inbuf[j].imag() %
-	  analytic_L_inbuf[j].real() % analytic_L_inbuf[j].imag()
-	  ;
+	std::cerr << SoDa::Format("%0 %1 %2 %3 %4 %5 %6 %7 %8 %9 %10\n")
+	  .addI(j + k * buflen)
+	  .addF(usb_sum).addF(lsb_diff)
+	  .addF(usb_outbuf[j].real()).addF(usb_outbuf[j].imag())
+	  .addF(lsb_outbuf[j].real()).addF(lsb_outbuf[j].imag())
+	  .addF(analytic_U_inbuf[j].real()).addF(analytic_U_inbuf[j].imag())
+	  .addF(analytic_L_inbuf[j].real()).addF(analytic_L_inbuf[j].imag());
 #endif
       }
     }
   }
 
-  std::cout << boost::format("# Dumps histograms of USB and LSB normalized error\n# -- all should be clustered around 0.0 -- normalized to mean squared amplitude.\n"); 
+  std::cout << "# Dumps histograms of USB and LSB normalized error\n"
+            << "# -- all should be clustered around 0.0 -- normalized to mean squared amplitude.\n";
   usb_sum_err.dump(std::cout, std::string("USB: ")); 
   lsb_diff_err.dump(std::cout, std::string("LSB: ")); 
 
@@ -420,12 +426,12 @@ int doPMTest(int argc, char * argv[])
 	// demodulate the FM carrier
 	demod = atan2(transform_buf[j].imag(), transform_buf[j].real()); 
 #if 1
-	std::cerr << boost::format("PM %d %f %f %f %f %f\n") %
-	  (j + k * buflen) %
-	  inbuf[j] %
-	  demod %
-	  rf_inbuf[j] %
-	  transform_buf[j].real() % transform_buf[j].imag(); 
+	std::cerr << SoDa::Format("PM %0 %1 %2 %3 %4 %5\n")
+	  .addI(j + k * buflen)
+	  .addF(inbuf[j])
+	  .addF(demod)
+	  .addF(rf_inbuf[j])
+	  .addF(transform_buf[j].real()).addF(transform_buf[j].imag());
 #endif
       }
     }

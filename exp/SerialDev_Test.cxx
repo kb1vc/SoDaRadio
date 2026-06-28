@@ -30,7 +30,7 @@
 #include <iostream>
 #include <stdlib.h>
 #include <unistd.h>
-#include <boost/format.hpp>
+#include <SoDa/Format.hxx>
 #include <string>
 #include <list>
 int main(int argc, char ** argv)
@@ -56,32 +56,32 @@ int main(int argc, char ** argv)
 
   while(1) {
     for(int i = 0; i < 8; i++) {
-      on = (boost::format("ON%d%dNO%c") % i % i % ctlj).str();
+      on = SoDa::Format("ON%0%1NO%2").addI(i).addI(i).addC(ctlj).str();
 #if 0
-      sport.putString(on); 
-      sport.getString(repl, 100); 
+      sport.putString(on);
+      sport.getString(repl, 100);
 #else
       if(sport.palindromeCommand(on)) {
-	std::cerr << boost::format("on: success\n");
+	std::cerr << "on: success\n";
       }
       else {
-	std::cerr << boost::format("on: fail\n");
+	std::cerr << "on: fail\n";
       }
-#endif      
+#endif
       sleep(2);
-      off = (boost::format("ST%d%dTS%c") % i % i % ctlj).str();      
+      off = SoDa::Format("ST%0%1TS%2").addI(i).addI(i).addC(ctlj).str();
 #if 0
-      sport.putString(off); 
+      sport.putString(off);
       sport.getString(repl, 100);
-      std::cerr << boost::format("off: got reply [%s]\n") % repl;
+      std::cerr << SoDa::Format("off: got reply [%0]\n").addS(repl);
 #else
       if(sport.palindromeCommand(off)) {
-	std::cerr << boost::format("off: success\n");
+	std::cerr << "off: success\n";
       }
       else {
-	std::cerr << boost::format("off: fail\n");
+	std::cerr << "off: fail\n";
       }
-#endif      
+#endif
       sleep(2); 
     }
   }

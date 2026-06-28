@@ -28,6 +28,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <SoDaRadio/IPSockets.hxx>
 #include <SoDaRadio/UDSockets.hxx>
+#include <SoDa/Format.hxx>
 #include <error.h>
 #include <stdio.h>
 #include <iostream>
@@ -67,7 +68,8 @@ int main(int argc, char * argv[])
     double * freq = reinterpret_cast<double*>(&(buf[8])); // buf + sizeof(unsigned int));
 
     if(*freq != old_freq) {
-      std::cerr << boost::format("Got new frequency: %10.6f\n") % (*freq * 1e-6);
+      std::cerr << SoDa::Format("Got new frequency: %0\n")
+                      .addF(*freq * 1e-6, 'f', 10, 6);
       old_freq = *freq; 
     }
   }

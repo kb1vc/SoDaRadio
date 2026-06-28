@@ -1,5 +1,4 @@
 #include "../src/FindHome.hxx"
-#include <boost/format.hpp>
 #include <iostream>
 
 int main(int argc, char * argv[])

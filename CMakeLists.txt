@@ -143,8 +143,7 @@ set(CPACK_RPM_PACKAGE_REQUIRES
   "gpsd >= 3.1, "
   "gpsd-libs >= 3.1, "
   "hamlib, "
-  "libsndfile, "
-  "boost-system")
+  "libsndfile")
 string(REPLACE ";" "" CPACK_RPM_PACKAGE_REQUIRES "${CPACK_RPM_PACKAGE_REQUIRES}")
 set(CPACK_RPM_FILE_NAME
   "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_RPM_PACKAGE_RELEASE}.${CMAKE_SYSTEM_PROCESSOR}.rpm")
@@ -230,16 +229,9 @@ SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -ffast-math")
 
 MESSAGE("SoDaRadio_VERSION=[${SoDaRadio_VERSION}]")
 
-#FIND_PACKAGE(Boost 1.45 REQUIRED COMPONENTS
-#  program_options
-#  thread
-#  date_time
-#  system
-#  filesystem
-#  serialization
-#  regex
-#  QUIET)
-FIND_PACKAGE(Boost 1.75 REQUIRED) 
+# SoDaRadio's production sources no longer use Boost directly.  Any libboost
+# entries that show up in 'ldd SoDaServer' arrive transitively through libuhd
+# or hamlib, not through us.
 
 FIND_PACKAGE(Git QUIET)
 

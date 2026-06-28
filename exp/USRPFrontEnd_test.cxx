@@ -30,21 +30,17 @@
 #include <iostream>
 #include <stdlib.h>
 #include <unistd.h>
-#include <boost/format.hpp>
+#include <SoDa/Format.hxx>
 #include <string>
 #include <list>
 #include <uhd/usrp/multi_usrp.hpp>
 #include <vector>
-#include <string>
-#include <boost/foreach.hpp>
-#include <boost/format.hpp>
 
 #include <uhd/utils/safe_main.hpp>
 #include <uhd/version.hpp>
 #include <uhd/device.hpp>
 #include <uhd/types/ranges.hpp>
 #include <uhd/property_tree.hpp>
-#include <boost/algorithm/string.hpp> //for split
 #include <uhd/usrp/dboard_id.hpp>
 #include <uhd/usrp/mboard_eeprom.hpp>
 #include <uhd/usrp/dboard_eeprom.hpp>
@@ -63,17 +59,18 @@ void dumpProps(uhd::usrp::multi_usrp::sptr usrp)
   std::string mbname = tree->list("/mboards").at(0); 
 
   uhd::usrp::mboard_eeprom_t eeprom = tree->access<uhd::usrp::mboard_eeprom_t>("/mboards/" + mbname + "/eeprom").get();
-  BOOST_FOREACH(const std::string & key, eeprom.keys()) {
-    if( eeprom[key].empty() ) {
-      std::cerr << boost::format("Empty key [%s]\n") % key; 
+  for (const std::string & key : eeprom.keys()) {
+    if (eeprom[key].empty()) {
+      std::cerr << SoDa::Format("Empty key [%0]\n").addS(key);
     }
     else {
-      std::cerr << boost::format(" eeprom[%s] = [%s]\n") % key % eeprom[key]; 
+      std::cerr << SoDa::Format(" eeprom[%0] = [%1]\n").addS(key).addS(eeprom[key]);
     }
   }
 
-  std::cerr << boost::format("went the direct route = [%s]\n")
-    % tree->access<uhd::usrp::mboard_eeprom_t>("/mboards/" + mbname + "/eeprom").get()["ip-addr"]; 
+  std::cerr << SoDa::Format("went the direct route = [%0]\n")
+                  .addS(tree->access<uhd::usrp::mboard_eeprom_t>(
+                          "/mboards/" + mbname + "/eeprom").get()["ip-addr"]);
 }
 
 int main(int argc, char ** argv)
@@ -96,13 +93,12 @@ int main(int argc, char ** argv)
   SoDa::USRPPropTree * rx_fe = getUSRPFrontEnd(&tree, 'R');
   SoDa::USRPPropTree * tx_fe = getUSRPFrontEnd(&tree, 'T');  
 
-  BOOST_FOREACH(std::string prn, rx_fe->getPropNames()) {
-    std::cerr << boost::format("RXFE prop [%s]\n") % prn; 
+  for (const std::string & prn : rx_fe->getPropNames()) {
+    std::cerr << SoDa::Format("RXFE prop [%0]\n").addS(prn);
   }
 
-  
-  BOOST_FOREACH(std::string prn, tx_fe->getPropNames()) {
-    std::cerr << boost::format("TXFE prop [%s]\n") % prn; 
+  for (const std::string & prn : tx_fe->getPropNames()) {
+    std::cerr << SoDa::Format("TXFE prop [%0]\n").addS(prn);
   }
 
- }
+}

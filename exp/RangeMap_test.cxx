@@ -1,4 +1,3 @@
-#include <boost/format.hpp>
 #include "RangeMap.hxx"
 #include <string>
 #include <iostream>

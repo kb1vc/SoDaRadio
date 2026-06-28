@@ -7,7 +7,6 @@ Build-Depends:
  debhelper-compat (= 13),
  cmake (>= 3.13),
  pkg-config,
- libboost-dev (>= 1.75),
  libuhd-dev (>= 3.12),
  libfftw3-dev,
  libsndfile1-dev,

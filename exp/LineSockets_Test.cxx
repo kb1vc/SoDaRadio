@@ -29,6 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "LineSocket.hxx"
 #include <error.h>
 #include <stdio.h>
+#include <SoDa/Format.hxx>
 
 void usage()
 {
@@ -61,7 +62,7 @@ int main(int argc, char * argv[])
       while((rsize = s->getLine(buf, 1024)) >= 0) {
 	retcount++; 
 	if(rsize > 0) {
-	  std::cout << boost::format("Got line [%s] RC = %d\n") % buf % retcount; 
+	  std::cout << SoDa::Format("Got line [%0] RC = %1\n").addS(buf).addI(retcount);
 	  retcount = 0; 
 	}
 	else {

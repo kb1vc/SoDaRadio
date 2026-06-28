@@ -40,9 +40,7 @@
 #include <termios.h>
 #include <time.h>
 
-// Boost free implementation of serial IO.   
-
-namespace SoDa 
+namespace SoDa
 {
 
 
