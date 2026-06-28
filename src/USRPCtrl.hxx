@@ -43,7 +43,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Params.hxx"
 #include "USRPTRControl.hxx"
 #include "RadioControl.hxx"
-#include "PropTree.hxx"
+#include "USRPPropTree.hxx"
 #include <uhd/version.hpp>
 #include <uhd/utils/thread.hpp>
 
@@ -266,9 +266,9 @@ namespace SoDa {
     uhd::usrp::multi_usrp::sptr usrp; ///< to which USRP unit is this connected?
     uhd::usrp::dboard_iface::sptr dboard;  ///< the daughterboard we're controlling
     // need this for TX/RX enable.
-    SoDa::PropTree * tx_fe_subtree; ///< property tree from daughtercard module
+    SoDa::USRPPropTree * tx_fe_subtree; ///< property tree from daughtercard module
     // need this for TX/RX enable.
-    SoDa::PropTree * rx_fe_subtree; ///< property tree from daughtercard module
+    SoDa::USRPPropTree * rx_fe_subtree; ///< property tree from daughtercard module
 
     // what controls and widgets do we have for the two front-ends? 
 

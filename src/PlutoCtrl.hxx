@@ -41,9 +41,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * Frequency range (with AD9361 software extension): 70 MHz – 6 GHz.
  *
- * @note A Pluto-only build (-DNO_USRP=ON) is supported: TRControl.cxx,
- *       N200Control.cxx, and B200Control.cxx are compiled only when
- *       HAVE_UHD is set, and PlutoCtrl does not include TRControl.hxx.
+ * @note A Pluto-only build (-DNO_USRP=ON) is supported.
  *
  * @author M. H. Reilly (kb1vc)
  * @date   June 2026

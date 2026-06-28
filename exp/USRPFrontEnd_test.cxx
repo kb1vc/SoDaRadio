@@ -91,10 +91,10 @@ int main(int argc, char ** argv)
   usrp = uhd::usrp::multi_usrp::make(rad);
 
   // make the proptree
-  SoDa::PropTree tree(usrp, "Test");
+  SoDa::USRPPropTree tree(usrp, "Test");
 
-  SoDa::PropTree * rx_fe = getUSRPFrontEnd(&tree, 'R');
-  SoDa::PropTree * tx_fe = getUSRPFrontEnd(&tree, 'T');  
+  SoDa::USRPPropTree * rx_fe = getUSRPFrontEnd(&tree, 'R');
+  SoDa::USRPPropTree * tx_fe = getUSRPFrontEnd(&tree, 'T');  
 
   BOOST_FOREACH(std::string prn, rx_fe->getPropNames()) {
     std::cerr << boost::format("RXFE prop [%s]\n") % prn; 

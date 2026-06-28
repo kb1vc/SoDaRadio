@@ -42,7 +42,7 @@
 #include <iostream>
 
 //new
-#include "PropTree.hxx"
+#include "USRPPropTree.hxx"
 #include <uhd/property_tree.hpp>
 
 namespace SoDa 
@@ -52,7 +52,7 @@ namespace SoDa
     mboard = _mboard; 
   
     //new
-    PropTree tree(usrp, "USRPTRControl");
+    USRPPropTree tree(usrp, "USRPTRControl");
     B200Control::modelname = tree.getStringProp("name", "unknown");
     if ((modelname == std::string("B200")) ) {
         B200_type = SoDa_B200_type_t::eB200;};
