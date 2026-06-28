@@ -41,10 +41,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * Frequency range (with AD9361 software extension): 70 MHz – 6 GHz.
  *
- * @note TRControl.hxx currently pulls in the UHD header only for its
- *       makeTRControl() factory; that factory is not called here.
- *       If a Pluto-only build is desired, TRControl.hxx should be
- *       refactored to move the UHD-dependent declaration elsewhere.
+ * @note A Pluto-only build (-DNO_USRP=ON) is supported: TRControl.cxx,
+ *       N200Control.cxx, and B200Control.cxx are compiled only when
+ *       HAVE_UHD is set, and PlutoCtrl does not include TRControl.hxx.
  *
  * @author M. H. Reilly (kb1vc)
  * @date   June 2026

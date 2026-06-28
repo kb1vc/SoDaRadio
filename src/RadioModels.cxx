@@ -30,7 +30,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Include the toplevel Radio file for each new radio model added in the
 // RadioModels::init method.
+#if HAVE_UHD
 #include "USRPRadio.hxx"
+#endif
 
 #if HAVE_PLUTO
 #include "PlutoRadio.hxx"

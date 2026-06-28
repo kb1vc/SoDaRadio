@@ -293,17 +293,19 @@ SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
 
 FIND_PACKAGE(SndFile REQUIRED)
 
-IF(${NO_UHD})
-  MESSAGE("libUHD Support disabled.")
+OPTION(NO_USRP "Disable Ettus USRP / libuhd support" OFF)
+
+IF(${NO_USRP})
+  MESSAGE("libuhd / USRP support disabled.")
   SET(HAVE_UHD 0)
 ELSE()
-  # Enable UHD support
-  FIND_PACKAGE(UHD "3.11" REQUIRED)
-  IF(NOT UHD_FOUND)
-    MESSAGE("UHD Library NOT FOUND!")
-    SET(HAVE_UHD 0)
-  ELSE()
+  FIND_PACKAGE(UHD "3.11" QUIET)
+  IF(UHD_FOUND)
     SET(HAVE_UHD 1)
+    MESSAGE("libuhd ${UHD_VERSION} found -- USRP support enabled.")
+  ELSE()
+    SET(HAVE_UHD 0)
+    MESSAGE("libuhd NOT found -- USRP support disabled.")
   ENDIF()
 ENDIF()
 

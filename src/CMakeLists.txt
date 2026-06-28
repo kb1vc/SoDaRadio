@@ -22,14 +22,10 @@ set(SoDaServer_SRCS
     UDSockets.cxx
     Debug.cxx
     SerialDev.cxx
-    TRControl.cxx
-    N200Control.cxx
     IPSockets.cxx
-    B200Control.cxx
     IFRecorder.cxx
     fix_gpsd_ugliness.cxx
     RadioModels.cxx
-    USRPRadio.cxx
     RadioControl.cxx
     RadioRX.cxx
     RadioTX.cxx
@@ -48,6 +44,10 @@ ENDIF()
 
 IF(${HAVE_UHD})
   LIST(APPEND SoDaServer_SRCS
+    TRControl.cxx
+    N200Control.cxx
+    B200Control.cxx
+    USRPRadio.cxx
     USRPCtrl.cxx
     USRPRX.cxx
     USRPTX.cxx
