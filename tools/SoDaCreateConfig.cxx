@@ -32,13 +32,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @brief Generate a fresh SoDaRadio band-map configuration file.
  *
  * Writes a QSettings INI file in the format SoDaRadio's MainWindow expects
- * (Bands array under the Radio group).  The file is created at the
- * location SoDaRadio reads from on startup with --radio <MODEL>:
- *
- *     ~/.config/kb1vc.org/<MODEL>_SoDaRadioQT.conf
+ * (Bands array under the Radio group), named <MODEL>_SoDaRadioQT.conf
+ * in the current working directory.  Move the result to
+ * ~/.config/kb1vc.org/ to have it picked up by
+ * 'SoDaRadio --radio <model_name>'.
  *
  * If the target already exists the new file is written with a ".new"
- * suffix and the user is warned so the existing config is preserved.
+ * suffix and the user is warned so the existing file is preserved.
  *
  * Optional transverter parameters install a TVMode/TVLOFreq entry on
  * any band that falls below the down-converter low limit (HE < ll_freq)
@@ -55,7 +55,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QDir>
 #include <QString>
 
-#include <cstdlib>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -91,29 +90,15 @@ namespace {
     {"WX",         162.35, 162.60, false},
   };
 
-  // The standard QSettings path for a SoDaRadio config, given a model name.
-  // Mirrors what MainWindow does in mainwindow.cpp:
-  //     QSettings("kb1vc.org", model_name.toUpper() + "_SoDaRadioQT")
-  // which Qt resolves to ~/.config/kb1vc.org/<MODEL>_SoDaRadioQT.conf on Linux.
+  // Filename for the generated config.  The model name is uppercased so it
+  // matches the lookup MainWindow does at startup
+  // (QSettings("kb1vc.org", model_name.toUpper() + "_SoDaRadioQT")); the
+  // user can move the resulting file to ~/.config/kb1vc.org/ to have it
+  // picked up by 'SoDaRadio --radio <model_name>'.
   QString defaultConfigPath(const std::string & model_name)
   {
     QString model = QString::fromStdString(model_name).toUpper();
-    QString settings_app = model + QStringLiteral("_SoDaRadioQT");
-
-    const char * xdg_c = std::getenv("XDG_CONFIG_HOME");
-    const char * home_c = std::getenv("HOME");
-    QString root;
-    if (xdg_c && *xdg_c) {
-      root = QString::fromUtf8(xdg_c);
-    }
-    else if (home_c && *home_c) {
-      root = QString::fromUtf8(home_c) + QStringLiteral("/.config");
-    }
-    else {
-      root = QStringLiteral(".config");
-    }
-    return root + QStringLiteral("/kb1vc.org/") + settings_app
-                + QStringLiteral(".conf");
+    return model + QStringLiteral("_SoDaRadioQT.conf");
   }
 
   // Populate one band entry under the current QSettings array index.
