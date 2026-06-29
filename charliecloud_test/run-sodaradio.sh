@@ -20,7 +20,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SRC_DIR="$(dirname "$SCRIPT_DIR")"
+PACKAGES_DIR="$SCRIPT_DIR/packages"
 IMAGE="sodaradio-ubuntu"
 
 IMG_STORAGE="${CH_IMAGE_STORAGE:-/var/tmp/$USER.ch}"
@@ -38,17 +38,27 @@ done
 
 # Build the runtime image if it doesn't exist or --rebuild was requested.
 image_exists() {
-    ch-image -s "$IMG_STORAGE" list 2>/dev/null | grep -qF "$IMAGE"
+    ch-image -s "$IMG_STORAGE" list 2>/dev/null | grep -qFx "$IMAGE"
 }
 
 if [[ "$REBUILD" -eq 1 ]] || ! image_exists; then
-    echo "=== Building SoDaRadio Ubuntu runtime container ==="
-    echo "    Source: $SRC_DIR"
-    echo "    This will take several minutes on first run."
+    DEB_FILE="$(ls -t "$PACKAGES_DIR"/*.deb 2>/dev/null | head -1)"
+    if [[ -z "$DEB_FILE" || ! -f "$DEB_FILE" ]]; then
+        echo "Error: no .deb found in $PACKAGES_DIR." >&2
+        echo "       Run build-ubuntu.sh first." >&2
+        exit 1
+    fi
+    DEB_BASENAME="$(basename "$DEB_FILE")"
+    echo "=== Building SoDaRadio Ubuntu runtime container from $DEB_BASENAME ==="
+    # Stage the .deb under a known name (the Dockerfile uses a fixed filename
+    # because ch-image does not expand ARG references inside COPY).
+    BUILD_CTX="$(mktemp -d /tmp/sodaradio-runtime-ctx.XXXXXX)"
+    trap 'rm -rf "$BUILD_CTX"' EXIT
+    cp "$DEB_FILE" "$BUILD_CTX/sodaradio.deb"
     ch-image -s "$IMG_STORAGE" build \
         -t "$IMAGE" \
         -f "$SCRIPT_DIR/ubuntu-runtime/Dockerfile" \
-        "$SRC_DIR"
+        "$BUILD_CTX"
     echo "=== Container image built ==="
 fi
 
@@ -57,13 +67,13 @@ fi
 # XDG_RUNTIME_DIR are already set -- we only need to make the paths visible.
 BINDS=()
 
-# USB bus (USRP, RTL-SDR, ADALM-Pluto)
-[[ -d /dev/bus/usb ]] && BINDS+=(-b /dev/bus/usb:/dev/bus/usb)
-
-# Serial ports for hamlib-controlled rigs and GPS
-for dev in /dev/ttyUSB0 /dev/ttyUSB1 /dev/ttyACM0 /dev/ttyACM1 /dev/ttyS0 /dev/ttyS1; do
-    [[ -e "$dev" ]] && BINDS+=(-b "$dev:$dev")
-done
+# Bind the host's /dev wholesale.  We can't stub individual /dev/tty* files
+# in the image (ch-image build bind-mounts the host /dev during RUN, so any
+# touch under /dev hits real host device nodes), and host access for each
+# device is still gated by group/ownership at run time.  This covers
+# /dev/bus/usb (USRP, RTL-SDR, Pluto), /dev/ttyUSB*, /dev/ttyACM*, /dev/ttyS*
+# (hamlib, GPS), and anything else SoDaRadio's backends may probe.
+BINDS+=(-b /dev:/dev)
 
 # Display sockets
 [[ -d /tmp/.X11-unix ]] && BINDS+=(-b /tmp/.X11-unix:/tmp/.X11-unix)

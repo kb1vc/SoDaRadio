@@ -271,6 +271,7 @@ namespace SoDa {
      */
     bool setSize(size_t size) {
       buf.resize(size);
+      return true;
     }
     
     std::vector<BaseT> & getBuf() {

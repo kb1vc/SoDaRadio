@@ -126,7 +126,7 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   connect(audio_listener->getRX(), SIGNAL(bufferSlack(const QString &)), 
 	  ui->slack_lab, SLOT(setText(const QString &)));
 
-  connect(ui->Record_chk, &QCheckBox::checkStateChanged,
+  connect(ui->Record_chk, &QCheckBox::stateChanged,
 	  [=](int changed) {
 	    audio_listener->getRec()->record(changed != Qt::Unchecked);
 	  });

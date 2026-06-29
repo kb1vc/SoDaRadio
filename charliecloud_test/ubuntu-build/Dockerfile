@@ -30,13 +30,29 @@ RUN apt-get update && \
         librtlsdr-dev \
         qt6-base-dev \
         qt6-multimedia-dev \
-        libqwt-qt6-dev \
         libcups2-dev \
         dpkg-dev \
         fakeroot \
+        file \
         libssl-dev \
         libreadline-dev && \
     rm -rf /var/lib/apt/lists/*
+
+# Qwt 6.x with Qt6 support is not packaged in Ubuntu 24.04; build from source
+# as a static library so we don't carry a runtime libqwt dependency in the .deb.
+# qt6-base-dev (above) provides qmake6.
+RUN rm -rf /tmp/qwt && \
+    git clone --depth 1 https://github.com/opencor/qwt.git /tmp/qwt && \
+    cd /tmp/qwt && \
+    sed -i 's/^QWT_CONFIG\s*+=\s*QwtSvg/#QWT_CONFIG += QwtSvg/' qwtconfig.pri && \
+    sed -i 's/^QWT_CONFIG\s*+=\s*QwtDll/#QWT_CONFIG += QwtDll/' qwtconfig.pri && \
+    qmake6 QWT_INSTALL_PREFIX=/usr/local QMAKE_CXXFLAGS+=-fPIC qwt.pro && \
+    make -j$(nproc) && \
+    make install && \
+    QWT_INST=$(ls -d /usr/local/qwt-*) && \
+    ln -sf "$QWT_INST/include" /usr/local/include/qwt && \
+    ln -sf "$QWT_INST/lib/libqwt.a" /usr/local/lib/libqwt.a && \
+    rm -rf /tmp/qwt
 
 # Build and install SoDaLibs (provides SoDaUtils, Signals, JsonCpp).
 # Statically linked into SoDaRadio, so not needed at runtime.

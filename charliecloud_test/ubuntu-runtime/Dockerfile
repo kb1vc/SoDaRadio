@@ -1,68 +1,44 @@
 # SoDaRadio Ubuntu 24.04 runtime container.
 #
-# Builds SoDaRadio from the source tree and installs it under /usr/local.
-# The resulting image is used by run-sodaradio.sh to run SoDaRadio with
-# host USB, serial, and display access.
+# Installs SoDaRadio from a pre-built .deb (produced by build-ubuntu.sh) into
+# a clean Ubuntu 24.04 image.  All runtime dependencies (libuhd, qt6,
+# hamlib, ...) are pulled in by apt from the .deb's Depends: field.
 #
-# Build from the SoDaRadio source root (context = whole source tree):
-#   ch-image build -t sodaradio-ubuntu \
-#             -f charliecloud_test/ubuntu-runtime/Dockerfile .
-#
-# Run with device and display access:
-#   charliecloud_test/run-sodaradio.sh [SoDaRadio args...]
+# The Dockerfile expects 'sodaradio.deb' in the build context.  run-sodaradio.sh
+# stages the latest .deb under that name in a temp directory and uses it as
+# the build context.
 
 FROM ubuntu:24.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Build and runtime dependencies
+# Stage the .deb outside /tmp: charliecloud bind-mounts the host's /tmp over
+# the container's /tmp during ch-image build RUN steps, which would hide the
+# file we just COPYed there.
+COPY sodaradio.deb /var/cache/sodaradio.deb
+
+# uhd-host is not pulled in by shlibdeps but is needed at runtime for USRP
+# firmware and the device-discovery helpers.
+#
+# dpkg -i is used instead of `apt-get install /var/cache/sodaradio.deb` because
+# apt only recognises local .deb files named in the canonical name_version_arch
+# format; we install via dpkg and let apt-get install -f pull in the .deb's
+# Depends: afterwards.
 RUN apt-get update && \
-    apt-get install -y \
-        cmake \
-        make \
-        gcc \
-        g++ \
-        git \
-        pkg-config \
-        libuhd-dev \
-        uhd-host \
-        libboost-dev \
-        libfftw3-dev \
-        libhamlib-dev \
-        libgps-dev \
-        libiio-dev \
-        librtlsdr-dev \
-        qt6-base-dev \
-        qt6-multimedia-dev \
-        libqwt-qt6-dev \
-        libcups2-dev \
-        libx11-6 \
-        libxext6 \
-        libxrender1 \
-        libgl1 \
-        libssl-dev \
-        libreadline-dev && \
-    rm -rf /var/lib/apt/lists/*
+    apt-get install -y ca-certificates uhd-host && \
+    (dpkg -i /var/cache/sodaradio.deb || true) && \
+    apt-get install -y -f && \
+    rm -rf /var/lib/apt/lists/* /var/cache/sodaradio.deb
 
-# Build and install SoDaLibs before copying the SoDaRadio source so this
-# layer is cached independently of source changes.
-RUN rm -rf /tmp/SoDaLibs /tmp/SoDaLibs-build && \
-    git clone https://github.com/kb1vc/SoDaLibs.git /tmp/SoDaLibs && \
-    mkdir -p /tmp/SoDaLibs/Utils/include/SoDa && \
-    (cd /tmp/SoDaLibs/Utils/include && for h in *.hxx; do ln -sf "../$h" "SoDa/$h"; done) && \
-    cmake -S /tmp/SoDaLibs -B /tmp/SoDaLibs-build \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_INSTALL_PREFIX=/usr/local && \
-    cmake --build /tmp/SoDaLibs-build --parallel $(nproc) && \
-    cmake --install /tmp/SoDaLibs-build && \
-    rm -rf /tmp/SoDaLibs /tmp/SoDaLibs-build
-
-# Copy source and build SoDaRadio
-COPY . /src
-RUN cmake -S /src -B /build \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_INSTALL_PREFIX=/usr/local && \
-    cmake --build /build --parallel $(nproc) && \
-    cmake --install /build
+# Pre-create bind-mount targets.  ch-run is read-only at run time and
+# requires every destination passed via -b to exist in the image.
+# run-sodaradio.sh binds the host's /dev wholesale (USRP, RTL-SDR, Pluto,
+# hamlib tty, GPS), the X11/Wayland and audio sockets, and the user's
+# SoDaRadio config dir.
+#
+# Stubbing individual /dev/tty* files here would fail: ch-image build also
+# bind-mounts the host /dev over the container /dev during RUN, so any
+# touch in /dev would hit the host's real device nodes.
+RUN mkdir -p /run/user /tmp/.X11-unix
 
 WORKDIR /home

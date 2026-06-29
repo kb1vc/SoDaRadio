@@ -4,8 +4,9 @@
 # Usage: test-install-fedora.sh [RPM_FILE]
 #   RPM_FILE  path to the .rpm to test (default: packages/*.rpm, newest first)
 #
-# Builds a minimal Fedora image, installs the RPM into it, and verifies
-# that the SoDaRadio binaries are present.
+# Builds a minimal Fedora image, installs the RPM into a second image layer
+# (using ch-image build, which has write access), and verifies that the
+# SoDaRadio binaries are present.
 
 set -euo pipefail
 
@@ -23,29 +24,43 @@ if [[ -z "$RPM_FILE" || ! -f "$RPM_FILE" ]]; then
 fi
 echo "Testing RPM: $RPM_FILE"
 
-IMAGE="sodaradio-fedora-test"
+BASE_IMAGE="sodaradio-fedora-test"
+INST_IMAGE="sodaradio-fedora-test-installed"
 IMG_STORAGE="${CH_IMAGE_STORAGE:-/var/tmp/$USER.ch}"
+
+RPM_BASENAME="$(basename "$RPM_FILE")"
+RPM_DIR="$(dirname "$RPM_FILE")"
 
 TMPDF="$(mktemp /tmp/Dockerfile-fedora-test.XXXXXX)"
 trap 'rm -f "$TMPDF"' EXIT
-cat >"$TMPDF" <<'DOCKERFILE'
+
+# Step 1: Build minimal base image (cached after first run).
+cat >"$TMPDF" <<DOCKERFILE
 FROM fedora:latest
 RUN dnf -y update && dnf clean all
-RUN mkdir -p /pkgs
 DOCKERFILE
 
-echo "=== [1/3] Building fresh Fedora test image ==="
-ch-image -s "$IMG_STORAGE" build -t "$IMAGE" -f "$TMPDF" /
+echo "=== [1/3] Building fresh Fedora base image ==="
+ch-image -s "$IMG_STORAGE" build -t "$BASE_IMAGE" -f "$TMPDF" /
 
-echo "=== [2/3] Installing RPM into the container ==="
-RPM_BASENAME="$(basename "$RPM_FILE")"
-ch-run -s "$IMG_STORAGE" \
-    -b "$(dirname "$RPM_FILE"):/pkgs" \
-    "$IMAGE" -- \
-    sh -c "dnf -y install /pkgs/$RPM_BASENAME"
+# Step 2: Build a second image that installs the RPM.
+# ch-image build has write access to layers; ch-run does not — so the
+# package installation must happen here, not in ch-run.
+cat >"$TMPDF" <<DOCKERFILE
+FROM ${BASE_IMAGE}
+COPY ${RPM_BASENAME} /pkgs/
+RUN dnf -y install /pkgs/${RPM_BASENAME}
+DOCKERFILE
+
+echo "=== [2/3] Installing RPM into a new image layer ==="
+ch-image -s "$IMG_STORAGE" build \
+    -t "$INST_IMAGE" \
+    -f "$TMPDF" \
+    "$RPM_DIR"
 
 echo "=== [3/3] Verifying installation ==="
-ch-run -s "$IMG_STORAGE" "$IMAGE" -- sh -c '
+ch-run -s "$IMG_STORAGE" "$INST_IMAGE" -- sh -c '
+    ok=true
     for bin in SoDaRadio SoDaServer SoDaCreateConfig; do
         found=
         for d in /usr/bin /usr/local/bin; do
@@ -55,8 +70,10 @@ ch-run -s "$IMG_STORAGE" "$IMAGE" -- sh -c '
             echo "  OK: $bin -> $found"
         else
             echo "  MISSING: $bin" >&2
+            ok=false
         fi
     done
+    $ok
 '
 
 echo "=== RPM install test passed ==="

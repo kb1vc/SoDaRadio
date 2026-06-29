@@ -137,7 +137,6 @@ set(CPACK_RPM_PACKAGE_RELOCATABLE TRUE)
 set(CPACK_RPM_PACKAGE_AUTOREQPROV "no")
 set(CPACK_RPM_PACKAGE_REQUIRES
   "uhd >= 3.12.0, "
-  "boost-libs >= 1.69, "
   "fftw-libs >= 3.3, "
   "qt6-qtbase >= 6.2, "
   "qt6-qtmultimedia >= 6.2, "
