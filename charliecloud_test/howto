@@ -1,0 +1,54 @@
+  Dockerfiles (three containers):                                               
+                                                                                
+  ┌───────────────────────────┬──────────────────────────────────────────────┐  
+  │           File            │                   Purpose                    │  
+  ├───────────────────────────┼──────────────────────────────────────────────┤  
+  │ fedora-build/Dockerfile   │ Fedora with all build deps; source is        │  
+  │                           │ bind-mounted at build time                   │  
+  ├───────────────────────────┼──────────────────────────────────────────────┤  
+  │ ubuntu-build/Dockerfile   │ Ubuntu 24.04 with all build deps; same       │  
+  │                           │ bind-mount approach                          │  
+  ├───────────────────────────┼──────────────────────────────────────────────┤  
+  │                           │ Ubuntu 24.04 that COPYs the source tree,     │  
+  │ ubuntu-runtime/Dockerfile │ builds, and installs SoDaRadio under         │  
+  │                           │ /usr/local — ready to run                    │
+  └───────────────────────────┴──────────────────────────────────────────────┘  
+                                                                              
+  Scripts:
+
+  Script: build-fedora.sh [OUTDIR]                                           
+  What it does: Builds the Fedora env image, mounts source + output dir, runs
+    cmake+make+cpack, deposits .rpm in packages/                                
+  ────────────────────────────────────────                                   
+  Script: build-ubuntu.sh [OUTDIR]                                              
+  What it does: Same for Ubuntu, deposits .deb                                  
+  ────────────────────────────────────────                                   
+  Script: test-install-fedora.sh [RPM]                                          
+  What it does: Spins up a fresh Fedora image, installs the RPM, verifies the   
+    binaries are present                                                     
+  ────────────────────────────────────────                                      
+  Script: test-install-ubuntu.sh [DEB]                                          
+  What it does: Same for Ubuntu 24.04                                        
+  ────────────────────────────────────────                                      
+  Script: run-sodaradio.sh [--rebuild] [args]                                   
+  What it does: Builds the runtime image on first run (takes a few minutes), 
+  then                                                                          
+    launches SoDaRadio inside the container with USB (/dev/bus/usb), serial     
+    (/dev/ttyUSB*, /dev/ttyACM*), display (X11 or Wayland), and audio
+    (PipeWire/PulseAudio) all bind-mounted from the host                        
+                                                            
+  Typical workflow:                                                             
+  # Build packages
+  charliecloud_test/build-fedora.sh        # → packages/*.rpm                   
+  charliecloud_test/build-ubuntu.sh        # → packages/*.deb
+                                                                                
+  # Test they install cleanly
+  charliecloud_test/test-install-fedora.sh                                      
+  charliecloud_test/test-install-ubuntu.sh                  
+                                                                                
+  # Run SoDaRadio in the Ubuntu container (e.g. with your USRP)
+  charliecloud_test/run-sodaradio.sh --radio USRP                               
+                                                 
+  The image storage defaults to /var/tmp/$USER.ch (charliecloud's default);     
+  override with CH_IMAGE_STORAGE=... if needed.                                 
+                                                   

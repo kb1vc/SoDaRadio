@@ -2,6 +2,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.11.0) # this lets out really old distros like CentOS 6
 
 include(CMakePrintHelpers)
+include(GNUInstallDirs)
 
 # Can't seem to fix Package Version warnings... defer.  Never put off to tomorrow what you can do at the end of time
 # see here: https://github.com/PointCloudLibrary/pcl/issues/3680

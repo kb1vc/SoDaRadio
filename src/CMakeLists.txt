@@ -1,5 +1,9 @@
 # Substantial parts written or modified by Claude Sonnet 4.6 (claude-sonnet-4-6)
-FIND_PACKAGE(SoDaSignals REQUIRED)
+find_package(SoDaSignals REQUIRED CONFIG)
+get_target_property(_sig_type SoDaSignals::sodasignals TYPE)
+if(NOT _sig_type STREQUAL "STATIC_LIBRARY")
+  message(FATAL_ERROR "SoDaSignals::sodasignals: expected STATIC_LIBRARY, got ${_sig_type}")
+endif()
 
 ########### next target ###############
 
