@@ -38,7 +38,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <stdio.h>
 #include <QLoggingCategory>
 /**
  * @brief simple conversion from std::string to QString... 
@@ -125,25 +124,11 @@ static QProcess * startupServer(QObject * parent, const QString & lock_file_name
       server_args << arg;
   }
 
-  server_args << "--lockfile" << lock_file_name; 
-  server_args.append("--lockfile");
+  server_args << "--lockfile" << lock_file_name;
 
   QProcess * process = new QProcess(parent);
-  // Forward stdout as-is; capture stderr so we can filter librtlsdr noise.
-  // Those messages come from librtlsdr's own fprintf() and cannot be
-  // suppressed from inside the server process via any environment variable.
-  process->setProcessChannelMode(QProcess::ForwardedOutputChannel);
+  process->setProcessChannelMode(QProcess::ForwardedChannels);
   process->start(server_name, server_args);
-
-  QObject::connect(process, &QProcess::readyReadStandardError, process, [process]() {
-    const QByteArray data = process->readAllStandardError();
-    for (const QByteArray& line : data.split('\n')) {
-      if (line.trimmed().isEmpty()) continue;
-      if (line.contains("R82XX") || line.contains("Rafael Micro")) continue;
-      fwrite(line.constData(), 1, line.size(), stderr);
-      fputc('\n', stderr);
-    }
-  });
 
 
   return process;
@@ -301,7 +286,17 @@ int main(int argc, char *argv[])
       close(_saved_stderr);
 
       w.show();
-      return a.exec();
+      int ret = a.exec();
+      // closeEvent already sent STOP via the command socket; give the server
+      // time to exit cleanly (it will delete the lock file on normal exit).
+      if (!server_proc->waitForFinished(3000)) {
+        server_proc->terminate();
+        if (!server_proc->waitForFinished(2000))
+          server_proc->kill();
+        // Server was force-killed; remove lock file so next launch isn't blocked.
+        QFile::remove(server_lock_filename);
+      }
+      return ret;
     }
 
     if(p.getDebugLevel() > 0) {
