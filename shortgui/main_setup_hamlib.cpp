@@ -65,7 +65,12 @@ void MainWindow::setupHamlib()
   connect(hlib_server->getHandler(), SIGNAL(setTXFreq(double)),
 	  this, SLOT(setTXFreq(double)));
 
+  // Pass `this` as the context so Qt marshals the lambda to MainWindow's
+  // thread. Without it, the lambda runs on the HamlibListener QThread that
+  // emitted setTXOn, and the resulting cmd_socket->write/flush on a
+  // non-owning thread trips QSocketNotifier cross-thread warnings.
   connect(hlib_server->getHandler(), &GUISoDa::HamlibHandler::setTXOn,
+	  this,
 	  [=](bool on) {
 	    this->radio_listener->setPTT(on, getFullDuplex());
 	  });
