@@ -106,11 +106,11 @@ TARGET_LINK_LIBRARIES(ShortSoDa_Lib m ${RT_LIB}
   SoDaUtils::sodautils
   ${QWT_LIBRARIES})
 
-ADD_EXECUTABLE(ShortSoDa ${ShortSoDa_SRCS})
+ADD_EXECUTABLE(SoDaRadio ${ShortSoDa_SRCS})
 
-TARGET_COMPILE_OPTIONS(ShortSoDa BEFORE PUBLIC -Wno-deprecated-declarations)
+TARGET_COMPILE_OPTIONS(SoDaRadio BEFORE PUBLIC -Wno-deprecated-declarations)
 
-TARGET_LINK_LIBRARIES(ShortSoDa ShortSoDa_Lib
+TARGET_LINK_LIBRARIES(SoDaRadio ShortSoDa_Lib
   m ${RT_LIB}
   Threads::Threads
   SoDaUtils::sodautils
@@ -118,9 +118,9 @@ TARGET_LINK_LIBRARIES(ShortSoDa ShortSoDa_Lib
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt6Widgets_EXECUTABLE_COMPILE_FLAGS}")
 
-INSTALL(TARGETS ShortSoDa DESTINATION bin)
+INSTALL(TARGETS SoDaRadio DESTINATION bin)
 INSTALL(FILES SoDaLogo_Big.png
         DESTINATION share/icons/hicolor/128x128/apps
-        RENAME ShortSoDa.png)
-INSTALL(FILES ShortSoDa.desktop
+        RENAME SoDaRadio.png)
+INSTALL(FILES SoDaRadio.desktop
         DESTINATION share/applications)

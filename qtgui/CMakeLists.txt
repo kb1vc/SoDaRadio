@@ -105,11 +105,11 @@ TARGET_LINK_LIBRARIES(SoDaRadio_Lib m ${RT_LIB}
   SoDaUtils::sodautils
   ${QWT_LIBRARIES})
 
-ADD_EXECUTABLE(SoDaRadio ${SoDaRadio_SRCS})
+ADD_EXECUTABLE(FlatSoDaRadio ${SoDaRadio_SRCS})
 
-TARGET_COMPILE_OPTIONS(SoDaRadio BEFORE PUBLIC -Wno-deprecated-declarations)
+TARGET_COMPILE_OPTIONS(FlatSoDaRadio BEFORE PUBLIC -Wno-deprecated-declarations)
 
-TARGET_LINK_LIBRARIES(SoDaRadio SoDaRadio_Lib
+TARGET_LINK_LIBRARIES(FlatSoDaRadio SoDaRadio_Lib
   m ${RT_LIB}
   Threads::Threads
   SoDaUtils::sodautils
@@ -120,5 +120,5 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt6Widgets_EXECUTABLE_COMPILE_FLAGS}")
 # QT6_USE_MODULES(SoDaRadio Core Gui Widgets PrintSupport Network Multimedia)
 
 
-INSTALL(TARGETS SoDaRadio DESTINATION bin)
+INSTALL(TARGETS FlatSoDaRadio DESTINATION bin)
 
