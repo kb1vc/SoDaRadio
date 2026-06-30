@@ -81,16 +81,12 @@ namespace GUISoDa {
       }
     }
 
-    qInfo() << QString("AudioRXListener::init: connecting to [%1]").arg(rx_socket_name);
     audio_rx_socket->connectToServer(rx_socket_name);
     while(!audio_rx_socket->waitForConnected(30000)) {
       qDebug() << QString("AudioRXListener Waited for connection on local socket\n[%1]. Is something wrong?").arg(rx_socket_name);
       qDebug() << audio_rx_socket->errorString();
       QThread::sleep(5); // sleep for 5 seconds...
     }
-    qInfo() << QString("AudioRXListener::init: connected to [%1] state=%2")
-               .arg(rx_socket_name).arg((int)audio_rx_socket->state());
-
     connect(audio_rx_socket, SIGNAL(readyRead()),
 	    this, SLOT(processRXAudio()));
 
@@ -108,9 +104,6 @@ namespace GUISoDa {
 
 
   void AudioRXListener::processRXAudio() {
-    if(bytes_sent_count == 0) {
-      qInfo() << QString("AudioRXListener::processRXAudio: first socket data arrived");
-    }
     qint64 len = audio_rx_socket->bytesAvailable();
 
     while(len > 0) {
@@ -190,9 +183,6 @@ namespace GUISoDa {
 
     // tell the audio device where to find the QIODevice.
     audio_rx_output->start(this);
-    qInfo() << QString("AudioRXListener::initAudio: sink started on [%1] state=%2")
-               .arg(dev_info.description())
-               .arg((int)audio_rx_output->state());
     return true;
   }
 
@@ -253,8 +243,6 @@ namespace GUISoDa {
 	qFatal("AudioRXListener got a OpenError of some sort on the audio output device.");
 	break;
       default:
-	qInfo() << QString("AudioRXListener sink stopped, state=%1 error=%2 -- restarting.")
-                   .arg((int)audio_rx_output->state()).arg((int)audio_rx_output->error());
 	audio_rx_output->start(this);
 	break;
       }

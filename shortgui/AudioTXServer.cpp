@@ -129,9 +129,6 @@ namespace GUISoDa {
     audio_input_p.reset(new QAudioSource(dev_info, format));
     audio_input_p->start(this);
 
-    std::cerr << "AudioTXServer: capturing from ["
-              << dev_info.description().toStdString() << "]\n";
-
     return true;
   }
 

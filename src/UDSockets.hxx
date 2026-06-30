@@ -74,8 +74,7 @@ namespace SoDa {
       ~ServerSocket() {
 	close(conn_socket);
 	close(server_socket);
-	unlink(mailbox_pathname.c_str()); 
-	std::cerr << "Closing server socket [" << mailbox_pathname << "]\n";
+	unlink(mailbox_pathname.c_str());
       }
 
       static ServerSocketPtr make(const std::string & path) {

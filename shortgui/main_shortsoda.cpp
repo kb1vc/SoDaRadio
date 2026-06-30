@@ -36,6 +36,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "../common/GuiParams.hxx"
 #include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <QLoggingCategory>
 /**
  * @brief simple conversion from std::string to QString... 
  *
@@ -125,10 +129,22 @@ static QProcess * startupServer(QObject * parent, const QString & lock_file_name
   server_args.append("--lockfile");
 
   QProcess * process = new QProcess(parent);
-  process->setProcessChannelMode(QProcess::ForwardedChannels);
+  // Forward stdout as-is; capture stderr so we can filter librtlsdr noise.
+  // Those messages come from librtlsdr's own fprintf() and cannot be
+  // suppressed from inside the server process via any environment variable.
+  process->setProcessChannelMode(QProcess::ForwardedOutputChannel);
   process->start(server_name, server_args);
-  qDebug() << QString("started detached server\n");
-  
+
+  QObject::connect(process, &QProcess::readyReadStandardError, process, [process]() {
+    const QByteArray data = process->readAllStandardError();
+    for (const QByteArray& line : data.split('\n')) {
+      if (line.trimmed().isEmpty()) continue;
+      if (line.contains("R82XX") || line.contains("Rafael Micro")) continue;
+      fwrite(line.constData(), 1, line.size(), stderr);
+      fputc('\n', stderr);
+    }
+  });
+
   return process;
 }
 
@@ -142,8 +158,6 @@ static QProcess * startupServer(QObject * parent, const QString & lock_file_name
  */
 void setupLookNFeel()
 {
-  qInfo() << QString("setupLookNFeel");
-  
   qApp->setStyle(QStyleFactory::create("fusion"));
 
   QPalette palette;
@@ -165,9 +179,6 @@ void setupLookNFeel()
   palette.setColor(QPalette::Disabled, QPalette::ButtonText, Qt::darkGray);
 
   qApp->setPalette(palette);
-
-  qInfo() << QString("setupLookNFeel return");  
-  
 }
 
 bool checkForZombies(const QString & server_lock_filename, const QString & server_socket_base) 
@@ -215,7 +226,15 @@ SoDaServer instance is still running.\n\n\
  */
 int main(int argc, char *argv[])
 {
+    // Must be set before QApplication so Qt's multimedia plugins see it on load.
+    setenv("LIBVA_MESSAGING_LEVEL", "0", 0);
+
     QApplication a(argc, argv);
+    // Suppress Qt's own FFmpeg backend info line.
+    QLoggingCategory::setFilterRules(QStringLiteral(
+        "qt.multimedia.ffmpeg=false\n"
+        "qt.qpa.services=false"));
+
     QCoreApplication::setApplicationName("ShortSoDa");
     QGuiApplication::setApplicationDisplayName("ShortSoDa");
     SoDa::GuiParams p(argc, argv);
@@ -272,8 +291,16 @@ int main(int argc, char *argv[])
       }
       
       setupLookNFeel();
-    
+
+      // libvdpau writes "Failed to open VDPAU backend" directly via fprintf(stderr)
+      // when FFmpeg probes hardware acceleration; no env var suppresses it.
+      int _saved_stderr = dup(STDERR_FILENO);
+      { int _n = open("/dev/null", O_WRONLY); dup2(_n, STDERR_FILENO); close(_n); }
       MainWindow w(0, p);
+      fflush(stderr);
+      dup2(_saved_stderr, STDERR_FILENO);
+      close(_saved_stderr);
+
       w.show();
       return a.exec();
     }

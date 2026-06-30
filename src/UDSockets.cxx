@@ -68,8 +68,6 @@ namespace SoDa {
 
     mailbox_pathname = path; 
 
-    std::cerr << "Creating server socket [" << mailbox_pathname << "]\n";
-  
     // now bind it
     if (bind(server_socket, (struct sockaddr *) &server_address, len) < 0) {
       std::cerr << "Couldn't bind Unix domain socket at path " << path << " I quit." << std::endl;
@@ -83,8 +81,7 @@ namespace SoDa {
       exit(-1); 
     }
 
-    std::cerr << "Created server socket [" << mailbox_pathname << "]\n";
-    // mark the socket as "not ready" for input -- it needs to accept first. 
+    // mark the socket as "not ready" for input -- it needs to accept first.
     ready = false; 
   }
 
@@ -149,7 +146,6 @@ namespace SoDa {
 	ready = false; 
       }
       else {
-	std::cerr << Format("%0 got client connection!\n").addS(mailbox_pathname);
 	conn_socket = ns;
 	int x = fcntl(conn_socket, F_GETFL, 0);
 	int stat = fcntl(conn_socket, F_SETFL, x | O_NONBLOCK);

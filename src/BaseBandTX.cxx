@@ -297,8 +297,6 @@ namespace SoDa {
       }
       break; 
     case Command::TX_STATE: // SET TX_ON
-      std::cerr << SoDa::Format("BaseBandTX: TX_STATE iparms[0]=%0 tx_stream_on=%1 cw_tx_mode=%2\n")
-	.addI(cmd->iparms[0]).addI((int)tx_stream_on).addI((int)cw_tx_mode);
       // transition from RX to TX
       if(cmd->iparms[0] == (int)Command::TX_ON_0) {
 	tx_on = true;

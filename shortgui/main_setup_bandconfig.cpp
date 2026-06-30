@@ -242,8 +242,7 @@ void MainWindow::changeBand(const QString & band)
       double lo_freq = band_map[band].tvLOFreq();
       double lo_mult = band_map[band].tvLOMult();      
       radio_listener->setTransverterLO(lo_freq * lo_mult);
-      qInfo() << QString("Setting transverter lo %0 lo mult %1").arg(lo_freq).arg(lo_mult);
-      
+
     }
     else {
       auto_bandswitch_target = ""; 

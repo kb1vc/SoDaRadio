@@ -34,7 +34,6 @@ namespace GUISoDa {
   RadioListener::RadioListener(QObject * parent, const QString & _socket_basename) : QObject(parent) {
   quit = false;
   socket_basename = _socket_basename;
-  qInfo() << QString("RadioListener::Listener socket_basename = [%1]\n").arg(socket_basename);
 }
 
 bool RadioListener::init()
@@ -256,8 +255,7 @@ void RadioListener::setAFSidetoneGain(int gain) {
 }
 
 void RadioListener::setTransverterLO(double freq) {
-  qInfo() << QString("setTransverterLO(%0)").arg(freq);
-  transverter_lo_freq = freq; 
+  transverter_lo_freq = freq;
 }
 
 

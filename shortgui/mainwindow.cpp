@@ -126,10 +126,6 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
     qWarning() << "ShortSoDa: failed to load :/SoDaLogo_Big.png; falling back to XPM";
     big = QPixmap(SoDaLogo_Big);
   }
-  qInfo() << "ShortSoDa: logo pixmap source="
-	  << (from_resource ? "qrc" : "xpm")
-	  << "size=" << big.size()
-	  << "isNull=" << big.isNull();
   if (!big.isNull()) {
     for (int sz : {16, 22, 24, 32, 48, 64, 128, 256}) {
       app_icon.addPixmap(big.scaled(sz, sz, Qt::KeepAspectRatio,
@@ -140,9 +136,6 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   // monochrome masks.  Some Qt/KDE combinations default to mask mode and
   // render the icon as a flat grey rectangle if this isn't set false.
   app_icon.setIsMask(false);
-
-  qInfo() << "ShortSoDa: QIcon isNull=" << app_icon.isNull()
-	  << "availableSizes=" << app_icon.availableSizes();
 
   if (app_icon.isNull()) {
     qWarning() << "ShortSoDa: tray icon QIcon is empty -- nothing to draw";
@@ -193,9 +186,6 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
     }
   }
 
-  qInfo() << "ShortSoDa: SystemTray available="
-	  << QSystemTrayIcon::isSystemTrayAvailable();
-
   tray_icon = new QSystemTrayIcon(this);
   tray_icon->setIcon(app_icon);
   tray_icon->setToolTip(QString("ShortSoDa"));
@@ -205,8 +195,6 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
     // icon they see at registration time and ignore subsequent
     // pixmap-only updates; setting it again here forces a refresh.
     tray_icon->setIcon(app_icon);
-  } else {
-    qWarning() << "ShortSoDa: no system tray available on this desktop";
   }
   
   // connect(listener, SIGNAL(repHWMBVersion(const QString &)), 
