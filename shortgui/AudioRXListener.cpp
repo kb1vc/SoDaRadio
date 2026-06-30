@@ -1,0 +1,264 @@
+/*
+  Copyright (c) 2018, 2025 Matthew H. Reilly (kb1vc)
+  All rights reserved.
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions are
+  met:
+
+  Redistributions of source code must retain the above copyright
+  notice, this list of conditions and the following disclaimer.
+  Redistributions in binary form must reproduce the above copyright
+  notice, this list of conditions and the following disclaimer in
+  the documentation and/or other materials provided with the
+  distribution.
+
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+  HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+#include "AudioRXListener.hpp"
+#include <QMessageBox>
+#include <cstring>
+#include <QDateTime>
+#include <QFileDialog>
+#include <QByteArray>
+
+namespace GUISoDa {
+  
+  AudioRXListener::AudioRXListener(QObject * parent, const QString & _socket_basename, unsigned int _sample_rate) : QIODevice(parent) {
+    quit = false;
+    socket_basename = _socket_basename; 
+    sample_rate = _sample_rate; 
+
+    // allocate a silence buffer for one second's worth of samples; 
+    silence = new float[sample_rate]; 
+    for(int i = 0; i < sample_rate; i++) {
+      silence[i] = 0.0; 
+    }
+
+    status_update_count = 0;
+    bytes_sent_count = 0;
+
+    max_slack_time = 0.2; // 200ms starts to become a problem for FT8...
+  }
+
+  bool AudioRXListener::init()
+  {
+    // create the circular buffer -- make it small. This limits 
+    // excess latency caused by mismatches between the radio and the audio
+    // fast radio vs. slow audio will eventually wrap the circular buffer, 
+    // but not in a way that will hurt. 
+    // slow radio vs. fast audio will trigger an under-run on occasion. 
+    // we will recover in the audioOutputError handler.
+
+    audio_cbuffer_p = new SoDa::CircularBuffer<char>(sample_rate * sizeof(float) * 10); 
+
+    // create the rx input buffer
+    rx_in_buf_len = 16 * 1024; // bigger than the largest anticipated packet
+    rx_in_buf = new char[rx_in_buf_len]; 
+
+    audio_rx_socket = new QLocalSocket(this);
+    QString rx_socket_name = socket_basename + "_rxa"; 
+
+    int wcount = 0; 
+    while(!QFile::exists(rx_socket_name)) {
+      QThread::sleep(5);
+      wcount++; 
+      if(wcount > 30) {
+	qDebug() << QString("Waited %1 seconds for socket file [%2] to be created.  Is the radio process dead?").arg(wcount * 5).arg(rx_socket_name);
+	emit(fatalError(QString("No socket file [%1] found after timeout of %2 seconds").arg(rx_socket_name).arg(wcount * 5)));
+	return false;       
+      }
+    }
+
+    qInfo() << QString("AudioRXListener::init: connecting to [%1]").arg(rx_socket_name);
+    audio_rx_socket->connectToServer(rx_socket_name);
+    while(!audio_rx_socket->waitForConnected(30000)) {
+      qDebug() << QString("AudioRXListener Waited for connection on local socket\n[%1]. Is something wrong?").arg(rx_socket_name);
+      qDebug() << audio_rx_socket->errorString();
+      QThread::sleep(5); // sleep for 5 seconds...
+    }
+    qInfo() << QString("AudioRXListener::init: connected to [%1] state=%2")
+               .arg(rx_socket_name).arg((int)audio_rx_socket->state());
+
+    connect(audio_rx_socket, SIGNAL(readyRead()),
+	    this, SLOT(processRXAudio()));
+
+    connect(audio_rx_socket, SIGNAL(errorOccurred(QLocalSocket::LocalSocketError)),
+	    this, SLOT(audioSocketError(QLocalSocket::LocalSocketError)));
+
+    return true;
+  }
+
+  qint64 AudioRXListener::writeData(const char * data, qint64 maxlen) {
+    Q_UNUSED(data);
+    Q_UNUSED(maxlen);
+    return 0; 
+  }
+
+
+  void AudioRXListener::processRXAudio() {
+    if(bytes_sent_count == 0) {
+      qInfo() << QString("AudioRXListener::processRXAudio: first socket data arrived");
+    }
+    qint64 len = audio_rx_socket->bytesAvailable();
+
+    while(len > 0) {
+      // get the data from the socket
+      qint64 tlen = (len > rx_in_buf_len) ? rx_in_buf_len : len;
+      qint64 rlen = audio_rx_socket->read(rx_in_buf, tlen);
+
+      if((status_update_count & 0x1f) == 0) {
+	float * fp = (float*) rx_in_buf;
+	float delay;
+	size_t num_elts = audio_cbuffer_p->numElements();
+	delay = ((float) (num_elts / sizeof(float))) / ((float) sample_rate); 
+	emit(bufferSlack(QString("%1").arg(delay, 4, 'F', 2)));
+
+	if(delay > max_slack_time) {
+	  // we may be way too far ahead.  
+	  qInfo() << QString("Audio RX stream has fallen behind -- clearing outbound buffers of [%1] seconds").arg(delay);
+	  cleanBuffer();
+	}
+      }
+
+      status_update_count++;
+    
+      if(rlen > 0) {
+	bytes_sent_count += rlen;       
+	audio_cbuffer_p->put(rx_in_buf, rlen);
+	// send the buffer to anyone else who is listening.
+	emit(pendAudioBuffer((float*) rx_in_buf, rlen / sizeof(float)));
+	len = len - rlen; 
+      }
+      else {
+	return; 
+      }
+    }
+  }
+
+
+  void AudioRXListener::closeRadio()
+  {
+    audio_rx_output->stop();
+    audio_rx_output->disconnect(this);
+  }
+
+  void AudioRXListener::cleanBuffer() 
+  {
+    audio_cbuffer_p->clear();
+  }
+
+  QAudioFormat AudioRXListener::createAudioFormat(unsigned int sample_rate) {
+    QAudioFormat format;
+    format.setSampleRate(sample_rate);
+    format.setChannelCount(1);
+    format.setSampleFormat(QAudioFormat::Float);
+    // from qt5 -- now qt6 is all pcm all the time    format.setCodec("audio/pcm");
+  
+    return format; 
+  }
+
+  bool AudioRXListener::initAudio(const QAudioDevice & dev_info)
+  {
+    QAudioFormat format = createAudioFormat();
+
+    
+    if(!dev_info.isFormatSupported(format)) {
+      qDebug() << QString("Sound system will not support [%1] floating point samples/sec").arg(sample_rate); 
+    }
+    audio_rx_output.reset(new QAudioSink(dev_info, format));
+  
+    audio_rx_output->setBufferSize((sizeof(float) * sample_rate) >> 2); // buffer up 1/4 second
+
+    // react to errors when they happen. 
+    connect(audio_rx_output.data(), SIGNAL(stateChanged(QAudio::State)), 
+	    this, SLOT(audioOutError(QAudio::State)));
+
+    // start this IO device -- does this need to be here? 
+    this->start(); 
+
+    // tell the audio device where to find the QIODevice.
+    audio_rx_output->start(this);
+    qInfo() << QString("AudioRXListener::initAudio: sink started on [%1] state=%2")
+               .arg(dev_info.description())
+               .arg((int)audio_rx_output->state());
+    return true;
+  }
+
+
+  void  AudioRXListener::setAudioGain(float gain)
+  {
+    audio_rx_output->setVolume(qreal(gain));
+  }
+
+  void  AudioRXListener::setRXDevice(const QAudioDevice & dev_info)
+  {
+    if(audio_rx_output != NULL) {
+      audio_rx_output->stop();
+      audio_rx_output->disconnect(this); 
+    }
+
+    initAudio(dev_info);
+  }
+
+
+  qint64 AudioRXListener::readData(char * data, qint64 max_len)
+  {
+    size_t avail = audio_cbuffer_p->numElements();
+
+    if((MACOSX == 0) && (avail < (size_t)max_len)) {
+      qint64 fill_len = max_len >> 2;
+      memset(data, 0, fill_len);
+      return fill_len;
+    }
+    else {
+      int ret = (qint64) audio_cbuffer_p->get(data, max_len);
+      float * fdat = (float*) data;
+      float sum = 0.0;
+      for(int i = 0; i < ret / 4; i++) {
+	sum += fabs(fdat[i]);
+      }
+      return ret;
+    }
+  }
+
+  qint64 AudioRXListener::bytesAvailable() const {
+    qint64 ret = audio_cbuffer_p->numElements();
+    return ret; 
+  }
+
+  void AudioRXListener::audioOutError(QAudio::State new_state) {
+    if(new_state == QAudio::StoppedState) {
+      switch (audio_rx_output->error()) {
+      case QAudio::UnderrunError:
+	qInfo() << QString("AudioRXListener under-run. Restarting sink.");
+	audio_rx_output->start(this);
+	break;
+      case QAudio::IOError:
+	qInfo() << QString("AudioRXListener IO error. Restarting sink.");
+	audio_rx_output->start(this);
+	break;
+      case QAudio::OpenError:
+	qFatal("AudioRXListener got a OpenError of some sort on the audio output device.");
+	break;
+      default:
+	qInfo() << QString("AudioRXListener sink stopped, state=%1 error=%2 -- restarting.")
+                   .arg((int)audio_rx_output->state()).arg((int)audio_rx_output->error());
+	audio_rx_output->start(this);
+	break;
+      }
+    }
+  }
+
+}

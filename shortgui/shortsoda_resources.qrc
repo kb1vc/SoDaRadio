@@ -1,0 +1,7 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+  <qresource prefix="/">
+    <file>SoDaLogo_Big.png</file>
+    <file>ShortSoDa.desktop</file>
+  </qresource>
+</RCC>

@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=ShortSoDa
+GenericName=SDR Radio (touchscreen UI)
+Comment=Touchscreen-friendly UI for the SoDa Radio SDR
+Exec=ShortSoDa
+Icon=ShortSoDa
+Terminal=false
+Categories=HamRadio;AudioVideo;
+Keywords=SDR;Radio;Ham;SoDa;USRP;
+StartupWMClass=ShortSoDa
