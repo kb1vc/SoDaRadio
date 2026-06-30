@@ -68,18 +68,22 @@ namespace SoDa {
     tx_freq = 0.0;
     tx_freq_rxmode_offset = 0.0;
     tx_samp_rate = 625000;
-    tx_ant = std::string("TX");
+    tx_ant = std::string();
     motherboard_name = std::string("UNKNOWN_MB");
-  
+
     params = _params;
 
-  
+
     // make the device.
     usrp = uhd::usrp::multi_usrp::make(params->getRadioArgs());
 
     if(usrp == NULL) {
       throw SDR::Exception(SoDa::Format("Unable to allocate USRP unit with arguments = [%0]\n").addS(params->getRadioArgs()), self.lock());
     }
+
+    // Seed tx_ant from whatever UHD has selected so locSetTXEna() doesn't
+    // re-assert an arbitrary literal on every TX-enable.
+    tx_ant = usrp->get_tx_antenna();
 
     // We need to find out if this is a B2xx or something like it -- they don't
     // have daughter cards and there are other things to watch out for....
@@ -693,15 +697,20 @@ namespace SoDa {
     
   void USRPCtrl::setAntenna(const std::string & ant, SoDa::RXTX rxtx)
   {
-    std::vector<std::string> ants;
+    // No request — keep whatever UHD already has selected.
+    if(ant.empty()) return;
 
+    std::vector<std::string> ants;
     ants = (rxtx == SoDa::RX) ? usrp->get_rx_antennas() : usrp->get_tx_antennas();
 
     // Exact match first.
     for(auto & a : ants) {
       if(ant == a) {
         if(rxtx == SoDa::RX) usrp->set_rx_antenna(a);
-        else                  usrp->set_tx_antenna(a);
+        else {
+          usrp->set_tx_antenna(a);
+          tx_ant = a;
+        }
         return;
       }
     }
@@ -714,7 +723,10 @@ namespace SoDa {
       std::transform(a_lc.begin(), a_lc.end(), a_lc.begin(), ::tolower);
       if(ant_lc == a_lc) {
         if(rxtx == SoDa::RX) usrp->set_rx_antenna(a);
-        else                  usrp->set_tx_antenna(a);
+        else {
+          usrp->set_tx_antenna(a);
+          tx_ant = a;
+        }
         return;
       }
     }
