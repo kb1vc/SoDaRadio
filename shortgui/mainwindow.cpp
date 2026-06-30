@@ -943,22 +943,29 @@ void MainWindow::reorganizeForShortSoDa()
   };
 
   mkAlt(Qt::Key_T, [this]() {
-    if (isTXCapable() && ui->PTT_btn) ui->PTT_btn->toggle();
-  });
-  mkAlt(Qt::Key_R, [this]() {
-    if (ui->PTT_btn && ui->PTT_btn->isChecked()) ui->PTT_btn->setChecked(false);
-    if (tab_idx_waterfall >= 0) ui->Display_tabs->setCurrentIndex(tab_idx_waterfall);
+    if (tab_idx_transmit >= 0) ui->Display_tabs->setCurrentIndex(tab_idx_transmit);
   });
   mkAlt(Qt::Key_W, [this]() {
-    if (ui->PTT_btn && ui->PTT_btn->isChecked()) ui->PTT_btn->setChecked(false);
     if (tab_idx_waterfall >= 0) ui->Display_tabs->setCurrentIndex(tab_idx_waterfall);
   });
-  mkAlt(Qt::Key_D, [this]() { showPanelChooser(); });
+  mkAlt(Qt::Key_P, [this]() {
+    if (tab_idx_periodogram >= 0) ui->Display_tabs->setCurrentIndex(tab_idx_periodogram);
+  });
+  mkAlt(Qt::Key_S, [this]() {
+    if (tab_idx_settings >= 0) ui->Display_tabs->setCurrentIndex(tab_idx_settings);
+  });
+  mkAlt(Qt::Key_L, [this]() {
+    if (tab_idx_editlog >= 0) ui->Display_tabs->setCurrentIndex(tab_idx_editlog);
+  });
+  mkAlt(Qt::Key_C, [this]() { showPanelChooser(); });
   mkAlt(Qt::Key_H, [this]() {
     QMessageBox::information(this, tr("Keyboard Shortcuts"),
-      tr("<b>Alt+T</b> — Toggle transmit (PTT)<br>"
-         "<b>Alt+R / Alt+W</b> — Return to Waterfall (drops PTT)<br>"
-         "<b>Alt+D</b> — Panel chooser (also right-click)<br>"
+      tr("<b>Alt+T</b> — Transmit panel<br>"
+         "<b>Alt+W</b> — Waterfall panel<br>"
+         "<b>Alt+P</b> — Periodogram panel<br>"
+         "<b>Alt+S</b> — Settings panel<br>"
+         "<b>Alt+L</b> — Log panel<br>"
+         "<b>Alt+C</b> — Panel chooser (also right-click)<br>"
          "<b>Alt+H</b> — This help"));
   });
 }
