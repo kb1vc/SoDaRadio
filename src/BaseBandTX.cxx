@@ -142,10 +142,7 @@ namespace SoDa {
      */
 
     // first wake up the audio channel
-    audio_ifc->wakeIn();  
-
-    unsigned int bbtx_put_count = 0;
-    unsigned int bbtx_recv_count = 0;
+    audio_ifc->wakeIn();
 
     while(!exitflag) {
       if(cmd_stream->get(cmd_subs, cmd)) {
@@ -162,10 +159,6 @@ namespace SoDa {
 	// If we're in TX mode that isn't CW....
 	// get an input audio buffer.
 	int recv_ret = audio_ifc->recv(audio_buf, true);
-	if(bbtx_recv_count < 5) {
-	  std::cerr << SoDa::Format("BaseBandTX: recv ret=%0 tx_mode=%1 tx_stream_on=%2\n")
-	    .addI(recv_ret).addI((int)tx_mode).addI((int)tx_stream_on);
-	}
 	if (tx_stream_on && recv_ret) {
 	  CBufPtr txbuf =nullptr;
 	  std::vector<float> * audio_tx_buffer = & audio_buf;
@@ -195,16 +188,12 @@ namespace SoDa {
 	    txbuf = modulateFM(*audio_tx_buffer, wbfm_deviation);
 	  }
 	  if(txbuf !=nullptr) {
-	    if(bbtx_put_count == 0) {
-	      std::cerr << SoDa::Format("BaseBandTX: first tx_stream put  tx_mode=%0\n")
-		.addI((int)tx_mode);
-	    }
-	    bbtx_put_count++;
-	    bbtx_recv_count++;
 	    tx_stream->put(txbuf);
 	  }
 	}
-	usleep(1000);
+	// Only sleep when the circular buffer had nothing — when audio is
+	// available, loop immediately to drain it and keep RadioTX fed.
+	if (!recv_ret) usleep(1000);
       }
     }
   }
@@ -227,19 +216,6 @@ namespace SoDa {
 	audio_IQ_buf[i] = std::complex<float>(audio_buf[i], 0.0) * total_gain;
       }
     }
-
-    // Periodic peak diagnostic — every ~5s of TX (100 buffers @ ~50ms each)
-    static unsigned int am_diag_count = 0;
-    if((am_diag_count % 100) == 0) {
-      float peak = 0.0f;
-      for(unsigned int i = 0; i < audio_buffer_size; i++) {
-	float a = fabsf(audio_buf[i]);
-	if(a > peak) peak = a;
-      }
-      std::cerr << SoDa::Format("BaseBandTX: modulateAM peak_audio=%0 af_gain=%1 mic_gain=%2\n")
-	.addF(peak, 'e', 4).addF(af_gain, 'e', 4).addF(mic_gain, 'f', 4);
-    }
-    am_diag_count++;
 
     CBufPtr txbuf = CBuf::make(tx_buffer_size);
     interpolator->apply(audio_IQ_buf, txbuf->getBuf());

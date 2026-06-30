@@ -127,6 +127,11 @@ namespace GUISoDa {
       open(QIODevice::WriteOnly);
     }
     audio_input_p.reset(new QAudioSource(dev_info, format));
+    // Do NOT call setBufferSize() here. If the requested buffer is smaller
+    // than the audio backend's native quantum (e.g. PipeWire's 1024-sample
+    // default at 48 kHz), the backend silently truncates each callback to
+    // our buffer size and drops the remainder, starving the pipe. AudioQt's
+    // 2-second CircularBuffer absorbs whatever quantum the backend prefers.
     audio_input_p->start(this);
 
     return true;
@@ -139,27 +144,23 @@ namespace GUISoDa {
   }
 
   qint64 AudioTXServer::writeData(const char * data, qint64 maxlen) {
-    QMutexLocker locker(&mutex);
-
-    if (audio_tx_socket->state() != QLocalSocket::ConnectedState) {
-      return maxlen;
-    }
-
-    auto to_go = maxlen;
-    const char * cp = data;
-    while(to_go > 0) {
-      int wl = audio_tx_socket->write(cp, to_go);
-      if(wl < 0) {
-        return maxlen - to_go;
-      }
-      else {
+    // QAudioSource calls writeData() from its internal audio thread, but
+    // audio_tx_socket lives on the main thread. Marshal the write back to
+    // the main thread's event loop via QueuedConnection to avoid the
+    // QSocketNotifier cross-thread assert that silently drops writes.
+    QByteArray bytes(data, maxlen);
+    QMetaObject::invokeMethod(this, [this, bytes]() {
+      if (audio_tx_socket->state() != QLocalSocket::ConnectedState) return;
+      qint64 to_go = bytes.size();
+      const char* cp = bytes.constData();
+      while (to_go > 0) {
+        qint64 wl = audio_tx_socket->write(cp, to_go);
+        if (wl <= 0) break;
         to_go -= wl;
         cp += wl;
       }
-    }
-
-    audio_tx_socket->flush();
-
+      audio_tx_socket->flush();
+    }, Qt::QueuedConnection);
     return maxlen;
   }
   

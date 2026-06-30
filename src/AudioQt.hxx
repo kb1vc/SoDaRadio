@@ -32,6 +32,7 @@
 #include "SoDaThread.hxx"
 #include "AudioIfc.hxx"
 #include "UDSockets.hxx"
+#include "../common/CircularBuffer.hxx"
 #include <string>
 #include <mutex>
 #include <iostream>
@@ -43,8 +44,8 @@ namespace SoDa {
 
   class AudioQt;
   typedef std::shared_ptr<AudioQt> AudioQtPtr;
-  typedef std::shared_ptr<std::vector<float>> FloatVecPtr;
-  
+
+
   /**
    * @class AudioQt
    *
@@ -179,43 +180,23 @@ namespace SoDa {
      */
     void setupNetwork(std::string audio_sock_basename) ;
 
-    /**
-     * @brief create buffers to hold incoming samples. Put them in the free pool
-     */ 
-    void setupBuffers(unsigned int bsize);
-
-    /**
-     * @brief create a new buffer to be added to the free pool
-     *
-     * @param bsize number of samples in the buffer
-     * @return a pointer to a float vector. 
-     */
-    FloatVecPtr makeBuffer(unsigned int bsize);
-    
-    /**
-     * @brief gets a buffer from the free pool
-     */
-    FloatVecPtr getFreeBuffer();
-    
   private:
     std::shared_ptr<SoDa::UD::ServerSocket> audio_rx_socket;
     std::shared_ptr<SoDa::UD::ServerSocket> audio_tx_socket;
 
-    // the TX process monitors the command bus for TX on/off. 
+    // the TX process monitors the command bus for TX on/off.
     CmdMBoxPtr cmd_stream; ///< command stream from UI and other units
     CmdMBox::Subscription cmd_subs; ///< subscription ID for command stream
 
     bool ignore_tx_data;
-    
-    // the transmit audio buffer ring
-    const int initial_pool_size = 42; 
-    std::queue<FloatVecPtr> incoming_audio_bufs;
-    std::queue<FloatVecPtr> free_audio_bufs;
-    // the mutex for managing it
-    std::mutex tx_data_mutex; 
+
+    // Incoming TX audio ring buffer: absorbs bursts from QAudioSource and
+    // feeds BaseBandTX at a steady rate, analogous to AudioRXListener's
+    // audio_cbuffer_p on the RX side.
+    SoDa::CircularBuffer<char> * audio_cbuffer_p;
 
     // debug assistance
-    float ang; 
+    float ang;
     float ang_incr;
 
   };

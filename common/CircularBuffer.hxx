@@ -22,12 +22,12 @@ namespace SoDa {
   template<typename T> class CircularBuffer {
   public:
     CircularBuffer(size_t elements) {
-      buffer_elements = elements; 
-      buffer = new T[buffer_elements];
-      head_pointer = buffer; 
-      tail_pointer = buffer; 
-      num_written = 0; 
-      num_read = 0; 
+      buffer_elements = elements;
+      buffer = new T[buffer_elements]();
+      head_pointer = buffer;
+      tail_pointer = buffer;
+      num_written = 0;
+      num_read = 0;
     }
 
 

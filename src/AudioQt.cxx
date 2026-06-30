@@ -38,87 +38,65 @@
 
 namespace SoDa {
   AudioQt::AudioQt(unsigned int _sample_rate,
-		   unsigned int _sample_count_hint, 
+		   unsigned int _sample_count_hint,
 		   std::string audio_sock_basename) :
     AudioIfc(_sample_rate, _sample_count_hint, "AudioQt Qt Interface"),
     Thread("AudioQt")
   {
 
-    setupNetwork(audio_sock_basename); 
+    setupNetwork(audio_sock_basename);
 
-    setupBuffers(_sample_count_hint);
-    
-    ang = 0.0; 
-    ang_incr = 2.0 * M_PI / 48.0; 
+    // 2 seconds of float32 mono audio — absorbs QAudioSource bursts and
+    // feeds BaseBandTX at a steady rate without starvation gaps.
+    audio_cbuffer_p = new SoDa::CircularBuffer<char>(_sample_rate * sizeof(float) * 2);
+
+    ang = 0.0;
+    ang_incr = 2.0 * M_PI / 48.0;
 
     cmd_stream = nullptr;
 
-    ignore_tx_data = true; 
+    ignore_tx_data = true;
   }
 
-  FloatVecPtr AudioQt::makeBuffer(unsigned int bsize) {
-      return std::shared_ptr<std::vector<float>>(new std::vector<float>(bsize));    
-  }
-
-  void AudioQt::setupBuffers(unsigned int bsize) {
-    for(int i = 0; i < initial_pool_size; i++) {
-      auto nbufp = makeBuffer(bsize);
-      free_audio_bufs.push(nbufp);
-    }
-  }
-
-  void AudioQt::setupNetwork(std::string audio_sock_basename) 
+  void AudioQt::setupNetwork(std::string audio_sock_basename)
   {
-    // both sockets are servers.. makes things simpler that way. 
+    // both sockets are servers.. makes things simpler that way.
     std::string rx_sockname = audio_sock_basename + "_rxa";
     audio_rx_socket = std::shared_ptr<UD::ServerSocket>(new UD::ServerSocket(rx_sockname));
-    
+
     std::string tx_sockname = audio_sock_basename + "_txa";
-    audio_tx_socket = UD::ServerSocket::make(tx_sockname); 
+    audio_tx_socket = UD::ServerSocket::make(tx_sockname);
   }
 
   void AudioQt::sleepIn() {
-    std::lock_guard<std::mutex> tx_data_lock(tx_data_mutex);
-    ignore_tx_data = true; 
-    while(incoming_audio_bufs.size() != 0) {
-      free_audio_bufs.push(incoming_audio_bufs.front());
-      incoming_audio_bufs.pop();
-    }
+    ignore_tx_data = true;
+    audio_cbuffer_p->clear();
   }
 
   void AudioQt::wakeIn() {
-    std::lock_guard<std::mutex> tx_data_lock(tx_data_mutex);
-    ignore_tx_data = false; 
+    ignore_tx_data = false;
   }
+
   bool AudioQt::sendBufferReady(unsigned int len)  {
-    return true; 
+    return true;
   }
 
   bool AudioQt::recvBufferReady(unsigned int len) {
-    std::lock_guard<std::mutex> tx_data_lock(tx_data_mutex);    
-    return incoming_audio_bufs.size() != 0;
+    return audio_cbuffer_p->numElements() >= (size_t)(len * sizeof(float));
   }
 
   int AudioQt::recv(std::vector<float> & buf, bool when_ready) {
-    std::lock_guard<std::mutex> tx_data_lock(tx_data_mutex);
-    // we only return one size of buffer
-    if(incoming_audio_bufs.size() == 0) return 0;
-    
-    // read a buffer from the incoming queue
-    auto abufp = incoming_audio_bufs.front();
-    incoming_audio_bufs.pop();
-    // copy the buffer. sigh. 
-    buf = *abufp;
-    // put the old buffer on the free list
-    free_audio_bufs.push(abufp);
-    
-    return buf.size();
+    size_t bytes_needed = sample_count_hint * sizeof(float);
+    if(audio_cbuffer_p->numElements() < bytes_needed) return 0;
+    buf.resize(sample_count_hint);
+    audio_cbuffer_p->get(reinterpret_cast<char*>(buf.data()), bytes_needed);
+    return (int)sample_count_hint;
   }
 
   int AudioQt::send(void * buf, unsigned int len, bool when_ready) {
     int ret;
     ret = audio_rx_socket->put(buf, len, false);
-    return ret; 
+    return ret;
   }
 
   void AudioQt::subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes)
@@ -126,11 +104,11 @@ namespace SoDa {
     for(auto mbox_p : mailboxes) {
       MailBoxBase::connect<MailBox<CommandPtr>>(mbox_p,
 						"CMDstream",
-						cmd_stream); 
+						cmd_stream);
     }
 
     if(cmd_stream == nullptr) {
-      throw MissingMailBox("CMD", getSelfPtr());    
+      throw MissingMailBox("CMD", getSelfPtr());
     }
     else {
       cmd_subs = cmd_stream->subscribe();
@@ -140,17 +118,15 @@ namespace SoDa {
   void AudioQt::run()
   {
     bool exit_flag = false;
-    CommandPtr cmd; 
-    FloatVecPtr cur_buf_ptr = nullptr;
+    CommandPtr cmd;
     if(cmd_stream == nullptr) {
       throw SoDa::SDR::Exception(std::string("Missing a stream connection.\n"),
-			     getSelfPtr());	
+			     getSelfPtr());
     }
-    
-    // now poll various places
-    // track progress in bytes (floats are 4 bytes each)
-    unsigned int bytes_left = 0;
-    unsigned int bytes_so_far = 0;
+
+    // Read in chunks matching the consumer's buffer size for efficiency.
+    const size_t READ_CHUNK = sample_count_hint * sizeof(float);
+    std::vector<uint8_t> tmp_buf(READ_CHUNK);
 
     while(!exit_flag) {
       bool didwork = false;
@@ -159,40 +135,13 @@ namespace SoDa {
 	didwork = true;
       }
       if(!exit_flag && audio_tx_socket->isReady()) {
-	if(cur_buf_ptr == nullptr) {
-	  cur_buf_ptr = getFreeBuffer();
-	  cur_buf_ptr->resize(sample_count_hint);
-	  bytes_left = sample_count_hint * sizeof(float);
-	  bytes_so_far = 0;
-	}
-	// bstart is a byte pointer into the float buffer
-	auto bstart = reinterpret_cast<uint8_t*>(cur_buf_ptr->data()) + bytes_so_far;
-	int stat = audio_tx_socket->get(bstart, bytes_left, false);
+	int stat = audio_tx_socket->get(tmp_buf.data(), READ_CHUNK, false);
 	if(stat > 0) {
-	  bytes_so_far += stat;
-	  bytes_left -= stat;
+	  audio_cbuffer_p->put(reinterpret_cast<char*>(tmp_buf.data()), stat);
 	  didwork = true;
-	  if(bytes_left == 0) {
-	    std::lock_guard<std::mutex> tx_data_lock(tx_data_mutex);
-	    incoming_audio_bufs.push(cur_buf_ptr);
-	    cur_buf_ptr = nullptr;
-	  }
 	}
       }
       if(!didwork) usleep(500);
     }
-  }
-  
-  FloatVecPtr AudioQt::getFreeBuffer() {
-    std::lock_guard<std::mutex> tx_data_lock(tx_data_mutex);
-    if(free_audio_bufs.size() == 0) {
-      for(int i = 0; i < 10; i++) {
-	free_audio_bufs.push(makeBuffer(sample_count_hint));
-      }
-    }
-
-    auto ret = free_audio_bufs.front();
-    free_audio_bufs.pop();
-    return ret; 
   }
 }
