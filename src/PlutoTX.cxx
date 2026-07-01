@@ -176,6 +176,14 @@ namespace SoDa {
   {
     if (tx_on) {
       if (tx_enabled) return true;
+      // Pre-fill the kernel DMA pipeline with silence before the first real
+      // sample arrives.  With N_KERNEL_BUFS kernel buffers queued, the DAC
+      // has (N_KERNEL_BUFS-1) x ~48 ms of headroom before any underrun.
+      accu.clear();
+      std::fill(hw_cf.begin(), hw_cf.end(), std::complex<float>(0.0f, 0.0f));
+      for (unsigned int i = 0; i < N_KERNEL_BUFS - 1; i++) {
+        pushToHW();
+      }
       tx_enabled = true;
     } else {
       if (!tx_enabled) return false;
