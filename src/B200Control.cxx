@@ -112,7 +112,7 @@ namespace SoDa
 
   bool B200Control::setTXOn()
   {
-    std::cerr << "B200Control::setTXOn()" << std::endl;
+
     
     switch (B200Control::B200_type) {
       case SoDa_B200_type_t::eB200mini : {
@@ -128,7 +128,6 @@ namespace SoDa
 
   bool B200Control::setTXOff()
   {
-    std::cerr << "B200Control::setTXOff()" << std::endl;
 
     switch (B200Control::B200_type) {
       case SoDa_B200_type_t::eB200mini : {

@@ -355,6 +355,13 @@ ELSE()
   ENDIF()
 ENDIF()
 
+OPTION(ENABLE_PLUTO_TX "Enable ADALM-Pluto TX hardware output" OFF)
+IF(ENABLE_PLUTO_TX)
+  MESSAGE("ADALM-PLUTO TX output enabled.")
+ELSE()
+  MESSAGE("ADALM-PLUTO TX output disabled (ENABLE_PLUTO_TX=OFF).")
+ENDIF()
+
 OPTION(NO_RTLSDR "Disable RTL-SDR / librtlsdr support" OFF)
 
 IF(${NO_RTLSDR})

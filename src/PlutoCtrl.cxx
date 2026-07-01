@@ -101,6 +101,12 @@ namespace SoDa {
         self.lock());
     }
 
+    // Power up both LOs.  The destructor writes powerdown=1 on exit; without
+    // this the second startup finds the LOs still off: RX produces only noise
+    // and TX produces no carrier, and the only recovery is unplugging the Pluto.
+    iio_channel_attr_write(rx_lo_chan, "powerdown", "0");
+    iio_channel_attr_write(tx_lo_chan, "powerdown", "0");
+
     // Force manual gain control so SoDaRadio owns the RX gain value.
     iio_channel_attr_write(rx_phy_chan, "gain_control_mode", "manual");
 
@@ -317,8 +323,16 @@ namespace SoDa {
 
   std::vector<std::string> PlutoCtrl::listAntennas(SoDa::RXTX rxtx)
   {
-    if (rxtx == SoDa::RX) return { "RX" };
-    return { "TX" };
+    if (rxtx == SoDa::RX) {
+      return { "RX" };
+    }
+    else {
+#ifdef PLUTO_HAS_TX      
+      return { "TX" };
+#else
+      return { };
+#endif      
+    }
   }
 
   void PlutoCtrl::setAntenna(const std::string & ant, SoDa::RXTX rxtx)

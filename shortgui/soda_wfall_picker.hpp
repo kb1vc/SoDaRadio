@@ -82,7 +82,7 @@ namespace GUISoDa {
       QColor trbgcolor(Qt::black);
       trbgcolor.setAlpha(200); // translucent highlight
 
-      QString str = QString("%1 MHz").arg(pos.x() * 1e-6, 0, 'f', 4);
+      QString str = QString("%1 MHz").arg(pos.x() * 1e-6, 0, 'f', 6);
 
       QwtText text(str);
       text.setBackgroundBrush(QBrush(trbgcolor));
