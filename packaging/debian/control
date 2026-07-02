@@ -11,7 +11,6 @@ Build-Depends:
  libfftw3-dev,
  libsndfile1-dev,
  libhamlib-dev,
- libgps-dev,
  libiio-dev,
  librtlsdr-dev,
  qt6-base-dev,
@@ -26,8 +25,7 @@ Architecture: any
 Depends:
  ${shlibs:Depends},
  ${misc:Depends},
- uhd-host (>= 3.12),
- gpsd (>= 3.1)
+ uhd-host (>= 3.12)
 Description: Software-defined radio for USRP, ADALM-Pluto, and RTL-SDR hardware
  SoDaRadio is a software defined radio implementation of a general
  purpose transmitter/receiver supporting Ettus USRP, ADALM-Pluto, and

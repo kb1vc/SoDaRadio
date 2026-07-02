@@ -53,11 +53,7 @@ SoDa::Params::Params(int argc, char * argv[])
      "Enable debug messages for value > 0.  Higher values may produce more detail.")
     .add<std::string>(&radio_type, "radio", 'r', "USRP", 
      "the radio type (USRP, Lime)")
-    .add<std::string>(&gps_hostname, "gps_host", 'G', "localhost", 
-     "hostname for gpsd server")
-    .add<std::string>(&gps_portname, "gps_port", 'g', "2947",
-     "port number for gpsd server")
-    .add<std::string>(&lock_file_name, "lockfile", 'L', "SoDa.lock", 
+    .add<std::string>(&lock_file_name, "lockfile", 'L', "SoDa.lock",
      "lock file to signal that a sodaradio server is active")
     ;
 

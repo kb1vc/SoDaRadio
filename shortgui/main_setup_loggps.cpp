@@ -32,22 +32,29 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "soda_comboboxes.hpp"
 #include "RadioListener.hpp"
 #include "../common/Navigation.hxx"
+#include <QTimer>
+#include <QDateTime>
 
 void MainWindow::setupLogGPS()
 {
-  // connect the log contact button to something that will do us some good.  
-  connect(ui->LogContact_btn, SIGNAL(clicked(bool)), 
-	  this, SLOT(logContact(bool))); 
+  // connect the log contact button to something that will do us some good.
+  connect(ui->LogContact_btn, SIGNAL(clicked(bool)),
+	  this, SLOT(logContact(bool)));
 
-  connect(ui->FromGrid_le, SIGNAL(textChanged(const QString &)), 
+  connect(ui->FromGrid_le, SIGNAL(textChanged(const QString &)),
 	  this, SLOT(evalNav(const QString &)));
-  connect(ui->ToGrid_le, SIGNAL(textChanged(const QString &)), 
+  connect(ui->ToGrid_le, SIGNAL(textChanged(const QString &)),
 	  this, SLOT(evalNav(const QString &)));
 
-  connect(radio_listener, SIGNAL(repGPSTime(int, int, int)), 
-	  this, SLOT(updateTime(int, int, int)));
-  connect(radio_listener, SIGNAL(repGPSLatLon(double, double)),
-	  this, SLOT(updatePosition(double, double)));
+  // Drive UTC clock from system time instead of gpsd
+  auto * utc_timer = new QTimer(this);
+  connect(utc_timer, &QTimer::timeout, this, [this]() {
+    QDateTime utc = QDateTime::currentDateTimeUtc();
+    updateTime(utc.time().hour(), utc.time().minute(), utc.time().second());
+  });
+  utc_timer->start(1000);
+  QDateTime utc = QDateTime::currentDateTimeUtc();
+  updateTime(utc.time().hour(), utc.time().minute(), utc.time().second());
 }
 
 void MainWindow::evalNav(const QString & dummy)

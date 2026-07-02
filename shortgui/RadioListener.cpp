@@ -306,12 +306,6 @@ bool RadioListener::handleREP(const SoDa::Command & cmd)
   case SoDa::Command::TX_STATE:
     emit(repPTT(cmd.iparms[0] >= SoDa::Command::TX_ON_0));
     break; 
-  case SoDa::Command::GPS_UTC:
-    emit(repGPSTime(cmd.iparms[0], cmd.iparms[1], cmd.iparms[2]));
-    break; 
-  case SoDa::Command::GPS_LATLON:
-    emit(repGPSLatLon(cmd.dparms[0], cmd.dparms[1]));
-    break; 
   case SoDa::Command::TX_GAIN_RANGE:
     emit(repGainRange(cmd.dparms[0], cmd.dparms[1])); 
     tx_gain_min = cmd.dparms[0]; 

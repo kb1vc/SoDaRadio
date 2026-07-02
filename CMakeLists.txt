@@ -141,8 +141,6 @@ set(CPACK_RPM_PACKAGE_REQUIRES
   "qt6-qtbase >= 6.2, "
   "qt6-qtmultimedia >= 6.2, "
   "qwt-qt6 >= 6.1.2, "
-  "gpsd >= 3.1, "
-  "gpsd-libs >= 3.1, "
   "hamlib")
 string(REPLACE ";" "" CPACK_RPM_PACKAGE_REQUIRES "${CPACK_RPM_PACKAGE_REQUIRES}")
 set(CPACK_RPM_FILE_NAME
@@ -165,7 +163,7 @@ set(CPACK_DEBIAN_PACKAGE_DESCRIPTION
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 # Add packages that aren't picked up by shlibdeps (firmware/daemon
 # helpers).  These are merged with the shlibdeps results.
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "uhd-host (>= 3.12), gpsd (>= 3.1)")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "uhd-host (>= 3.12)")
 set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
 
 INCLUDE(CPack)
@@ -337,8 +335,6 @@ endif()
 ## modulation scheme and other settings.
 find_package(PkgConfig)
 pkg_search_module(HAMLIB REQUIRED hamlib)
-pkg_search_module(GPSLIB OPTIONAL libgps)
-
 OPTION(NO_PLUTO "Disable ADALM-PLUTO / libiio support" OFF)
 
 IF(${NO_PLUTO})
@@ -379,20 +375,6 @@ ELSE()
 ENDIF()
 
 
-
-IF(DISABLE_GPSD)
-  SET(HAVE_GPSLIB 0)
-  message("DISABLED GPSLIB")
-ELSE()  
-  IF(GPSLIB_FOUND)
-    SET(HAVE_GPSLIB 1)
-    message("FOUND GPSLIB version " ${GPSLIB_VERSION})
-  ELSE()
-    SET(HAVE_GPSLIB 0)
-    message("DID NOT FIND GPSLIB")  
-  ENDIF()
-ENDIF()
-UNSET(DISABLE_GPSD CACHE)
 
 if(MACOSX)
   set(RT_LIB "")

@@ -125,10 +125,6 @@ namespace SoDa {
     
     unsigned int getDebugLevel() const { return debug_level; }
 
-    std::string getGPSHostName() const { return gps_hostname; }
-
-    std::string getGPSPortName() const { return gps_portname; }    
-
     std::string getLockFileName() const { return lock_file_name; }
 
 
@@ -146,9 +142,7 @@ namespace SoDa {
     
     SoDa::Options cmd;
 
-    std::string gps_hostname; 
-    std::string gps_portname; 
-    std::string radio_type; 
+    std::string radio_type;
     std::string radio_args;
     std::string config_filename;
     std::vector<std::string> load_list;

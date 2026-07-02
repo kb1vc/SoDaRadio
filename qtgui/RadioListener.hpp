@@ -76,11 +76,6 @@ namespace GUISoDa {
 
     void repFilterEdges(double lo, double hi);
 
-    void repGPSLatLon(double lat, double lon);
-    void repGPSTime(int hh, int mm, int ss);
-
-    void repGPSLock(bool is_locked);
-
     void repSDRVersion(const QString & version);
     void repHWMBVersion(const QString & version);
 

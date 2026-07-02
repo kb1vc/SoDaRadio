@@ -176,7 +176,6 @@
 #include "BaseBandTX.hxx"
 #include "CWTX.hxx"
 #include "UI.hxx"
-#include "GPSmon.hxx"
 #include "IFRecorder.hxx"
 #include "Command.hxx"
 #include "Debug.hxx"
@@ -242,7 +241,6 @@ int doWork(SoDa::ParamsPtr params)
   mailboxes.push_back(SoDa::FDatMBox::make("CWstream"));
 
   mailboxes.push_back(SoDa::CmdMBox::make("CMDstream"));
-  mailboxes.push_back(SoDa::CmdMBox::make("GPSstream"));
   mailboxes.push_back(SoDa::CmdMBox::make("CWTXTstream"));  
   
 
@@ -288,10 +286,6 @@ int doWork(SoDa::ParamsPtr params)
   /// when requested.
   auto ifrec = SoDa::IFRecorder::make(params);
 
-  
-#if HAVE_GPSLIB    
-  auto gps = SoDa::GPSmon::make(params);
-#endif
   
   d.debugMsg("Created units.");
 

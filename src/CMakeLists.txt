@@ -22,13 +22,11 @@ set(SoDaServer_SRCS
     QuadratureOscillator.cxx
     Spectrogram.cxx
     CWGenerator.cxx
-    GPSmon.cxx
     UDSockets.cxx
     Debug.cxx
     SerialDev.cxx
     IPSockets.cxx
     IFRecorder.cxx
-    fix_gpsd_ugliness.cxx
     RadioModels.cxx
     RadioControl.cxx
     RadioRX.cxx
@@ -39,12 +37,6 @@ set(SoDaServer_SRCS
 find_package(FFTW3f REQUIRED QUIET)
 
 set(SoDaServer_SRCS ${SoDaServer_SRCS} AudioQt.cxx)
-
-IF(HAVE_GPSLIB)
-  ADD_DEFINITIONS(-DHAVE_GPSLIB=1)
-  LIST(APPEND Radio_INCLUDE_DIRS ${GPSLIB_INCLUDE_DIRS})
-  LIST(APPEND Radio_LIBRARIES ${GPSLIB_LIBRARIES})
-ENDIF()
 
 IF(${HAVE_UHD})
   LIST(APPEND SoDaServer_SRCS
