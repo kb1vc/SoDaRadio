@@ -52,9 +52,8 @@ GUISoDa::LogTable::LogTable(QWidget *parent) :
 
   connect(this, &GUISoDa::LogTable::cellChanged,
 	  [this](int row, int col) {
-	    emit entryUpdated(row, 
-			      this->current_headers.at(col), 
-			      this->item(row, col)->text()); });
+	    QTableWidgetItem * itm = this->item(row, col);
+	    if (itm) emit entryUpdated(row, this->current_headers.at(col), itm->text()); });
 
   connect(this, SIGNAL(cellChanged(int, int)),
 	  this, SLOT(recordChange(int, int)));
@@ -124,14 +123,11 @@ void GUISoDa::LogTable::writeLogReport(const QString & fname)
 void GUISoDa::LogTable::recordChange(int r, int c)
 {
   if((log_file_out != NULL) && log_file_out->isOpen()) {
-    QTextStream out(log_file_out);
-    QTableWidgetItem * itm(item(r,c));    
-    if(itm) {
-      out << QString("%1:%2:%3\n").arg(r).arg(c).arg(item(r,c)->text());
-    }
-    else {
-      out << QString("%1:%2: \n").arg(r).arg(c);
-    }
+    QTableWidgetItem * itm(item(r, c));
+    QString line = itm
+      ? QString("%1:%2:%3\n").arg(r).arg(c).arg(itm->text())
+      : QString("%1:%2: \n").arg(r).arg(c);
+    log_file_out->write(line.toUtf8());
     log_file_out->flush();
   }
 }
@@ -199,25 +195,26 @@ void GUISoDa::LogTable::logContact(const QString & from_call,
 {
   QDateTime utc_time(QDateTime::currentDateTime().toUTC());
 
+  // Expand the table before writing — setItem() silently drops writes to
+  // rows that don't exist yet.
+  if (next_used_row >= rowCount()) {
+    setRowCount(next_used_row + 20);
+  }
+
   setField(next_used_row, "Date", utc_time.toString("d-MMM-yyyy"));
-  setField(next_used_row, "Time", utc_time.toString("hh:mm:ss"));  
+  setField(next_used_row, "Time", utc_time.toString("hh:mm:ss"));
   setField(next_used_row, "From Call", from_call);
-  setField(next_used_row, "From Grid", from_grid);   
+  setField(next_used_row, "From Grid", from_grid);
   setField(next_used_row, "To Call", to_call);
   setField(next_used_row, "To Grid", to_grid);
   setField(next_used_row, "Mode", mode);
   setField(next_used_row, "Comment", comment);
   setField(next_used_row, "RX Freq", rx_freq);
   setField(next_used_row, "TX Freq", tx_freq);
-  // scroll so the edit log window shows the last line in the log
+  // scroll so the edit log window shows the last entry
   scrollToItem(item(next_used_row, 1));
 
-  // bump the pointer to the next row
   next_used_row++;
-  // if we're almost out, allocate a bunch of new rows. 
-  if((next_used_row + 10) > rowCount()) {
-    setRowCount(rowCount() + 20);
-  }
 }
 
 void GUISoDa::LogTable::setLogFile(const QString & fname)
