@@ -219,7 +219,8 @@ int main(int argc, char *argv[])
     // Suppress Qt's own FFmpeg backend info line.
     QLoggingCategory::setFilterRules(QStringLiteral(
         "qt.multimedia.ffmpeg=false\n"
-        "qt.qpa.services=false"));
+        "qt.qpa.services=false\n"
+        "qt.qpa.wayland.textinput=false"));
 
     SoDa::GuiParams p(argc, argv);    
 
