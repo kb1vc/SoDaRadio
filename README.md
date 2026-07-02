@@ -31,6 +31,29 @@ the github pages at https://kb1vc.github.io/SoDaRadio/
 Packages for Ubuntu and Fedora are available somewhere near the github
 page.
 
+## Quickstart
+
+Got a USRP? If it is a B2xx make sure that it is loaded and ready: 
+```
+uhd_usrp_probe
+```
+Then
+```
+SoDaRadio --radio USRP
+```
+
+Got an ADALM/Pluto?
+```
+SoDaRadio --radio PLUTO
+```
+
+How about an RTLSDR?
+```
+SoDaRadio --radio RTLSDR
+```
+
+
+
 ## Copyright: 
 
 Copyright (c) 2026 Matthew H. Reilly (kb1vc)
