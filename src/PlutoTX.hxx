@@ -56,6 +56,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <memory>
 #include <vector>
 #include <complex>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <deque>
 
 namespace SoDa {
   class PlutoTX;
@@ -95,31 +99,41 @@ namespace SoDa {
     RadioTXPtr getSelfPtr() override { return self.lock(); }
 
   private:
-    void pushToHW();
+    void pushToHW(const std::vector<std::complex<float>> & block);
     void flushZeros();
+    void ioThreadFn();
+    void enqueue(std::vector<std::complex<float>> block);
 
-    // Number of kernel DMA buffers pipelined so the DAC never starves.
-    // (N_KERNEL_BUFS-1) buffers of headroom ≈ 143 ms before any underrun.
-    static constexpr unsigned int N_KERNEL_BUFS = 4;
+    // Kernel DMA slots; IO thread pre-fills (N_KERNEL_BUFS-1) on TX arm.
+    // 120000 samples / 2.5 MSPS = 48 ms each → 4 × 48 ms = 192 ms headroom.
+    static constexpr unsigned int N_KERNEL_BUFS = 5;
+    // Software queue cap: prevents RadioTX from flooding the IO thread.
+    static constexpr unsigned int MAX_SW_QUEUE  = 16;
 
-    // IIO streaming objects — owned by this thread.
+    // IIO streaming objects — owned by the IO thread after init().
     iio_context * ctx;
-    iio_device  * dev;         ///< cf-ad9361-dds-core-lpc
-    iio_channel * tx_i_chan;   ///< voltage0 (output) — I component
-    iio_channel * tx_q_chan;   ///< voltage1 (output) — Q component
+    iio_device  * dev;
+    iio_channel * tx_i_chan;
+    iio_channel * tx_q_chan;
     iio_buffer  * txbuf;
 
-    unsigned int hw_buf_size;  ///< IIO buffer size = resampler output (at 2.5 MSPS)
-    unsigned int rs_in_size;   ///< resampler input size (at 625 kSPS)
+    unsigned int hw_buf_size;
+    unsigned int rs_in_size;
 
-    SoDa::ReSamplerPtr hw_resampler;            ///< 625 kSPS → 2.5 MSPS
+    SoDa::ReSamplerPtr hw_resampler;
 
-    std::vector<std::complex<float>> accu;      ///< accumulator for 625 kSPS input
-    std::vector<std::complex<float>> rs_in;     ///< one resampler input block
-    std::vector<std::complex<float>> hw_cf;     ///< resampler output (at 2.5 MSPS)
+    std::vector<std::complex<float>> accu;   ///< 625 kSPS accumulator
+    std::vector<std::complex<float>> rs_in;  ///< resampler input block
+    std::vector<std::complex<float>> hw_cf;  ///< resampler output (2.5 MSPS)
 
     std::weak_ptr<PlutoTX> self;
 
-    unsigned int push_count = 0;  ///< total iio_buffer_push calls; used to log first push
+    // Async IO: dedicated thread drains tx_queue via iio_buffer_push() so
+    // RadioTX::put() never blocks on USB scheduling jitter.
+    std::thread                                  io_thread;
+    std::mutex                                   tx_mutex;
+    std::condition_variable                      tx_cv;
+    std::deque<std::vector<std::complex<float>>> tx_queue;
+    bool                                         io_running{false};
   };
 }

@@ -124,12 +124,23 @@ namespace SoDa {
         self.lock());
     }
 
+    io_running = true;
+    io_thread  = std::thread([this]() { ioThreadFn(); });
+
     debugMsg(SoDa::Format("PlutoTX: TX buffer created, hw_buf=%0 kbufs=%1\n")
              .addI((int)hw_buf_size).addI((int)N_KERNEL_BUFS));
   }
 
   PlutoTX::~PlutoTX()
   {
+    // Signal IO thread to exit and wait for it before touching IIO objects.
+    {
+      std::lock_guard<std::mutex> lk(tx_mutex);
+      io_running = false;
+    }
+    tx_cv.notify_all();
+    if (io_thread.joinable()) io_thread.join();
+
     if (txbuf)    { iio_buffer_destroy(txbuf);       txbuf    = nullptr; }
     if (tx_i_chan){ iio_channel_disable(tx_i_chan);   tx_i_chan = nullptr; }
     if (tx_q_chan){ iio_channel_disable(tx_q_chan);   tx_q_chan = nullptr; }
@@ -137,34 +148,65 @@ namespace SoDa {
   }
 
   // ---------------------------------------------------------------
+  // IO thread — owns iio_buffer_push so RadioTX::put() never blocks
+  // ---------------------------------------------------------------
+
+  void PlutoTX::ioThreadFn()
+  {
+    unsigned int local_push = 0;
+    while (true) {
+      std::vector<std::complex<float>> block;
+      {
+        std::unique_lock<std::mutex> lk(tx_mutex);
+        tx_cv.wait(lk, [this]() { return !tx_queue.empty() || !io_running; });
+        if (!io_running && tx_queue.empty()) break;
+        block = std::move(tx_queue.front());
+        tx_queue.pop_front();
+        tx_cv.notify_all();  // wake enqueue() if it was waiting for space
+      }
+      if (local_push == 0)
+        std::cerr << SoDa::Format("PlutoTX: first iio_buffer_push hw_buf=%0\n")
+          .addI((int)hw_buf_size);
+      pushToHW(block);
+      ++local_push;
+    }
+  }
+
+  // ---------------------------------------------------------------
   // Private helpers
   // ---------------------------------------------------------------
 
-  void PlutoTX::pushToHW()
+  void PlutoTX::pushToHW(const std::vector<std::complex<float>> & block)
   {
-    // hw_cf holds hw_buf_size complex<float> samples at 2.5 MSPS.
-    // Convert to SC16 interleaved in the IIO buffer and push to the DAC.
     char     * i_ptr = (char *)iio_buffer_first(txbuf, tx_i_chan);
     char     * q_ptr = (char *)iio_buffer_first(txbuf, tx_q_chan);
     ptrdiff_t  step  = iio_buffer_step(txbuf);
 
     for (unsigned int idx = 0; idx < hw_buf_size; idx++) {
-      *(int16_t *)(i_ptr + idx * step) = (int16_t)(hw_cf[idx].real() * 32767.0f);
-      *(int16_t *)(q_ptr + idx * step) = (int16_t)(hw_cf[idx].imag() * 32767.0f);
+      *(int16_t *)(i_ptr + idx * step) = (int16_t)(block[idx].real() * 32767.0f);
+      *(int16_t *)(q_ptr + idx * step) = (int16_t)(block[idx].imag() * 32767.0f);
     }
     ssize_t ret = iio_buffer_push(txbuf);
-    if (ret < 0) {
+    if (ret < 0)
       std::cerr << SoDa::Format("PlutoTX: iio_buffer_push failed: %0\n").addI((int)ret);
-    }
+  }
+
+  void PlutoTX::enqueue(std::vector<std::complex<float>> block)
+  {
+    std::unique_lock<std::mutex> lk(tx_mutex);
+    // Apply backpressure if the IO thread is falling behind.
+    tx_cv.wait(lk, [this]() { return tx_queue.size() < MAX_SW_QUEUE || !io_running; });
+    if (!io_running) return;
+    tx_queue.push_back(std::move(block));
+    tx_cv.notify_one();
   }
 
   void PlutoTX::flushZeros()
   {
-    // Pad accumulator to exactly one resampler block with zeros, then push.
     accu.resize(rs_in_size, {0.0f, 0.0f});
     std::copy(accu.begin(), accu.begin() + rs_in_size, rs_in.begin());
     hw_resampler->apply(rs_in, hw_cf);
-    pushToHW();
+    enqueue(hw_cf);
     accu.clear();
   }
 
@@ -176,13 +218,13 @@ namespace SoDa {
   {
     if (tx_on) {
       if (tx_enabled) return true;
-      // Pre-fill the kernel DMA pipeline with silence before the first real
-      // sample arrives.  With N_KERNEL_BUFS kernel buffers queued, the DAC
-      // has (N_KERNEL_BUFS-1) x ~48 ms of headroom before any underrun.
+      // Pre-fill the kernel DMA pipeline via the IO thread.  enqueue() blocks
+      // only if the software queue is full (MAX_SW_QUEUE), so all silence
+      // blocks land in the queue quickly and the IO thread drains them into
+      // the hardware at DAC rate while real samples start arriving.
       accu.clear();
-      std::fill(hw_cf.begin(), hw_cf.end(), std::complex<float>(0.0f, 0.0f));
       for (unsigned int i = 0; i < N_KERNEL_BUFS - 1; i++) {
-        pushToHW();
+        enqueue(std::vector<std::complex<float>>(hw_buf_size, {0.0f, 0.0f}));
       }
       tx_enabled = true;
     } else {
@@ -206,12 +248,7 @@ namespace SoDa {
       std::copy(accu.begin(), accu.begin() + rs_in_size, rs_in.begin());
       accu.erase(accu.begin(), accu.begin() + rs_in_size);
       hw_resampler->apply(rs_in, hw_cf);
-      if(push_count == 0) {
-        std::cerr << SoDa::Format("PlutoTX: first iio_buffer_push  hw_buf=%0\n")
-          .addI((int)hw_buf_size);
-      }
-      push_count++;
-      pushToHW();
+      enqueue(hw_cf);  // non-blocking unless software queue is full
     }
 
     return true;
