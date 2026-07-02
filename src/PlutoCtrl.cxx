@@ -137,8 +137,6 @@ namespace SoDa {
     // written to ad9361-phy, iio_buffer_push() silently fails.
     setSampleRate(params->getRXRate(), SoDa::RX);
     setSampleRate(params->getTXRate(), SoDa::TX);
-    std::cerr << SoDa::Format("PlutoCtrl::init() set sample rate RX=%0 TX=%1\n")
-      .addF(params->getRXRate(), 'g').addF(params->getTXRate(), 'g');
   }
 
   PlutoCtrl::~PlutoCtrl()
@@ -166,8 +164,6 @@ namespace SoDa {
     }
     double actual = gain_db;
     iio_channel_attr_read_double(tx_phy_chan, "hardwaregain", &actual);
-    std::cerr << SoDa::Format("PlutoCtrl: TX hardwaregain set=%0  actual=%1\n")
-      .addF(gain_db, 'f', 2).addF(actual, 'f', 2);
   }
 
   void PlutoCtrl::writeHWRXGain(double gain_db)

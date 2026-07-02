@@ -164,9 +164,6 @@ namespace SoDa {
         tx_queue.pop_front();
         tx_cv.notify_all();  // wake enqueue() if it was waiting for space
       }
-      if (local_push == 0)
-        std::cerr << SoDa::Format("PlutoTX: first iio_buffer_push hw_buf=%0\n")
-          .addI((int)hw_buf_size);
       pushToHW(block);
       ++local_push;
     }

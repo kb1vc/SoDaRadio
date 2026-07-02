@@ -104,10 +104,6 @@ void SoDa::RadioTX::run()
     }
     else if(tx_enabled && beacon_mode) {
       // Carrier beacon: send full-amplitude signal regardless of modulation mode
-      if(beacon_push_count == 0) {
-        std::cerr << SoDa::Format("RadioTX: beacon first push  tx_mod=%0 tx_enabled=%1\n")
-          .addI((int)tx_modulation).addI((int)tx_enabled);
-      }
       beacon_push_count++;
       doCW(cw_buf, beacon_env);
       put(cw_buf);
@@ -127,10 +123,6 @@ void SoDa::RadioTX::run()
 	     (tx_modulation == SoDa::Command::CW_U))) {
       FBufPtr cwenv;
       if(cw_env_stream->get(cw_subs, cwenv)) {
-	if(cw_push_count == 0) {
-	  std::cerr << SoDa::Format("RadioTX: CW first envelope  tx_mod=%0\n")
-	    .addI((int)tx_modulation);
-	}
 	cw_push_count++;
 	doCW(cw_buf, cwenv);
 	put(cw_buf);
