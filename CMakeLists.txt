@@ -40,15 +40,17 @@ PROJECT(SoDaRadio)
 # "on the wrong side" and nbmf demod had the squelch set wayyyyy too high.
 # there must have been something that changed higher-up in the chain.
 # 11.0 - Beginning of port to qt6 -- RX works now!
-SET(SoDaRadio_VERSION_MAJOR 11)
-SET(SoDaRadio_VERSION_MINOR 0)
+# 12.0.0 - All Qt audio. Support for USRP, Pluto, RTLSDR. 
+# 12.1.0 - Cleanup, remove all gpsd gpsd-lib dependencies. Fixed logging bug.
+# Improved README a little bit.
+SET(SoDaRadio_VERSION_MAJOR 12)
+SET(SoDaRadio_VERSION_MINOR 1)
 SET(SoDaRadio_VERSION_PATCH 0)
 SET(SoDaRadio_VERSION "${SoDaRadio_VERSION_MAJOR}.${SoDaRadio_VERSION_MINOR}.${SoDaRadio_VERSION_PATCH}")
 
 set(SoDaRadio_PACKAGE_DESCRIPTION 
   "SoDaRadio is a software defined radio implementation of "
-  "a general purpose transmitter/receiver using the "
-  "Ettus Research USRP hardware.")
+  "a general purpose transmitter/receiver")
 
 # Select package generators.  RPM and DEB can be enabled together.
 set(CPACK_GENERATOR "")

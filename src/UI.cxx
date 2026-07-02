@@ -41,7 +41,6 @@ UI::UI(ParamsPtr params) : SoDa::Thread("UI")
   cwtxt_stream = NULL;
   if_stream = NULL;
   cmd_stream = NULL;
-  gps_stream = NULL;
 
 
   // create the network ports
@@ -194,8 +193,6 @@ void UI::run()
        	debugMsg("got TX_CW_EMPTY command from socket.\n");
       }
       if(net_cmd->target == SoDa::Command::STOP) {
-	// relay "stop" commands to the GPS unit.
-	gps_stream->put(SoDa::Command::make(Command::SET, Command::STOP, 0));
 	break;
       }
       net_cmd = NULL;
@@ -215,21 +212,6 @@ void UI::run()
       didwork = true;
     }
 
-    while(gps_stream->get(gps_subs, ring_cmd)) {
-      debugMsg(SoDa::Format("UI GPS ring: %0\n").addS(ring_cmd->toString()), 6);
-      if(ring_cmd->cmd == SoDa::Command::REP) {
-	if(sock_ready) {
-	  server_socket->put(ring_cmd.get(), sizeof(SoDa::Command));
-	}
-	else if(pending_rep.size() < pending_rep_cap) {
-	  pending_rep.push_back(ring_cmd);
-	}
-      }
-      execCommand(ring_cmd);
-      didwork = true;
-    }
-      
-    
     // listen ont the IF stream
     int bcount;
     SoDa::CBufPtr if_buf; 
@@ -458,34 +440,24 @@ void UI::subscribeToMailBoxes(const std::vector<MailBoxBasePtr> & mailboxes) {
       SoDa::MailBoxBase::connect<MailBox<CBufPtr>>(mbox_p,
 						   "IFstream",
 						   if_stream);
-      SoDa::MailBoxBase::connect<MailBox<CommandPtr>>(mbox_p,
-						      "GPSstream",
-						      gps_stream);
     }
 
     if(cmd_stream == nullptr) {
-      throw MissingMailBox("CMD", getSelfPtr());    
+      throw MissingMailBox("CMD", getSelfPtr());
     }
     else {
       cmd_subs = cmd_stream->subscribe();
     }
 
     if(cwtxt_stream == nullptr) {
-      throw MissingMailBox("CWTX", getSelfPtr());    
+      throw MissingMailBox("CWTX", getSelfPtr());
     }
 
     if(if_stream == nullptr) {
-      throw MissingMailBox("IF", getSelfPtr());    
+      throw MissingMailBox("IF", getSelfPtr());
     }
     else {
       if_subs = if_stream->subscribe();
-    }
-
-    if(gps_stream == nullptr) {
-      throw MissingMailBox("GPS", getSelfPtr());    
-    }
-    else {
-      gps_subs = gps_stream->subscribe();
     }
 }
 }
