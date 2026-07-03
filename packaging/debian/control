@@ -9,7 +9,6 @@ Build-Depends:
  pkg-config,
  libuhd-dev (>= 3.12),
  libfftw3-dev,
- libsndfile1-dev,
  libiio-dev,
  librtlsdr-dev,
  qt6-base-dev,
