@@ -229,6 +229,14 @@ void MainWindow::changeBand(const QString & band)
         ui->Mode_cb->setValue(band_map[band].defMode());
       }
 
+      // set the transverter LO offset before tuning so the frequencies sent
+      // to the server are already correct for the new band.
+      double lo_offset = 0.0;
+      if(band_map[band].tverterEna()) {
+        lo_offset = band_map[band].tvLOFreq() * band_map[band].tvLOMult();
+      }
+      radio_listener->setTransverterLO(lo_offset);
+
       double rx_freq = band_map[band].lastRXFreq() * 1e6;
       setRXFreq(rx_freq);
       double tx_freq = band_map[band].lastTXFreq() * 1e6;
@@ -237,11 +245,6 @@ void MainWindow::changeBand(const QString & band)
       }
       setTXFreq_nocross(tx_freq);
       radio_listener->setSpectrumCenter(rx_freq);
-
-      // set the transverter lo offset
-      double lo_freq = band_map[band].tvLOFreq();
-      double lo_mult = band_map[band].tvLOMult();      
-      radio_listener->setTransverterLO(lo_freq * lo_mult);
 
     }
     else {
