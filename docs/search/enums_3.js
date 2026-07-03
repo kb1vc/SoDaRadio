@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['mapselector',['MapSelector',['../classGUISoDa_1_1WFColorMap.html#a9ca0a86b32189cbf29155e64ff1bafa5',1,'GUISoDa::WFColorMap']]],
-  ['modulationtype',['ModulationType',['../classSoDa_1_1Command.html#a756e6a9b840f23e009a9d600ea630c1e',1,'SoDa::Command']]]
+  ['rxtx_0',['RXTX',['../namespaceSoDa.html#a2796623b77cd0ede5400a18128418ef6',1,'SoDa']]],
+  ['rxtxstate_1',['RxTxState',['../classSoDa_1_1Command.html#a39dc36f5cf34ffd8bc23621051ad8cef',1,'SoDa::Command']]]
 ];

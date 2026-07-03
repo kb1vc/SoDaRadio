@@ -1,4 +1,26 @@
 var searchData=
 [
-  ['quadratureoscillator',['QuadratureOscillator',['../classSoDa_1_1QuadratureOscillator.html#ac0f3aeb098aa2311a7b188ab00076040',1,'SoDa::QuadratureOscillator']]]
+  ['radio_0',['Radio',['../classSoDa_1_1Radio.html#ae7f2ac4f59089826d3d59485ff3218ce',1,'SoDa::Radio']]],
+  ['radiocontrol_1',['RadioControl',['../classSoDa_1_1RadioControl.html#aa89b8020eff67d1e1dd2503ba99012a8',1,'SoDa::RadioControl']]],
+  ['radiomodels_2',['RadioModels',['../classSoDa_1_1RadioModels.html#a0ae986bf1d70912c4893f1f35062806c',1,'SoDa::RadioModels']]],
+  ['radiorx_3',['RadioRX',['../classSoDa_1_1RadioRX.html#a2e5525a473beee838b7ad4e7f5f3dddd',1,'SoDa::RadioRX']]],
+  ['radiotx_4',['RadioTX',['../classSoDa_1_1RadioTX.html#ad90291b21f5cc34af361e59c0289b0ba',1,'SoDa::RadioTX']]],
+  ['readtimeoutexc_5',['ReadTimeoutExc',['../classSoDa_1_1IP_1_1ReadTimeoutExc.html#aacb21d751e7f8f8a0c1afce8865af66f',1,'SoDa::IP::ReadTimeoutExc']]],
+  ['readyformore_6',['readyForMore',['../classSoDa_1_1CWGenerator.html#a98136f23b1266108b79daf9dcc3527d6',1,'SoDa::CWGenerator']]],
+  ['receivecommands_7',['receiveCommands',['../namespaceSoDaCLI.html#a2b5d1649472f311cb5acb7273d700932',1,'SoDaCLI']]],
+  ['recv_8',['recv',['../classSoDa_1_1AudioIfc.html#aef5d50f49e15a1ec5dd356a5619bcdac',1,'SoDa::AudioIfc::recv()'],['../classSoDa_1_1AudioQt.html#aedf49330db5fb0436b7cdf7b373de3fb',1,'SoDa::AudioQt::recv()']]],
+  ['recvbufferready_9',['recvBufferReady',['../classSoDa_1_1AudioIfc.html#ace899399a5a661dd055c48dd9f7db2ec',1,'SoDa::AudioIfc::recvBufferReady()'],['../classSoDa_1_1AudioQt.html#a6e2691f7baa32e30718b77375b78176e',1,'SoDa::AudioQt::recvBufferReady()']]],
+  ['registerself_10',['registerSelf',['../classSoDa_1_1Base.html#a6e1ee524c91c4598c850ee9533c1a358',1,'SoDa::Base']]],
+  ['registerthread_11',['registerThread',['../classSoDa_1_1Thread.html#a02529fc9b56947dd9bf412b50a3b6ddd',1,'SoDa::Thread']]],
+  ['repaffiltershape_12',['repAFFilterShape',['../classSoDa_1_1BaseBandRX.html#abe1b3452a6bcc8f29757bc97094e327c',1,'SoDa::BaseBandRX']]],
+  ['reportaffilters_13',['reportAFFilters',['../classSoDa_1_1BaseBandRX.html#aeebfca4a07430a8290bd03a59ce1dc5a',1,'SoDa::BaseBandRX']]],
+  ['reportantennas_14',['reportAntennas',['../classSoDa_1_1RadioControl.html#af524a1dfeb85eea70b0d7c4e79f627d4',1,'SoDa::RadioControl']]],
+  ['reportmodes_15',['reportModes',['../classSoDa_1_1BaseBandRX.html#afd99a4c4bb25a3991c406f237c3d7a1e',1,'SoDa::BaseBandRX']]],
+  ['reportspectrumcenterfreq_16',['reportSpectrumCenterFreq',['../classSoDa_1_1UI.html#ab67195b0167cbc143552506b35512c99',1,'SoDa::UI']]],
+  ['rtlsdrctrl_17',['RTLSDRCtrl',['../classSoDa_1_1RTLSDRCtrl.html#a02ed60d67f9acf90bad736eee1296766',1,'SoDa::RTLSDRCtrl']]],
+  ['rtlsdrdev_18',['RTLSDRDev',['../structSoDa_1_1RTLSDRDev.html#a9e5514ab59e78cefbaee27928e0aae61',1,'SoDa::RTLSDRDev::RTLSDRDev(uint32_t index)'],['../structSoDa_1_1RTLSDRDev.html#a6ca9b879c86bd24d1af6e9cd98cd26b2',1,'SoDa::RTLSDRDev::RTLSDRDev(const RTLSDRDev &amp;)=delete']]],
+  ['rtlsdrradio_19',['RTLSDRRadio',['../classSoDa_1_1RTLSDRRadio.html#afbcf3a91c45e8568a5bd07b3c4358a5e',1,'SoDa::RTLSDRRadio']]],
+  ['rtlsdrrx_20',['RTLSDRRX',['../classSoDa_1_1RTLSDRRX.html#ad93f997db16fae6022e325cb4e60604a',1,'SoDa::RTLSDRRX']]],
+  ['rtlsdrtx_21',['RTLSDRTX',['../classSoDa_1_1RTLSDRTX.html#a5fa0acf8b767b50d036796fdc8622653',1,'SoDa::RTLSDRTX']]],
+  ['run_22',['run',['../classSoDa_1_1AudioQt.html#a7a62c73d540f22cd84e3d7697205e352',1,'SoDa::AudioQt::run()'],['../classSoDa_1_1BaseBandRX.html#a91694a3bf4d2c10c128142b88e8eb08d',1,'SoDa::BaseBandRX::run()'],['../classSoDa_1_1BaseBandTX.html#a8af3d450cbba5ff9617090bfa92c748f',1,'SoDa::BaseBandTX::run()'],['../classCommandMonitor.html#a3bae4852dab2d33d5b3c2505d884f590',1,'CommandMonitor::run()'],['../classSoDa_1_1CWTX.html#abe720376fe39d8076b81ba469c16b1cf',1,'SoDa::CWTX::run()'],['../classSoDa_1_1IFRecorder.html#a03a11a4fcf672f338b19da8ba04c7534',1,'SoDa::IFRecorder::run()'],['../classSoDa_1_1RadioControl.html#a637f2ce69ef7405074d4ba9e0b0ab3b1',1,'SoDa::RadioControl::run()'],['../classSoDa_1_1RadioRX.html#a3daf300b61ead38ae1bb4aa074da726f',1,'SoDa::RadioRX::run()'],['../classSoDa_1_1RadioTX.html#a723a3671c9926bde6041c9ac6f284376',1,'SoDa::RadioTX::run()'],['../classSimpleAccessory.html#a3f6214f1dfea384573cc39045987f92c',1,'SimpleAccessory::run()'],['../classSoDa_1_1Thread.html#a6eafe3d3c4acd153b3472c762dbc4d94',1,'SoDa::Thread::run()'],['../classSoDa_1_1UI.html#a3284d0af89aadb134afd6069e5a65f09',1,'SoDa::UI::run()'],['../classIFServer.html#ad895bede8dbde410dd94f843de01ab7e',1,'IFServer::run()'],['../classSoDaCLI_1_1AudioOutThread.html#abecfe75cf4e483c6615ca82d6bb48bb2',1,'SoDaCLI::AudioOutThread::run()'],['../classSoDaCLI_1_1AudioInThread.html#ae36672b8481aa511de41af0c00201653',1,'SoDaCLI::AudioInThread::run()'],['../classSoDaCLI_1_1AudioToneThread.html#ae2987944792770eb4702d040473d8527',1,'SoDaCLI::AudioToneThread::run()']]]
 ];

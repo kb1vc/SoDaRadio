@@ -1,9 +1,11 @@
 var searchData=
 [
-  ['val_5frange',['val_range',['../classGUISoDa_1_1Spect.html#a07cd9a100db4d19fe623c1889a2f6241',1,'GUISoDa::Spect']]],
-  ['val_5fref',['val_ref',['../classGUISoDa_1_1Spect.html#a19b12d376273023874a01f7ab90d25ca',1,'GUISoDa::Spect']]],
-  ['valmap',['valmap',['../classGUISoDa_1_1ValComboBox.html#a559711f5b868f9899afb4708e82bbcc8',1,'GUISoDa::ValComboBox::valmap()'],['../classGUISoDa_1_1IntValComboBox.html#af0ce90354d4193b7286464238808a1e6',1,'GUISoDa::IntValComboBox::valmap()']]],
-  ['vals',['vals',['../classGUISoDa_1_1Spect.html#a1e367ad4de943aeaf9a761e34a5e6b7f',1,'GUISoDa::Spect']]],
-  ['values',['values',['../classGUISoDa_1_1ListSpinbox.html#adb2c01aae997d094d76b7ba036b88402',1,'GUISoDa::ListSpinbox']]],
-  ['vm_5fsize',['vm_size',['../classkb1vc_1_1ProcInfo.html#a614010cd90f16360d673cede1f746065',1,'kb1vc::ProcInfo']]]
+  ['waiting_5fto_5frun_5fdry_0',['waiting_to_run_dry',['../classSoDa_1_1RadioTX.html#a9015d8d2a955d10dacdc6d0ed60ebef8',1,'SoDa::RadioTX']]],
+  ['wbfm_5fdeviation_1',['wbfm_deviation',['../classSoDa_1_1BaseBandTX.html#a4a4a8b303256da32783229dd1ad42e2c',1,'SoDa::BaseBandTX']]],
+  ['wbfm_5fresampler_2',['wbfm_resampler',['../classSoDa_1_1BaseBandRX.html#a6ddb3d9e25fb26208225818b10d22950',1,'SoDa::BaseBandRX']]],
+  ['wfall_5fsocket_3',['wfall_socket',['../classSoDa_1_1UI.html#a8028b662ec15965477af26b1a7fc0315',1,'SoDa::UI']]],
+  ['win_5fsamp_4',['win_samp',['../classSoDa_1_1Spectrogram.html#a48680e6e68baa386e9217ae206418a2d',1,'SoDa::Spectrogram']]],
+  ['window_5',['window',['../classSoDa_1_1Spectrogram.html#aabec2c45b2dd51792424a5b601615e5c',1,'SoDa::Spectrogram']]],
+  ['words_5fper_5fminute_6',['words_per_minute',['../classSoDa_1_1CWGenerator.html#a9ac6ff47bc1f69dc942ec2a4cc323d8c',1,'SoDa::CWGenerator']]],
+  ['write_5fstream_5fon_7',['write_stream_on',['../classSoDa_1_1IFRecorder.html#a0505d632eb6883f6ca0d49a239800232',1,'SoDa::IFRecorder']]]
 ];

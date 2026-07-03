@@ -1,7 +1,26 @@
 var searchData=
 [
-  ['nbfm',['NBFM',['../classSoDa_1_1Command.html#a756e6a9b840f23e009a9d600ea630c1eabd4d8774b0f171a504c0fbdfbc231174',1,'SoDa::Command']]],
-  ['noise',['NOISE',['../classSoDa_1_1Command.html#ab0bead0b4f4e554eb6f09451d2800ac0a2634068385d9b28ee92bd30e776fe466',1,'SoDa::Command']]],
-  ['none',['NONE',['../classSoDa_1_1Command.html#ab94ee8119a9ae899507b52621e058be7a3321ee698e762f6c4d7d62dcdae345b8',1,'SoDa::Command']]],
-  ['null_5fcmd',['NULL_CMD',['../classSoDa_1_1Command.html#a10a1f641b4250fd145e17e23ea694939ade4a61b34f9e58f91d05c9cc9e406620',1,'SoDa::Command']]]
+  ['rbw_0',['RBW',['../classSoDa_1_1Command.html#a10a1f641b4250fd145e17e23ea694939aef4ae3e6eba5bb41738ec34835a7cfc3',1,'SoDa::Command']]],
+  ['rep_1',['REP',['../classSoDa_1_1Command.html#ab94ee8119a9ae899507b52621e058be7a7200557957a0454d3f0648b645045c0a',1,'SoDa::Command']]],
+  ['rf_5frecord_5fstart_2',['RF_RECORD_START',['../classSoDa_1_1Command.html#a10a1f641b4250fd145e17e23ea694939a9a8ec575244898f3c786a0b4b1a1934e',1,'SoDa::Command']]],
+  ['rf_5frecord_5fstop_3',['RF_RECORD_STOP',['../classSoDa_1_1Command.html#a10a1f641b4250fd145e17e23ea694939aabb01eac9e3debba75df589dbdaf3643',1,'SoDa::Command']]],
+  ['rfrx_4',['RFRX',['../classSoDa_1_1Command.html#ad6f583595bed584b37bbc59f34c2fad4abe57e018bd34baa1e0ef34804271cd69',1,'SoDa::Command']]],
+  ['rftx_5',['RFTX',['../classSoDa_1_1Command.html#ad6f583595bed584b37bbc59f34c2fad4af8888c5d74857fa640309ec4c59feee2',1,'SoDa::Command']]],
+  ['rx_6',['RX',['../namespaceSoDa.html#a2796623b77cd0ede5400a18128418ef6a467257dd000bd6c59968d937a4fd117c',1,'SoDa']]],
+  ['rx_5faf_5ffilter_7',['RX_AF_FILTER',['../classSoDa_1_1Command.html#a10a1f641b4250fd145e17e23ea694939a912f07762403e689887289d4a592e09f',1,'SoDa::Command']]],
+  ['rx_5faf_5ffilter_5fshape_8',['RX_AF_FILTER_SHAPE',['../classSoDa_1_1Command.html#a10a1f641b4250fd145e17e23ea694939a571347424441e255ab709fcfb829f5b4',1,'SoDa::Command']]],
+  ['rx_5faf_5fgain_9',['RX_AF_GAIN',['../classSoDa_1_1Command.html#a10a1f641b4250fd145e17e23ea694939a169b6cca6f6417b9abbeebd1fb93588d',1,'SoDa::Command']]],
+  ['rx_5faf_5fsidetone_5fgain_10',['RX_AF_SIDETONE_GAIN',['../classSoDa_1_1Command.html#a10a1f641b4250fd145e17e23ea694939a6143cfe004e5d2fb924bc6d11e55a328',1,'SoDa::Command']]],
+  ['rx_5fant_11',['RX_ANT',['../classSoDa_1_1Command.html#a10a1f641b4250fd145e17e23ea694939ac24867f6dbc3054bf3b8740a7a87c0d0',1,'SoDa::Command']]],
+  ['rx_5fant_5fname_12',['RX_ANT_NAME',['../classSoDa_1_1Command.html#a10a1f641b4250fd145e17e23ea694939a112531e16f8acddbbb8ea968bd275423',1,'SoDa::Command']]],
+  ['rx_5fbw_13',['RX_BW',['../classSoDa_1_1Command.html#a10a1f641b4250fd145e17e23ea694939a14d704e193a372e70956462fbf6c033d',1,'SoDa::Command']]],
+  ['rx_5fcenter_5ffreq_14',['RX_CENTER_FREQ',['../classSoDa_1_1Command.html#a10a1f641b4250fd145e17e23ea694939ae4085c7471070acdf901d3e08ec49740',1,'SoDa::Command']]],
+  ['rx_5fgain_5frange_15',['RX_GAIN_RANGE',['../classSoDa_1_1Command.html#a10a1f641b4250fd145e17e23ea694939ab95f84456ecf8bc27e773ab915a08d1a',1,'SoDa::Command']]],
+  ['rx_5fif_5ffreq_16',['RX_IF_FREQ',['../classSoDa_1_1Command.html#a10a1f641b4250fd145e17e23ea694939a6ea45cb0485c51d827144fcae9d699c1',1,'SoDa::Command']]],
+  ['rx_5flo_5ffreq_17',['RX_LO_FREQ',['../classSoDa_1_1Command.html#a10a1f641b4250fd145e17e23ea694939af83bd1df939e8d53d838d6b381859927',1,'SoDa::Command']]],
+  ['rx_5fmode_18',['RX_MODE',['../classSoDa_1_1Command.html#a10a1f641b4250fd145e17e23ea694939a1c7fcca368f25732e022389efb75b7dc',1,'SoDa::Command']]],
+  ['rx_5frf_5fgain_19',['RX_RF_GAIN',['../classSoDa_1_1Command.html#a10a1f641b4250fd145e17e23ea694939a41e6c92a263f098fde3e71c6a890b601',1,'SoDa::Command']]],
+  ['rx_5fsamp_5frate_20',['RX_SAMP_RATE',['../classSoDa_1_1Command.html#a10a1f641b4250fd145e17e23ea694939a448746fcce7ef453ac97a49977b83056',1,'SoDa::Command']]],
+  ['rx_5fstate_21',['RX_STATE',['../classSoDa_1_1Command.html#a10a1f641b4250fd145e17e23ea694939ac4c9785d9e405e021634880641cd40f7',1,'SoDa::Command']]],
+  ['rx_5ftune_5ffreq_22',['RX_TUNE_FREQ',['../classSoDa_1_1Command.html#a10a1f641b4250fd145e17e23ea694939a39bfb2cee39f644475d943704401ecbd',1,'SoDa::Command']]]
 ];

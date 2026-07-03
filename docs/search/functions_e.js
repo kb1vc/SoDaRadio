@@ -1,8 +1,24 @@
 var searchData=
 [
-  ['openfiles',['openFiles',['../classkb1vc_1_1ProcInfo.html#ada40b01090ed7b10baed0f5cc2d4eb2e',1,'kb1vc::ProcInfo']]],
-  ['openlogfile',['openLogFile',['../classGUISoDa_1_1LogTable.html#ab0e2f6ad046322253406c8e59932a6db',1,'GUISoDa::LogTable']]],
-  ['operator_28_29',['operator()',['../structSoDa_1_1leftOfRange.html#af2e1e1609e1eedc3e73709725ea9d856',1,'SoDa::leftOfRange']]],
-  ['osfilter',['OSFilter',['../classSoDa_1_1OSFilter.html#ad32f3b005553e7fed083ffa3265e2fb7',1,'SoDa::OSFilter']]],
-  ['outerrun',['outerRun',['../classSoDa_1_1SoDaThread.html#aa3b5e5184778dfe07e5ac2b85bf252c2',1,'SoDa::SoDaThread']]]
+  ['palindromecommand_0',['palindromeCommand',['../classSoDa_1_1SerialDev.html#a22d688e478b723ca7cd1aa02da98c803',1,'SoDa::SerialDev']]],
+  ['params_1',['Params',['../classSoDa_1_1Params.html#a10f135fcca2fdfef3f4391fa4ff5818c',1,'SoDa::Params']]],
+  ['parsecommand_2',['parseCommand',['../namespaceSoDaCLI.html#a4e9aa95da247f08d6d1812b299f8a0b1',1,'SoDaCLI']]],
+  ['parsecommandstring_3',['parseCommandString',['../classSoDa_1_1Command.html#a394000862c8b70d8b6ecefdf4c9756c6',1,'SoDa::Command']]],
+  ['pendaudiobuffer_4',['pendAudioBuffer',['../classSoDa_1_1BaseBandRX.html#acaa4284205fab19470e5b36af178322d',1,'SoDa::BaseBandRX']]],
+  ['pendnullbuffer_5',['pendNullBuffer',['../classSoDa_1_1BaseBandRX.html#a7e83a317e4092ab8307eeff3dabb1ae3',1,'SoDa::BaseBandRX']]],
+  ['plutoctrl_6',['PlutoCtrl',['../classSoDa_1_1PlutoCtrl.html#a14b8386ac4c97335e47f04c6e79f4277',1,'SoDa::PlutoCtrl']]],
+  ['plutoradio_7',['PlutoRadio',['../classSoDa_1_1PlutoRadio.html#a22c842123c9a2795cffc6f87cbb969d0',1,'SoDa::PlutoRadio']]],
+  ['plutorx_8',['PlutoRX',['../classSoDa_1_1PlutoRX.html#ad9b2ddefd21670a5b170ab7e2f6af3f3',1,'SoDa::PlutoRX']]],
+  ['plutotx_9',['PlutoTX',['../classSoDa_1_1PlutoTX.html#a65ed701cb4edca8c0c0e35d13ab65c48',1,'SoDa::PlutoTX']]],
+  ['printreport_10',['printReport',['../classCommandMonitor.html#aa5f039a9082ce6a8cb1544681ba75713',1,'CommandMonitor::printReport()'],['../classSimpleAccessory.html#a8b38f56aef5036643f59fc4c89c8c4c8',1,'SimpleAccessory::printReport()']]],
+  ['priv_5faddthread_11',['priv_addThread',['../classSoDa_1_1ThreadRegistry.html#aece82392d1c4b91fd716b40da5c5009e',1,'SoDa::ThreadRegistry']]],
+  ['priv_5fapply_12',['priv_apply',['../classSoDa_1_1ThreadRegistry.html#aa3e8bc40058066d03142c33a3f373a40',1,'SoDa::ThreadRegistry']]],
+  ['priv_5fjointhreads_13',['priv_joinThreads',['../classSoDa_1_1ThreadRegistry.html#a4cfffe0367f05bf05d3bf5630937fa74',1,'SoDa::ThreadRegistry']]],
+  ['priv_5fshutdownthreads_14',['priv_shutDownThreads',['../classSoDa_1_1ThreadRegistry.html#a9c1d9cf1e08d2060433205ef989a492d',1,'SoDa::ThreadRegistry']]],
+  ['priv_5fstartthreads_15',['priv_startThreads',['../classSoDa_1_1ThreadRegistry.html#af19908ced95bd69c0e720b164a35f8fb',1,'SoDa::ThreadRegistry']]],
+  ['priv_5fsubscribethreads_16',['priv_subscribeThreads',['../classSoDa_1_1ThreadRegistry.html#a89ebed101f10512a5cb22a617c6c7630',1,'SoDa::ThreadRegistry']]],
+  ['pushtohw_17',['pushToHW',['../classSoDa_1_1PlutoTX.html#a62cf6fbcf9ded25c049b7fd807750da3',1,'SoDa::PlutoTX']]],
+  ['put_18',['put',['../classSoDa_1_1IP_1_1NetSocket.html#a8d3cf2a3ce022cdb108125c5c05d2caf',1,'SoDa::IP::NetSocket::put()'],['../classSoDa_1_1IP_1_1ServerSocket.html#ad541bcd32ccef62b701ec42c7bababef',1,'SoDa::IP::ServerSocket::put()'],['../classSoDa_1_1PlutoTX.html#a68812abd987889c0c09293c3daeedcc3',1,'SoDa::PlutoTX::put()'],['../classSoDa_1_1RadioTX.html#aada633062a8205c01f325a355888db0d',1,'SoDa::RadioTX::put()'],['../classSoDa_1_1RTLSDRTX.html#acfca50f23aaaffcaec818a17e0de9106',1,'SoDa::RTLSDRTX::put()'],['../classSoDa_1_1UD_1_1NetSocket.html#a067d61bbdc3d8865fe563416a8fdc1b9',1,'SoDa::UD::NetSocket::put()'],['../classSoDa_1_1UD_1_1ServerSocket.html#a6279cd2807c0f7edb5d2a0a099a143e0',1,'SoDa::UD::ServerSocket::put()'],['../classSoDa_1_1USRPTX.html#a91a5adffd6c0dd13009d94ea5743b74e',1,'SoDa::USRPTX::put()']]],
+  ['putraw_19',['putRaw',['../classSoDa_1_1IP_1_1NetSocket.html#add1eab6fa85f6ad49c1e47593acf0ea0',1,'SoDa::IP::NetSocket']]],
+  ['putstring_20',['putString',['../classSoDa_1_1SerialDev.html#a84625c1c79eef38b3ce80b198ab3db92',1,'SoDa::SerialDev']]]
 ];

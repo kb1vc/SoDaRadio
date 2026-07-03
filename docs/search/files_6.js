@@ -1,7 +1,6 @@
 var searchData=
 [
-  ['hilbert_5ftest_2ecxx',['Hilbert_Test.cxx',['../Hilbert__Test_8cxx.html',1,'']]],
-  ['hilberttransformer_2ecxx',['HilbertTransformer.cxx',['../HilbertTransformer_8cxx.html',1,'']]],
-  ['hilberttransformer_2ehxx',['HilbertTransformer.hxx',['../HilbertTransformer_8hxx.html',1,'']]],
-  ['histogram_2ehxx',['Histogram.hxx',['../Histogram_8hxx.html',1,'']]]
+  ['ifrecorder_2ehxx_0',['IFRecorder.hxx',['../IFRecorder_8hxx.html',1,'']]],
+  ['ifserver_2ehxx_1',['IFServer.hxx',['../IFServer_8hxx.html',1,'']]],
+  ['ipsockets_2ehxx_2',['IPSockets.hxx',['../IPSockets_8hxx.html',1,'']]]
 ];

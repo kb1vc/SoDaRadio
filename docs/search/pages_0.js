@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['sodaradio_3a_20classes_20and_20a_20server_20process_20to_20build_20a_20linux_20usrp_20vhf_2fuhf_20radio',['SoDaRadio: Classes and a Server process to build a Linux USRP VHF/UHF Radio',['../index.html',1,'']]]
+  ['and_20enum_20names_0',['Parameter Types and Enum Names',['../SoDaCLI_manual.html#sodacli_enums',1,'']]],
+  ['audio_1',['AUDIO',['../SoDaCLI_manual.html#sodacli_audio',1,'']]]
 ];

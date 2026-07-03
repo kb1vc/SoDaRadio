@@ -1,0 +1,28 @@
+var classSoDa_1_1RTLSDRCtrl =
+[
+    [ "RTLSDRCtrl", "classSoDa_1_1RTLSDRCtrl.html#a02ed60d67f9acf90bad736eee1296766", null ],
+    [ "~RTLSDRCtrl", "classSoDa_1_1RTLSDRCtrl.html#a6df3bf27431df0c564ae6d53df903c83", null ],
+    [ "getAntenna", "classSoDa_1_1RTLSDRCtrl.html#a5dec7289ea3c4e0128983b7c481410cb", null ],
+    [ "getHardwareDescription", "classSoDa_1_1RTLSDRCtrl.html#a734db304763d4c61bfe4b2be7a0d8740", null ],
+    [ "getLOFreq", "classSoDa_1_1RTLSDRCtrl.html#a548c1b755580829011ce246173f6715d", null ],
+    [ "getSampleRate", "classSoDa_1_1RTLSDRCtrl.html#af698e0305eb21d554c6a850d864edb13", null ],
+    [ "getSelfPtr", "classSoDa_1_1RTLSDRCtrl.html#a1e4902d5671a8e7efcdfad3692840bd0", null ],
+    [ "getTXEna", "classSoDa_1_1RTLSDRCtrl.html#a4a3db221ef9699b5d890b7993cf67609", null ],
+    [ "getTXRelayOn", "classSoDa_1_1RTLSDRCtrl.html#af8c740bfb5c9341d6d966d33d7c9efb2", null ],
+    [ "isLOLocked", "classSoDa_1_1RTLSDRCtrl.html#a753c31d90937cdb4a1e164b964c42ea9", null ],
+    [ "listAntennas", "classSoDa_1_1RTLSDRCtrl.html#a134e415446ba55d16c392c21bfc238c8", null ],
+    [ "make", "classSoDa_1_1RTLSDRCtrl.html#a255128a084debc5a6d79048a16c96749", null ],
+    [ "setAntenna", "classSoDa_1_1RTLSDRCtrl.html#a2186320918cc674bc8dea2e1fc938664", null ],
+    [ "setLOFreq", "classSoDa_1_1RTLSDRCtrl.html#a116a7c2872f3e7443121115afdc9bb25", null ],
+    [ "setRFGain", "classSoDa_1_1RTLSDRCtrl.html#a0d60695748f3369d8a9d45f7520fd467", null ],
+    [ "setSampleRate", "classSoDa_1_1RTLSDRCtrl.html#a70e1c808a7c1547c718497b07e2a395c", null ],
+    [ "setTXEna", "classSoDa_1_1RTLSDRCtrl.html#a7b9bb110129f0b81f62e1540cffccb91", null ],
+    [ "sodaGainToRTL", "classSoDa_1_1RTLSDRCtrl.html#a86f92633749a47a366f73f9aae894ae3", null ],
+    [ "gain_steps", "classSoDa_1_1RTLSDRCtrl.html#a4ddb588dfb1096a3a7dfd5726534e34d", null ],
+    [ "hw_description", "classSoDa_1_1RTLSDRCtrl.html#ac285daef50a87956c2c89369fb3bdf5d", null ],
+    [ "HW_RATE", "classSoDa_1_1RTLSDRCtrl.html#a122cca30ecd82e2b89dc3fd9cab89fe9", null ],
+    [ "rtl", "classSoDa_1_1RTLSDRCtrl.html#a9b4049c84ece465bbd7caf4921585303", null ],
+    [ "rx_lo_freq", "classSoDa_1_1RTLSDRCtrl.html#abecedc348515c15ff5f2ad9430c63eb9", null ],
+    [ "rx_sample_rate", "classSoDa_1_1RTLSDRCtrl.html#af5df4e27a94ee674621de45be7142f92", null ],
+    [ "self", "classSoDa_1_1RTLSDRCtrl.html#ab4d430d1e89a5f584c768e54debb7f96", null ]
+];

@@ -1,4 +1,20 @@
 var searchData=
 [
-  ['keep_5ffreelist',['keep_freelist',['../classSoDa_1_1MultiMBox.html#a03a59ab5508e0793f1aa2df436134e9a',1,'SoDa::MultiMBox']]]
+  ['last_0',['last',['../classSoDa_1_1QuadratureOscillator.html#a3d57a4afb7597f98b5d4c8960026e14d',1,'SoDa::QuadratureOscillator']]],
+  ['last_5fphase_5fsamp_1',['last_phase_samp',['../classSoDa_1_1BaseBandRX.html#a30d1bb1906ab57c626bd31d74f6a5e72',1,'SoDa::BaseBandRX']]],
+  ['last_5frms_2',['last_rms',['../classSoDaCLI_1_1AudioOutThread.html#a30a336f9e721cd42bb58bb0ac35d72ac',1,'SoDaCLI::AudioOutThread']]],
+  ['last_5frx_5freq_5ffreq_3',['last_rx_req_freq',['../classSoDa_1_1USRPCtrl.html#a19e5a842341fdd647dd03f62d9590fe4',1,'SoDa::USRPCtrl']]],
+  ['last_5frx_5ftune_5fresult_4',['last_rx_tune_result',['../classSoDa_1_1USRPCtrl.html#a1db792db60133e8c27d9f449ee319610',1,'SoDa::USRPCtrl']]],
+  ['last_5ftx_5ftune_5fresult_5',['last_tx_tune_result',['../classSoDa_1_1USRPCtrl.html#a643fd709de36b12a2e719083e8e1a531',1,'SoDa::USRPCtrl']]],
+  ['last_5fwas_5fspace_6',['last_was_space',['../classSoDa_1_1CWGenerator.html#af4750110c5dad1dfaf4a7afcd5dc6593',1,'SoDa::CWGenerator']]],
+  ['lo_5fcheck_5fmode_7',['lo_check_mode',['../classSoDa_1_1UI.html#a83c5965c39211a0d4c3ab8d27cb7c05e',1,'SoDa::UI']]],
+  ['lo_5fhz_5fper_5fbucket_8',['lo_hz_per_bucket',['../classSoDa_1_1UI.html#abd608f679e1d3bf9fd6d516dee66a7e0',1,'SoDa::UI']]],
+  ['lo_5fspectrogram_9',['lo_spectrogram',['../classSoDa_1_1UI.html#a709b213c083cb7acbac9d04a1cd7d594',1,'SoDa::UI']]],
+  ['lo_5fspectrogram_5fbuckets_10',['lo_spectrogram_buckets',['../classSoDa_1_1UI.html#ac2449274b27877c8bd9d81e09c7e6f4a',1,'SoDa::UI']]],
+  ['lo_5fspectrum_11',['lo_spectrum',['../classSoDa_1_1UI.html#a04ca094b5f1b342d7f2c4640454895e5',1,'SoDa::UI']]],
+  ['load_5flist_12',['load_list',['../classSoDa_1_1Params.html#ae2387da6f92fbf63bb7a3877907ae021',1,'SoDa::Params']]],
+  ['load_5flist_5fenv_5fappended_13',['load_list_env_appended',['../classSoDa_1_1Params.html#a4874726638917f4b3affad75c987bf78',1,'SoDa::Params']]],
+  ['lock_5ffile_5fname_14',['lock_file_name',['../classSoDa_1_1Params.html#adec52037fff3e47ce1bb60f05d289d4e',1,'SoDa::Params']]],
+  ['log_5faudio_5fbuffer_5fsize_15',['log_audio_buffer_size',['../classSoDa_1_1BaseBandRX.html#a7ffe7ce23ad410c2f76ac6cae8ef1d8e',1,'SoDa::BaseBandRX']]],
+  ['log_5fspectrum_16',['log_spectrum',['../classSoDa_1_1UI.html#a667692068f189bac9231b11144360378',1,'SoDa::UI']]]
 ];

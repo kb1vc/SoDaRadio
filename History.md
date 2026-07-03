@@ -38,4 +38,20 @@ watt.
 In September of 2017, the SoDaRadio project moved from Sourceforge
 to GitHub.
 
+Then it went quiet for a while. Life caught up with me and ... stuff. 
+But the idea of making SoDaRadio run on more affordable SDRs got more
+compelling when it was clear that I'd never be able to afford a new 
+USRP. And then Claude came along.
+
+I was a bit of a LLM/Claude skeptic. But a few hours showed me that Claude
+was quite useful as long as I treated it like a demented intern. I'd 
+supervised a number of demented interns in days gone by and the best of
+them were imagination amplifiers. They could take an idea from me and 
+turn it into something real. (And the best of them matured into superstars.)
+I spent a few weeks refactoring the hardware end of the signal chain and
+then got Claude to generate new code for the Pluto and the RTLSDR. 
+
+So here we are now. I'm cleaning up the build process, adding some software
+testing and figuring out how to get a bit more oomph out of the Pluto. 
+
 
