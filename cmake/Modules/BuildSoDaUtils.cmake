@@ -45,6 +45,12 @@ endif()
 
 include(FetchContent)
 
+# Force static libraries for the entire fetch path.  FFTW3's CMakeLists
+# honors BUILD_SHARED_LIBS (not the ENABLE_SHARED knob), so this needs to
+# be set before FetchContent_MakeAvailable(fftw3), not just before SoDaLibs.
+set(_bsl_save ${BUILD_SHARED_LIBS})
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+
 # -----------------------------------------------------------------------
 # FFTW3 (float variant required by SoDaSignals)
 # -----------------------------------------------------------------------
@@ -76,9 +82,9 @@ else()
     URL https://fftw.org/fftw-3.3.11.tar.gz
     EXCLUDE_FROM_ALL
   )
-  # Build float variant only, static
+  # Build float variant only.  Static-vs-shared is controlled by the
+  # BUILD_SHARED_LIBS=OFF set at the top of the fetch path.
   set(ENABLE_FLOAT   ON  CACHE BOOL "" FORCE)
-  set(ENABLE_SHARED  OFF CACHE BOOL "" FORCE)
   set(ENABLE_THREADS OFF CACHE BOOL "" FORCE)
   set(ENABLE_OPENMP  OFF CACHE BOOL "" FORCE)
   set(BUILD_TESTS    OFF CACHE BOOL "" FORCE)
@@ -117,14 +123,13 @@ FetchContent_Declare(
   EXCLUDE_FROM_ALL
 )
 
-# Force static libs and suppress SoDaLibs' tests / docs during the sub-build.
-set(_bsl_save ${BUILD_SHARED_LIBS})
-set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
-set(BUILD_TESTING     OFF CACHE BOOL "" FORCE)
-set(DISABLE_DOXYGEN   ON  CACHE BOOL "" FORCE)
+# Suppress SoDaLibs' tests / docs during the sub-build.
+set(BUILD_TESTING   OFF CACHE BOOL "" FORCE)
+set(DISABLE_DOXYGEN ON  CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(SoDaLibs)
 
+# Restore the caller's original BUILD_SHARED_LIBS value.
 set(BUILD_SHARED_LIBS ${_bsl_save} CACHE BOOL "" FORCE)
 
 # After the fetch, SoDaLibs has created:
