@@ -38,6 +38,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <signal.h>
+#include <sys/prctl.h>
 #include <QLoggingCategory>
 /**
  * @brief simple conversion from std::string to QString... 
@@ -125,6 +127,11 @@ static QProcess * startupServer(QObject * parent, SoDa::GuiParams & p)
 
   QProcess * process = new QProcess(parent);
   process->setProcessChannelMode(QProcess::ForwardedChannels);
+  // Ask the kernel to send SIGTERM to SoDaServer if this GUI process dies
+  // for any reason (crash, SIGKILL, etc.), so it never gets orphaned.
+  process->setChildProcessModifier([]() {
+    prctl(PR_SET_PDEATHSIG, SIGTERM);
+  });
   process->start(server_name, server_args);
 
   return process;
