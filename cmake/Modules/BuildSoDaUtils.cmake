@@ -74,6 +74,7 @@ else()
   FetchContent_Declare(
     fftw3
     URL https://fftw.org/fftw-3.3.11.tar.gz
+    EXCLUDE_FROM_ALL
   )
   # Build float variant only, static
   set(ENABLE_FLOAT   ON  CACHE BOOL "" FORCE)
@@ -113,6 +114,7 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/kb1vc/SoDaLibs
   GIT_TAG        ${SODALIBS_TAG}
   GIT_SHALLOW    TRUE
+  EXCLUDE_FROM_ALL
 )
 
 # Force static libs and suppress SoDaLibs' tests / docs during the sub-build.
