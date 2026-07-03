@@ -1,7 +1,7 @@
 <!DOCTYPE RCC>
 <RCC version="1.0">
   <qresource prefix="/">
-    <file>SoDaLogo_Big.png</file>
+    <file alias="SoDaLogo_Big.png">../gui_common/SoDaLogo_Big.png</file>
     <file>SoDaRadio.desktop</file>
   </qresource>
 </RCC>

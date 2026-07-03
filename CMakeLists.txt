@@ -2,7 +2,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.11.0) # this lets out really old distros like CentOS 6
 
 include(CMakePrintHelpers)
-include(GNUInstallDirs)
 
 # Can't seem to fix Package Version warnings... defer.  Never put off to tomorrow what you can do at the end of time
 # see here: https://github.com/PointCloudLibrary/pcl/issues/3680
@@ -41,6 +40,7 @@ ENDIF()
 
   
 PROJECT(SoDaRadio)
+include(GNUInstallDirs)
 # Huge bump in version -- replacing crufty stuff with new SoDaLibs
 # implementations of filters, resamplers, mailboxes, ....
 # version 10 moves TX audio from portaudio/whatever to Qt audio stream
@@ -297,29 +297,25 @@ SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
 OPTION(NO_USRP "Disable Ettus USRP / libuhd support" OFF)
 
 IF(${NO_USRP})
-  MESSAGE("libuhd / USRP support disabled.")
   SET(HAVE_UHD 0)
 ELSE()
-  FIND_PACKAGE(UHD "3.11" QUIET)
+  FIND_PACKAGE(UHD "4.8.0" QUIET)
   IF(UHD_FOUND)
     SET(HAVE_UHD 1)
-    MESSAGE("libuhd ${UHD_VERSION} found -- USRP support enabled.")
   ELSE()
     SET(HAVE_UHD 0)
-    MESSAGE("libuhd NOT found -- USRP support disabled.")
   ENDIF()
 ENDIF()
 
 
 
-FIND_PACKAGE(Qt6Widgets )
+FIND_PACKAGE(Qt6Widgets)
 IF(Qt6Widgets_FOUND)
-  MESSAGE("Building qt gui")
-  FIND_PACKAGE(Qt6Core REQUIRED )
-  FIND_PACKAGE(Qt6Network REQUIRED )
-  FIND_PACKAGE(Qt6PrintSupport REQUIRED )
-  FIND_PACKAGE(Qt6Multimedia REQUIRED )                    
-  FIND_PACKAGE(Qwt REQUIRED)    
+  FIND_PACKAGE(Qt6Core REQUIRED)
+  FIND_PACKAGE(Qt6Network REQUIRED)
+  FIND_PACKAGE(Qt6PrintSupport REQUIRED)
+  FIND_PACKAGE(Qt6Multimedia REQUIRED)
+  FIND_PACKAGE(Qwt REQUIRED)
   IF(Qt6Widgets_VERSION VERSION_LESS 5.7.0)
     MESSAGE(FATAL_ERROR "Minimum supported Qt6 version is 5.7")
   ENDIF()
@@ -337,7 +333,6 @@ find_package(PkgConfig)
 OPTION(NO_PLUTO "Disable ADALM-PLUTO / libiio support" OFF)
 
 IF(${NO_PLUTO})
-  MESSAGE("libiio / ADALM-PLUTO support disabled.")
   SET(HAVE_PLUTO 0)
 ELSE()
   IF(BUILD_LIBIIO)
@@ -347,24 +342,16 @@ ELSE()
   ENDIF()
   IF(LIBIIO_FOUND)
     SET(HAVE_PLUTO 1)
-    MESSAGE("libiio ${LIBIIO_VERSION} found -- ADALM-PLUTO support enabled.")
   ELSE()
     SET(HAVE_PLUTO 0)
-    MESSAGE("libiio NOT found -- ADALM-PLUTO support disabled.")
   ENDIF()
 ENDIF()
 
 OPTION(ENABLE_PLUTO_TX "Enable ADALM-Pluto TX hardware output" OFF)
-IF(ENABLE_PLUTO_TX)
-  MESSAGE("ADALM-PLUTO TX output enabled.")
-ELSE()
-  MESSAGE("ADALM-PLUTO TX output disabled (ENABLE_PLUTO_TX=OFF).")
-ENDIF()
 
 OPTION(NO_RTLSDR "Disable RTL-SDR / librtlsdr support" OFF)
 
 IF(${NO_RTLSDR})
-  MESSAGE("librtlsdr support disabled.")
   SET(HAVE_RTLSDR 0)
 ELSE()
   IF(BUILD_LIBRTLSDR)
@@ -374,10 +361,8 @@ ELSE()
   ENDIF()
   IF(LIBRTLSDR_FOUND)
     SET(HAVE_RTLSDR 1)
-    MESSAGE("librtlsdr ${LIBRTLSDR_VERSION} found -- RTL-SDR support enabled.")
   ELSE()
     SET(HAVE_RTLSDR 0)
-    MESSAGE("librtlsdr NOT found -- RTL-SDR support disabled.")
   ENDIF()
 ENDIF()
 
@@ -408,7 +393,7 @@ FIND_PACKAGE(Doxygen QUIET)
 IF(DOXYGEN_FOUND)
   CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
   ADD_CUSTOM_TARGET(doc ALL
-    ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile 
+    ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     COMMENT "Generating API documentation with Doxygen" VERBATIM
     )
@@ -416,4 +401,22 @@ IF(DOXYGEN_FOUND)
   INSTALL(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION share/doc)
 ENDIF()
 
+# ---------------------------------------------------------------------------
+# Build summary
+# ---------------------------------------------------------------------------
+set(_radios_enabled "")
+IF(${HAVE_UHD})
+  string(APPEND _radios_enabled "\n   USRP")
+ENDIF()
+IF(${HAVE_PLUTO})
+  string(APPEND _radios_enabled "\n   ADALM-Pluto")
+ENDIF()
+IF(${HAVE_RTLSDR})
+  string(APPEND _radios_enabled "\n   RTL-SDR")
+ENDIF()
 
+IF(_radios_enabled)
+  message("\nRadios that will be built:${_radios_enabled}\n")
+ELSE()
+  message("\nWARNING: No radio hardware support enabled (no libuhd, libiio, or librtlsdr found)\n")
+ENDIF()

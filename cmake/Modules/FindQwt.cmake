@@ -42,8 +42,6 @@
 # either expressed or implied, of the FreeBSD Project.
 #=============================================================================
 
-message("IN FindQwt.cmake  at src dir / cmake/Modules QT_INCLUDE_DIR = ${QT_INCLUDE_DIR}")
-
 find_path ( QWT_INCLUDE_DIR
   NAMES qwt_plot.h
   HINTS ${QT_INCLUDE_DIR} /opt/local/include
@@ -85,7 +83,6 @@ find_library ( QWT_LIBRARY
   HINTS ${QT_LIBRARY_DIR} /opt/local/lib /opt/local/qwt/lib/qwt.framework/Versions/Current
 )
 
-message("Did I find it QWT_LIBRARY=[${QWT_LIBRARY}]")
 set ( QWT_LIBRARIES ${QWT_LIBRARY} )
 
 

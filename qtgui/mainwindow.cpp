@@ -126,6 +126,15 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   connect(audio_listener->getRX(), SIGNAL(bufferSlack(const QString &)), 
 	  ui->slack_lab, SLOT(setText(const QString &)));
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
+  connect(ui->Record_chk, &QCheckBox::checkStateChanged,
+	  [=](Qt::CheckState state) {
+	    audio_listener->getRec()->record(state != Qt::Unchecked);
+	  });
+
+  connect(ui->RecordRF_chk, &QCheckBox::checkStateChanged,
+	  [=](Qt::CheckState state) { radio_listener->recordRF(static_cast<int>(state)); });
+#else
   connect(ui->Record_chk, &QCheckBox::stateChanged,
 	  [=](int changed) {
 	    audio_listener->getRec()->record(changed != Qt::Unchecked);
@@ -133,6 +142,7 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
 
   connect(ui->RecordRF_chk, SIGNAL(stateChanged(int)),
 	  radio_listener, SLOT(recordRF(int)));
+#endif
 
   connect(ui->recDir_btn, &QPushButton::clicked,
 	  [=]() {

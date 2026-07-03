@@ -13,27 +13,30 @@ TEMPLATE = app
 
 LIBS += -lqwt-qt6
 
+INCLUDEPATH += ../gui_common
+
 SOURCES += main.cpp\
         mainwindow.cpp \
-        FreqLabel.cpp \
-        soda_logtable.cpp \
-        soda_wfall.cpp soda_wfall_data.cpp soda_spect.cpp \
-        soda_comboboxes.cpp
+        soda_spect.cpp \
+        ../gui_common/FreqLabel.cpp \
+        ../gui_common/soda_logtable.cpp \
+        ../gui_common/soda_wfall.cpp \
+        ../gui_common/soda_wfall_data.cpp \
+        ../gui_common/soda_comboboxes.cpp
 
 HEADERS  += mainwindow.hpp \
-    FreqLabel.hpp \
-    soda_logtable.hpp \
-    soda_wfall.hpp \
-    soda_wfall_picker.hpp \
-    soda_wfall_data.hpp \
-    soda_freq_scale_draw.hpp \
-    soda_comboboxes.hpp \
-    soda_plot_picker.hpp \
-    soda_spect.hpp
+    ../gui_common/FreqLabel.hpp \
+    ../gui_common/soda_logtable.hpp \
+    ../gui_common/soda_wfall.hpp \
+    ../gui_common/soda_wfall_picker.hpp \
+    ../gui_common/soda_wfall_data.hpp \
+    ../gui_common/soda_freq_scale_draw.hpp \
+    ../gui_common/soda_comboboxes.hpp \
+    ../gui_common/soda_plot_picker.hpp \
+    ../gui_common/soda_spect.hpp
 
 QT += widgets
 
-FORMS    += mainwindow.ui
+FORMS    += ../gui_common/mainwindow.ui
 
 unix: CONFIG += link_pkgconfig qwt debug
-
