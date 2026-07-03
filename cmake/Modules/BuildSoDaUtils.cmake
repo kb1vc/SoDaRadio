@@ -93,7 +93,7 @@ if(BUILD_SODALIBS OR NOT SoDaUtils_FOUND)
   # -----------------------------------------------------------------------
   FetchContent_Declare(
     SoDaLibs
-    GIT_REPOSITORY https://github.com/kb1vc/SoDaLibs.git
+    GIT_REPOSITORY https://github.com/kb1vc/SoDaLibs
     GIT_TAG        ${SODALIBS_TAG}
     GIT_SHALLOW    TRUE
   )
