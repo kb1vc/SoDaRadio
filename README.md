@@ -120,7 +120,7 @@ Got an ADALM/Pluto?
 ```
 SoDaRadio --radio PLUTO
 ```
-
+ 
 How about an RTLSDR?
 ```
 SoDaRadio --radio RTLSDR

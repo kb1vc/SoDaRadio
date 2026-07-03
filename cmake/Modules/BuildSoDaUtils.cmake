@@ -125,13 +125,51 @@ FetchContent_Declare(
   GIT_TAG        ${SODALIBS_TAG}
   GIT_SHALLOW    TRUE
   EXCLUDE_FROM_ALL
+  # SoDaLibs' Signals/CMakeLists uses ${CMAKE_SOURCE_DIR} for the SoDa/
+  # header-symlink target.  Under FetchContent that resolves to
+  # SoDaRadio's tree, so the symlink is bogus and sodasignals fails to
+  # find <SoDa/Exception.hxx>.  Rewrite to ${PROJECT_SOURCE_DIR}.
+  PATCH_COMMAND ${CMAKE_COMMAND}
+    -DSOURCE_DIR=<SOURCE_DIR>
+    -P ${CMAKE_CURRENT_LIST_DIR}/patch_sodalibs.cmake
 )
 
 # Suppress SoDaLibs' tests / docs during the sub-build.
 set(BUILD_TESTING   OFF CACHE BOOL "" FORCE)
 set(DISABLE_DOXYGEN ON  CACHE BOOL "" FORCE)
 
+# SoDaLibs' top-level CMakeLists checks BUILD_RPM / BUILD_DEB and, when
+# set, runs its own BuildPackage.cmake which re-includes CPack and
+# produces a sodalibs-devel-*.src.rpm bundling everything -- including
+# SoDaRadio's own artifacts.  Force them off just around the fetch.
+# By this point in the outer CMakeLists.txt, CPack has already been
+# fully configured, so our own packaging is unaffected.
+set(_bp_rpm_save ${BUILD_RPM})
+set(_bp_deb_save ${BUILD_DEB})
+set(BUILD_RPM OFF CACHE BOOL "" FORCE)
+set(BUILD_DEB OFF CACHE BOOL "" FORCE)
+
 FetchContent_MakeAvailable(SoDaLibs)
+
+set(BUILD_RPM ${_bp_rpm_save} CACHE BOOL "" FORCE)
+set(BUILD_DEB ${_bp_deb_save} CACHE BOOL "" FORCE)
+
+# SoDaLibs' Signals target only exposes its own headers via install() to
+# /usr/local/include/SoDa/; its BUILD_INTERFACE points at Signals/include
+# without a SoDa/ prefix, so a fetched build lets you say <ReSampler.hxx>
+# but not <SoDa/ReSampler.hxx> -- which is what SoDaRadio's own sources
+# actually write.  Create a SoDa/-prefixed symlink and attach it to the
+# target's interface include list so downstream compiles resolve.
+if(TARGET sodasignals)
+  set(_sig_soda_alias "${CMAKE_BINARY_DIR}/_sodalibs_signals_alias")
+  file(MAKE_DIRECTORY "${_sig_soda_alias}")
+  if(NOT EXISTS "${_sig_soda_alias}/SoDa")
+    file(CREATE_LINK "${sodalibs_SOURCE_DIR}/Signals/include"
+         "${_sig_soda_alias}/SoDa" SYMBOLIC)
+  endif()
+  target_include_directories(sodasignals INTERFACE
+    $<BUILD_INTERFACE:${_sig_soda_alias}>)
+endif()
 
 # Restore the caller's original BUILD_SHARED_LIBS value.
 set(BUILD_SHARED_LIBS ${_bsl_save} CACHE BOOL "" FORCE)

@@ -63,7 +63,11 @@ set(BUILD_SHARED_LIBS ${_bsl_save} CACHE BOOL "" FORCE)
 # 'rtlsdr_static' (STATIC).  BUILD_SHARED_LIBS is ignored -- both are
 # always built.  Pin to the static one so SoDaServer doesn't pick up
 # librtlsdr.so.2 from the system link path.
+#
+# LIBRTLSDR_INCLUDE_DIRS is set explicitly rather than relying on target
+# propagation -- src/CMakeLists.txt drops it into a directory-level
+# include_directories() call, which doesn't pick up interface propagation.
 set(LIBRTLSDR_FOUND        TRUE)
 set(LIBRTLSDR_VERSION      "${LIBRTLSDR_TAG} (fetched)")
 set(LIBRTLSDR_LIBRARIES    rtlsdr_static)
-set(LIBRTLSDR_INCLUDE_DIRS "")
+set(LIBRTLSDR_INCLUDE_DIRS "${librtlsdr_SOURCE_DIR}/include")

@@ -48,10 +48,11 @@ FetchContent_MakeAvailable(libiio)
 set(BUILD_SHARED_LIBS ${_bsl_save} CACHE BOOL "" FORCE)
 
 # Publish the same variables pkg_check_modules(LIBIIO ...) would set.
-# LIBIIO_LIBRARIES uses the target name; cmake propagates its
-# INTERFACE_INCLUDE_DIRECTORIES automatically to consumers, so
-# LIBIIO_INCLUDE_DIRS can be left empty.
+# src/CMakeLists.txt drops LIBIIO_INCLUDE_DIRS into a directory-level
+# include_directories() call, which doesn't participate in target-level
+# INTERFACE_INCLUDE_DIRECTORIES propagation -- so set the source path
+# explicitly.  iio.h sits at the top of the libiio source tree in v0.26.
 set(LIBIIO_FOUND        TRUE)
 set(LIBIIO_VERSION      "${LIBIIO_TAG} (fetched)")
 set(LIBIIO_LIBRARIES    iio)
-set(LIBIIO_INCLUDE_DIRS "")
+set(LIBIIO_INCLUDE_DIRS "${libiio_SOURCE_DIR}")

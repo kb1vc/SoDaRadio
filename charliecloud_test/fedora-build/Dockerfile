@@ -26,6 +26,7 @@ RUN dnf -y update && \
         pkg-config \
         python3 \
         uhd-devel \
+        boost-devel \
         fftw-devel \
         qt6-qtbase-devel \
         qt6-qtmultimedia-devel \

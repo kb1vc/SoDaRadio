@@ -31,6 +31,7 @@ RUN apt-get update && \
         git \
         pkg-config \
         libuhd-dev \
+        libboost-dev \
         libfftw3-dev \
         qt6-base-dev \
         qt6-multimedia-dev \
