@@ -53,15 +53,18 @@ void MainWindow::setupStatus()
   connect(radio_listener, &GUISoDa::RadioListener::repPTT,
 	  [=](bool fl) {
 	    if(fl) {
-	      transmit_intervals++; 
+	      transmit_intervals++;
 	      transmit_time.start();
 	    }
 	    else {
-	      transmit_seconds += ((transmit_time.elapsed() + 500) / 1000);
-	      ui->TransTime_lbl->setText(secondsToElapsed(transmit_seconds)); 
+	      if(transmit_time.isValid()) {
+	        transmit_seconds += ((transmit_time.elapsed() + 500) / 1000);
+	        transmit_time.invalidate();
+	      }
+	      ui->TransTime_lbl->setText(secondsToElapsed(transmit_seconds));
 	      ui->TransInt_lbl->setText(QString("%1").arg(transmit_intervals));
 	    }
-	  }); 
+	  });
 
   connect(&one_second_timer, &QTimer::timeout, 
 	  [=]() {
