@@ -133,17 +133,17 @@ namespace {
     double tv_lo_mult = 0.0;
     bool   tv_low_inj = false;
 
-    if (have_dcon && b.high_edge_mhz < ll_freq) {
+    if (have_dcon && (b.high_edge_mhz > ll_freq)) {
       tv_mode    = true;
       tv_lo_freq = dcon_freq;
       tv_lo_mult = 1.0;
-      tv_low_inj = true;
+      tv_low_inj = false;
     }
-    else if (have_ucon && b.low_edge_mhz > hl_freq) {
+    else if (have_ucon && (b.low_edge_mhz < hl_freq)) {
       tv_mode    = true;
       tv_lo_freq = ucon_freq;
       tv_lo_mult = 1.0;
-      tv_low_inj = false;
+      tv_low_inj = true;
     }
 
     settings.setValue("TVMode",         tv_mode);
@@ -164,44 +164,68 @@ int main(int argc, char ** argv)
   SoDa::Options cmd;
   cmd.addInfo(
     "SoDaCreateConfig <model_name> "
-    "[--down-convert FREQ_MHz --low-limit FREQ_MHz] "
-    "[--up-convert FREQ_MHz --high-limit FREQ_MHz]");
-  cmd.add<double>(&dcon_freq, "down-convert", 'd', 0.0,
-    "down-converter LO frequency in MHz (pair with --low-limit)");
-  cmd.add<double>(&ll_freq, "low-limit", 'l', 0.0,
-    "bands whose high edge is below this MHz get the down-converter LO");
+    "[--up-convert FREQ_MHz --low-limit FREQ_MHz] "
+    "[--down-convert FREQ_MHz --high-limit FREQ_MHz]");
   cmd.add<double>(&ucon_freq, "up-convert", 'u', 0.0,
     "up-converter LO frequency in MHz (pair with --high-limit)");
-  cmd.add<double>(&hl_freq, "high-limit", 'h', 0.0,
+  cmd.add<double>(&hl_freq, "high-limit", 'l', 0.0,
+    "bands whose high edge is below this MHz get the down-converter LO");
+  cmd.add<double>(&dcon_freq, "down-convert", 'd', 0.0,
+    "down-converter LO frequency in MHz (pair with --low-limit)");
+  cmd.add<double>(&ll_freq, "low-limit", 'h', 0.0,
     "bands whose low edge is above this MHz get the up-converter LO");
+  bool help_flag;
+  cmd.addP(&help_flag, "help", 'H', "Print this help message");
+  cmd.addInfo(R"(
+usage:
+    SoDaCreateConfig [options] model_name
+
+    Conversion is seen from the antenna side into a receiver. So
+if we want to convert a 10MHz signal to where a Pluto SDR can "hear"
+we might use a Ham-it-up converter with an LO at 125 MHz. Then we'd
+say something like
+
+    SoDaCreateConfig --up-convert 125.0 --high-limit 30.0 PLUTO
+
+To create a band configuration file for a Pluto that up-converts from
+the HF band to 125 to 155 MHz at the Pluto's RX port.
+)");
+
 
   if (!cmd.parse(argc, argv)) {
     // Options prints its own --help / error message.
     return 0;
   }
 
+  if(help_flag) {
+    cmd.printHelp(std::cerr);
+    return 0;
+  }
+  
   if (cmd.numPosArgs() < 1) {
-    std::cerr << SoDa::Format("Error: missing <model_name>.\n"
-                              "Run %0 --help for usage.\n")
-                    .addS(argv[0]);
+    std::cerr << "Error: missing <model_name>.\n";
+    cmd.printHelp(std::cerr);
     return 1;
   }
+
   std::string model_name = cmd.getPosArg(0);
 
   // Validate paired flags.
   bool dcon_p = cmd.isPresent("down-convert");
-  bool ll_p   = cmd.isPresent("low-limit");
   bool ucon_p = cmd.isPresent("up-convert");
+  
   bool hl_p   = cmd.isPresent("high-limit");
-  if (dcon_p != ll_p) {
-    std::cerr << "Warning: --down-convert and --low-limit must be given "
-                 "together; ignoring down-converter settings.\n";
-    dcon_p = ll_p = false;
-  }
+  bool ll_p   = cmd.isPresent("low-limit");
+  
   if (ucon_p != hl_p) {
     std::cerr << "Warning: --up-convert and --high-limit must be given "
                  "together; ignoring up-converter settings.\n";
     ucon_p = hl_p = false;
+  }
+  if (dcon_p != ll_p) {
+    std::cerr << "Warning: --down-convert and --low-limit must be given "
+                 "together; ignoring down-converter settings.\n";
+    dcon_p = ll_p = false;
   }
   bool have_dcon = dcon_p && ll_p;
   bool have_ucon = ucon_p && hl_p;

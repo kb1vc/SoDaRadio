@@ -31,7 +31,39 @@ the github pages at https://kb1vc.github.io/SoDaRadio/
 Packages for Ubuntu and Fedora are available somewhere near the github
 page.
 
-## Building From Source
+## Getting the Program(s)
+
+### Install From a Kit
+
+This process ought to be simple.  If it isn't, file a bug. 
+
+#### Fedora
+
+First get the kit [Download RPM (Fedora)](https://github.com/kb1vc/SoDaRadio/releases/latest/download/SoDaRadio-12.3.0-1.x86_64.rpm) 
+
+Then 
+```
+sudo dnf install SoDaRadio-12.3.0-1.x86_64.rpm
+```
+
+Note the version number may change -- whatever you get for the RPM, you
+should use that in the dnf install. 
+
+#### Ubuntu
+
+First get the kit: [Download DEB (Ubuntu)](https://github.com/kb1vc/SoDaRadio/releases/latest/download/sodaradio_12.3.0_amd64.deb)
+
+Then 
+```
+sudo apt install ./sodaradio_12.3.0_amd64.deb
+```
+
+Note the version number may change -- whatever you get for the deb package, you
+should use that in the dnf install. 
+
+
+
+### Building From Source
 
 There is a set of dependencies for SoDaRadio. Most are vanilla packages
 that should be available in any distribution. 
@@ -61,7 +93,7 @@ of the SoDaRadio build if they haven't already been installed.
 - FFTW: a fast FFT library. This will be built as part of the SoDaRadio
 build if it hasn't already been installed. 
 
-### Fedora Dependencies
+#### Fedora Dependencies
 
 From-scratch builds are tested in charliecloud instances that use this
 set of install packages. The builds work. 
@@ -75,7 +107,7 @@ dnf -y install libxml2-devel flex bison
 ```
 
 
-### Ubuntu Dependencies
+#### Ubuntu Dependencies
 
 
 From-scratch builds are tested in charliecloud instances that use this
@@ -91,7 +123,7 @@ apt-get install -y libusb-1.0-0-dev libxml2-dev flex bison
 
 Frankly, I have no idea how flex and bison got in there. 
 
-### The Build Process
+#### The Build Process
 
 This is a CMake project. It works like all the others. Here's how to build
 the radio wit all the trimmings. It will build the "special" pre-requisites (SoDaLibs, librtlsdr, libiio, fftw) from online sources if you don't have the libraries. I'm assuming that you've cloned the source tree and are sitting at the 
@@ -104,8 +136,46 @@ make
 make install
 ```
 
-
 ## Quickstart
+
+### First Steps
+
+SoDaRadio reads configuration information (like band definitions, last
+tuned frequency, volume and gain settings) from a configuration
+file. Each type of radio has its own configuration file. These are
+stored in `~/.config/kb1vc.org/` (`kb1vc.org` to avoid collisions with
+other tools and other names. It is good manners.)  The configuration
+file for a hardware model named "FReD" will be found in
+`~/.config/kb1vc.org/FRED_SoDaRadioQT.conf` The model name is always
+upcased. TWIG.
+
+These files are a mite tedious to write by hand. Though you could
+create a configuration file by entering in each band configuration via
+SoDaRadio's "Config Band" panel, that's a little bit of a bother too.
+So there's a helper program: `SoDaCreateConfig`. 
+
+As an example, I have a PLUTO connected to a Ham-it-up transverter. The transverter LO is at (nominally) 125 MHz.  This is how I'd create a new configuration file:
+```
+SoDaCreateConfig --down-convert 125.0 --low-limit 70.0  PLUTO
+```
+
+I've got a USRP N200/UBX that covers DC to about 6 GHz but doesn't quite make it to 10GHz. So I add a transverter for 10 GHz. 
+```
+SoDaCreateConfig --up-convert 9933.0 --low-limit 10000.0 USRP
+```
+
+I've also got a USRP B210 that covers 60 MHz to 6 GHz and is connected to 
+a Ham-it-up transverter for the HF bands.  So I do something like what I
+did with the Pluto and with the USRP N200
+```
+SoDaCreateConfig --down-convert 125.0 --low-limit 70.0 --up-convert 9933.0 --low-limit 10000.0 USRPB200
+```
+
+The SoDaRadio code that manages radio models has *two* entries for USRPs. One is for the B200 series which has a lower band edge around 60 MHz or so, and the other is for "everything else."  The USRPB200 model will select our USRPB200_SoDaRadioQT.conf file. 
+
+If you're satisfied with your newly generated configuration files, copy them to `~/.config/kb1vc.org/` and let 'er rip.
+
+### Running SoDaRadio
 
 Got a USRP? If it is a B2xx make sure that it is loaded and ready: 
 ```
@@ -113,18 +183,23 @@ uhd_usrp_probe
 ```
 Then
 ```
-SoDaRadio --radio USRP
+SoDaRadio  USRPB200
 ```
 
 Got an ADALM/Pluto?
 ```
-SoDaRadio --radio PLUTO
+SoDaRadio  PLUTO
 ```
  
 How about an RTLSDR?
 ```
-SoDaRadio --radio RTLSDR
+SoDaRadio  RTLSDR
 ```
+
+### Running WSJTX or FLDIGI
+
+This is harder than it ought to be. Take a look in MODEMS.md. If that file
+doesn't exist, then I haven't written it yet. 
 
 ## Reporting Bugs
 
