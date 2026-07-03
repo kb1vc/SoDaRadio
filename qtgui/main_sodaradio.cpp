@@ -31,7 +31,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iostream>
 #include <QMessageBox>
 #include <QStyleFactory>
-#include <QTextStream>
 #include <QDir>
 #include <QTemporaryDir>
 
@@ -68,12 +67,11 @@ static void alertAndExit(const QString & err_msg)
 
 /**
  * @brief start the radio server process
- * 
- * @param lock_file_name name of exclusive-access lock file to help us detect zombie server processes. 
- * @param p set of command line parameters, some of which are 
+ *
+ * @param p set of command line parameters, some of which are
  * passed to the server process.
  */
-static QProcess * startupServer(QObject * parent, const QString & lock_file_name, SoDa::GuiParams & p)
+static QProcess * startupServer(QObject * parent, SoDa::GuiParams & p)
 {
   // start the radio server  
   QString server_name;
@@ -125,8 +123,6 @@ static QProcess * startupServer(QObject * parent, const QString & lock_file_name
       server_args << arg;
   }
 
-  server_args << "--lockfile" << lock_file_name;
-
   QProcess * process = new QProcess(parent);
   process->setProcessChannelMode(QProcess::ForwardedChannels);
   process->start(server_name, server_args);
@@ -168,43 +164,6 @@ void setupLookNFeel()
   qApp->setPalette(palette);
 }
 
-bool checkForZombies(const QString & server_lock_filename, const QString & server_socket_base) 
-{
-  // does the server lock filename exist? 
-  if(QFileInfo::exists(server_lock_filename)) {
-    QString error_message = QString("%1 exists. \
-This is an indication that a zombiefied \
-SoDaServer instance is still running.\
-<ol>\
-<li>Kill the zombie SoDaServer process.</li>\
-<li>Delete files that look like this: <p>%2_cmd</p> and <p>%2_wfall</p></li>	\
-<li>Delete this file: <p>%1</p></li>					\
-<li>Try again.</li>\
-</ol>").arg(server_lock_filename).arg(server_socket_base);
-    QMessageBox mbox(QMessageBox::Critical, 
-		     "Fatal Error", 
-		     error_message,
-		     QMessageBox::Ok, NULL);
-    //  mbox.setDetailedText(err_string); 
-    mbox.exec();
-
-    QTextStream qw(stdout);
-    
-    qw << QString("%1 exists.\nThis is an indication that a zombiefied\n\
-SoDaServer instance is still running.\n\n\
-1. Kill the zombie SoDaServer process.\n\
-2. Delete files that look like this: %2_cmd  and  %2_wfall\n\
-3. Delete this file: %1\n\
-4. Try again.\n").arg(server_lock_filename).arg(server_socket_base);
-
-    // we should not continue.
-    return true; 
-  }
-
-  return false; 
-}
-
-
 /**
  * @brief Start the SoDaRadio GUI app and launch the server process
  * 
@@ -235,22 +194,6 @@ int main(int argc, char *argv[])
       return 0;
     }
     
-    QString apdir =  QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);  
-
-    if(!QDir(apdir).exists()) {
-      QDir().mkdir(apdir);
-    }
-
-    QString uhdargs = QString::fromStdString(p.getUHDArgs());
-    QString server_lock_filename = QString("%1/sodaserver_args%2.lock")
-      .arg(apdir)
-      .arg(uhdargs);
-
-    if(p.getDebugLevel() > 0) {
-      qInfo() << QString("server_lock_filename %1").arg(server_lock_filename);
-    }
-    
-    
     QTemporaryDir sockDir("/tmp/SoDaRadio-XXXXXX");
     QString ssbn;
     if(p.getServerSocketBasename() == std::string("")) {
@@ -265,47 +208,35 @@ int main(int argc, char *argv[])
     }
 
     if(p.getDebugLevel() > 0) {
-      qInfo() << QString("check for zombies");
+      qInfo() << QString("starting server");
     }
-    
-    if(!checkForZombies(server_lock_filename, ssbn)) {
-      if(p.getDebugLevel() > 0) {
-	qInfo() << QString("starting server");
-      }
-      
-      QProcess * server_proc = startupServer(nullptr, server_lock_filename, p); 
 
-      if(p.getDebugLevel() > 0) {
-	qInfo() << QString("settingup UI");
-      }
-      
-      setupLookNFeel();
-
-      // libvdpau writes "Failed to open VDPAU backend" directly via fprintf(stderr)
-      // when FFmpeg probes hardware acceleration; no env var suppresses it.
-      int _saved_stderr = dup(STDERR_FILENO);
-      { int _n = open("/dev/null", O_WRONLY); dup2(_n, STDERR_FILENO); close(_n); }
-      MainWindow w(0, p);
-      fflush(stderr);
-      dup2(_saved_stderr, STDERR_FILENO);
-      close(_saved_stderr);
-
-      w.show();
-      int ret = a.exec();
-      // closeEvent already sent STOP via the command socket; give the server
-      // time to exit cleanly (it will delete the lock file on normal exit).
-      if (!server_proc->waitForFinished(3000)) {
-        server_proc->terminate();
-        if (!server_proc->waitForFinished(2000))
-          server_proc->kill();
-        // Server was force-killed; remove lock file so next launch isn't blocked.
-        QFile::remove(server_lock_filename);
-      }
-      return ret;
-    }
+    QProcess * server_proc = startupServer(nullptr, p);
 
     if(p.getDebugLevel() > 0) {
-      qInfo() << QString("DONE!!!!\n\nDONE\n\n");
+      qInfo() << QString("settingup UI");
     }
-    
+
+    setupLookNFeel();
+
+    // libvdpau writes "Failed to open VDPAU backend" directly via fprintf(stderr)
+    // when FFmpeg probes hardware acceleration; no env var suppresses it.
+    int _saved_stderr = dup(STDERR_FILENO);
+    { int _n = open("/dev/null", O_WRONLY); dup2(_n, STDERR_FILENO); close(_n); }
+    MainWindow w(0, p);
+    fflush(stderr);
+    dup2(_saved_stderr, STDERR_FILENO);
+    close(_saved_stderr);
+
+    w.show();
+    int ret = a.exec();
+    // closeEvent already sent STOP via the command socket; give the server
+    // time to exit cleanly before we tear down the socket directory.
+    if (!server_proc->waitForFinished(3000)) {
+      server_proc->terminate();
+      if (!server_proc->waitForFinished(2000))
+        server_proc->kill();
+    }
+    return ret;
+
 }

@@ -125,9 +125,6 @@ namespace SoDa {
     
     unsigned int getDebugLevel() const { return debug_level; }
 
-    std::string getLockFileName() const { return lock_file_name; }
-
-
     bool isRadioType(const std::string & rtype) {
       std::string rt = rtype;
 
@@ -147,8 +144,6 @@ namespace SoDa {
     std::string config_filename;
     std::vector<std::string> load_list;
     bool load_list_env_appended;
-
-    std::string lock_file_name; 
 
     bool clock_source_internal;
     double rx_rate, tx_rate;

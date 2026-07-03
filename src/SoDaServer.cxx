@@ -184,19 +184,6 @@
 #include "AudioQt.hxx"
 
 
-void createLockFile(const std::string & lock_file_name)
-{
-  std::ofstream lfile; 
-  lfile.open(lock_file_name.c_str());
-  lfile << "If this file exists, there is likely an active SoDaServer process somewhere on this machine.\n";
-  lfile.close();
-}
-
-void deleteLockFile(const std::string & lock_file_name)
-{
-  remove(lock_file_name.c_str());
-}
-
 int loadAccessories(const std::vector<std::string> & libs, SoDa::Debug & d) {
   // are there loadable modules we want to run?
   typedef bool (*initfunctype)();
@@ -335,16 +322,11 @@ int main(int argc, char * argv[])
   /// @see SoDa::Params
   SoDa::ParamsPtr params = SoDa::Params::make(argc, argv);
 
-  /// create a lock file to signal that we're alive.
-  createLockFile(params->getLockFileName()); 
-
   try {
-    doWork(params); 
+    doWork(params);
   }
   catch (SoDa::SDR::Exception exc) {
     std::cerr << "Exception caught at SoDa main: " << std::endl;
-    std::cerr << "\t" << exc.toString() << std::endl; 
+    std::cerr << "\t" << exc.toString() << std::endl;
   }
-
-  deleteLockFile(params->getLockFileName());
 }

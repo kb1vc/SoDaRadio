@@ -51,8 +51,6 @@ SoDa::Params::Params(int argc, char * argv[])
      "Force Fractional-N synthesis for front-end local oscillators")
     .add<unsigned int>(&debug_level, "debug", 'D', 0,
      "Enable debug messages for value > 0.  Higher values may produce more detail.")
-    .add<std::string>(&lock_file_name, "lockfile", 'L', "SoDa.lock",
-     "lock file to signal that a sodaradio server is active")
     ;
 
 
