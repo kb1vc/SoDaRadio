@@ -51,8 +51,6 @@ SoDa::Params::Params(int argc, char * argv[])
      "Force Fractional-N synthesis for front-end local oscillators")
     .add<unsigned int>(&debug_level, "debug", 'D', 0,
      "Enable debug messages for value > 0.  Higher values may produce more detail.")
-    .add<std::string>(&radio_type, "radio", 'r', "USRP", 
-     "the radio type (USRP, Lime)")
     .add<std::string>(&lock_file_name, "lockfile", 'L', "SoDa.lock",
      "lock file to signal that a sodaradio server is active")
     ;
@@ -60,6 +58,13 @@ SoDa::Params::Params(int argc, char * argv[])
 
   // do we need a help message?
   if(!cmd.parse(argc, argv)) exit(-1);
+
+  if(cmd.numPosArgs() < 1) {
+    std::cerr << "Usage: " << argv[0] << " <radio-type> [options]\n"
+              << "  radio-type: USRP, Pluto, RTLSDR\n";
+    exit(-1);
+  }
+  radio_type = cmd.getPosArg(0);
 
   hw_sample_rate = 625000.0;
 
