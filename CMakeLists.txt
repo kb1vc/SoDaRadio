@@ -15,6 +15,10 @@ OPTION(BUILD_RPM     "Build a binary RPM package (Fedora) via 'make package'." O
 OPTION(BUILD_DEB     "Build a binary Debian package (Ubuntu) via 'make package'." OFF)
 OPTION(BUILD_SRC_DEB "Build an Ubuntu/Debian source package via 'make package_src_deb'." OFF)
 OPTION(BUILD_UNIT_TESTS "Build the unit tests -- not normally useful" OFF)
+OPTION(BUILD_SODALIBS
+  "Fetch and build SoDaLibs from GitHub instead of using the installed copy" OFF)
+set(SODALIBS_TAG "v_U5.3.0_S4.4.0" CACHE STRING
+  "SoDaLibs git tag to fetch when BUILD_SODALIBS=ON or SoDaLibs is not installed")
 
 IF(CMAKE_VERSION VERSION_GREATER 3.0.0)
   CMAKE_POLICY(SET CMP0048 NEW)
