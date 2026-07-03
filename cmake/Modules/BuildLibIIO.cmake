@@ -38,6 +38,10 @@ set(WITH_HWMON         OFF CACHE BOOL "" FORCE)
 set(WITH_LOCAL_BACKEND OFF CACHE BOOL "" FORCE)
 set(WITH_USB_BACKEND   ON  CACHE BOOL "" FORCE)
 set(WITH_NETWORK_BACKEND ON  CACHE BOOL "" FORCE)
+# IIOD is the libiio daemon -- we only want the client library.  Disabling
+# it also avoids the libaio dependency that iiod pulls in.
+set(WITH_IIOD          OFF CACHE BOOL "" FORCE)
+set(WITH_AIO           OFF CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(libiio)
 

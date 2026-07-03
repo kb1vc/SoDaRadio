@@ -22,6 +22,16 @@ FetchContent_Declare(
   GIT_TAG        ${LIBRTLSDR_TAG}
   GIT_SHALLOW    TRUE
   EXCLUDE_FROM_ALL
+  # librtlsdr's CMakeLists.txt uses ${CMAKE_SOURCE_DIR} in several places
+  # (module path, include path, uninstall configure_file) where it should
+  # be ${CMAKE_CURRENT_SOURCE_DIR}.  Under a top-level build the two are
+  # the same; under FetchContent the former resolves to SoDaRadio's source
+  # tree and everything breaks.  Rewrite it via a cmake -P script -- doing
+  # this with sed hits a two-level quoting problem because FetchContent
+  # stores the command string and re-expands it in the subbuild.
+  PATCH_COMMAND ${CMAKE_COMMAND}
+    -DFILE=<SOURCE_DIR>/CMakeLists.txt
+    -P ${CMAKE_CURRENT_LIST_DIR}/patch_librtlsdr.cmake
 )
 
 set(_bsl_save ${BUILD_SHARED_LIBS})
@@ -34,10 +44,11 @@ FetchContent_MakeAvailable(librtlsdr)
 
 set(BUILD_SHARED_LIBS ${_bsl_save} CACHE BOOL "" FORCE)
 
-# librtlsdr's CMake creates both 'rtlsdr' (respecting BUILD_SHARED_LIBS)
-# and, in newer versions, a separate 'rtlsdr_static' target.  With
-# BUILD_SHARED_LIBS=OFF the 'rtlsdr' target is built static; use it.
+# librtlsdr unconditionally creates both 'rtlsdr_shared' (SHARED) and
+# 'rtlsdr_static' (STATIC).  BUILD_SHARED_LIBS is ignored -- both are
+# always built.  Pin to the static one so SoDaServer doesn't pick up
+# librtlsdr.so.2 from the system link path.
 set(LIBRTLSDR_FOUND        TRUE)
 set(LIBRTLSDR_VERSION      "${LIBRTLSDR_TAG} (fetched)")
-set(LIBRTLSDR_LIBRARIES    rtlsdr)
+set(LIBRTLSDR_LIBRARIES    rtlsdr_static)
 set(LIBRTLSDR_INCLUDE_DIRS "")
