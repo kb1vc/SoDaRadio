@@ -4,6 +4,9 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.11.0) # this lets out really old distros like C
 include(CMakePrintHelpers)
 include(GNUInstallDirs)
 
+find_program(TEST_GIT_EXE git)
+message("TEST_GIT_EXE = ${TEST_GIT_EXE}")
+
 # Can't seem to fix Package Version warnings... defer.  Never put off to tomorrow what you can do at the end of time
 # see here: https://github.com/PointCloudLibrary/pcl/issues/3680
 # when this is fixed, we can remove the following 3 lines.
@@ -17,6 +20,8 @@ OPTION(BUILD_SRC_DEB "Build an Ubuntu/Debian source package via 'make package_sr
 OPTION(BUILD_UNIT_TESTS "Build the unit tests -- not normally useful" OFF)
 OPTION(BUILD_SODALIBS
   "Fetch and build SoDaLibs from GitHub instead of using the installed copy" OFF)
+OPTION(BUILD_FFTW
+  "Fetch and build FFTW3 from source instead of using the system copy" OFF)
 set(SODALIBS_TAG "v_U5.3.0_S4.4.0" CACHE STRING
   "SoDaLibs git tag to fetch when BUILD_SODALIBS=ON or SoDaLibs is not installed")
 

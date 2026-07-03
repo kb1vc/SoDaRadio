@@ -1,5 +1,9 @@
 # Substantial parts written or modified by Claude Sonnet 4.6 (claude-sonnet-4-6)
-find_package(SoDaSignals REQUIRED CONFIG)
+# If SoDaLibs was fetched via BuildSoDaUtils.cmake the target already exists;
+# otherwise pull it in from the installed package.
+if(NOT TARGET SoDaSignals::sodasignals)
+  find_package(SoDaSignals REQUIRED CONFIG)
+endif()
 get_target_property(_sig_type SoDaSignals::sodasignals TYPE)
 if(NOT _sig_type STREQUAL "STATIC_LIBRARY")
   message(FATAL_ERROR "SoDaSignals::sodasignals: expected STATIC_LIBRARY, got ${_sig_type}")
