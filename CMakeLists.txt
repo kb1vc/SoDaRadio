@@ -151,8 +151,7 @@ set(CPACK_RPM_PACKAGE_REQUIRES
   "fftw-libs >= 3.3, "
   "qt6-qtbase >= 6.2, "
   "qt6-qtmultimedia >= 6.2, "
-  "qwt-qt6 >= 6.1.2, "
-  "hamlib")
+  "qwt-qt6 >= 6.1.2")
 string(REPLACE ";" "" CPACK_RPM_PACKAGE_REQUIRES "${CPACK_RPM_PACKAGE_REQUIRES}")
 set(CPACK_RPM_FILE_NAME
   "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_RPM_PACKAGE_RELEASE}.${CMAKE_SYSTEM_PROCESSOR}.rpm")
@@ -342,10 +341,10 @@ endif()
 #set(CMAKE_AUTOUIC ON)
 
 
-## Need hamlib for just the include files to get hamlib codes for
-## modulation scheme and other settings.
+## Hamlib is no longer an external dependency: the handful of RIG_MODE_*,
+## RIG_VFO_*, and RIG_ANT_* constants that HamlibHandler / HamlibServer need
+## for the rigctld wire protocol are vendored in vendor/hamlib/rig.h.
 find_package(PkgConfig)
-pkg_search_module(HAMLIB REQUIRED hamlib)
 OPTION(NO_PLUTO "Disable ADALM-PLUTO / libiio support" OFF)
 
 IF(${NO_PLUTO})
