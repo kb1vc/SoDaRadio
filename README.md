@@ -39,11 +39,11 @@ This process ought to be simple.  If it isn't, file a bug.
 
 #### Fedora
 
-First get the kit [Download RPM (Fedora)](https://github.com/kb1vc/SoDaRadio/releases/latest/download/SoDaRadio-12.3.0-1.x86_64.rpm) 
+First get the kit [Download RPM (Fedora)](https://github.com/kb1vc/SoDaRadio/releases/latest/download/SoDaRadio-12.3.1-1.x86_64.rpm) 
 
 Then 
 ```
-sudo dnf install SoDaRadio-12.3.0-1.x86_64.rpm
+sudo dnf install SoDaRadio-12.3.1-1.x86_64.rpm
 ```
 
 Note the version number may change -- whatever you get for the RPM, you
@@ -51,11 +51,11 @@ should use that in the dnf install.
 
 #### Ubuntu
 
-First get the kit: [Download DEB (Ubuntu)](https://github.com/kb1vc/SoDaRadio/releases/latest/download/sodaradio_12.3.0_amd64.deb)
+First get the kit: [Download DEB (Ubuntu)](https://github.com/kb1vc/SoDaRadio/releases/latest/download/sodaradio_12.3.1_amd64.deb)
 
 Then 
 ```
-sudo apt install ./sodaradio_12.3.0_amd64.deb
+sudo apt install ./sodaradio_12.3.1_amd64.deb
 ```
 
 Note the version number may change -- whatever you get for the deb package, you

@@ -9,7 +9,7 @@ separate devices).
 
 3. [done] Improve handling of abend to make sure we've deleted UD sockets and shut down the server process. 
 
-4. Add documentation on config files. 
+4. [done] Add documentation on config files. 
 
 5. Add a keep-alive timer.
 

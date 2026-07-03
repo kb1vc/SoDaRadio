@@ -54,10 +54,11 @@ include(GNUInstallDirs)
 # 12.2.0 - Removed spurious build dependencies and made SoDaLibs,
 # FFTW, libiio, and librtlsdr external projects - they can be
 # (optionally) built as part of the SoDaRadio build.
-
+# 12.3.0 - package support, refactoring of common gui components
+# 12.3.1 - CW carrier offset, fix to initialization bug in RadioControl
 SET(SoDaRadio_VERSION_MAJOR 12)
 SET(SoDaRadio_VERSION_MINOR 3)
-SET(SoDaRadio_VERSION_PATCH 0)
+SET(SoDaRadio_VERSION_PATCH 1)
 SET(SoDaRadio_VERSION "${SoDaRadio_VERSION_MAJOR}.${SoDaRadio_VERSION_MINOR}.${SoDaRadio_VERSION_PATCH}")
 
 set(SoDaRadio_PACKAGE_DESCRIPTION 

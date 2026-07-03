@@ -43,7 +43,12 @@ namespace SoDa {
     rx_rf_gain = 0.0;
     tx_rf_gain = 0.0;
     tx_samp_rate = 625000;
-  
+    cur_rx_lo_freq = 0.0;
+    cur_tx_lo_freq = 0.0;
+
+    // set it to something.  we'll get real info soon. 
+    tx_modulation = Command::CW_U;
+    
     params = _params;
 
     // we need a cmd stream, but that's going to be setup by subscribeToMailBox
@@ -174,6 +179,11 @@ namespace SoDa {
     }
     double tmp;
     switch (cmd->target) {
+    case Command::TX_MODE:
+      // we only care about CW mode or NOT CW mode.
+      tx_modulation = Command::ModulationType(cmd->iparms[0]);
+      break; 
+      
     case Command::RX_TUNE_FREQ:
       setFreq(cmd->dparms[0], SoDa::RX);
       break; 
@@ -376,12 +386,21 @@ namespace SoDa {
   void RadioControl::setFreq(double freq, SoDa::RXTX rxtx) {
     // is this TX or RX?
     if(rxtx == SoDa::TX) {
+      // We offset the transmit frequency in CW mode down for CW_U and
+      // up for CW_L
+      if(tx_modulation == Command::CW_L) {
+	freq = freq + 500;
+      }
+      if(tx_modulation == Command::CW_U) {
+	freq = freq - 500;
+      }
+
       // ask the device controller to set the TX lo.  Normally this should
       // be equal to freq and actual_lo_freq would be freq
       cur_tx_lo_freq = setLOFreq(freq, SoDa::TX);
+      
       cur_tx_if_freq =  (freq - cur_tx_lo_freq);
-      // tell the TX IF to set its new IF frequency. Then wait for it
-      // to respond with a report. 
+      // tell the TX IF to set its new IF frequency. 
       cmd_stream->put(Command::make(Command::SET, Command::TX_IF_FREQ, cur_tx_if_freq));
       cmd_stream->put(Command::make(Command::REP, Command::TX_LO_FREQ,
 				  cur_tx_lo_freq));

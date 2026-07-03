@@ -475,6 +475,9 @@ g     * 144.325 MHz in the spectrogram display.  The LO would need to be changed
     double tvrt_lo_gain; ///< output power for the second transmit channel (used for transverter LO)
     double tvrt_lo_freq; ///< the frequency of the second transmit channel oscillator
     double tvrt_lo_fe_freq; ///< the frequency of the second transmit channel front-end oscillator
+
+    // we offset the tx freq if we're in CW mode
+    Command::ModulationType tx_modulation; 
     
     // enables verbose messages
     bool debug_mode; ///< print stuff when we are in debug mode
