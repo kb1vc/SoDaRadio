@@ -1,0 +1,120 @@
+name: Release packages
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-rpm:
+    runs-on: ubuntu-latest
+    container:
+      image: fedora:43
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          dnf -y update && dnf -y install \
+            cmake make gcc-c++ git pkg-config python3 \
+            uhd-devel boost-devel fftw-devel \
+            qt6-qtbase-devel qt6-qtmultimedia-devel qwt-qt6-devel \
+            rpm-build \
+            openssl-devel readline-devel libusbx-devel libxml2-devel \
+            flex bison
+
+      - name: Configure
+        run: |
+          cmake -B build \
+            -DBUILD_RPM=ON \
+            -DBUILD_SODALIBS=ON \
+            -DBUILD_FFTW=ON \
+            -DBUILD_LIBIIO=ON \
+            -DBUILD_LIBRTLSDR=ON \
+            -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build and package
+        run: cmake --build build --target package -j$(nproc)
+
+      - name: Upload RPM
+        uses: actions/upload-artifact@v4
+        with:
+          name: rpm-package
+          path: build/*.rpm
+
+  build-deb:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            cmake make gcc g++ git pkg-config \
+            libuhd-dev libboost-dev libfftw3-dev \
+            qt6-base-dev qt6-multimedia-dev \
+            libcups2-dev dpkg-dev fakeroot file \
+            libssl-dev libreadline-dev libusb-1.0-0-dev \
+            libxml2-dev flex bison \
+            doxygen
+
+      - name: Build Qwt from source
+        run: |
+          git clone --depth 1 https://github.com/opencor/qwt.git /tmp/qwt
+          cd /tmp/qwt
+          sed -i 's/^QWT_CONFIG\s*+=\s*QwtSvg/#QWT_CONFIG += QwtSvg/' qwtconfig.pri
+          sed -i 's/^QWT_CONFIG\s*+=\s*QwtDll/#QWT_CONFIG += QwtDll/' qwtconfig.pri
+          qmake6 QWT_INSTALL_PREFIX=/usr/local QMAKE_CXXFLAGS+=-fPIC qwt.pro
+          make -j$(nproc)
+          sudo make install
+          QWT_INST=$(ls -d /usr/local/qwt-*)
+          sudo ln -sf "$QWT_INST/include" /usr/local/include/qwt
+          sudo ln -sf "$QWT_INST/lib/libqwt.a" /usr/local/lib/libqwt.a
+
+      - name: Configure
+        run: |
+          cmake -B build \
+            -DBUILD_DEB=ON \
+            -DBUILD_SODALIBS=ON \
+            -DBUILD_FFTW=ON \
+            -DBUILD_LIBIIO=ON \
+            -DBUILD_LIBRTLSDR=ON \
+            -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build and package
+        run: cmake --build build --target package -j$(nproc)
+
+      - name: Upload DEB
+        uses: actions/upload-artifact@v4
+        with:
+          name: deb-package
+          path: build/*.deb
+
+  release:
+    needs: [build-rpm, build-deb]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download RPM
+        uses: actions/download-artifact@v4
+        with:
+          name: rpm-package
+          path: packages/
+
+      - name: Download DEB
+        uses: actions/download-artifact@v4
+        with:
+          name: deb-package
+          path: packages/
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            --repo "${{ github.repository }}" \
+            --title "SoDaRadio ${{ github.ref_name }}" \
+            --generate-notes \
+            packages/*

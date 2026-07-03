@@ -56,7 +56,7 @@ include(GNUInstallDirs)
 # (optionally) built as part of the SoDaRadio build.
 
 SET(SoDaRadio_VERSION_MAJOR 12)
-SET(SoDaRadio_VERSION_MINOR 2)
+SET(SoDaRadio_VERSION_MINOR 3)
 SET(SoDaRadio_VERSION_PATCH 0)
 SET(SoDaRadio_VERSION "${SoDaRadio_VERSION_MAJOR}.${SoDaRadio_VERSION_MINOR}.${SoDaRadio_VERSION_PATCH}")
 
