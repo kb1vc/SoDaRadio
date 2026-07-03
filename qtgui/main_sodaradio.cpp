@@ -33,6 +33,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QStyleFactory>
 #include <QTextStream>
 #include <QDir>
+#include <QTemporaryDir>
 
 #include "../common/GuiParams.hxx"
 #include <stdlib.h>
@@ -103,10 +104,10 @@ static QProcess * startupServer(QObject * parent, const QString & lock_file_name
 
   server_args << "--uds_name" << ss2QS(p.getServerSocketBasename());
 
-  // forward the radio type to the server
+  // radio type is a required positional argument to SoDaServer
   QString radio_name = ss2QS(p.getRadioName());
   if(radio_name != "") {
-    server_args << "--radio" << radio_name.toUpper();
+    server_args << radio_name.toUpper();
   }
 
   // now add the uhd args
@@ -250,11 +251,14 @@ int main(int argc, char *argv[])
     }
     
     
-    QString ssbn; 
+    QTemporaryDir sockDir("/tmp/SoDaRadio-XXXXXX");
+    QString ssbn;
     if(p.getServerSocketBasename() == std::string("")) {
-      ssbn = QString("%1/SoDa_%2_").arg(apdir).arg(uhdargs);
-      std::string nbn = ssbn.toStdString();
-      p.setServerSocketBasename(nbn);
+      if(!sockDir.isValid()) {
+        alertAndExit("Failed to create temporary directory for radio sockets.");
+      }
+      ssbn = sockDir.path() + "/SoDa_";
+      p.setServerSocketBasename(ssbn.toStdString());
     }
     else {
       ssbn = QString::fromStdString(p.getServerSocketBasename());

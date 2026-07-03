@@ -52,15 +52,18 @@ SoDa::GuiParams::GuiParams(int argc, char ** argv)
      "Audio device name for ALSA audio.")
     .add<unsigned int>(&debug_level, "debug", 'D', 0,
      "Enable debug messages for value > 0.  Higher values may produce more detail.")
-    .add<std::string>(&radio_name, "radio", 'r', "",
-     "Radio model name: sets config file path (e.g. PLUTO -> ~/.config/kb1vc.org/PLUTO_SoDaRadioQT.conf) and is forwarded to the server")
     ;
 
   if(!cmd.parse(argc, argv)) {
-    no_command_only_help = true; 
+    no_command_only_help = true;
   }
   else {
-    no_command_only_help = false; 
+    no_command_only_help = false;
+    // Allow the radio type as a positional argument (e.g. "SoDaRadio PLUTO")
+    // so it mirrors the SoDaServer invocation style. --radio still works too.
+    if(cmd.numPosArgs() >= 1) {
+      radio_name = cmd.getPosArg(0);
+    }
   }
 }
 
