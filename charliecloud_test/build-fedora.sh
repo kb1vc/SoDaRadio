@@ -49,7 +49,11 @@ ch-run -s "$IMG_STORAGE" \
         cd /build
         cmake /src \
             -DCMAKE_BUILD_TYPE=Release \
-            -DBUILD_RPM=ON
+            -DBUILD_RPM=ON \
+            -DBUILD_SODALIBS=ON \
+            -DBUILD_FFTW=ON \
+            -DBUILD_LIBIIO=ON \
+            -DBUILD_LIBRTLSDR=ON
         make -j$(nproc)
         cpack -G RPM
         cp *.rpm /output/

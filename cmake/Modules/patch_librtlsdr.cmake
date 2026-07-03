@@ -14,4 +14,14 @@ string(REPLACE
   [=[${CMAKE_SOURCE_DIR}]=]
   [=[${CMAKE_CURRENT_SOURCE_DIR}]=]
   _content "${_content}")
+
+# librtlsdr adds a custom "uninstall" target whose name collides with the
+# same-named target libiio creates.  In a superbuild where both are fetched,
+# only one can win.  Rename librtlsdr's out of the way -- SoDaRadio doesn't
+# use it, and neither does anything else in the sub-tree.
+string(REPLACE
+  "add_custom_target(uninstall"
+  "add_custom_target(librtlsdr_uninstall"
+  _content "${_content}")
+
 file(WRITE "${FILE}" "${_content}")

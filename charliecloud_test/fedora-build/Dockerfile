@@ -1,7 +1,13 @@
 # SoDaRadio Fedora build environment.
 #
-# Provides all build-time dependencies for SoDaRadio on current Fedora,
-# including a pre-built SoDaLibs installation.
+# Provides the packaged build-time dependencies SoDaRadio can't fetch itself
+# (Qt6, Qwt, UHD, FFTW).  SoDaLibs, libiio, and librtlsdr are pulled from
+# GitHub at cmake configure time via BUILD_SODALIBS / BUILD_LIBIIO /
+# BUILD_LIBRTLSDR and built statically into SoDaRadio, so this image no
+# longer needs -devel packages for any of them.  hamlib and gpsd are also
+# gone -- hamlib was replaced by vendor/hamlib/rig.h and gpsd was dropped
+# outright.
+#
 # The source tree is NOT baked in -- it is bind-mounted at build time by
 # build-fedora.sh so the same image can be reused across source changes.
 #
@@ -20,32 +26,18 @@ RUN dnf -y update && \
         pkg-config \
         python3 \
         uhd-devel \
-        boost-devel \
         fftw-devel \
-        hamlib-devel \
-        gpsd-devel \
-        libiio-devel \
-        rtl-sdr-devel \
         qt6-qtbase-devel \
         qt6-qtmultimedia-devel \
         qwt-qt6-devel \
         rpm-build \
         openssl-devel \
-        readline-devel && \
+        readline-devel \
+        libusbx-devel \
+        libxml2-devel \
+        flex \
+        bison && \
     dnf clean all
-
-# Build and install SoDaLibs (provides SoDaUtils, Signals, JsonCpp).
-# Statically linked into SoDaRadio, so not needed at runtime.
-RUN rm -rf /tmp/SoDaLibs /tmp/SoDaLibs-build && \
-    git clone https://github.com/kb1vc/SoDaLibs.git /tmp/SoDaLibs && \
-    mkdir -p /tmp/SoDaLibs/Utils/include/SoDa && \
-    (cd /tmp/SoDaLibs/Utils/include && for h in *.hxx; do ln -sf "../$h" "SoDa/$h"; done) && \
-    cmake -S /tmp/SoDaLibs -B /tmp/SoDaLibs-build \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_INSTALL_PREFIX=/usr/local && \
-    cmake --build /tmp/SoDaLibs-build --parallel $(nproc) && \
-    cmake --install /tmp/SoDaLibs-build && \
-    rm -rf /tmp/SoDaLibs /tmp/SoDaLibs-build
 
 # Pre-create bind-mount points (charliecloud requires them to exist).
 RUN mkdir -p /src /build /output

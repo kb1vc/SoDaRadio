@@ -115,7 +115,11 @@ SoDaThreadRegistry.cxx
 )
 
 add_library(accessory SHARED ${simple_acc_SRCS})
-#target_link_libraries(accessory ${SoDaUtils_LIBRARIES})
+# Needed for <SoDa/MailBox.hxx> etc. in SoDaBase.hxx.  Works out to
+# a no-op in the installed-SoDaLibs case (headers are already on the
+# system include path) but is required in the fetched case where
+# they live inside _deps/sodalibs-src/.
+target_link_libraries(accessory PRIVATE SoDaUtils::sodautils)
 
 set(comm_mon_SRCS
 CommandMonitor.cxx
@@ -126,6 +130,7 @@ SoDaThreadRegistry.cxx
 )
 
 add_library(CommandMonitor SHARED ${comm_mon_SRCS})
+target_link_libraries(CommandMonitor PRIVATE SoDaUtils::sodautils)
 
 
 
@@ -146,6 +151,7 @@ set(SoDaSockets_SRCS
   IPSockets.cxx)
 
 add_library(SoDaSockets STATIC ${SoDaSockets_SRCS})
+target_link_libraries(SoDaSockets PRIVATE SoDaUtils::sodautils)
 install(TARGETS SoDaSockets DESTINATION lib)
 
 

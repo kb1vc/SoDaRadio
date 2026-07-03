@@ -40,6 +40,21 @@ set(INSTALL_UDEV_RULES OFF CACHE BOOL "" FORCE)
 set(DETACH_KERNEL_DRIVER OFF CACHE BOOL "" FORCE)
 set(WITH_RTL_TCP        OFF CACHE BOOL "" FORCE)
 
+# librtlsdr's cmake_minimum_required is older than CMake 4.x will accept.
+# Relaxing the check via this variable does not enable any new policies for
+# it; it only satisfies the version-floor sanity check.
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+
+# If libiio was fetched too, its top-level CMakeLists calls
+# pkg_check_modules(LIBUSB libusb-1.0), which sets LIBUSB_FOUND=TRUE and
+# populates LIBUSB_INCLUDE_DIRS (plural).  librtlsdr's FindLibUSB.cmake
+# short-circuits when LIBUSB_FOUND is already set, so it never populates
+# its own singular LIBUSB_INCLUDE_DIR -- and the include_directories()
+# line downstream ends up empty, so librtlsdr.c fails to find libusb.h.
+# Clear the cross-project flag before librtlsdr's CMakeLists runs.
+unset(LIBUSB_FOUND)
+unset(LIBUSB_FOUND CACHE)
+
 FetchContent_MakeAvailable(librtlsdr)
 
 set(BUILD_SHARED_LIBS ${_bsl_save} CACHE BOOL "" FORCE)

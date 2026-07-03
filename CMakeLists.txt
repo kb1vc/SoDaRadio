@@ -4,9 +4,6 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.11.0) # this lets out really old distros like C
 include(CMakePrintHelpers)
 include(GNUInstallDirs)
 
-find_program(TEST_GIT_EXE git)
-message("TEST_GIT_EXE = ${TEST_GIT_EXE}")
-
 # Can't seem to fix Package Version warnings... defer.  Never put off to tomorrow what you can do at the end of time
 # see here: https://github.com/PointCloudLibrary/pcl/issues/3680
 # when this is fixed, we can remove the following 3 lines.
@@ -35,9 +32,7 @@ IF(CMAKE_VERSION VERSION_GREATER 3.0.0)
 ENDIF()
 
 IF(CMAKE_HOST_SYSTEM_NAME MATCHES "Darwin")
-  message("Hey!  This must be a Mac!")
-  set(MACOSX 1)
-  ADD_DEFINITIONS(-DMACOSX=1)
+  message(FATAL_ERROR "Hey!  This must be a Mac! This build won't work. (yet)")
 ELSE()
   set(MACOSX 0)
   ADD_DEFINITIONS(-DMACOSX=0)  
@@ -56,8 +51,12 @@ PROJECT(SoDaRadio)
 # 12.0.0 - All Qt audio. Support for USRP, Pluto, RTLSDR. 
 # 12.1.0 - Cleanup, remove all gpsd gpsd-lib dependencies. Fixed logging bug.
 # Improved README a little bit.
+# 12.2.0 - Removed spurious build dependencies and made SoDaLibs,
+# FFTW, libiio, and librtlsdr external projects - they can be
+# (optionally) built as part of the SoDaRadio build.
+
 SET(SoDaRadio_VERSION_MAJOR 12)
-SET(SoDaRadio_VERSION_MINOR 1)
+SET(SoDaRadio_VERSION_MINOR 2)
 SET(SoDaRadio_VERSION_PATCH 0)
 SET(SoDaRadio_VERSION "${SoDaRadio_VERSION_MAJOR}.${SoDaRadio_VERSION_MINOR}.${SoDaRadio_VERSION_PATCH}")
 
@@ -152,7 +151,6 @@ set(CPACK_RPM_PACKAGE_RELOCATABLE TRUE)
 set(CPACK_RPM_PACKAGE_AUTOREQPROV "no")
 set(CPACK_RPM_PACKAGE_REQUIRES
   "uhd >= 3.12.0, "
-  "fftw-libs >= 3.3, "
   "qt6-qtbase >= 6.2, "
   "qt6-qtmultimedia >= 6.2, "
   "qwt-qt6 >= 6.1.2")
@@ -314,33 +312,20 @@ ENDIF()
 
 
 
-if(MACOSX)
-  message("Looking for OPENGL")
-  FIND_PACKAGE(OpenGL REQUIRED)
-  message("looked for opengl")
-  FIND_PACKAGE(GLUT REQUIRED)
-  LIST(APPEND INCLUDE_DIRS ${OPENGL_INCLUDE_DIR} ${GLUT_INCLUDE_DIR})
-  LIST(APPEND LIBRARIES ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
-
-  FIND_PACKAGE(Qt6 REQUIRED COMPONENTS core network printsupport multimedia)
-
-  FIND_PACKAGE(Qwt REQUIRED)
-else()
-  FIND_PACKAGE(Qt6Widgets )
-  IF(Qt6Widgets_FOUND)
-    MESSAGE("Building qt gui")
-    FIND_PACKAGE(Qt6Core REQUIRED )
-    FIND_PACKAGE(Qt6Network REQUIRED )
-    FIND_PACKAGE(Qt6PrintSupport REQUIRED )
-    FIND_PACKAGE(Qt6Multimedia REQUIRED )                    
-    FIND_PACKAGE(Qwt REQUIRED)    
-    IF(Qt6Widgets_VERSION VERSION_LESS 5.7.0)
-      MESSAGE(FATAL_ERROR "Minimum supported Qt6 version is 5.7")
-    ENDIF()
-  ELSE()
-    MESSAGE(FATAL_ERROR "The Qt6Widgets library is required to build SoDaRadio")
+FIND_PACKAGE(Qt6Widgets )
+IF(Qt6Widgets_FOUND)
+  MESSAGE("Building qt gui")
+  FIND_PACKAGE(Qt6Core REQUIRED )
+  FIND_PACKAGE(Qt6Network REQUIRED )
+  FIND_PACKAGE(Qt6PrintSupport REQUIRED )
+  FIND_PACKAGE(Qt6Multimedia REQUIRED )                    
+  FIND_PACKAGE(Qwt REQUIRED)    
+  IF(Qt6Widgets_VERSION VERSION_LESS 5.7.0)
+    MESSAGE(FATAL_ERROR "Minimum supported Qt6 version is 5.7")
   ENDIF()
-endif()
+ELSE()
+  MESSAGE(FATAL_ERROR "The Qt6Widgets library is required to build SoDaRadio")
+ENDIF()
 
 #set(CMAKE_AUTOUIC ON)
 
@@ -398,11 +383,7 @@ ENDIF()
 
 
 
-if(MACOSX)
-  set(RT_LIB "")
-else()
-  set(RT_LIB "rt")  
-endif()
+set(RT_LIB "rt")  
 
 # Find SoDaUtils and build it if we must. 
 include(${PROJECT_SOURCE_DIR}/cmake/Modules/BuildSoDaUtils.cmake)

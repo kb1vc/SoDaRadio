@@ -88,6 +88,10 @@ else()
   set(ENABLE_THREADS OFF CACHE BOOL "" FORCE)
   set(ENABLE_OPENMP  OFF CACHE BOOL "" FORCE)
   set(BUILD_TESTS    OFF CACHE BOOL "" FORCE)
+  # fftw-3.3.11's cmake_minimum_required(VERSION 2.8.5) is older than
+  # CMake 4.x will accept.  Relax the version-floor check just for the
+  # sub-build.
+  set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
   FetchContent_MakeAvailable(fftw3)
   # FFTW3's CMake creates a target named 'fftw3f' when ENABLE_FLOAT=ON.
   set(_fftw_lib fftw3f)

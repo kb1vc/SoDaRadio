@@ -39,7 +39,11 @@ ch-run -s "$IMG_STORAGE" \
         cd /build
         cmake /src \
             -DCMAKE_BUILD_TYPE=Release \
-            -DBUILD_DEB=ON
+            -DBUILD_DEB=ON \
+            -DBUILD_SODALIBS=ON \
+            -DBUILD_FFTW=ON \
+            -DBUILD_LIBIIO=ON \
+            -DBUILD_LIBRTLSDR=ON
         make -j$(nproc)
         cpack -G DEB
         cp *.deb /output/
