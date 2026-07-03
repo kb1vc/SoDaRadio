@@ -38,7 +38,16 @@ set(SoDaServer_SRCS
 )
 
 
-find_package(FFTW3f REQUIRED QUIET)
+# If BuildSoDaUtils.cmake already set up SoDa_FFTW::Float (either from a
+# fetched fftw3 build or from a discovered system copy), route the legacy
+# FFTW3F_* variables through it instead of doing a second find_package that
+# would rediscover the system library and cause a rpath conflict.
+if(TARGET SoDa_FFTW::Float)
+  get_target_property(FFTW3F_INCLUDE_DIRS SoDa_FFTW::Float INTERFACE_INCLUDE_DIRECTORIES)
+  get_target_property(FFTW3F_LIBRARIES    SoDa_FFTW::Float INTERFACE_LINK_LIBRARIES)
+else()
+  find_package(FFTW3f REQUIRED QUIET)
+endif()
 
 set(SoDaServer_SRCS ${SoDaServer_SRCS} AudioQt.cxx)
 
