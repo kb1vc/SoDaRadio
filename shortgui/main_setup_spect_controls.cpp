@@ -57,7 +57,9 @@ void MainWindow::setupSpectControls()
     // Create widgets —————————————————————————————————————————————————————————
 
     wf_band_cb = new QComboBox(ui->Waterfall);
+    wf_band_cb->setObjectName("wf_band_cb");
     sp_band_cb = new QComboBox(ui->Periodogram);
+    sp_band_cb->setObjectName("sp_band_cb");
 
     // AF gain: 0–100 matching AFGain_slide
     auto makeAFSlider = [](QWidget * parent, int cur) {
@@ -80,9 +82,13 @@ void MainWindow::setupSpectControls()
     };
 
     wf_af_gain_sl = makeAFSlider(ui->Waterfall,   ui->AFGain_slide->value());
+    wf_af_gain_sl->setObjectName("wf_af_gain_sl");
     sp_af_gain_sl = makeAFSlider(ui->Periodogram,  ui->AFGain_slide->value());
+    sp_af_gain_sl->setObjectName("sp_af_gain_sl");
     wf_rf_gain_sl = makeRFSlider(ui->Waterfall,   ui->RFGain_slide->value());
+    wf_rf_gain_sl->setObjectName("wf_rf_gain_sl");
     sp_rf_gain_sl = makeRFSlider(ui->Periodogram,  ui->RFGain_slide->value());
+    sp_rf_gain_sl->setObjectName("sp_rf_gain_sl");
 
     // Inject into control columns —————————————————————————————————————————————
 

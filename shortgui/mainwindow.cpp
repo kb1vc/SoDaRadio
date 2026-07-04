@@ -584,7 +584,27 @@ void MainWindow::restoreSettings()
     cb->setCurrentText(ui->bandSel_cb->currentText());
   }
 
+  // Block mirror-widget signals so widgetSaveRestore doesn't fire changeBand
+  // or setAFGain/setRXGain mid-restore and corrupt the band/gain state.
+  QWidget * mirrors[] = {
+    wf_band_cb, sp_band_cb,
+    wf_af_gain_sl, sp_af_gain_sl,
+    wf_rf_gain_sl, sp_rf_gain_sl
+  };
+  for (QWidget * w : mirrors) if (w) w->blockSignals(true);
+
   widgetSaveRestore(this, "SoDaRadioQT.", false);
+
+  for (QWidget * w : mirrors) if (w) w->blockSignals(false);
+
+  // Re-sync mirrors from masters (widgetSaveRestore restored the masters).
+  if (wf_band_cb) { QSignalBlocker b(wf_band_cb); wf_band_cb->setCurrentText(ui->bandSel_cb->currentText()); }
+  if (sp_band_cb) { QSignalBlocker b(sp_band_cb); sp_band_cb->setCurrentText(ui->bandSel_cb->currentText()); }
+  if (wf_af_gain_sl) { QSignalBlocker b(wf_af_gain_sl); wf_af_gain_sl->setValue(ui->AFGain_slide->value()); }
+  if (sp_af_gain_sl) { QSignalBlocker b(sp_af_gain_sl); sp_af_gain_sl->setValue(ui->AFGain_slide->value()); }
+  if (wf_rf_gain_sl) { QSignalBlocker b(wf_rf_gain_sl); wf_rf_gain_sl->setValue(ui->RFGain_slide->value()); }
+  if (sp_rf_gain_sl) { QSignalBlocker b(sp_rf_gain_sl); sp_rf_gain_sl->setValue(ui->RFGain_slide->value()); }
+
   settings_p->endGroup();
   settings_loaded = true;
 }
