@@ -85,9 +85,10 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   audio_tx_server = new GUISoDa::AudioTXServer(this, QString::fromStdString(params.getServerSocketBasename()));
   qDebug() << QString("Started AudioTXServer");
 
-  setupBandConfig();  
+  setupBandConfig();
   setupSpectrum();
   setupWaterFall();
+  setupSpectControls();
     
   setupTopControls();
   setupMidControls();
@@ -572,6 +573,17 @@ void MainWindow::restoreSettings()
 {
   settings_p->beginGroup("Radio");
   bandMapSaveRestore(band_map, false);
+
+  // Populate the spectrum-panel band selectors from the now-loaded bandSel_cb.
+  for (QComboBox * cb : {wf_band_cb, sp_band_cb}) {
+    if (!cb) continue;
+    QSignalBlocker blk(cb);
+    cb->clear();
+    for (int i = 0; i < ui->bandSel_cb->count(); ++i)
+      cb->addItem(ui->bandSel_cb->itemText(i));
+    cb->setCurrentText(ui->bandSel_cb->currentText());
+  }
+
   widgetSaveRestore(this, "SoDaRadioQT.", false);
   settings_p->endGroup();
   settings_loaded = true;

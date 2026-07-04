@@ -9,6 +9,7 @@ SET(ShortSoDa_SRCS
 SET(ShortSoDa_Lib_SRCS
   mainwindow.cpp
   soda_spect.cpp
+  main_setup_spect_controls.cpp
   ../gui_common/FreqLabel.cpp
   ../gui_common/soda_logtable.cpp
   ../gui_common/soda_wfall.cpp

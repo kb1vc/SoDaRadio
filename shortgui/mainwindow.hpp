@@ -37,6 +37,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QKeyEvent>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
+#include <QComboBox>
+#include <QSlider>
 
 #include "RadioListener.hpp"
 #include "AudioTXServer.hpp"
@@ -142,6 +144,7 @@ protected:
   void setupSpectrum();
 
   void setupHamlib();
+  void setupSpectControls();
 
   // ShortSoDa layout reorganization for 7" touchscreens.
   void reorganizeForShortSoDa();
@@ -161,6 +164,14 @@ protected:
   // Header bar widgets (shown only on tabs that need them).
   QWidget * qso_info_bar = nullptr;
   QWidget * freq_ctrl_bar = nullptr;
+
+  // Spectrum-panel controls injected in the ShortSoDa layout.
+  QComboBox * wf_band_cb    = nullptr;
+  QSlider   * wf_af_gain_sl = nullptr;
+  QSlider   * wf_rf_gain_sl = nullptr;
+  QComboBox * sp_band_cb    = nullptr;
+  QSlider   * sp_af_gain_sl = nullptr;
+  QSlider   * sp_rf_gain_sl = nullptr;
 
   void keyPressEvent(QKeyEvent * event) override;
   bool eventFilter(QObject * obj, QEvent * event) override;
