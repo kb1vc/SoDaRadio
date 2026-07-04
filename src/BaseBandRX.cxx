@@ -423,6 +423,7 @@ namespace SoDa {
 	  // RxTxState value (TX_ON_1=4) to ModulationType (which would give AM=4).
 	  if((rx_modulation == Command::CW_L) || (rx_modulation == Command::CW_U)) {
 	    sidetone_stream_enabled = true;
+	    cur_af_gain = &af_sidetone_gain;
 	  }
 	  else {
 	    sidetone_stream_enabled = false;
@@ -669,7 +670,7 @@ namespace SoDa {
     filter_map[Command::BW_WSPR] = OSFilter::make(1300.0, 1800.0, 100, audio_sample_rate, audio_buffer_size);  
     filter_map[Command::BW_500] = OSFilter::make(400.0, 900.0, 100, audio_sample_rate, audio_buffer_size);
 
-    filter_map[Command::BW_100] = OSFilter::make(400.0, 500.0, 100, audio_sample_rate, audio_buffer_size);
+    filter_map[Command::BW_100] = OSFilter::make(500.0, 600.0, 100, audio_sample_rate, audio_buffer_size);
 
     filter_map[Command::BW_6000] = OSFilter::make(300.0, 6300.0, 100, audio_sample_rate, audio_buffer_size);
     filter_map[Command::BW_PASS] = OSFilter::make(-10.0, 15000.0, 3000, audio_sample_rate, audio_buffer_size);

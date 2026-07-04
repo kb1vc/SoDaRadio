@@ -455,8 +455,6 @@ namespace SoDa {
       setAntenna(tx_ant, SoDa::TX);
       // write the TX gain now that tx_on is true
       usrp->set_tx_gain(tx_rf_gain);
-      std::cerr << SoDa::Format("USRPCtrl: setTXEna TX gain set to %0\n")
-        .addF(tx_rf_gain, 'f', 2);
     }
 
     if(!val) {

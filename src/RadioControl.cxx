@@ -389,10 +389,10 @@ namespace SoDa {
       // We offset the transmit frequency in CW mode down for CW_U and
       // up for CW_L
       if(tx_modulation == Command::CW_L) {
-	freq = freq + 500;
+	freq = freq - 0; // 500;
       }
       if(tx_modulation == Command::CW_U) {
-	freq = freq - 500;
+	freq = freq + 0; //500;
       }
 
       // ask the device controller to set the TX lo.  Normally this should

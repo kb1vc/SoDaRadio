@@ -38,7 +38,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // from the settings object. 
 void MainWindow::setupBandConfig()
 {
-  connect(ui->bandSel_cb, SIGNAL(currentTextChanged(const QString &)), 
+  connect(ui->bandSel_cb, SIGNAL(currentTextChanged(const QString &)),
 	  this, SLOT(changeBand(const QString &)));
 
   connect(ui->BCOK_btn, SIGNAL(clicked(bool)), 

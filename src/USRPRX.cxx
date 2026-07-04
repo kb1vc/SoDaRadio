@@ -124,10 +124,12 @@ namespace SoDa {
             unsigned int got = rx_bits->recv(&hw_cf[coll], left, md);
             if (got == 0) {
                 debugMsg(Format("USRPRX: recv got 0 -- md=[%0]\n").addS(md.to_pp_string()));
+                break;
             }
             coll += got;
             left -= got;
         }
+        if (left != 0) return false;
 
         // Decimate 4:1 to 625 kS/s
         hw_resampler->apply(hw_cf, rs_out);
@@ -169,10 +171,12 @@ namespace SoDa {
                 debugMsg("****************************************");
                 debugMsg(Format("RECV got error -- md = [%0]\n").addS(md.to_pp_string()));
                 debugMsg("****************************************");
+                break;
             }
             coll_so_far += got;
             left -= got;
         }
+        if (left != 0) return false;
 
         if (enable_spectrum_report && (if_stream->subscriberCount() > 0)) {
             auto if_buf = SoDa::CBuf::make(rx_buffer_size);
