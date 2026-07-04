@@ -37,7 +37,7 @@
 #include <memory>
 
 namespace SoDa {
-  
+
   BaseBandRX::BaseBandRX(ParamsPtr params,
 			 AudioIfcPtr _audio_ifc) : Thread("BaseBandRX")
   {
@@ -140,6 +140,7 @@ namespace SoDa {
 
     // default NBFM squelch is midlin
     nbfm_squelch_level = 1e-3; // this is really modest
+    nbfm_squelch_level = 0; // this is really modest    
     // hang time is 5 audio frames (about 1/4 sec)
     nbfm_squelch_hang_time = 5;
     // start with initial hang count of 0 (haven't broken squelch yet)
@@ -472,7 +473,8 @@ namespace SoDa {
 				    50. + 4.0 * log10(af_sidetone_gain)));
       break;
     case SoDa::Command::NBFM_SQUELCH:
-      nbfm_squelch_level = powf(10, 0.5 * cmd->dparms[0]) * ((float) audio_buffer_size);
+      // input val is [0..100].  0 => 1e-5 20 => 1e-4 .... 100 -> 1e-1
+      nbfm_squelch_level = powf(10, -5 + cmd->dparms[0] / 20.0);
       break; 
     default:
       break; 
