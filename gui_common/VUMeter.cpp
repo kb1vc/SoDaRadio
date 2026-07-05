@@ -51,7 +51,7 @@ VUMeter::VUMeter(QWidget* parent)
     , peak_hold_ticks(0)
 {
     setWindowTitle("VU Meter");
-    setFixedSize(300, 190);
+    setFixedSize(300, 180);
 
     connect(&timer, &QTimer::timeout, this, &VUMeter::onTimer);
     timer.start(100); // 10 Hz — no faster update needed for a needle meter
@@ -189,15 +189,7 @@ void VUMeter::paintEvent(QPaintEvent*) {
     QString txt = (display_db <= MIN_DB - 0.5f)
                   ? QString("< -60 dBFS")
                   : QString("%1 dBFS").arg((double)display_db, 6, 'f', 1);
-    p.drawText(QRectF(0, H - 38.0, W, 22.0), Qt::AlignCenter, txt);
-
-    // Smaller raw-level line so we can see the actual measured value
-    QFont sf = font();
-    sf.setPixelSize(10);
-    p.setFont(sf);
-    p.setPen(QColor(130, 130, 130));
-    p.drawText(QRectF(0, H - 17.0, W, 14.0), Qt::AlignCenter,
-               QString("raw %1 dB").arg((double)target_db, 6, 'f', 1));
+    p.drawText(QRectF(0, H - 25.0, W, 22.0), Qt::AlignCenter, txt);
 }
 
 } // namespace GUISoDa
