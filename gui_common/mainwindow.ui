@@ -1169,6 +1169,13 @@
               </spacer>
              </item>
              <item>
+              <widget class="QPushButton" name="help_btn">
+               <property name="text">
+                <string>Help</string>
+               </property>
+              </widget>
+             </item>
+             <item>
               <widget class="QPushButton" name="aboutSoDa_btn">
                <property name="text">
                 <string>About SoDaRadio</string>

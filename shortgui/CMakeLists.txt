@@ -95,6 +95,9 @@ INCLUDE_DIRECTORIES(SYSTEM
   ${PROJECT_SOURCE_DIR}/vendor)
 
 ADD_DEFINITIONS(${Qt6Widgets_DEFINITIONS})
+IF(Qt6WebEngineWidgets_FOUND)
+  ADD_DEFINITIONS(-DHAVE_QT6_WEBENGINE)
+ENDIF()
 
 QT6_WRAP_CPP(ShortSoDa_hdr_moc ${ShortSoDa_HDRS})
 QT6_WRAP_UI(ShortSoDa_form_moc ${ShortSoDa_UIS})
@@ -108,6 +111,7 @@ ADD_LIBRARY(ShortSoDa_Lib STATIC
 TARGET_LINK_LIBRARIES(ShortSoDa_Lib m ${RT_LIB}
   Qt6::Widgets Qt6::PrintSupport
   Qt6::Core Qt6::Gui Qt6::Network Qt6::Multimedia
+  $<$<BOOL:${Qt6WebEngineWidgets_FOUND}>:Qt6::WebEngineWidgets>
   Threads::Threads
   SoDaUtils::sodautils
   ${QWT_LIBRARIES})

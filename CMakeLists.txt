@@ -279,6 +279,10 @@ CONFIGURE_FILE (
 "${PROJECT_SOURCE_DIR}/version.h.in"
 "${PROJECT_BINARY_DIR}/version.h"
   )
+CONFIGURE_FILE (
+"${PROJECT_SOURCE_DIR}/help_path.h.in"
+"${PROJECT_BINARY_DIR}/help_path.h"
+  )
 INCLUDE_DIRECTORIES("${PROJECT_BINARY_DIR}")
 
 INSTALL(FILES ${PROJECT_BINARY_DIR}/version.h DESTINATION "include/SoDaRadio")
@@ -316,12 +320,35 @@ IF(Qt6Widgets_FOUND)
   FIND_PACKAGE(Qt6Network REQUIRED)
   FIND_PACKAGE(Qt6PrintSupport REQUIRED)
   FIND_PACKAGE(Qt6Multimedia REQUIRED)
+  FIND_PACKAGE(Qt6Help QUIET)
+  FIND_PACKAGE(Qt6WebEngineWidgets QUIET)
   FIND_PACKAGE(Qwt REQUIRED)
   IF(Qt6Widgets_VERSION VERSION_LESS 5.7.0)
     MESSAGE(FATAL_ERROR "Minimum supported Qt6 version is 5.7")
   ENDIF()
 ELSE()
   MESSAGE(FATAL_ERROR "The Qt6Widgets library is required to build SoDaRadio")
+ENDIF()
+
+IF(Qt6Help_FOUND)
+  MESSAGE(STATUS "Qt6Help found -- building in-app help browser")
+  FIND_PROGRAM(QHELPGENERATOR_EXECUTABLE
+    NAMES qhelpgenerator qhelpgenerator-qt6 qhelpgenerator6
+    HINTS "${Qt6_DIR}/../../../bin" "${Qt6Core_DIR}/../../../bin"
+    PATHS "/usr/lib64/qt6/libexec" "/usr/lib/qt6/libexec"
+          "/usr/libexec/qt6" "/opt/qt6/libexec")
+  IF(QHELPGENERATOR_EXECUTABLE)
+    MESSAGE(STATUS "qhelpgenerator: ${QHELPGENERATOR_EXECUTABLE}")
+    SET(DOXY_QHG_LOCATION "${QHELPGENERATOR_EXECUTABLE}")
+  ELSE()
+    MESSAGE(STATUS "qhelpgenerator not found -- .qch will not be compiled automatically")
+    SET(DOXY_QHG_LOCATION "")
+  ENDIF()
+  SET(DOXY_QCH_FILE "SoDaRadio.qch")
+ELSE()
+  MESSAGE(STATUS "Qt6Help not found -- help button will open web browser")
+  SET(DOXY_QHG_LOCATION "")
+  SET(DOXY_QCH_FILE "")
 ENDIF()
 
 #set(CMAKE_AUTOUIC ON)
@@ -400,6 +427,10 @@ IF(DOXYGEN_FOUND)
     )
 
   INSTALL(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION share/doc)
+  IF(Qt6Help_FOUND AND QHELPGENERATOR_EXECUTABLE)
+    INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/html/SoDaRadio.qch
+      DESTINATION share/doc/SoDaRadio)
+  ENDIF()
 ENDIF()
 
 # ---------------------------------------------------------------------------

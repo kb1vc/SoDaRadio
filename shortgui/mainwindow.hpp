@@ -119,6 +119,7 @@ public slots:
   void restoreConfig_dlg();
   
   void displayAppInfo(bool dummy);
+  void displayHelp(bool dummy);
 
   double getTXRXOffset() const { return tx_rx_offset; }
   bool getFullDuplex() const { return full_duplex; }

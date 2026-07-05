@@ -36,7 +36,20 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QMessageBox>
 #include <QtCoreVersion>
 #include <QtGlobal>
+#include <QCoreApplication>
+#include <QDialog>
+#include <QDir>
+#include <QFile>
+#include <QHBoxLayout>
+#include <QPushButton>
+#include <QTextBrowser>
+#include <QUrl>
+#include <QVBoxLayout>
+#ifdef HAVE_QT6_WEBENGINE
+#include <QWebEngineView>
+#endif
 
+#include "help_path.h"
 #include "soda_comboboxes.hpp"
 #include "RadioListener.hpp"
 #include "../common/GuiParams.hxx"
@@ -159,8 +172,11 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
 	  });
 
   
-  connect(ui->aboutSoDa_btn, SIGNAL(clicked(bool)), 
+  connect(ui->aboutSoDa_btn, SIGNAL(clicked(bool)),
 	  this, SLOT(displayAppInfo(bool)));
+
+  connect(ui->help_btn, SIGNAL(clicked(bool)),
+	  this, SLOT(displayHelp(bool)));
 
   qDebug() << QString("connected stuff");
   QString radio_name = QString::fromStdString(params.getRadioName());
@@ -238,6 +254,52 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT \
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE \
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. \
 </p>").arg(SoDaRadio_VERSION).arg(SoDaRadio_GIT_ID).arg(UHD_VERSION_ABI_STRING).arg(QTCORE_VERSION_STR));
+}
+
+void MainWindow::displayHelp(bool) {
+  QStringList candidates = {
+    QString(SODARADIO_HTML_BUILD_PATH) + "/index.html",
+    QDir::cleanPath(QCoreApplication::applicationDirPath() + "/../share/doc/html/index.html"),
+  };
+
+  QString indexPath;
+  for (const auto &c : candidates) {
+    if (QFile::exists(c)) { indexPath = c; break; }
+  }
+
+  if (indexPath.isEmpty()) {
+    QMessageBox::information(this, "SoDaRadio Help",
+      "Help documentation not found.\n\nRun 'make doc' from the build directory to generate it.");
+    return;
+  }
+
+  auto *dlg = new QDialog(this);
+  dlg->setWindowTitle("SoDaRadio Help");
+  dlg->resize(1000, 750);
+  auto *layout = new QVBoxLayout(dlg);
+
+#ifdef HAVE_QT6_WEBENGINE
+  auto *view = new QWebEngineView(dlg);
+  view->load(QUrl::fromLocalFile(indexPath));
+  layout->addWidget(view);
+#else
+  auto *browser = new QTextBrowser(dlg);
+  browser->setSource(QUrl::fromLocalFile(indexPath));
+  browser->setOpenExternalLinks(true);
+  auto *backBtn = new QPushButton("< Back", dlg);
+  auto *fwdBtn  = new QPushButton("Forward >", dlg);
+  connect(backBtn, &QPushButton::clicked, browser, &QTextBrowser::backward);
+  connect(fwdBtn,  &QPushButton::clicked, browser, &QTextBrowser::forward);
+  auto *btnRow = new QHBoxLayout();
+  btnRow->addWidget(backBtn);
+  btnRow->addWidget(fwdBtn);
+  btnRow->addStretch();
+  layout->addLayout(btnRow);
+  layout->addWidget(browser);
+#endif
+
+  dlg->setAttribute(Qt::WA_DeleteOnClose);
+  dlg->show();
 }
 
 void MainWindow::widgetSaveRestore(QObject * op, const QString & par, bool save)

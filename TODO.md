@@ -18,3 +18,7 @@ separate devices).
 7. Document the process for connecting wsjtx or fldigi
 
 8. Write a "new radio" howto.
+
+9. [done v12.3.1] Fix TX CW offset. 
+
+10. No sample format supported found for device... add something that prints the supported formats. 
