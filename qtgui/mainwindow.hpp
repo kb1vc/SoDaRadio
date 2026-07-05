@@ -42,6 +42,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "BandMap.hpp"
 #include "HamlibServer.hpp"
 #include "AudioListener.hpp"
+#include "VUMeter.hpp"
 
 namespace Ui {
   class MainWindow;
@@ -179,6 +180,8 @@ private:
   GUISoDa::AudioTXServer * audio_tx_server;
 
   GUISoDa::HamlibServer * hlib_server;
+
+  GUISoDa::VUMeter * vu_meter;
 
   // UI wide state -- this doesn't really fit anywhere else.
   void setTXRXOffset(double v) { tx_rx_offset = v; }

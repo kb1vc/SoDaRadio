@@ -257,8 +257,13 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
 	    audio_tx_server->changeDevice(dev);
 	  });
 
-  connect(audio_listener->getRX(), SIGNAL(bufferSlack(const QString &)), 
+  connect(audio_listener->getRX(), SIGNAL(bufferSlack(const QString &)),
 	  ui->slack_lab, SLOT(setText(const QString &)));
+
+  // VU meter: floating window, toggled by Alt+V (shortcut registered in reorganizeForShortSoDa)
+  vu_meter = new GUISoDa::VUMeter(this);
+  connect(audio_listener->getRX(), &GUISoDa::AudioRXListener::pendAudioBuffer,
+	  vu_meter, &GUISoDa::VUMeter::updateLevel);
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
   connect(ui->Record_chk, &QCheckBox::checkStateChanged,
@@ -1000,6 +1005,7 @@ void MainWindow::reorganizeForShortSoDa()
     if (tab_idx_editlog >= 0) ui->Display_tabs->setCurrentIndex(tab_idx_editlog);
   });
   mkAlt(Qt::Key_C, [this]() { showPanelChooser(); });
+  mkAlt(Qt::Key_V, [this]() { vu_meter->setVisible(!vu_meter->isVisible()); });
   mkAlt(Qt::Key_H, [this]() {
     QMessageBox::information(this, tr("Keyboard Shortcuts"),
       tr("<b>Alt+T</b> — Transmit panel<br>"
@@ -1008,6 +1014,7 @@ void MainWindow::reorganizeForShortSoDa()
          "<b>Alt+S</b> — Settings panel<br>"
          "<b>Alt+L</b> — Log panel<br>"
          "<b>Alt+C</b> — Panel chooser (also right-click)<br>"
+         "<b>Alt+V</b> — VU meter (toggle)<br>"
          "<b>Alt+H</b> — This help"));
   });
 }
@@ -1078,7 +1085,7 @@ bool MainWindow::eventFilter(QObject * obj, QEvent * event)
 {
   if (event->type() == QEvent::MouseButtonPress) {
     QMouseEvent * me = static_cast<QMouseEvent *>(event);
-    if (me->button() == Qt::RightButton) {
+    if (me->button() == Qt::MiddleButton) {
       showPanelChooser();
       return true;
     }

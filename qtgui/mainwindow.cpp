@@ -40,6 +40,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "soda_comboboxes.hpp"
 #include "RadioListener.hpp"
 #include "../common/GuiParams.hxx"
+#include "VUMeter.hpp"
+#include <QShortcut>
 
 #include "SoDaLogo_Big.xpm"
 
@@ -123,8 +125,15 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
 	    audio_tx_server->changeDevice(dev);
 	  });
 
-  connect(audio_listener->getRX(), SIGNAL(bufferSlack(const QString &)), 
+  connect(audio_listener->getRX(), SIGNAL(bufferSlack(const QString &)),
 	  ui->slack_lab, SLOT(setText(const QString &)));
+
+  // VU meter: small floating window, toggled by Alt+V
+  vu_meter = new GUISoDa::VUMeter(this);
+  connect(new QShortcut(QKeySequence(Qt::ALT | Qt::Key_V), this), &QShortcut::activated,
+	  [this]() { vu_meter->setVisible(!vu_meter->isVisible()); });
+  connect(audio_listener->getRX(), &GUISoDa::AudioRXListener::pendAudioBuffer,
+	  vu_meter, &GUISoDa::VUMeter::updateLevel);
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
   connect(ui->Record_chk, &QCheckBox::checkStateChanged,

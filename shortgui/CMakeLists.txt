@@ -42,6 +42,7 @@ SET(ShortSoDa_Lib_SRCS
   ../gui_common/AudioRecorder.cpp
   ../gui_common/Band.cpp
   ../gui_common/BandMap.cpp
+  ../gui_common/VUMeter.cpp
   )
 
 SET(ShortSoDa_HDRS
@@ -57,6 +58,7 @@ SET(ShortSoDa_HDRS
   ../gui_common/HamlibListener.hpp
   ../gui_common/AudioRXListener.hpp
   ../gui_common/AudioRecorder.hpp
+  ../gui_common/VUMeter.hpp
   )
 
 SET(ShortSoDa_NOMOC_HDRS
