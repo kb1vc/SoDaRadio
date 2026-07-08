@@ -244,41 +244,31 @@ MESSAGE("SoDaRadio_VERSION=[${SoDaRadio_VERSION}]")
 # entries that show up in 'ldd SoDaServer' arrive transitively through libuhd
 # or hamlib, not through us.
 
-FIND_PACKAGE(Git QUIET)
+# Capture git version now (needed for DOXY_PROJECT_VERSION etc.) and also
+# schedule a build-time refresh so a new commit made after configuration
+# still updates saved_git_version.txt and version.h on the next `make`.
+SET(SRC_DIR      "${CMAKE_SOURCE_DIR}")
+SET(BIN_DIR      "${CMAKE_BINARY_DIR}")
+SET(VERSION_H_IN "${CMAKE_SOURCE_DIR}/version.h.in")
+SET(SODA_VERSION "${SoDaRadio_VERSION}")
+INCLUDE("${CMAKE_SOURCE_DIR}/gen_version.cmake")
 
-IF((EXISTS "${CMAKE_SOURCE_DIR}/.git/") AND GIT_FOUND)
-  EXECUTE_PROCESS(
-    COMMAND git rev-parse --abbrev-ref HEAD
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    OUTPUT_VARIABLE GIT_BRANCH
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-  EXECUTE_PROCESS(
-    COMMAND git log -1 --format=%h
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    OUTPUT_VARIABLE GIT_COMMIT_HASH
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-  SET(SoDaRadio_GIT_ID "${GIT_BRANCH}:${GIT_COMMIT_HASH}")
-  FILE(WRITE ${CMAKE_BINARY_DIR}/saved_git_version.txt "${GIT_BRANCH}\n")
-  FILE(APPEND ${CMAKE_BINARY_DIR}/saved_git_version.txt "${GIT_COMMIT_HASH}\n")    
-elseIF(EXISTS ${CMAKE_BINARY_DIR}/saved_git_version.txt)
-  MESSAGE("Retrieving GIT version info from saved_git_version.txt")
-  FILE(STRINGS ${CMAKE_BINARY_DIR}/saved_git_version.txt git_version_strings)
-  LIST(GET git_version_strings 0 GIT_BRANCH)
-  LIST(GET git_version_strings 1 GIT_COMMIT_HASH)
-  SET(SoDaRadio_GIT_ID "${GIT_BRANCH}:${GIT_COMMIT_HASH}")
-else()
-  SET(SoDaRadio_GIT_ID "UNKNOWN")  
-ENDIF()
+ADD_CUSTOM_TARGET(sodaradio_version_gen ALL
+  BYPRODUCTS
+    ${CMAKE_BINARY_DIR}/saved_git_version.txt
+    ${CMAKE_BINARY_DIR}/version.h
+  COMMAND ${CMAKE_COMMAND}
+    -DSRC_DIR=${CMAKE_SOURCE_DIR}
+    -DBIN_DIR=${CMAKE_BINARY_DIR}
+    -DVERSION_H_IN=${CMAKE_SOURCE_DIR}/version.h.in
+    -DSODA_VERSION=${SoDaRadio_VERSION}
+    -P ${CMAKE_SOURCE_DIR}/gen_version.cmake
+  COMMENT "Refreshing git commit info into saved_git_version.txt / version.h"
+  VERBATIM
+)
 
 SET(DOXY_PROJECT_VERSION "${SoDaRadio_VERSION}-${SoDaRadio_GIT_ID}")
 SET(DOXY_EXCLUDE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/gui/Default.soda_cfg.h ${CMAKE_CURRENT_BINARY_DIR}/SoDaRadio_GUI.cxx")
-
-CONFIGURE_FILE (
-"${PROJECT_SOURCE_DIR}/version.h.in"
-"${PROJECT_BINARY_DIR}/version.h"
-  )
 CONFIGURE_FILE (
 "${PROJECT_SOURCE_DIR}/help_path.h.in"
 "${PROJECT_BINARY_DIR}/help_path.h"
@@ -411,6 +401,12 @@ ADD_SUBDIRECTORY(examples)
 ADD_SUBDIRECTORY(qtgui)
 
 ADD_SUBDIRECTORY(shortgui)
+
+# Force the two GUI libraries (which #include "version.h") to wait for the
+# build-time version refresh, so a new commit made after cmake configuration
+# is reflected in the built binaries.
+ADD_DEPENDENCIES(SoDaRadio_Lib sodaradio_version_gen)
+ADD_DEPENDENCIES(ShortSoDa_Lib sodaradio_version_gen)
 
 ADD_SUBDIRECTORY(TestCLI)
 
