@@ -804,7 +804,10 @@ void MainWindow::reorganizeForShortSoDa()
     cleanSpacer(ui->groupBox_4->layout());   // remove leftover spacer in Config
     ui->groupBox_5->layout()->removeWidget(ui->help_btn);
     ui->groupBox_5->layout()->removeWidget(ui->aboutSoDa_btn);
+    ui->groupBox_5->layout()->removeWidget(ui->openLog_btn);
+    ui->groupBox_5->layout()->removeWidget(ui->writeLogReport_btn);
     cleanSpacer(ui->groupBox_5->layout());   // remove leftover spacer in Log
+    ui->groupBox_5->hide();
   }
 
   // Col 2: QSO Settings stacked above Reference Oscillator.
@@ -818,13 +821,22 @@ void MainWindow::reorganizeForShortSoDa()
     l->addStretch(1);
   }
 
-  // Col 3: Log → Configuration → Record Directory → stretch → About SoDaRadio.
+  // Move the log report buttons to the bottom of the Edit Log tab.
+  if (auto * elLay = qobject_cast<QVBoxLayout*>(ui->EditLog->layout())) {
+    QHBoxLayout * logBtnRow = new QHBoxLayout();
+    logBtnRow->setContentsMargins(4, 2, 4, 4);
+    logBtnRow->addWidget(ui->openLog_btn);
+    logBtnRow->addWidget(ui->writeLogReport_btn);
+    logBtnRow->addStretch(1);
+    elLay->addLayout(logBtnRow);
+  }
+
+  // Col 3: Configuration → Record Directory → stretch → Help → About SoDaRadio.
   QWidget * col3 = new QWidget(ui->Settings);
   {
     QVBoxLayout * l = new QVBoxLayout(col3);
     l->setContentsMargins(0, 0, 0, 0);
     l->setSpacing(4);
-    l->addWidget(ui->groupBox_5);                    // Log
     l->addWidget(ui->groupBox_4);                    // Configuration
     l->addWidget(ui->recDir_btn,    0, Qt::AlignLeft);
     l->addStretch(1);
@@ -1073,7 +1085,7 @@ void MainWindow::reorganizeForShortSoDa()
          "<b>Alt+P</b> — Periodogram panel<br>"
          "<b>Alt+S</b> — Settings panel<br>"
          "<b>Alt+L</b> — Log panel<br>"
-         "<b>Alt+C</b> — Panel chooser (also right-click)<br>"
+         "<b>Alt+C</b> — Panel chooser (also middle-click)<br>"
          "<b>Alt+V</b> — VU meter (toggle)<br>"
          "<b>Alt+H</b> — This help"));
   });
