@@ -1,0 +1,4 @@
+#ifndef HELP_PATH_H
+#define HELP_PATH_H
+#define SODARADIO_HTML_BUILD_PATH "@CMAKE_CURRENT_BINARY_DIR@/html"
+#endif
