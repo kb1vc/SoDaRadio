@@ -56,9 +56,13 @@ include(GNUInstallDirs)
 # (optionally) built as part of the SoDaRadio build.
 # 12.3.0 - package support, refactoring of common gui components
 # 12.3.1 - CW carrier offset, fix to initialization bug in RadioControl
+# 12.3.2 - Moved buttons/controls to make them more convenient and accessible
+# without adding too much visual noise to panels. Working on in-app
+# documentation. Added hook to CMake that triggers version update with
+# each new commit.
 SET(SoDaRadio_VERSION_MAJOR 12)
 SET(SoDaRadio_VERSION_MINOR 3)
-SET(SoDaRadio_VERSION_PATCH 1)
+SET(SoDaRadio_VERSION_PATCH 2)
 SET(SoDaRadio_VERSION "${SoDaRadio_VERSION_MAJOR}.${SoDaRadio_VERSION_MINOR}.${SoDaRadio_VERSION_PATCH}")
 
 set(SoDaRadio_PACKAGE_DESCRIPTION 
