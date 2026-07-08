@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017 Matthew H. Reilly (kb1vc)
+Copyright (c) 2017, 2026 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QXmlStreamReader>
 #include <QDebug>
 #include <QDateTime>
+
+#include <SoDa/Format.hxx>
 
 GUISoDa::LogTable::LogTable(QWidget *parent) :
   QTableWidget(parent)
@@ -209,8 +211,10 @@ void GUISoDa::LogTable::logContact(const QString & from_call,
   setField(next_used_row, "To Grid", to_grid);
   setField(next_used_row, "Mode", mode);
   setField(next_used_row, "Comment", comment);
-  setField(next_used_row, "RX Freq", rx_freq);
-  setField(next_used_row, "TX Freq", tx_freq);
+  auto rxf_str = SoDa::Format("%0").addI((int) rx_freq, 9, ',').str();
+  auto txf_str = SoDa::Format("%0").addI((int) tx_freq, 9, ',').str();  
+  setField(next_used_row, "RX Freq", QString::fromStdString(rxf_str));
+  setField(next_used_row, "TX Freq", QString::fromStdString(txf_str));
   // scroll so the edit log window shows the last entry
   scrollToItem(item(next_used_row, 1));
 

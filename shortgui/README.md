@@ -122,13 +122,12 @@ reduce the floor setting until you see something useful.
 The Periodogram Panel presents a plot of power-spectral-density across the band of interest. 
 
 The "Center RX Freq" "Average Window" and "Span" controls work just as they do
-in the waterfall display. The "RefLevel (dB) sets the relative signal strength
+in the waterfall display. The "RefLevel (dB)" sets the relative signal strength
 at the top of the plot. At times, 
 
 As with the waterfall plot, the periodogram area is hot. Poke with MB1 to tune. Poke with MB3 to tune and shift the frequency axis. 
 
-The Periodogram (Spectrum Power) Panel \image html
-periodogram_note.png width=700px
+The Periodogram (Spectrum Power) Panel \image html periodogram_note.png width=700px
 
 \subsubsection  transmitPanel Transmit
 
@@ -148,7 +147,11 @@ some might prefer a simpler presentation.
 An (audio) signal strength meter \image html
 vumeter_note.png width=700px 
 
-The Vu meter doesn't have NIST traceable accuracy, but it might help. Hit <alt>V to bring it up and <alt>V to make it go away. The Vu meter is the only "pop-up" window in SoDaRadio. I couldn't figure out how to integrate it into the major views without making other things less useful. 
+The Vu meter doesn't have NIST traceable accuracy, but it might
+help. Hit `<ALT>V` to bring it up and `<ALT>V` to make it go away. The
+Vu meter is the only "pop-up" window in SoDaRadio. I couldn't figure
+out how to integrate it into the major views without making other
+things less useful.
 
 \section radioSettings Settings
 

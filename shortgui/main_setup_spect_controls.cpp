@@ -32,6 +32,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "mainwindow.hpp"
 #include "ui_mainwindow.h"
+#include <QCheckBox>
+#include <QFontMetrics>
+#include <QGridLayout>
 #include <QLabel>
 #include <QBoxLayout>
 #include <QSignalBlocker>
@@ -92,25 +95,118 @@ void MainWindow::setupSpectControls()
 
     // Inject into control columns —————————————————————————————————————————————
 
+    // Mode + AF Filter mirror comboboxes.  Share the master's model so items
+    // added later (via radio_listener signals wired in main_setup_top.cpp)
+    // show up in the mirrors automatically.
+    QComboBox * wf_mode_cb = new QComboBox(ui->Waterfall);
+    wf_mode_cb->setObjectName("wf_mode_cb");
+    wf_mode_cb->setModel(ui->Mode_cb->model());
+    wf_mode_cb->setCurrentIndex(ui->Mode_cb->currentIndex());
+    QComboBox * sp_mode_cb = new QComboBox(ui->Periodogram);
+    sp_mode_cb->setObjectName("sp_mode_cb");
+    sp_mode_cb->setModel(ui->Mode_cb->model());
+    sp_mode_cb->setCurrentIndex(ui->Mode_cb->currentIndex());
+    QComboBox * wf_afbw_cb = new QComboBox(ui->Waterfall);
+    wf_afbw_cb->setObjectName("wf_afbw_cb");
+    wf_afbw_cb->setModel(ui->AFBw_cb->model());
+    wf_afbw_cb->setCurrentIndex(ui->AFBw_cb->currentIndex());
+    QComboBox * sp_afbw_cb = new QComboBox(ui->Periodogram);
+    sp_afbw_cb->setObjectName("sp_afbw_cb");
+    sp_afbw_cb->setModel(ui->AFBw_cb->model());
+    sp_afbw_cb->setCurrentIndex(ui->AFBw_cb->currentIndex());
+
     struct PanelEntry {
         QWidget   * tab;
         QComboBox * band;
-        QSlider   * af;
-        QSlider   * rf;
+        QComboBox * mode;
+        QComboBox * afbw;
     };
     for (const PanelEntry & e : {
-            PanelEntry{ui->Waterfall,   wf_band_cb, wf_af_gain_sl, wf_rf_gain_sl},
-            PanelEntry{ui->Periodogram, sp_band_cb, sp_af_gain_sl, sp_rf_gain_sl}}) {
+            PanelEntry{ui->Waterfall,   wf_band_cb, wf_mode_cb, wf_afbw_cb},
+            PanelEntry{ui->Periodogram, sp_band_cb, sp_mode_cb, sp_afbw_cb}}) {
         QBoxLayout * col = spectCtrlCol(e.tab);
         if (!col) continue;
-        // Insert before the trailing stretch spacer.
+        // Insert before the trailing stretch spacer.  A leading stretch pushes
+        // Band/Mode/AF Filter away from the Span combobox above.
         int ins = col->count() - 1;
+        col->insertStretch(ins++, 1);
         col->insertWidget(ins++, new QLabel(tr("Band"), e.tab));
         col->insertWidget(ins++, e.band);
-        col->insertWidget(ins++, new QLabel(tr("AF Gain"), e.tab));
-        col->insertWidget(ins++, e.af);
-        col->insertWidget(ins++, new QLabel(tr("RF Gain (dB)"), e.tab));
-        col->insertWidget(ins++, e.rf);
+        col->insertWidget(ins++, new QLabel(tr("Mode"), e.tab));
+        col->insertWidget(ins++, e.mode);
+        col->insertWidget(ins++, new QLabel(tr("AF Filter"), e.tab));
+        col->insertWidget(ins++, e.afbw);
+    }
+
+    // Bottom strip on each panel: AF Gain slider, RF Gain slider, Record AF,
+    // Record RF.  Placed in a QGridLayout that shares columns with the plot
+    // area so the strip's left edge lines up with the plot's left edge.
+    struct StripEntry {
+        QWidget    * tab;
+        QSlider    * af;
+        QSlider    * rf;
+        QCheckBox ** rec_af_out;
+        QCheckBox ** rec_rf_out;
+    };
+    QCheckBox * wf_rec_af = nullptr, * wf_rec_rf = nullptr;
+    QCheckBox * sp_rec_af = nullptr, * sp_rec_rf = nullptr;
+    for (const StripEntry & e : {
+            StripEntry{ui->Waterfall,   wf_af_gain_sl, wf_rf_gain_sl, &wf_rec_af, &wf_rec_rf},
+            StripEntry{ui->Periodogram, sp_af_gain_sl, sp_rf_gain_sl, &sp_rec_af, &sp_rec_rf}}) {
+        auto * tabLay = qobject_cast<QVBoxLayout*>(e.tab->layout());
+        if (!tabLay) continue;
+
+        // Extract [leftCol | plot] from the existing HBox so we can place them
+        // in a grid that has a second row for the strip.
+        QLayoutItem * hlayItem = tabLay->takeAt(0);
+        if (!hlayItem) continue;
+        auto * hlay = qobject_cast<QHBoxLayout*>(hlayItem->layout());
+        if (!hlay) { tabLay->insertItem(0, hlayItem); continue; }
+        QLayoutItem * leftItem = hlay->takeAt(0);
+        QLayoutItem * plotItem = hlay->takeAt(0);
+        if (!leftItem || !plotItem) {
+            if (leftItem) hlay->addItem(leftItem);
+            if (plotItem) hlay->addItem(plotItem);
+            tabLay->insertItem(0, hlayItem);
+            continue;
+        }
+        delete hlayItem;   // deletes the now-empty hlay
+
+        auto * rec_af = new QCheckBox(tr("Record AF"), e.tab);
+        rec_af->setChecked(ui->Record_chk->isChecked());
+        auto * rec_rf = new QCheckBox(tr("Record RF"), e.tab);
+        rec_rf->setChecked(ui->RecordRF_chk->isChecked());
+        *e.rec_af_out = rec_af;
+        *e.rec_rf_out = rec_rf;
+
+        // Slider width: 1.5× the width of the "RF Gain (dB)" label text.
+        QFontMetrics fm(e.tab->font());
+        int slW = (fm.horizontalAdvance(tr("RF Gain (dB)")) * 3) / 2;
+        e.af->setMaximumWidth(slW);
+        e.rf->setMaximumWidth(slW);
+
+        auto * strip = new QHBoxLayout();
+        strip->setContentsMargins(4, 2, 4, 2);
+        strip->addWidget(new QLabel(tr("AF Gain"), e.tab));
+        strip->addWidget(e.af);
+        strip->addWidget(new QLabel(tr("RF Gain (dB)"), e.tab));
+        strip->addWidget(e.rf);
+        strip->addStretch(1);
+        strip->addWidget(rec_af);
+        strip->addWidget(rec_rf);
+
+        auto * grid = new QGridLayout();
+        grid->setContentsMargins(0, 0, 0, 0);
+        grid->setHorizontalSpacing(2);
+        grid->setVerticalSpacing(2);
+        grid->addItem(leftItem, 0, 0);
+        grid->addItem(plotItem, 0, 1);
+        grid->addLayout(strip,  1, 1);
+        grid->setColumnStretch(0, 1);
+        grid->setColumnStretch(1, 25);
+        grid->setRowStretch(0, 1);
+        grid->setRowStretch(1, 0);
+        tabLay->addLayout(grid);
     }
 
     // Band selector connections ————————————————————————————————————————————————
@@ -176,5 +272,53 @@ void MainWindow::setupSpectControls()
     connect(ui->RFGain_slide, &QSlider::valueChanged, this, [this](int v) {
         if (wf_rf_gain_sl) { QSignalBlocker bwf(wf_rf_gain_sl); wf_rf_gain_sl->setValue(v); }
         if (sp_rf_gain_sl) { QSignalBlocker bsp(sp_rf_gain_sl); sp_rf_gain_sl->setValue(v); }
+    });
+
+    // Record AF / Record RF connections —————————————————————————————————————
+    // Mirror → master: setChecked on master fires its existing signal that
+    // drives the recorder AND the master→mirrors sync below.
+    connect(wf_rec_af, &QCheckBox::toggled, this,
+            [this](bool v) { ui->Record_chk->setChecked(v); });
+    connect(sp_rec_af, &QCheckBox::toggled, this,
+            [this](bool v) { ui->Record_chk->setChecked(v); });
+    connect(wf_rec_rf, &QCheckBox::toggled, this,
+            [this](bool v) { ui->RecordRF_chk->setChecked(v); });
+    connect(sp_rec_rf, &QCheckBox::toggled, this,
+            [this](bool v) { ui->RecordRF_chk->setChecked(v); });
+
+    // Master → mirrors.  Blockers keep the mirror→master path from re-firing.
+    connect(ui->Record_chk, &QCheckBox::toggled, this,
+            [wf_rec_af, sp_rec_af](bool v) {
+        if (wf_rec_af) { QSignalBlocker bwf(wf_rec_af); wf_rec_af->setChecked(v); }
+        if (sp_rec_af) { QSignalBlocker bsp(sp_rec_af); sp_rec_af->setChecked(v); }
+    });
+    connect(ui->RecordRF_chk, &QCheckBox::toggled, this,
+            [wf_rec_rf, sp_rec_rf](bool v) {
+        if (wf_rec_rf) { QSignalBlocker bwf(wf_rec_rf); wf_rec_rf->setChecked(v); }
+        if (sp_rec_rf) { QSignalBlocker bsp(sp_rec_rf); sp_rec_rf->setChecked(v); }
+    });
+
+    // Mode / AF Filter connections —————————————————————————————————————————
+    // Mirror → master: setCurrentText fires master's normal signals, so the
+    // radio-side slot (connected in main_setup_top.cpp) runs.
+    connect(wf_mode_cb, &QComboBox::currentTextChanged, this,
+            [this](const QString & t) { ui->Mode_cb->setCurrentText(t); });
+    connect(sp_mode_cb, &QComboBox::currentTextChanged, this,
+            [this](const QString & t) { ui->Mode_cb->setCurrentText(t); });
+    connect(wf_afbw_cb, &QComboBox::currentTextChanged, this,
+            [this](const QString & t) { ui->AFBw_cb->setCurrentText(t); });
+    connect(sp_afbw_cb, &QComboBox::currentTextChanged, this,
+            [this](const QString & t) { ui->AFBw_cb->setCurrentText(t); });
+
+    // Master → mirrors (blocked to break the loop).
+    connect(ui->Mode_cb, &QComboBox::currentTextChanged, this,
+            [wf_mode_cb, sp_mode_cb](const QString & t) {
+        if (wf_mode_cb) { QSignalBlocker bwf(wf_mode_cb); wf_mode_cb->setCurrentText(t); }
+        if (sp_mode_cb) { QSignalBlocker bsp(sp_mode_cb); sp_mode_cb->setCurrentText(t); }
+    });
+    connect(ui->AFBw_cb, &QComboBox::currentTextChanged, this,
+            [wf_afbw_cb, sp_afbw_cb](const QString & t) {
+        if (wf_afbw_cb) { QSignalBlocker bwf(wf_afbw_cb); wf_afbw_cb->setCurrentText(t); }
+        if (sp_afbw_cb) { QSignalBlocker bsp(sp_afbw_cb); sp_afbw_cb->setCurrentText(t); }
     });
 }

@@ -40,6 +40,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QGroupBox>
+#include <QHeaderView>
+#include <QFontMetrics>
+#include <QTableView>
 #include <QLabel>
 #include <QMenu>
 #include <QActionGroup>
@@ -747,8 +750,57 @@ void MainWindow::reorganizeForShortSoDa()
   QWidget * transmitTab = new QWidget(ui->Display_tabs);
   QVBoxLayout * txLayout = new QVBoxLayout(transmitTab);
 
-  // CW text editor box (reparented out of the old toolbar layout).
+  // CW text editor above; a mirror view of the log below.
   txLayout->addWidget(ui->CWTXBox, 1);
+
+  // Read-only mirror of the log table.  Shares the same QAbstractItemModel
+  // as ui->LogView so it updates automatically as contacts are logged or
+  // edited on the Edit Log tab.
+  QTableView * tx_log_view = new QTableView(transmitTab);
+  tx_log_view->setModel(ui->LogView->model());
+  tx_log_view->setEditTriggers(QAbstractItemView::NoEditTriggers);
+  tx_log_view->setSelectionMode(QAbstractItemView::NoSelection);
+  tx_log_view->setFocusPolicy(Qt::NoFocus);
+  tx_log_view->verticalHeader()->hide();
+  tx_log_view->horizontalHeader()->setStretchLastSection(true);
+  // Fix the view to exactly 5 rows + header + frame.
+  {
+    int rowH  = tx_log_view->verticalHeader()->defaultSectionSize();
+    int hdrH  = tx_log_view->horizontalHeader()->sizeHint().height();
+    int frame = 2 * tx_log_view->frameWidth();
+    tx_log_view->setFixedHeight(rowH * 5 + hdrH + frame);
+  }
+  // LogTable::logContact pre-allocates rows in chunks of 20 (setRowCount),
+  // so scrollToBottom() would scroll to an empty pre-allocated row.  Track
+  // the largest row that has actually had a cell written and scroll to it.
+  //   fewer than 5 filled → scrollToTop (rows fill in from the top)
+  //   5+ filled           → scrollTo(last, PositionAtBottom) so the newest
+  //                         5 fill the viewport.
+  auto max_filled = std::make_shared<int>(-1);
+  auto updateScroll = [tx_log_view, max_filled]() {
+    if (*max_filled < 4) {
+      tx_log_view->scrollToTop();
+    } else {
+      QModelIndex idx = tx_log_view->model()->index(*max_filled, 0);
+      tx_log_view->scrollTo(idx, QAbstractItemView::PositionAtBottom);
+    }
+  };
+  connect(ui->LogView->model(), &QAbstractItemModel::dataChanged,
+          tx_log_view,
+          [max_filled, updateScroll](const QModelIndex &,
+                                     const QModelIndex & br,
+                                     const QList<int> &) {
+    if (br.row() > *max_filled) *max_filled = br.row();
+    updateScroll();
+  });
+  connect(ui->LogView->model(), &QAbstractItemModel::modelReset,
+          tx_log_view,
+          [max_filled, updateScroll]() {
+    *max_filled = -1;
+    updateScroll();
+  });
+  updateScroll();
+  txLayout->addWidget(tx_log_view);
 
   // CW macro buttons split across two rows of touch-friendly buttons.
   QHBoxLayout * cwRow1 = new QHBoxLayout();
@@ -766,22 +818,70 @@ void MainWindow::reorganizeForShortSoDa()
   cwRow2->addWidget(ui->Carrier_btn);
   cwRow2->addWidget(ui->ClrBuff_btn);
   cwRow2->addWidget(ui->RptCount_lab);
+  ui->RptCount_spin->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
   cwRow2->addWidget(ui->RptCount_spin);
+  cwRow2->addStretch(1);
   txLayout->addLayout(cwRow2);
+
+  // Ctrl+key macro shortcuts, active only when a widget on the Transmit tab
+  // has focus.  The event filter above auto-focuses CWTXBox on this tab, so
+  // these fire whenever the tab is active.  Labels show the binding.
+  ui->Exchange_btn->setText(tr("Exchange (^E)"));
+  ui->MyInfo_btn->setText(tr("My Info (^I)"));
+  ui->MyCall_btn->setText(tr("My Call (^K)"));
+  ui->MyGrid_btn->setText(tr("My Grid (^G)"));
+  ui->CWBK_btn->setText(tr("BK (^B)"));
+  ui->CWQSL_btn->setText(tr("QSL (^R)"));
+  // Ctrl+E is intercepted in eventFilter() instead — QLineEdit accepts its
+  // ShortcutOverride, so a QShortcut for Ctrl+E would never fire here.
+  struct TxShortcut { Qt::Key key; QPushButton * btn; };
+  for (const TxShortcut & s : {
+        TxShortcut{Qt::Key_I, ui->MyInfo_btn},
+        TxShortcut{Qt::Key_K, ui->MyCall_btn},
+        TxShortcut{Qt::Key_G, ui->MyGrid_btn},
+        TxShortcut{Qt::Key_B, ui->CWBK_btn},
+        TxShortcut{Qt::Key_R, ui->CWQSL_btn}}) {
+    auto * sc = new QShortcut(QKeyCombination(Qt::ControlModifier, s.key), transmitTab);
+    sc->setContext(Qt::WidgetWithChildrenShortcut);
+    connect(sc, &QShortcut::activated, s.btn, &QPushButton::click);
+  }
 
   // --- Inject the radio-controls strip at the top of the Settings tab. ---
   // TXRXLock_chk lives in the freq bar, not here.
   QGroupBox * radioCtl = new QGroupBox(tr("Radio Controls"), ui->Settings);
   QHBoxLayout * rcLay = new QHBoxLayout(radioCtl);
-  rcLay->addWidget(ui->Mode_box);
-  rcLay->addWidget(ui->AFBw_box);
-  rcLay->addWidget(ui->AFG_box);
-  rcLay->addWidget(ui->RFG_box);
-  rcLay->addWidget(ui->Record_chk);
-  rcLay->addWidget(ui->RecordRF_chk);
-  rcLay->addWidget(ui->groupBox);     // "Band Select" group
+  // Mode_box / AFBw_box / AFG_box / RFG_box / groupBox (Band Select) all live
+  // on the Waterfall / Periodogram panels now (see setupSpectControls());
+  // hide the masters so they don't render on the Settings tab.
+  ui->Mode_box->hide();
+  ui->AFBw_box->hide();
+  ui->AFG_box->hide();
+  ui->RFG_box->hide();
+  ui->groupBox->hide();               // "Band Select"
+  // Record_chk / RecordRF_chk are relocated to the Waterfall/Periodogram
+  // bottom strip (see setupSpectControls()); hide the masters here.
+  ui->Record_chk->hide();
+  ui->RecordRF_chk->hide();
   rcLay->addWidget(ui->groupBox_16);  // "RX Ant." group
   rcLay->addWidget(ui->groupBox_17);  // "TX Ant." group
+  rcLay->addStretch(1);               // push antennas to the left
+  // Cap the RX/TX antenna selectors: at least 1.5× the "TX Ant." title width,
+  // and expand to fit the widest entry.  Keep the wrapping group boxes from
+  // stretching horizontally in the Radio Controls strip.
+  {
+    QFontMetrics fm(ui->TXAnt_sel->font());
+    int minW = fm.horizontalAdvance(tr("TX Ant.")) * 3 / 2;
+    for (QComboBox * cb : { ui->RXAnt_sel, ui->TXAnt_sel }) {
+      cb->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+      cb->setMinimumWidth(minW);
+      cb->setSizePolicy(QSizePolicy::Preferred, cb->sizePolicy().verticalPolicy());
+    }
+    for (QGroupBox * gb : { ui->groupBox_16, ui->groupBox_17 }) {
+      QSizePolicy sp = gb->sizePolicy();
+      sp.setHorizontalPolicy(QSizePolicy::Fixed);
+      gb->setSizePolicy(sp);
+    }
+  }
 
   // --- Restructure the Settings panel body. --------------------------------
   // Delete the old layout tree.  All QGroupBox widgets survive (parented to
@@ -801,7 +901,11 @@ void MainWindow::reorganizeForShortSoDa()
       }
     };
     ui->groupBox_4->layout()->removeWidget(ui->recDir_btn);
+    ui->groupBox_4->layout()->removeWidget(ui->openConfig_btn);
+    ui->groupBox_4->layout()->removeWidget(ui->saveConfig_btn);
+    ui->groupBox_4->layout()->removeWidget(ui->saveConfigAs_btn);
     cleanSpacer(ui->groupBox_4->layout());   // remove leftover spacer in Config
+    ui->groupBox_4->hide();
     ui->groupBox_5->layout()->removeWidget(ui->help_btn);
     ui->groupBox_5->layout()->removeWidget(ui->aboutSoDa_btn);
     ui->groupBox_5->layout()->removeWidget(ui->openLog_btn);
@@ -831,17 +935,19 @@ void MainWindow::reorganizeForShortSoDa()
     elLay->addLayout(logBtnRow);
   }
 
-  // Col 3: Configuration → Record Directory → stretch → Help → About SoDaRadio.
+  // Col 3: Configuration buttons + Record Directory.  Buttons live directly
+  // in the column layout so their left edges align (no QGroupBox border/pad).
   QWidget * col3 = new QWidget(ui->Settings);
   {
     QVBoxLayout * l = new QVBoxLayout(col3);
     l->setContentsMargins(0, 0, 0, 0);
     l->setSpacing(4);
-    l->addWidget(ui->groupBox_4);                    // Configuration
-    l->addWidget(ui->recDir_btn,    0, Qt::AlignLeft);
+    l->addWidget(new QLabel(tr("Configuration"), col3), 0, Qt::AlignLeft);
+    l->addWidget(ui->openConfig_btn,   0, Qt::AlignLeft);
+    l->addWidget(ui->saveConfig_btn,   0, Qt::AlignLeft);
+    l->addWidget(ui->saveConfigAs_btn, 0, Qt::AlignLeft);
+    l->addWidget(ui->recDir_btn,       0, Qt::AlignLeft);
     l->addStretch(1);
-    l->addWidget(ui->help_btn,      0, Qt::AlignLeft);
-    l->addWidget(ui->aboutSoDa_btn, 0, Qt::AlignLeft);
   }
 
   // Flush all QPushButtons in VBoxLayouts under Settings to the left so they
@@ -863,17 +969,52 @@ void MainWindow::reorganizeForShortSoDa()
   };
   leftAlignBtns(ui->Settings);
 
+  // Pull SquelchBox out of AudioGroupBox so it can sit on the far left of
+  // the settings row.
+  if (ui->SquelchBox && ui->AudioGroupBox && ui->AudioGroupBox->layout()) {
+    ui->AudioGroupBox->layout()->removeWidget(ui->SquelchBox);
+    ui->SquelchBox->setParent(ui->Settings);
+  }
+  // SquelchBox: don't let it stretch vertically to match tall neighboring
+  // columns; otherwise its single-item QVBoxLayout centers the slider in the
+  // excess height, opening a gap under the title.  Match Sidetone_box's
+  // structure by converting the internal layout to a QHBoxLayout too.
+  if (ui->SquelchBox && ui->SquelchBox->layout()) {
+    QLayout * oldLay = ui->SquelchBox->layout();
+    QLayoutItem * sliderItem = oldLay->takeAt(0);
+    delete oldLay;
+    QHBoxLayout * hlay = new QHBoxLayout(ui->SquelchBox);
+    if (sliderItem) hlay->addItem(sliderItem);
+  }
+
   // Build the new Settings tab layout.
   QVBoxLayout * newSettingsLay = new QVBoxLayout(ui->Settings);
   newSettingsLay->addWidget(radioCtl);
   QHBoxLayout * settingsRow = new QHBoxLayout();
   settingsRow->setSpacing(8);
+  // Col 0: Squelch — wrap in a VBox with a bottom stretch so the group box
+  // doesn't get stretched vertically to match taller neighboring columns.
+  QWidget * col0 = new QWidget(ui->Settings);
+  {
+    QVBoxLayout * l = new QVBoxLayout(col0);
+    l->setContentsMargins(0, 0, 0, 0);
+    l->addWidget(ui->SquelchBox);
+    l->addStretch(1);
+  }
+  settingsRow->addWidget(col0);
   settingsRow->addWidget(ui->groupBox_3);    // Col 1: TX Settings
   settingsRow->addWidget(col2);              // Col 2: QSO Settings + Ref Osc
-  settingsRow->addWidget(col3);              // Col 3: Log + Config + RecDir + About
-  settingsRow->addWidget(ui->AudioGroupBox); // Col 4: Audio + Squelch
+  settingsRow->addWidget(col3);              // Col 3: Config + RecDir
+  settingsRow->addWidget(ui->AudioGroupBox); // Col 4: Audio
   settingsRow->addStretch(1);
   newSettingsLay->addLayout(settingsRow, 1);
+
+  // Bottom-right footer row: Help + About.
+  QHBoxLayout * settingsFooter = new QHBoxLayout();
+  settingsFooter->addStretch(1);
+  settingsFooter->addWidget(ui->help_btn);
+  settingsFooter->addWidget(ui->aboutSoDa_btn);
+  newSettingsLay->addLayout(settingsFooter);
 
   // --- Build the shared QSO-info header row. ------------------------------
   qso_info_bar = new QWidget(ui->centralWidget);
@@ -923,6 +1064,7 @@ void MainWindow::reorganizeForShortSoDa()
   freqLay->addWidget(ui->TXFreq_lab, 3);
 
   ui->LogContact_btn->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+  ui->LogContact_btn->setText(tr("Log Contact (^L)"));
   freqLay->addWidget(ui->LogContact_btn);
 
   freqLay->addWidget(ui->PTT_btn);
@@ -973,38 +1115,32 @@ void MainWindow::reorganizeForShortSoDa()
   ui->Display_tabs->setCurrentIndex(tab_idx_waterfall);
   ui->Display_tabs->tabBar()->hide();
 
-  // Move the orphaned GPS/lat/lon block onto the Status tab so the data
-  // stays visible to the operator.
-  if (ui->Status && ui->Status->layout()) {
-    QHBoxLayout * gpsRow = new QHBoxLayout();
-    gpsRow->addWidget(ui->GPSg_lab);
-    gpsRow->addWidget(ui->GRID_lab);
-    gpsRow->addWidget(ui->GPSlat_lab);
-    gpsRow->addWidget(ui->LAT_lab);
-    gpsRow->addWidget(ui->GPSlon_lab);
-    gpsRow->addWidget(ui->LON_lab);
-    gpsRow->addWidget(ui->buflab);
-    gpsRow->addWidget(ui->slack_lab);
-    gpsRow->addWidget(ui->label_22);     // "Comment:"
-    gpsRow->addWidget(ui->LogComment_txt);
-    gpsRow->addStretch(1);
-    static_cast<QBoxLayout*>(ui->Status->layout())->addLayout(gpsRow);
+  // Grid, Lat, Lon, Bearing, and Comment removed from the Status panel per
+  // ShortSoDa spec.  Hide the orphaned label widgets so they don't float in
+  // the central widget.
+  for (QWidget * w : {
+        (QWidget*)ui->GPSg_lab, (QWidget*)ui->GRID_lab,
+        (QWidget*)ui->GPSlat_lab, (QWidget*)ui->LAT_lab,
+        (QWidget*)ui->GPSlon_lab, (QWidget*)ui->LON_lab,
+        (QWidget*)ui->RevBearing_lab,
+        (QWidget*)ui->label_22, (QWidget*)ui->LogComment_txt }) {
+    if (w) w->hide();
   }
 
-  // RevBearing isn't on the spec'd top line; tuck it under Status too.
-  if (ui->Status && ui->Status->layout() && ui->RevBearing_lab) {
-    QHBoxLayout * rbRow = new QHBoxLayout();
-    QLabel * rbLbl = new QLabel(tr("Rev. Bearing (T):"), ui->Status);
-    rbRow->addWidget(rbLbl);
-    rbRow->addWidget(ui->RevBearing_lab);
-    rbRow->addStretch(1);
-    static_cast<QBoxLayout*>(ui->Status->layout())->addLayout(rbRow);
+  // Keep buffer/slack indicators on the Status tab.
+  if (ui->Status && ui->Status->layout()) {
+    QHBoxLayout * statusRow = new QHBoxLayout();
+    statusRow->addWidget(ui->buflab);
+    statusRow->addWidget(ui->slack_lab);
+    statusRow->addStretch(1);
+    static_cast<QBoxLayout*>(ui->Status->layout())->addLayout(statusRow);
   }
 
   // PTT button: MinimumExpanding from the .ui → Fixed so it doesn't fill the
   // row; keep a generous minimum width for touchscreen tapping.
   ui->PTT_btn->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
   ui->PTT_btn->setMinimumWidth(96);
+  ui->PTT_btn->setText(tr("PTT (^T)"));
 
   // Hide widgets that were containers in the old toolbar layout and are
   // now empty after we moved their children into the new tabs.  Deleting
@@ -1019,6 +1155,9 @@ void MainWindow::reorganizeForShortSoDa()
   // Catch right-click anywhere in the window for the panel chooser.
   ui->centralWidget->installEventFilter(this);
   ui->Display_tabs->installEventFilter(this);
+  // Application-wide filter so ordinary typing on the Transmit tab lands in
+  // CWTXBox regardless of which widget currently has focus.
+  qApp->installEventFilter(this);
 
   // Waterfall and Periodogram: the .ui puts a vertical spacer ABOVE
   // "Center RX Freq" so the controls float to the bottom of the column.
@@ -1051,14 +1190,16 @@ void MainWindow::reorganizeForShortSoDa()
                          .arg(t.second(), 2, 10, z));
   });
 
-  // Application-wide Alt+key shortcuts — fire on any panel regardless of which
-  // widget has keyboard focus.  QShortcut with ApplicationShortcut context
-  // intercepts the key before it reaches the focused widget, so keyPressEvent
-  // no longer needs to handle these.
-  auto mkAlt = [this](Qt::Key k, auto fn) {
+  // Application-wide Alt+key shortcuts.  We register two dispatch paths:
+  //   1. QShortcut with ApplicationShortcut context for the normal case.
+  //   2. An entry in alt_actions_ so eventFilter() can fire the action ahead
+  //      of any widget that would swallow the key via ShortcutOverride
+  //      (QLineEdit does this for several Alt+letter combinations).
+  auto mkAlt = [this](Qt::Key k, std::function<void()> fn) {
     auto* sc = new QShortcut(QKeyCombination(Qt::AltModifier, k), this);
     sc->setContext(Qt::ApplicationShortcut);
     connect(sc, &QShortcut::activated, this, fn);
+    alt_actions_.insert(static_cast<int>(k), fn);
   };
 
   mkAlt(Qt::Key_T, [this]() {
@@ -1155,12 +1296,86 @@ void MainWindow::keyPressEvent(QKeyEvent * event)
 
 bool MainWindow::eventFilter(QObject * obj, QEvent * event)
 {
-  if (event->type() == QEvent::MouseButtonPress) {
+  // Middle-click on the central widget / tab widget opens the panel chooser.
+  if (event->type() == QEvent::MouseButtonPress &&
+      (obj == ui->centralWidget || obj == ui->Display_tabs)) {
     QMouseEvent * me = static_cast<QMouseEvent *>(event);
     if (me->button() == Qt::MiddleButton) {
       showPanelChooser();
       return true;
     }
   }
+
+  // Global Ctrl+key shortcuts.  Dispatched here (not via QShortcut) because
+  // QLineEdit accepts ShortcutOverride for several readline-style Ctrl+letter
+  // combos when a text-entry line has focus.
+  //   Ctrl+T  — toggle PTT       (any panel)
+  //   Ctrl+L  — Log Contact      (any panel)
+  //   Ctrl+E  — Exchange macro   (Transmit tab only)
+  if (event->type() == QEvent::KeyPress) {
+    QKeyEvent * ke = static_cast<QKeyEvent *>(event);
+    if (ke->modifiers() == Qt::ControlModifier) {
+      switch (ke->key()) {
+        case Qt::Key_T:
+          if (ui->PTT_btn && ui->PTT_btn->isEnabled()) {
+            ui->PTT_btn->toggle();
+            return true;
+          }
+          break;
+        case Qt::Key_L:
+          if (ui->LogContact_btn && ui->LogContact_btn->isEnabled()) {
+            ui->LogContact_btn->click();
+            return true;
+          }
+          break;
+        case Qt::Key_E:
+          if (tab_idx_transmit >= 0 &&
+              ui->Display_tabs->currentIndex() == tab_idx_transmit &&
+              ui->Exchange_btn && ui->Exchange_btn->isEnabled()) {
+            ui->Exchange_btn->click();
+            return true;
+          }
+          break;
+        default: break;
+      }
+    }
+  }
+
+  // Alt+key global actions.  Dispatch here so QLineEdit / other widgets can't
+  // swallow them via ShortcutOverride when the CW entry line has focus.
+  if (event->type() == QEvent::KeyPress) {
+    QKeyEvent * ke = static_cast<QKeyEvent *>(event);
+    if (ke->modifiers() == Qt::AltModifier) {
+      auto it = alt_actions_.constFind(ke->key());
+      if (it != alt_actions_.constEnd()) {
+        it.value()();
+        return true;
+      }
+    }
+  }
+
+  // Transmit-tab typing redirect: ordinary character keypresses land in
+  // the CW text-entry line even if focus is elsewhere on the tab.
+  // Ctrl/Alt/Meta modified keys and keys with no text (Esc, arrows, function
+  // keys, etc.) fall through to their normal handlers.  A re-entry guard
+  // stops sendEvent from re-triggering this branch via qApp's filter chain.
+  static thread_local bool tx_redirect_active = false;
+  if (!tx_redirect_active &&
+      event->type() == QEvent::KeyPress &&
+      tab_idx_transmit >= 0 &&
+      ui->Display_tabs->currentIndex() == tab_idx_transmit &&
+      ui->CWCurLine_le && !ui->CWCurLine_le->hasFocus()) {
+    QKeyEvent * ke = static_cast<QKeyEvent *>(event);
+    const auto mods = ke->modifiers();
+    if (!(mods & (Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier))
+        && !ke->text().isEmpty()) {
+      tx_redirect_active = true;
+      ui->CWCurLine_le->setFocus();
+      QCoreApplication::sendEvent(ui->CWCurLine_le, event);
+      tx_redirect_active = false;
+      return true;
+    }
+  }
+
   return QMainWindow::eventFilter(obj, event);
 }

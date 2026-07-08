@@ -39,6 +39,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QVBoxLayout>
 #include <QComboBox>
 #include <QSlider>
+#include <QHash>
+#include <functional>
 
 #include "RadioListener.hpp"
 #include "AudioTXServer.hpp"
@@ -177,6 +179,11 @@ protected:
 
   void keyPressEvent(QKeyEvent * event) override;
   bool eventFilter(QObject * obj, QEvent * event) override;
+
+  // Alt+key global actions, registered by reorganizeForShortSoDa() so that
+  // eventFilter() can dispatch them ahead of any widget that would swallow
+  // the key via QEvent::ShortcutOverride.
+  QHash<int, std::function<void()>> alt_actions_;
 
   void widgetSaveRestore(QObject * op, const QString & par, bool save);
 

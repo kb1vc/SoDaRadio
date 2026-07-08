@@ -1144,14 +1144,14 @@
              <item>
               <widget class="QPushButton" name="openLog_btn">
                <property name="text">
-                <string>Read Log Report...</string>
+                <string>Open Log File...</string>
                </property>
               </widget>
              </item>
              <item>
               <widget class="QPushButton" name="writeLogReport_btn">
                <property name="text">
-                <string>Create Log Report...</string>
+                <string>Create Log File...</string>
                </property>
               </widget>
              </item>
