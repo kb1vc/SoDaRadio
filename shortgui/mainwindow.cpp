@@ -42,7 +42,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QGroupBox>
 #include <QHeaderView>
 #include <QFontMetrics>
+#include <QLineEdit>
+#include <QPlainTextEdit>
 #include <QTableView>
+#include <QTextEdit>
 #include <QLabel>
 #include <QMenu>
 #include <QActionGroup>
@@ -1355,7 +1358,8 @@ bool MainWindow::eventFilter(QObject * obj, QEvent * event)
   }
 
   // Transmit-tab typing redirect: ordinary character keypresses land in
-  // the CW text-entry line even if focus is elsewhere on the tab.
+  // the CW text-entry line — but only when focus isn't already on some
+  // other text-input widget (To Call / To Grid in the QSO info bar, etc.).
   // Ctrl/Alt/Meta modified keys and keys with no text (Esc, arrows, function
   // keys, etc.) fall through to their normal handlers.  A re-entry guard
   // stops sendEvent from re-triggering this branch via qApp's filter chain.
@@ -1364,16 +1368,23 @@ bool MainWindow::eventFilter(QObject * obj, QEvent * event)
       event->type() == QEvent::KeyPress &&
       tab_idx_transmit >= 0 &&
       ui->Display_tabs->currentIndex() == tab_idx_transmit &&
-      ui->CWCurLine_le && !ui->CWCurLine_le->hasFocus()) {
-    QKeyEvent * ke = static_cast<QKeyEvent *>(event);
-    const auto mods = ke->modifiers();
-    if (!(mods & (Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier))
-        && !ke->text().isEmpty()) {
-      tx_redirect_active = true;
-      ui->CWCurLine_le->setFocus();
-      QCoreApplication::sendEvent(ui->CWCurLine_le, event);
-      tx_redirect_active = false;
-      return true;
+      ui->CWCurLine_le) {
+    QWidget * fw = QApplication::focusWidget();
+    bool text_focused = fw && (
+      qobject_cast<QLineEdit*>(fw) ||
+      qobject_cast<QTextEdit*>(fw) ||
+      qobject_cast<QPlainTextEdit*>(fw));
+    if (!text_focused) {
+      QKeyEvent * ke = static_cast<QKeyEvent *>(event);
+      const auto mods = ke->modifiers();
+      if (!(mods & (Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier))
+          && !ke->text().isEmpty()) {
+        tx_redirect_active = true;
+        ui->CWCurLine_le->setFocus();
+        QCoreApplication::sendEvent(ui->CWCurLine_le, event);
+        tx_redirect_active = false;
+        return true;
+      }
     }
   }
 
