@@ -55,7 +55,7 @@ they change the digit to their left.
 
 \subsubsection Band Selection
 
-The band selection box appears on the two RX oriented panels and the settings panel. Surprisingly, this has proved useful during the experimental phase while I was testing out hardware functions. It is particularly useful when attempting to find frequency corrections for transverters that may not have ultra-accurate oscillators. (See @ref transvertersGUI)
+The band selection box appears on the two RX oriented panels and the settings panel. Surprisingly, this has proved useful during the experimental phase while I was testing out hardware functions. It is particularly useful when attempting to find frequency corrections for transverters that may not have ultra-accurate oscillators. (See [the GUI description](@ref transvertersGUI).)
 
 \subsubsection Gain Settings
 
@@ -87,7 +87,7 @@ So, what are these panels?
 
 \subsubsection  waterfallPanel Waterfall
 
-The Waterfall Panel \image html waterfall_note.png width=700px
+The Waterfall Panel \image html Waterfall.png width=700px
 
 
 The horizontal axis is labeled with the receive frequency. The vertical axis shows the evolution of the input signals with time. The color axis shows the power spectral density at each frequency. 
@@ -103,6 +103,21 @@ I have found the span control to be quite useful. Wide span (up to 200kHz) helps
 The average window and update rate do what they say. Want the display to scroll faster? Wiggle the Update Rate. Want to smooth things out a bit? Fiddle the Average window. 
 
 The "Center RX Freq" button shifts the frequency axis so that the current RX frequency is shown in the center. 
+
+The band selector is what it is. The options that appear there are 
+defined by the [band configuration settings.](@ref definingBands)
+
+The Mode selector presents a choice of modulation schemes: CW_U (CW upper tone), 
+CW_L (lower tone), USB, LSB, AM, WBFM (wideband FM), and NBFM (narrowband FM). 
+
+The AF Filter selector chooses from a small set of filters including a WSPR filter (about 1300 to 1700 Hz). 
+
+AF and RF gain controls are just below the display. The settings are
+on a log scale.
+
+The audio output stream or the RF (actually IF) stream can be saved to a file. Hit the checkbox to make the bits. 
+
+Enter the callsign and grid of the other station in the "To Call" and "To Grid" boxes. These will be applied to the corresponding fields in the log. The range and bearing information will be updated as the "To Grid" box is changed.
 
 The waterfall is hot: you can poke a point on the waterfall and the RX
 frequency will change to the corresponding frequency. This allows
@@ -125,27 +140,34 @@ The "Center RX Freq" "Average Window" and "Span" controls work just as they do
 in the waterfall display. The "RefLevel (dB)" sets the relative signal strength
 at the top of the plot. At times, 
 
+The remaining buttons, bells, and whistles are as they appear on the waterfall panel. 
+
 As with the waterfall plot, the periodogram area is hot. Poke with MB1 to tune. Poke with MB3 to tune and shift the frequency axis. 
 
-The Periodogram (Spectrum Power) Panel \image html periodogram_note.png width=700px
+The Periodogram (Spectrum Power) Panel \image html Periodogram.png width=700px
 
 \subsubsection  transmitPanel Transmit
 
-\subsubsection  settingsPanel Settings
+The Transmit Panel \image html Transmit.png width=700px
 
-\subsubsection  configBandsPanel Config Bands
+\subsubsection notInterestingSettings Settings
+
+See [Radio Settings](@ref radioSettings). 
+
+\subsubsection  configBandsPanel Define Bands
+
+The Band Configuration Panel \image html BandConfig.png width=700px
 
 \subsubsection  editLogPanel Edit Log
 
-\subsubsection statusPanel  Status
+The Log Panel \image html Log.png width=700px
 
 \subsubsection theVuMeter The Vu Meter
 
 The periodogram is a good tuning aid for dish positioning and such. However
 some might prefer a simpler presentation. 
 
-An (audio) signal strength meter \image html
-vumeter_note.png width=700px 
+The Audio Signal Strength Meter \image html VUMeter.png width=150px 
 
 The Vu meter doesn't have NIST traceable accuracy, but it might
 help. Hit `<ALT>V` to bring it up and `<ALT>V` to make it go away. The
@@ -153,18 +175,22 @@ Vu meter is the only "pop-up" window in SoDaRadio. I couldn't figure
 out how to integrate it into the major views without making other
 things less useful.
 
+\subsubsection statusPanel  Status
+
+The Status Panel \image html Status.png width=700px
+
+
+
 \section radioSettings Settings
 
-\subsection settingsMode  The Mode and Filter Selectors
+The Settings Panel \image html Settings.png width=700px
+
 \subsection settingsAudio Audio Input and Output Device Selection
-\subsection settingsGains The AF and RF Gain Controls
 \subsection settingsTX  Transmitter Settings
 \subsection settingsStationID QSO Settings
-\subsection settingsRecord 
-\subsection settingsBandsAnts
+\subsection settingsRecord The Recording Output Directory
+\subsection settingsBandsAnts The Antennas
 
-The band selector is what it is. The options that appear there are 
-defined by the [band configuration settings.](@ref definingBands)
 
 \subsection settingsConfiguration The Configuration Options
 
@@ -195,9 +221,9 @@ Is dark. Yes. We'll try it in the sun and see how things work.
 
 \section configFiles Configuration Files
 
-\section firstConfig Creating Your First Configuration File
+\subsection firstConfig Creating Your First Configuration File
 
-\section modelNames Model Names
+\subsection modelNames Model Names
 
 Some product families (in particular, the Ettus radios) include
 devices with multiple tuning ranges. My USRP B200, for instance, has a
@@ -211,8 +237,6 @@ entries with apprpriate transverters.
 Selecting "USRP" will open a configuration file
 "USRP_SoDaRadioQT.conf" that probably has no entries for transverters
 at frequencies below 5 GHz.
-
-\section theLog The Log
 
 
 

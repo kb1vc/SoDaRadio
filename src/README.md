@@ -76,3 +76,136 @@ do what I can and return it one way or the other. But remember, I'm doing
 this as a hobby. 
 
 \section how_it_works How It Works
+
+The SoDa program is partitioned into two parts:
+
+- the SDR controller program, called SoDaServer
+- the GUI program, called SoDaRadio implemented in qtgui/main.cpp
+
+SoDaServer and SoDaRadio are connected to the SDR and host OS sound
+system as shown here: 
+
+\image html SoDa_Radio_System.svg
+
+
+The GUI is built on the Qt GUI toolset, and communicates
+with the SDR control program via a Unix Domain socket connection.
+The GUI and the SDR controller run on a single Linux host.
+
+The SDR signal processing and control functions are executed within
+multiple threads of the SoDa application.  The threads communicate via
+a simple mailbox-in-shared-memory communications scheme where each
+thread can "subscribe" to one or more message streams, and place messages
+into any message stream. (See SoDa::MailBox from the SoDaUtils library.)
+
+The image below shows the thread objects that make up the SoDa
+SDR radio, and the message streams that link them. 
+
+\image html SoDa_Radio_Toplevel.svg "The SoDa Radio Components"
+
+@li SoDa::RadioControl executes all control and status functions on the SDR
+@li SoDa::RadioRX manages the inbound IF signal stream from the SDR receive chain
+@li SoDa::RadioTX manages the outbound IF signal stream to the SDR transmit chain
+@li SoDa::BaseBandRX demodulates an incoming RX intermediate frequency signal
+@li SoDa::BaseBandTX converts incoming audio into the appropriately modulated TX intermediate-frequency signal.
+@li SoDa::CWTX converts text strings received from the UI thread into amplitude envelopes (keying envelopes)
+for the USRPTX process. 
+@li SoDa::UI waits for requests and CW text on the UDP socket from the GUI, and forwards status and
+    spectrum plots back to the GUI. 
+@li One or more user loadable plugins may connect to any or all of the streams to implement
+special user-defined functions. IFServer presents a simple example of a plugin that subscribes 
+to the command and the RX IF stream. 
+
+@subsection radio_tuning Tuning
+
+Most of the real "magic" in any radio design is about tuning. How does the
+radio select a particular frequency out of the universal RF soup?  There's
+more to this than they show in the movies. So SoDaRadio took some pains here. 
+
+The original design was specific to the Ettus USRP, but understanding
+the organization of the tuning chain for the USRP will help in understanding
+the design for other SDR models.
+
+@subsubsection usrp_tuning Tuning for USRP Devices
+
+The SoDa receiver architecture for the USRP is a 3 stage heterodyne design.  
+The first two IF conversions are performed within the USRP SDR platform.
+The final stage of conversion is completed in the USRPRX module.
+@see SoDa::USRPRX for instance.
+
+Some radios will have just one stage of RF tuning before converting to/from
+baseband. The USRP has two: the front end (PLL/analog) local oscillator, and
+a NCO in its FPGA. This NCO is referred to as the 2nd LO.
+
+Simpler radios will have just one front-end oscillator. In this
+case, LO 2 is ignored.
+
+In all cases, LO3 is an NCO implemented in the RadioRX and RadioTX
+modules. This shifts the IF stream to/from the SDR to the
+actual DC centered baseband processed in the BaseBandRX/TX modules.
+
+The signal stream to/from the SDR is NOT DC centered baseband. In
+order to get a "clean" spectrum around the desired zero beat, the
+stream coming from the SDR is at an intermediate frequency. The
+intent is that the actual zero-beat baseband frequency should be
+between 50 and 250 kHz above the IF frequency. 
+
+OBSOLETE OBSOLETE OBSOLETE -- work in progress
+
+Two sets of SoDa::Commands control tuning:
+
+- For the receiver
+ - RX_TUNE_FREQ
+ - RX_FE_FREQ
+ - RX_LO3_FREQ
+ - RX_RETUNE_FREQ
+- For the transmitter
+ - TX_TUNE_FREQ
+ - TX_FE_FREQ
+ - TX_LO3_FREQ
+ - TX_RETUNE_FREQ
+
+The reason for the three stage conversion scheme for the USRP? 
+-# The first stage (Front End) LO is configured to operate in Integer-N
+   synthesis mode. This reduces spurious "birdies" caused by harmonics of the
+   reference oscillator divided by the fractional N denominator. 
+-# The second stage LO is tuned to place the signal of interest at least
+   50 kHz away from both the first and second local oscillators.  This
+   ensures that the DC offset "spike" in the second IF stage is well away
+   from the frequency of interest, and is not displayed in a waterfall or
+   periodogram display.
+-# by placing the second IF well away from the target frequency, we can
+   put the target signal well off the skirts of the phase noise curves for
+   both the first and second LOs. The third LO is implemented as a full
+   32 bit floating point quadrature oscillator, so the quantization noise
+   is comparatively low. 
+
+\subsubsection otherSDRs Other SDRs
+
+It is unlikely that other SDR platforms would need a more elaborate
+approach to tuning than the USRP. This allows us to boil down all the
+knotty stuff to just a few methods that must be defined by any radio
+model.  See the documentation for SoDa::RadioControl, SoDa::RadioTX,
+and SoDa::RadioRX.  Implementation of the required methods is quite
+straightforward, though maybe a little tedious. Happily, Claude/Sonnet
+4.6 was able to write almost all of the code for both the Pluto and
+RTLSDR, requiring modest amounts of debug time.
+
+\subsection receivePath The Receive Path
+\image html SoDa_Radio_RX_Signal_Path.svg
+
+
+\subsection transmitPath The Transmit Path
+\image html SoDa_Radio_TX_Signal_Path.svg
+Audio is handled in two ways in the SoDa::AudioQt class.
+
+@li Transmit audio is captured by the gui process (via Qt Audio) and sent via
+a socket to the SoDaServer process. 
+@li Receive audio is written by the SoDa::AudioQt send method
+to a socket that, in the normal configuration, 
+is connected to the Qt based GUI.  This allows for better flow control and
+also simplifies interfacing the audio stream to external modems like "fldigi"
+and WSJT-X. 
+
+
+

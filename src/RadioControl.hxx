@@ -56,15 +56,38 @@ namespace SoDa {
   
   /**
    *  @class RadioControl
-   * 
-   *  Though libuhd is designed to be re-entrant, there are some indications
-   *  that all control functions (set_freq, gain, and other operations)
-   *  should originate from a single thread.  RadioControl does that.
    *
    *  RadioControl listens on the Command Stream message channel for
    *  requests from other components (including the SoDa::UI listener)
    *  and dumps status and completion reports back onto
    *  the command stream channel.
+   *
+   * All supported hardware models must implement a Control class (for
+   * example, PlutoCtrl) that supplies implementations of a small set
+   * of virtual functions. These are common operations to all supported
+   * radios.
+   *
+   * The minimum set comprises:
+   * @li isLOLocked() 
+   * @li listAntennas()
+   * @li setAntenna()
+   * @li getAntenna()
+   * @li setSampleRate()
+   * @li getSampleRate()
+   * @li setRFGain()
+   * @li setLOFreq()
+   * @li getLOFreq()
+   * @li setTXEna()
+   * @li getTXEna()
+   * @li getTXRelayOn()
+   * @li getHardwareDescription()
+   * @li getSelfPtr()
+   *
+   * Optionally a model may implement these methods
+   * @li init()
+   * @li setClockSource()
+   * @li getClockSource()
+   *
    */
   class RadioControl : public SoDa::Thread {
   public:
@@ -171,9 +194,8 @@ namespace SoDa {
     
 
   protected:
-    /// Methods that ALL radios must implement.
     /**
-    * is the identified (rx or tx) front-end LO locked?
+    * @brief is the identified (rx or tx) front-end LO locked?
     * If not, set the tuning frequency to "the right thing"
     *
     * @param rxtx RX, TX

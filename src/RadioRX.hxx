@@ -51,7 +51,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace SoDa {
   /**
-   *  @class RadioControl
+   *  @class RadioRX
    * 
    *  RadioRX listens on the Command Stream message channel for
    *  requests from other components (including the SoDa::UI listener)
@@ -60,9 +60,24 @@ namespace SoDa {
    *
    *  A Receiver does no processing to the incoming RF signal other than
    * 1. optionally resample the input stream
-   * 2. publish it on the rx_stream
-   * 3. downsample it and publish that on the if_stream.
+   * 2. publish the (resampled) input stream on the if_stream.   
+   * 3. down convert (tune) and publish the product on the rx_stream
    *
+   *
+   * All supported hardware models must implement an RX class (for example,
+   * PlutoRX) that supplies implementations of a small set of
+   * virtual functions: 
+   *
+   * @li setNCOFreq()
+   * @li downConvert()
+   * @li startStream()
+   * @li stopStream()
+   * @li streamEnabled()
+   * @li enableIFStreamer()
+   *
+   * Implementing these is quite within the capability of Sonnet 4.6 if it
+   * is provided with the USRPRX code as a pattern. Both the PlutoRX and
+   * RTLSDRRX classes were AI generated with minimal human intervention.
    */
   class RadioRX : public SoDa::Thread {
   public:

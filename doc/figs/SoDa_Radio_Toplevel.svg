@@ -2,49 +2,56 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="630"
-   height="600"
+   width="591.5329"
+   height="430.00009"
    id="svg2"
    version="1.1"
-   inkscape:version="0.92.4 (unknown)"
-   sodipodi:docname="SoDa_Radio_Toplevel.svg">
+   inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
+   sodipodi:docname="SoDa_Radio_Toplevel.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
   <defs
      id="defs4">
     <inkscape:path-effect
        is_visible="true"
        id="path-effect11382"
-       effect="spiro" />
+       effect="spiro"
+       lpeversion="0" />
     <inkscape:path-effect
        effect="spiro"
        id="path-effect10978"
-       is_visible="true" />
+       is_visible="true"
+       lpeversion="0" />
     <inkscape:path-effect
        is_visible="true"
        id="path-effect9644"
-       effect="spiro" />
+       effect="spiro"
+       lpeversion="0" />
     <inkscape:path-effect
        effect="spiro"
        id="path-effect7869"
-       is_visible="true" />
+       is_visible="true"
+       lpeversion="0" />
     <inkscape:path-effect
        is_visible="true"
        id="path-effect7865"
-       effect="spiro" />
+       effect="spiro"
+       lpeversion="0" />
     <inkscape:path-effect
        effect="spiro"
        id="path-effect7653"
-       is_visible="true" />
+       is_visible="true"
+       lpeversion="0" />
     <inkscape:path-effect
        effect="spiro"
        id="path-effect7269"
-       is_visible="true" />
+       is_visible="true"
+       lpeversion="0" />
     <marker
        inkscape:stockid="Arrow1Mstart"
        orient="auto"
@@ -55,90 +62,110 @@
       <path
          id="path3945"
          d="M 0,0 5,-5 -12.5,0 5,5 Z"
-         style="fill-rule:evenodd;stroke:#000000;stroke-width:1.00000003pt"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt"
          transform="matrix(0.4,0,0,0.4,4,0)"
          inkscape:connector-curvature="0" />
     </marker>
     <inkscape:path-effect
        effect="spiro"
        id="path-effect5411"
-       is_visible="true" />
+       is_visible="true"
+       lpeversion="0" />
     <inkscape:path-effect
        effect="spiro"
        id="path-effect5027"
-       is_visible="true" />
+       is_visible="true"
+       lpeversion="0" />
     <inkscape:path-effect
        is_visible="true"
        id="path-effect5023"
-       effect="spiro" />
+       effect="spiro"
+       lpeversion="0" />
     <inkscape:path-effect
        effect="spiro"
        id="path-effect5019"
-       is_visible="true" />
+       is_visible="true"
+       lpeversion="0" />
     <inkscape:path-effect
        effect="spiro"
        id="path-effect5015"
-       is_visible="true" />
+       is_visible="true"
+       lpeversion="0" />
     <inkscape:path-effect
        effect="spiro"
        id="path-effect5011"
-       is_visible="true" />
+       is_visible="true"
+       lpeversion="0" />
     <inkscape:path-effect
        effect="spiro"
        id="path-effect5007"
-       is_visible="true" />
+       is_visible="true"
+       lpeversion="0" />
     <inkscape:path-effect
        effect="spiro"
        id="path-effect5003"
-       is_visible="true" />
+       is_visible="true"
+       lpeversion="0" />
     <inkscape:path-effect
        effect="spiro"
        id="path-effect4631"
-       is_visible="true" />
+       is_visible="true"
+       lpeversion="0" />
     <inkscape:path-effect
        effect="spiro"
        id="path-effect4627"
-       is_visible="true" />
+       is_visible="true"
+       lpeversion="0" />
     <inkscape:path-effect
        is_visible="true"
        id="path-effect4603"
-       effect="spiro" />
+       effect="spiro"
+       lpeversion="0" />
     <inkscape:path-effect
        effect="spiro"
        id="path-effect4599"
-       is_visible="true" />
+       is_visible="true"
+       lpeversion="0" />
     <inkscape:path-effect
        effect="spiro"
        id="path-effect4595"
-       is_visible="true" />
+       is_visible="true"
+       lpeversion="0" />
     <inkscape:path-effect
        effect="spiro"
        id="path-effect4591"
-       is_visible="true" />
+       is_visible="true"
+       lpeversion="0" />
     <inkscape:path-effect
        effect="spiro"
        id="path-effect4587"
-       is_visible="true" />
+       is_visible="true"
+       lpeversion="0" />
     <inkscape:path-effect
        effect="spiro"
        id="path-effect4583"
-       is_visible="true" />
+       is_visible="true"
+       lpeversion="0" />
     <inkscape:path-effect
        effect="spiro"
        id="path-effect4579"
-       is_visible="true" />
+       is_visible="true"
+       lpeversion="0" />
     <inkscape:path-effect
        effect="spiro"
        id="path-effect4575"
-       is_visible="true" />
+       is_visible="true"
+       lpeversion="0" />
     <inkscape:path-effect
        effect="spiro"
        id="path-effect4571"
-       is_visible="true" />
+       is_visible="true"
+       lpeversion="0" />
     <inkscape:path-effect
        effect="spiro"
        id="path-effect4567"
-       is_visible="true" />
+       is_visible="true"
+       lpeversion="0" />
     <marker
        inkscape:stockid="Arrow1Send"
        orient="auto"
@@ -149,7 +176,7 @@
       <path
          id="path3954"
          d="M 0,0 5,-5 -12.5,0 5,5 Z"
-         style="fill-rule:evenodd;stroke:#000000;stroke-width:1.00000003pt"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt"
          transform="matrix(-0.2,0,0,-0.2,-1.2,0)"
          inkscape:connector-curvature="0" />
     </marker>
@@ -163,66 +190,80 @@
       <path
          id="path3948"
          d="M 0,0 5,-5 -12.5,0 5,5 Z"
-         style="fill-rule:evenodd;stroke:#000000;stroke-width:1.00000003pt"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt"
          transform="matrix(-0.4,0,0,-0.4,-4,0)"
          inkscape:connector-curvature="0" />
     </marker>
     <inkscape:path-effect
        is_visible="true"
        id="path-effect3933"
-       effect="spiro" />
+       effect="spiro"
+       lpeversion="0" />
     <inkscape:path-effect
        effect="spiro"
        id="path-effect3929"
-       is_visible="true" />
+       is_visible="true"
+       lpeversion="0" />
     <inkscape:path-effect
        is_visible="true"
        id="path-effect3925"
-       effect="spiro" />
+       effect="spiro"
+       lpeversion="0" />
     <inkscape:path-effect
        effect="spiro"
        id="path-effect3153"
-       is_visible="true" />
+       is_visible="true"
+       lpeversion="0" />
     <inkscape:path-effect
        effect="spiro"
        id="path-effect3042"
-       is_visible="true" />
+       is_visible="true"
+       lpeversion="0" />
     <inkscape:path-effect
        effect="spiro"
        id="path-effect3032"
-       is_visible="true" />
+       is_visible="true"
+       lpeversion="0" />
     <inkscape:path-effect
        effect="spiro"
        id="path-effect2991"
-       is_visible="true" />
+       is_visible="true"
+       lpeversion="0" />
     <inkscape:path-effect
        is_visible="true"
        id="path-effect4603-3"
-       effect="spiro" />
+       effect="spiro"
+       lpeversion="0" />
     <inkscape:path-effect
        effect="spiro"
        id="path-effect4631-6"
-       is_visible="true" />
+       is_visible="true"
+       lpeversion="0" />
     <inkscape:path-effect
        effect="spiro"
        id="path-effect5003-7"
-       is_visible="true" />
+       is_visible="true"
+       lpeversion="0" />
     <inkscape:path-effect
        effect="spiro"
        id="path-effect5007-5"
-       is_visible="true" />
+       is_visible="true"
+       lpeversion="0" />
     <inkscape:path-effect
        effect="spiro"
        id="path-effect5011-3"
-       is_visible="true" />
+       is_visible="true"
+       lpeversion="0" />
     <inkscape:path-effect
        is_visible="true"
        id="path-effect9644-5"
-       effect="spiro" />
+       effect="spiro"
+       lpeversion="0" />
     <inkscape:path-effect
        effect="spiro"
        id="path-effect3032-0"
-       is_visible="true" />
+       is_visible="true"
+       lpeversion="0" />
   </defs>
   <sodipodi:namedview
      id="base"
@@ -231,26 +272,34 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="6.8905488"
-     inkscape:cx="99.650375"
-     inkscape:cy="340.30637"
+     inkscape:zoom="1.7647973"
+     inkscape:cx="297.7679"
+     inkscape:cy="214.75554"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
-     inkscape:window-width="1422"
-     inkscape:window-height="981"
-     inkscape:window-x="391"
-     inkscape:window-y="28"
+     inkscape:window-width="1194"
+     inkscape:window-height="991"
+     inkscape:window-x="26"
+     inkscape:window-y="23"
      inkscape:window-maximized="0"
      units="in"
-     inkscape:snap-grids="true">
+     inkscape:snap-grids="true"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1">
     <inkscape:grid
        type="xygrid"
        id="grid3026"
        empspacing="5"
        visible="true"
        enabled="true"
-       snapvisiblegridlinesonly="true" />
+       snapvisiblegridlinesonly="true"
+       originx="-5.6068812"
+       originy="-39.999945"
+       spacingy="1"
+       spacingx="1"
+       units="in" />
   </sodipodi:namedview>
   <metadata
      id="metadata7">
@@ -260,7 +309,6 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -268,7 +316,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-452.35975)">
+     transform="translate(-5.6068687,-492.3597)">
     <g
        id="g3034"
        transform="translate(50.000004,-175)">
@@ -379,7 +427,7 @@
          id="tspan3088"
          x="152.35063"
          y="540.96973"
-         style="font-size:10px;line-height:1.25">USRPRX</tspan></text>
+         style="font-size:10px;line-height:1.25">RadioRX</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;line-height:0%;font-family:'Century Schoolbook L';-inkscape-font-specification:'Century Schoolbook L Medium';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none"
@@ -423,7 +471,7 @@
          id="tspan3104"
          x="347.35062"
          y="745.96973"
-         style="font-size:10px;line-height:1.25">USRPTX</tspan></text>
+         style="font-size:10px;line-height:1.25">RadioTX</tspan></text>
     <g
        transform="translate(244.46479,-78.32589)"
        id="g3106">
@@ -454,7 +502,7 @@
          id="tspan3114"
          x="347.01706"
          y="637.64386"
-         style="font-size:10px;line-height:1.25">USRPCtrl</tspan></text>
+         style="font-size:10px;line-height:1.25">RadioControl</tspan></text>
     <g
        transform="translate(245,170)"
        id="g3116">
@@ -475,26 +523,6 @@
          d="m 145,80 5,5"
          style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
     </g>
-    <g
-       id="g3137"
-       transform="translate(50,170)">
-      <rect
-         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-         id="rect3139"
-         width="95"
-         height="60"
-         x="55"
-         y="80"
-         transform="translate(0,602.35975)" />
-      <path
-         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         d="m 145,80 5,5"
-         id="path3141"
-         inkscape:path-effect="#path-effect3032"
-         inkscape:original-d="m 145,80 5,5"
-         inkscape:connector-curvature="0"
-         transform="translate(0,602.35975)" />
-    </g>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;line-height:0%;font-family:'Century Schoolbook L';-inkscape-font-specification:'Century Schoolbook L Medium';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none"
@@ -506,26 +534,6 @@
          x="347.60126"
          y="885.89478"
          style="font-size:10px;line-height:1.25">UI</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;line-height:0%;font-family:'Century Schoolbook L';-inkscape-font-specification:'Century Schoolbook L Medium';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none"
-       x="152.38164"
-       y="885.37482"
-       id="text3147"><tspan
-         sodipodi:role="line"
-         id="tspan3149"
-         x="152.38164"
-         y="885.37482"
-         style="font-size:10px;line-height:1.25">GPS_TSIPmon</tspan></text>
-    <path
-       style="fill:#ff0000;stroke:#19e5f6;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#Arrow1Send)"
-       d="M 200,1002.3598 H 300"
-       id="path3151"
-       inkscape:path-effect="#path-effect3153"
-       inkscape:original-d="m 200,1002.3598 c 36.4279,-26.30383 66.67362,-0.059 100,0"
-       inkscape:connector-curvature="0"
-       sodipodi:nodetypes="cc"
-       transform="translate(0,-120)" />
     <path
        style="fill:#ff0000;stroke:#11ee1a;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        d="m 250,872.35975 v -35"
@@ -655,49 +663,54 @@
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;line-height:0%;font-family:'Century Schoolbook L';-inkscape-font-specification:'Century Schoolbook L Medium';text-align:end;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none"
        x="74.726875"
-       y="692.45978"
+       y="698.78473"
        id="text5397"><tspan
          sodipodi:role="line"
-         x="77.500313"
-         y="692.45978"
-         id="tspan11398"
-         style="font-size:10px;line-height:1.25">From  ALSA </tspan><tspan
+         x="74.726883"
+         y="698.78473"
+         style="font-size:10px;line-height:1.25"
+         id="tspan1224">From Qt audio</tspan><tspan
          sodipodi:role="line"
          x="74.726875"
-         y="704.95978"
+         y="711.28473"
          style="font-size:10px;line-height:1.25"
-         id="tspan1220">Audio Input</tspan><tspan
+         id="tspan1">input device</tspan><tspan
          sodipodi:role="line"
          x="74.726875"
-         y="717.45978"
+         y="723.78473"
          style="font-size:10px;line-height:1.25"
-         id="tspan1224">via AudioQt</tspan></text>
+         id="tspan7">via Unix</tspan><tspan
+         sodipodi:role="line"
+         x="74.726875"
+         y="736.28473"
+         style="font-size:10px;line-height:1.25"
+         id="tspan8">domain socket</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;line-height:0%;font-family:'Century Schoolbook L';-inkscape-font-specification:'Century Schoolbook L Medium';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none"
        x="428"
-       y="527.45978"
+       y="533.78473"
        id="text5403"><tspan
          sodipodi:role="line"
          x="428"
-         y="527.45978"
-         id="tspan5407"
-         style="font-size:10px;line-height:1.25">Demodulated</tspan><tspan
+         y="533.78473"
+         style="font-size:10px;line-height:1.25"
+         id="tspan1216">To Qt audio</tspan><tspan
          sodipodi:role="line"
          x="428"
-         y="539.95978"
+         y="546.28473"
          style="font-size:10px;line-height:1.25"
-         id="tspan5649">Audio to Unix </tspan><tspan
+         id="tspan4">output device</tspan><tspan
          sodipodi:role="line"
          x="428"
-         y="552.45978"
+         y="558.78473"
          style="font-size:10px;line-height:1.25"
-         id="tspan1210">Domain Socket</tspan><tspan
+         id="tspan5">via Unix domain </tspan><tspan
          sodipodi:role="line"
          x="428"
-         y="564.95978"
+         y="571.28473"
          style="font-size:10px;line-height:1.25"
-         id="tspan1216">via AudioQt</tspan></text>
+         id="tspan6">socket</tspan></text>
     <path
        style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend)"
        d="m 395,55 h 25"
@@ -730,7 +743,7 @@
          x="427.75"
          y="641.79156"
          id="tspan7649"
-         style="font-size:10px;line-height:1.25">USRP Control</tspan></text>
+         style="font-size:10px;line-height:1.25">SDR Control</tspan></text>
     <path
        style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend)"
        d="m 395,260 h 25"
@@ -749,7 +762,7 @@
          x="427.75"
          y="741.45068"
          id="tspan7845"
-         style="font-size:10px;line-height:1.25">To USRP </tspan><tspan
+         style="font-size:10px;line-height:1.25">To SDR </tspan><tspan
          sodipodi:role="line"
          x="427.75"
          y="753.95068"
@@ -765,12 +778,12 @@
          x="75"
          y="534.71973"
          id="tspan7853"
-         style="font-size:10px;line-height:1.25">From USRP</tspan><tspan
+         style="font-size:10px;line-height:1.25">From SDR</tspan><tspan
          sodipodi:role="line"
          x="75"
          y="547.21973"
          id="tspan7855"
-         style="font-size:10px;line-height:1.25">RX Stream</tspan></text>
+         style="font-size:10px;line-height:1.25">RX stream</tspan></text>
     <path
        sodipodi:nodetypes="cc"
        inkscape:connector-curvature="0"
@@ -860,7 +873,7 @@
          inkscape:path-effect="#path-effect4631"
          id="path4629"
          d="m 485,1027.3598 h 30"
-         style="fill:none;stroke:#f00ddd;stroke-width:0.8886916px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+         style="fill:none;stroke:#f00ddd;stroke-width:0.888692px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
       <path
          inkscape:connector-curvature="0"
          inkscape:original-d="m 485,982.3597 h 30"
@@ -924,137 +937,22 @@
          x="427.76999"
          y="885.96472"
          id="tspan11376"
-         style="font-size:10px;line-height:1.25">GUI via</tspan><tspan
+         style="font-size:10px;line-height:1.25">Qt GUI via</tspan><tspan
          sodipodi:role="line"
          x="427.76999"
          y="898.46472"
          id="tspan11378"
-         style="font-size:10px;line-height:1.25">Unix Domain Socket</tspan></text>
-    <path
-       inkscape:connector-curvature="0"
-       inkscape:original-d="m 80,1002.3598 h 25"
-       inkscape:path-effect="#path-effect11382"
-       id="path11380"
-       d="m 80,1002.3598 h 25"
-       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-start:url(#Arrow1Mstart);marker-end:url(#Arrow1Mend)"
-       transform="translate(0,-120)" />
-    <text
-       id="text11384"
-       y="867.21478"
-       x="74.726875"
-       style="font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;line-height:0%;font-family:'Century Schoolbook L';-inkscape-font-specification:'Century Schoolbook L Medium';text-align:end;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none"
-       xml:space="preserve"><tspan
-         id="tspan11388"
-         y="867.21478"
-         x="74.726875"
+         style="font-size:10px;line-height:1.25">Unix domain </tspan><tspan
          sodipodi:role="line"
-         style="font-size:10px;line-height:1.25">To/From</tspan><tspan
-         y="879.71478"
-         x="74.726875"
-         sodipodi:role="line"
-         id="tspan11392"
-         style="font-size:10px;line-height:1.25">Trimble</tspan><tspan
-         y="892.21478"
-         x="74.726875"
-         sodipodi:role="line"
-         id="tspan11394"
-         style="font-size:10px;line-height:1.25">Thunderbolt</tspan><tspan
-         y="904.71478"
-         x="74.726875"
-         sodipodi:role="line"
-         id="tspan11396"
-         style="font-size:10px;line-height:1.25">GPS-DO</tspan></text>
-    <path
-       inkscape:connector-curvature="0"
-       inkscape:original-d="m 485,952.35975 80,-5e-5"
-       inkscape:path-effect="#path-effect4603-3"
-       id="path4601-2"
-       d="m 485,952.35975 80,-5e-5"
-       style="fill:none;stroke:#083ef1;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:3, 1;stroke-dashoffset:0;stroke-opacity:1"
-       transform="translate(-265,4.8092651e-5)"
-       sodipodi:nodetypes="cc" />
-    <path
-       style="fill:none;stroke:#f00ddd;stroke-width:0.8886916;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:2.66607481, 0.8886916;stroke-dashoffset:0;stroke-opacity:1"
-       d="m 485,1032.3597 h 80"
-       id="path4629-2"
-       inkscape:path-effect="#path-effect4631-6"
-       inkscape:original-d="m 485,1032.3597 h 80"
-       inkscape:connector-curvature="0"
-       sodipodi:nodetypes="cc"
-       transform="translate(-265,5e-5)" />
-    <path
-       style="fill:none;stroke:#f11333;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:3, 1;stroke-dashoffset:0;stroke-opacity:1"
-       d="m 485,982.3597 h 80"
-       id="path5001-6"
-       inkscape:path-effect="#path-effect5003-7"
-       inkscape:original-d="m 485,982.3597 h 80"
-       inkscape:connector-curvature="0"
-       transform="translate(-265,2.00007)"
-       sodipodi:nodetypes="cc" />
-    <path
-       style="fill:none;stroke:#11ee1a;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:3, 1;stroke-dashoffset:0;stroke-opacity:1"
-       d="m 485,997.3597 80,-1"
-       id="path5005-1"
-       inkscape:path-effect="#path-effect5007-5"
-       inkscape:original-d="m 485,997.3597 80,-1"
-       inkscape:connector-curvature="0"
-       transform="translate(-265,3.50006)"
-       sodipodi:nodetypes="cc" />
-    <path
-       style="fill:none;stroke:#f1ef12;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:3, 1;stroke-dashoffset:0;stroke-opacity:1"
-       d="m 485,1012.3597 h 80"
-       id="path5009-8"
-       inkscape:path-effect="#path-effect5011-3"
-       inkscape:original-d="m 485,1012.3597 h 80"
-       inkscape:connector-curvature="0"
-       transform="translate(-265,4.00006)"
-       sodipodi:nodetypes="cc" />
-    <path
-       inkscape:connector-curvature="0"
-       inkscape:original-d="m 485,967.35975 80,0.99995"
-       inkscape:path-effect="#path-effect9644-5"
-       id="path9640-7"
-       d="m 485,967.35975 80,0.99995"
-       style="fill:none;stroke:#e9bc8b;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:3, 1;stroke-dashoffset:0;stroke-opacity:1"
-       transform="translate(-265,0.50004)"
-       sodipodi:nodetypes="cc" />
-    <g
-       transform="translate(245,280)"
-       id="g3116-2">
-      <rect
-         transform="translate(0,602.35975)"
-         y="60"
-         x="55"
-         height="100"
-         width="100"
-         id="rect3118-3"
-         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
-    </g>
-    <text
-       id="text1176"
-       y="988.77979"
-       x="347.58997"
-       style="font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;line-height:0%;font-family:'Century Schoolbook L';-inkscape-font-specification:'Century Schoolbook L Medium';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none"
-       xml:space="preserve"><tspan
+         x="427.76999"
+         y="910.96472"
          style="font-size:10px;line-height:1.25"
-         y="988.77979"
-         x="347.58997"
-         id="tspan1174"
-         sodipodi:role="line">User Loadable</tspan><tspan
-         style="font-size:10px;line-height:1.25"
-         y="1001.2798"
-         x="347.58997"
-         sodipodi:role="line"
-         id="tspan1178">Plugin</tspan></text>
+         id="tspan11">socket</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16px;line-height:125%;font-family:FreeSans;-inkscape-font-specification:'FreeSans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        x="290"
        y="1042.3597"
-       id="text1182"><tspan
-         sodipodi:role="line"
-         id="tspan1180"
-         x="290"
-         y="1057.1598" /></text>
+       id="text1182" />
   </g>
 </svg>
