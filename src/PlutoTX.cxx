@@ -79,12 +79,18 @@ namespace SoDa {
     }
 
     // Disable all DDS tone generators so streamed samples reach the DAC.
+    // A prior session may have left a DDS tone armed with a non-zero scale
+    // or frequency; raw=0 alone does not clear those, so zero them too.
     for (unsigned int i = 0; i < iio_device_get_channels_count(dev); i++) {
       iio_channel * ch = iio_device_get_channel(dev, i);
       if (iio_channel_is_output(ch)) {
         const char * id = iio_channel_get_id(ch);
-        if (id && std::strstr(id, "altvoltage"))
-          iio_channel_attr_write(ch, "raw", "0");
+        if (id && std::strstr(id, "altvoltage")) {
+          iio_channel_attr_write         (ch, "raw",       "0");
+          iio_channel_attr_write_double  (ch, "scale",     0.0);
+          iio_channel_attr_write_longlong(ch, "frequency", 0);
+          iio_channel_attr_write_longlong(ch, "phase",     0);
+        }
       }
     }
 

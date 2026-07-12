@@ -78,9 +78,12 @@ namespace SoDa {
       throw SDR::Exception(Format("Never got command stream subscription\n"),
 			   getSelfPtr());
     }
-    // I think this is the right place for this....
-    cmd_stream->put(Command::make(Command::REP, Command::INIT_SETUP_COMPLETE, 0));
-    
+    // INIT_SETUP_COMPLETE used to fire here, but the GUI uses it to trigger
+    // restoreSettings(), which needs the Mode / AF-filter comboboxes to be
+    // populated first.  Those entries only arrive after the GUI requests
+    // HWMB_REP -> LIST_MODES / LIST_AF_FILTERS, which happens later.  So the
+    // emission is now at the end of BaseBandRX::reportAFFilters().
+
     // do the initial commands
     cmd_stream->put(Command::make(Command::SET, Command::RX_SAMP_RATE,
 				params->getRXRate())); 

@@ -61,7 +61,11 @@ void GUISoDa::ValComboBox::textChanged(const QString & txt) {
 void GUISoDa::IntValComboBox::addValue(QString lab, int val) {
   valmap[lab] = val;
   addItem(lab, QVariant(val));
-  setCurrentIndex(0);
+  // Don't force setCurrentIndex(0) here.  These boxes (Mode_cb, AFBw_cb, ...)
+  // are populated by REP messages from the server; if the settings restore
+  // has already selected an item, we must not clobber it back to the first
+  // entry every time a new choice is appended.  Qt already sets the current
+  // index to 0 automatically when the first item lands in an empty combo.
   this->show();
 }
 

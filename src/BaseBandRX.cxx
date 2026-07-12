@@ -552,6 +552,13 @@ namespace SoDa {
 				  "WSPR", ((int) SoDa::Command::BW_WSPR)));
     cmd_stream->put(Command::make(Command::REP, Command::AF_FILT_ENTRY,
 				  "PASS", ((int) SoDa::Command::BW_PASS)));
+
+    // reportAFFilters runs after reportModes on the same cmd_stream, so all
+    // MOD_SEL_ENTRY and AF_FILT_ENTRY messages precede this marker in FIFO
+    // order.  The GUI uses INIT_SETUP_COMPLETE to trigger restoreSettings();
+    // firing it here guarantees the Mode / AF-filter comboboxes are already
+    // populated so QSettings can select the saved entries by value.
+    cmd_stream->put(Command::make(Command::REP, Command::INIT_SETUP_COMPLETE, 0));
   }
 
 

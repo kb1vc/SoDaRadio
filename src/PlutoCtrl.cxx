@@ -101,17 +101,45 @@ namespace SoDa {
         self.lock());
     }
 
+    // The AD9361 retains its configuration between program runs, so a prior
+    // SoDaServer session that crashed or exited in an unusual state can leave
+    // the Pluto in a mode that produces no signal.  Force every attribute we
+    // rely on into a known baseline here, so startup is idempotent.
+
+    // ENSM state machine: force full-duplex.  A previous run may have left it
+    // in "sleep", "wait", "reset", or "tdd".
+    iio_device_attr_write(phy, "ensm_mode", "fdd");
+
+    // Loopback modes: 1 = digital, 2 = RF.  If left on, RX shows TX samples
+    // instead of the antenna, which looks like a working receiver until you
+    // notice the noise floor is wrong.
+    iio_device_attr_write(phy, "loopback", "0");
+
     // Power up both LOs.  The destructor writes powerdown=1 on exit; without
     // this the second startup finds the LOs still off: RX produces only noise
     // and TX produces no carrier, and the only recovery is unplugging the Pluto.
     iio_channel_attr_write(rx_lo_chan, "powerdown", "0");
     iio_channel_attr_write(tx_lo_chan, "powerdown", "0");
 
-    // Force manual gain control so SoDaRadio owns the RX gain value.
-    iio_channel_attr_write(rx_phy_chan, "gain_control_mode", "manual");
+    // RX path.  Force manual gain control so SoDaRadio owns the RX gain value.
+    // Restore the balanced-A antenna port (the Pluto's only physical RX SMA)
+    // and re-enable the DC-offset / quadrature calibration trackers in case a
+    // prior run turned them off.
+    iio_channel_attr_write(rx_phy_chan, "gain_control_mode",        "manual");
+    iio_channel_attr_write(rx_phy_chan, "rf_port_select",           "A_BALANCED");
+    iio_channel_attr_write(rx_phy_chan, "bb_dc_offset_tracking_en", "1");
+    iio_channel_attr_write(rx_phy_chan, "quadrature_tracking_en",   "1");
+    iio_channel_attr_write(rx_phy_chan, "rf_dc_offset_tracking_en", "1");
 
-    // Mute TX at startup (maximum attenuation = minimum power).
+    // TX path.  Restore the A port (the Pluto's only physical TX SMA) and
+    // mute TX at startup (maximum attenuation = minimum power).
+    iio_channel_attr_write(tx_phy_chan, "rf_port_select", "A");
     writeHWTXGain(TX_GAIN_MIN);
+
+    // Match the RadioControl base class initial state (rx_rf_gain = 0.0 SoDa
+    // dB → RX_GAIN_MAX hardware dB).  Without this, the AD9361 keeps whatever
+    // gain was last written before the previous exit.
+    writeHWRXGain(RX_GAIN_MAX);
 
     // The Pluto has a single SMA port per direction.
     rx_antenna_name = "RX";
