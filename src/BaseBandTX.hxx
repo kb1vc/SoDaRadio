@@ -34,7 +34,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "SoDaThread.hxx"
 #include "Params.hxx"
 #include "Command.hxx"
-#include "HilbertTransformer.hxx"
 #include "AudioIfc.hxx"
 
 #include <SoDa/MailBox.hxx>
@@ -183,10 +182,12 @@ namespace SoDa {
     SoDa::OSFilterPtr tx_audio_filter;
 
     /**
-     *The hilbert transformer to create an analytic (I/Q) signal.
+     * The LSB and USB filters -- we're using the filter method,
+     * not the phasing method now.  Hilbert was just too tough a
+     * customer for some reason. 
      */
-    SoDa::HilbertTransformerPtr hilbert;
-
+    SoDa::OSFilterPtr lsb_filt, usb_filt;
+    
     /**
      * mic gain is adjustable, to make sure we aren't noxious.
      */

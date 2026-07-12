@@ -416,7 +416,13 @@ namespace SoDa {
         repAFFilterShape();
       }
       break;
-    case Command::TX_MODE:
+    case Command::TX_STATE:
+      // TX_ON_1 / TX_OFF_1 are RxTxState values dispatched under TX_STATE.
+      // Previously mis-cased as TX_MODE, which meant the RX-mute never
+      // engaged and demodulated audio kept flowing to the speaker through
+      // the whole transmission.  RadioRX::execSetCommand still advances the
+      // state machine by sending TX_ON_2, so the redundant TX_ON_2 send
+      // below is defensive only.
       switch(cmd->iparms[0]) {
       case Command::TX_ON_1:
 	{

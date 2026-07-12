@@ -30,7 +30,7 @@
 */
 
 #include "BaseBandTX.hxx"
-#include "BaseBandRX.hxx"
+ #include "BaseBandRX.hxx"
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -62,7 +62,7 @@ namespace SoDa {
   
     // create the interpolator.
     // ts=0.063 gives in=2304, out=30000 (2304 * 625/48 = 30000, the original design)
-    interpolator = ReSampler::make(audio_sample_rate, rf_sample_rate, 0.063f);
+    interpolator = ReSampler::make(audio_sample_rate, rf_sample_rate, params->getAFBufferSize()); //  0.063f);
 
     audio_buffer_size = interpolator->getInputBufferSize();
     tx_buffer_size    = interpolator->getOutputBufferSize();
@@ -79,8 +79,12 @@ namespace SoDa {
     // create the IQ buffer -- must match interpolator->getInputBufferSize() exactly.
     audio_IQ_buf.resize(audio_buffer_size);
 
-    // create the Hilbert transformer
-    hilbert = HilbertTransformer::make(audio_buffer_size);
+    // create the sideband filters -- we're doing it this way....
+    usb_filt = SoDa::OSFilter::make(100, 2500, 100, 
+				    audio_sample_rate, audio_buffer_size);
+    lsb_filt = SoDa::OSFilter::make(-2500, -100, 100, 
+				    audio_sample_rate, audio_buffer_size);
+    
 
     // create the noise buffer
     noise_buffer.resize(audio_buffer_size);
@@ -208,9 +212,19 @@ namespace SoDa {
     float total_gain = mic_gain * af_gain;
 
     if(is_usb || is_lsb) {
-      hilbert->apply(audio_buf, audio_IQ_buf, is_lsb, total_gain);
+      std::vector<std::complex<float>> in_iq_buf(audio_buf.size());
+      for(int i = 0; i < audio_buf.size(); i++) {
+	in_iq_buf[i] = std::complex<float>(audio_buf[i], 0.0);
+      }
+      if(is_usb) {
+	usb_filt->apply(in_iq_buf, audio_IQ_buf, total_gain);
+      }
+      else {
+	lsb_filt->apply(in_iq_buf, audio_IQ_buf, total_gain);	
+      }
     }
     else {
+      // must be AM
       unsigned int i;
       for(i = 0; i < audio_buffer_size; i++) {
 	audio_IQ_buf[i] = std::complex<float>(audio_buf[i], 0.0) * total_gain;
