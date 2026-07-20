@@ -380,8 +380,8 @@ namespace SoDa {
   std::string USRPCtrl::getHardwareDescription() {
     return SoDa::Format("%0\t%1 to %2 MHz")
       .addS(motherboard_name)
-      .addF((rx_rf_freq_range.start() * 1e-6), 'e', 10, 6)
-      .addF((rx_rf_freq_range.stop() * 1e-6), 'e', 10, 6).str();
+      .addF((rx_rf_freq_range.start() * 1e-6), 'e', 8, 3)
+      .addF((rx_rf_freq_range.stop() * 1e-6), 'e', 8, 3).str();
   }
 
   void USRPCtrl::initControlGPIO()

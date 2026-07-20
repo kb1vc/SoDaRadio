@@ -15,10 +15,14 @@ separate devices).
 
 6. Make device-not-found failures more graceful. 
 
-7. Document the process for connecting wsjtx or fldigi
+7. [done] Document the process for connecting wsjtx or fldigi
 
 8. Write a "new radio" howto.
 
 9. [done v12.3.1] Fix TX CW offset. 
 
 10. No sample format supported found for device... add something that prints the supported formats. 
+
+11. Fill in settings documentation. 
+
+12. Fix/resurrect TR switch support. Build a common interface going forward. 

@@ -217,7 +217,7 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   // 	  this, SLOT(setWindowTitle(const QString &)));
   connect(radio_listener, &GUISoDa::RadioListener::repHWMBVersion,
 	  [=](const QString & hw) {
-	    this->setWindowTitle(QString("SoDa Radio V %1 -- SDR %2").arg(SoDaRadio_VERSION).arg(hw));
+	    this->setWindowTitle(QString("SoDa Radio V %1 -- SDR %2        <ALT>H for help").arg(SoDaRadio_VERSION).arg(hw));
 	  });
 
   connect(radio_listener, SIGNAL(initSetupComplete()),
@@ -391,7 +391,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. \
 void MainWindow::displayHelp(bool) {
   QStringList candidates = {
     QString(SODARADIO_HTML_BUILD_PATH) + "/index.html",
-    QDir::cleanPath(QCoreApplication::applicationDirPath() + "/../share/doc/html/index.html"),
+    QDir::cleanPath(QCoreApplication::applicationDirPath() + "/../share/doc/SoDaRadio/html/index.html"),
   };
 
   QString indexPath;
@@ -1222,8 +1222,8 @@ void MainWindow::reorganizeForShortSoDa()
   });
   mkAlt(Qt::Key_C, [this]() { showPanelChooser(); });
   mkAlt(Qt::Key_V, [this]() { vu_meter->setVisible(!vu_meter->isVisible()); });
-  mkAlt(Qt::Key_H, [this]() {
-    QMessageBox::information(this, tr("Keyboard Shortcuts"),
+  auto showShortcutHelp = [this]() {
+    QMessageBox::information(this, tr("Keyboard Shortcuts & Such"),
       tr("<b>Alt+T</b> — Transmit panel<br>"
          "<b>Alt+W</b> — Waterfall panel<br>"
          "<b>Alt+P</b> — Periodogram panel<br>"
@@ -1231,8 +1231,14 @@ void MainWindow::reorganizeForShortSoDa()
          "<b>Alt+L</b> — Log panel<br>"
          "<b>Alt+C</b> — Panel chooser (also middle-click)<br>"
          "<b>Alt+V</b> — VU meter (toggle)<br>"
-         "<b>Alt+H</b> — This help"));
-  });
+	 "<b>MB2</b>   — Show panel choices<br>"
+	 "<b>MB1</b>   — Pick frequency on spectrum plot<br>"
+         "<b>Alt+H</b> — This help<br>"
+         "<b>Alt+?</b> — This help<br>"
+	 ));
+  };
+  mkAlt(Qt::Key_H,        showShortcutHelp);
+  mkAlt(Qt::Key_Question, showShortcutHelp);
 }
 
 // True if this radio reports any TX antenna (i.e. is not RX-only).

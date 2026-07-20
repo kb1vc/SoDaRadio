@@ -216,12 +216,17 @@ You got here from the Settings panel by poking the "Help" button.
 
 \subsection transvertersGUI Transverters 
 
-\subsection theTheme The Theme
-Is dark. Yes. We'll try it in the sun and see how things work. 
-
 \section configFiles Configuration Files
 
 \subsection firstConfig Creating Your First Configuration File
+
+A well organized radio will separate the spectrum into bands. There are many reasons: 
+Perhaps a given band always uses a particular modulation scheme? Maybe a band uses special antenna settings? Maybe a band must be "translated" via external hardware into a frequency that
+is within the basic SDR's range?
+
+There are lots of bands. The ham bands - many of them. Shortwave, time standard, aviation, weather, and beyond. SoDaRadio lets you create band descriptions. But creating the first 20 is a bit of a chore. So there is a tool for that. 
+
+But first, a word about model names.
 
 \subsection modelNames Model Names
 
@@ -238,5 +243,6 @@ Selecting "USRP" will open a configuration file
 "USRP_SoDaRadioQT.conf" that probably has no entries for transverters
 at frequencies below 5 GHz.
 
-
+Section [First Steps](@ref FirstSteps) describes the
+`SoDaCreateConfig` tool and its uses. Go there.
 

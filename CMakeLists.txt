@@ -60,9 +60,10 @@ include(GNUInstallDirs)
 # without adding too much visual noise to panels. Working on in-app
 # documentation. Added hook to CMake that triggers version update with
 # each new commit.
+# 12.4.0 - Added more help documentation. Lots more.
 SET(SoDaRadio_VERSION_MAJOR 12)
-SET(SoDaRadio_VERSION_MINOR 3)
-SET(SoDaRadio_VERSION_PATCH 2)
+SET(SoDaRadio_VERSION_MINOR 4)
+SET(SoDaRadio_VERSION_PATCH 0)
 SET(SoDaRadio_VERSION "${SoDaRadio_VERSION_MAJOR}.${SoDaRadio_VERSION_MINOR}.${SoDaRadio_VERSION_PATCH}")
 
 set(SoDaRadio_PACKAGE_DESCRIPTION 
@@ -426,7 +427,7 @@ IF(DOXYGEN_FOUND)
     COMMENT "Generating API documentation with Doxygen" VERBATIM
     )
 
-  INSTALL(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION share/doc)
+  INSTALL(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION share/doc/SoDaRadio)
   IF(Qt6Help_FOUND AND QHELPGENERATOR_EXECUTABLE)
     INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/html/SoDaRadio.qch
       DESTINATION share/doc/SoDaRadio)

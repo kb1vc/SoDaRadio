@@ -1,4 +1,4 @@
-# SoDa -- A Software Defined Radio for ADALM/Pluto, USRP, RTLSD, and ... {#mainpage}
+\section TopLabel SoDa -- A Software Defined Radio for ADALM/Pluto, USRP, RTLSD, and ... {\sectionmainpage}
 
 SoDaRadio is a multi-mode HF/VHF/UHF/Microwave radio transciever
 that runs on Linux.   It has been tested on several 
@@ -33,9 +33,9 @@ To learn how to operate an SDR with SoDaRadio look at [the GUI](@ref ShortSoDaGU
 
 But if you just can't wait and if you have a sense of humor: 
 
-## Quickstart
+\subsection Quickstart Quickstart
 
-### First Steps
+\subsubsection FirstSteps First Steps
 
 SoDaRadio reads configuration information (like band definitions, last
 tuned frequency, volume and gain settings) from a configuration
@@ -72,7 +72,7 @@ The SoDaRadio code that manages radio models has *two* entries for USRPs. One is
 
 If you're satisfied with your newly generated configuration files, copy them to `~/.config/kb1vc.org/` and let 'er rip.
 
-### Running SoDaRadio
+\subsubsection Running SoDaRadio
 
 Got a USRP? If it is a B2xx make sure that it is loaded and ready: 
 ```
@@ -93,12 +93,11 @@ How about an RTLSDR?
 SoDaRadio  RTLSDR
 ```
 
-### Running WSJTX or FLDIGI
+\subsubsection RunninngMODEMS Running WSJTX or FLDIGI
 
-This is harder than it ought to be. Take a look in MODEMS.md. If that file
-doesn't exist, then I haven't written it yet. 
+This is harder than it ought to be. Take a look at [Modems](@ref Modems). 
 
-## Reporting Bugs
+\section Reporting Bugs
 
 There's a bug somewhere in this code. And if there's one bug, you can bet there will be a bazillion others hiding with it. 
 
@@ -121,7 +120,7 @@ bug was - why were you disappointed? That's more important than the
 diagnosis.
 
 
-## Copyright: 
+\section Copyright: 
 
 Copyright (c) 2026 Matthew H. Reilly (kb1vc)
 All rights reserved.
@@ -151,6 +150,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (Sorry for the ALL-CAPS. But maybe shouting makes it all more legal...)
 
-## Support for Windows
+\section Support for Windows
 
 No.

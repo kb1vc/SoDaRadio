@@ -148,6 +148,11 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   connect(audio_listener->getRX(), &GUISoDa::AudioRXListener::pendAudioBuffer,
 	  vu_meter, &GUISoDa::VUMeter::updateLevel);
 
+  // Keyboard shortcuts reference: Alt+H and Alt+?
+  auto showShortcuts = [this]() { displayKeyboardShortcuts(); };
+  connect(new QShortcut(QKeySequence(Qt::ALT | Qt::Key_H),        this), &QShortcut::activated, showShortcuts);
+  connect(new QShortcut(QKeySequence(Qt::ALT | Qt::Key_Question), this), &QShortcut::activated, showShortcuts);
+
 #if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
   connect(ui->Record_chk, &QCheckBox::checkStateChanged,
 	  [=](Qt::CheckState state) {
@@ -256,10 +261,18 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. \
 </p>").arg(SoDaRadio_VERSION).arg(SoDaRadio_GIT_ID).arg(UHD_VERSION_ABI_STRING).arg(QTCORE_VERSION_STR));
 }
 
+void MainWindow::displayKeyboardShortcuts()
+{
+  QMessageBox::information(this, "SoDaRadio Keyboard Shortcuts",
+    "Alt+V       Toggle VU meter\n"
+    "Alt+H       This keyboard shortcuts reference\n"
+    "Alt+?       This keyboard shortcuts reference");
+}
+
 void MainWindow::displayHelp(bool) {
   QStringList candidates = {
     QString(SODARADIO_HTML_BUILD_PATH) + "/index.html",
-    QDir::cleanPath(QCoreApplication::applicationDirPath() + "/../share/doc/html/index.html"),
+    QDir::cleanPath(QCoreApplication::applicationDirPath() + "/../share/doc/SoDaRadio/html/index.html"),
   };
 
   QString indexPath;

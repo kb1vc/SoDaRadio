@@ -984,13 +984,15 @@ WARN_LOGFILE           =
 
 INPUT                  = @PROJECT_SOURCE_DIR@/doc/SoDaRadio.md \
                          @PROJECT_SOURCE_DIR@/shortgui/README.md \
+			 @PROJECT_SOURCE_DIR@/doc/MODEMS.md \
 		         @PROJECT_SOURCE_DIR@/src/README.md \
                          @PROJECT_SOURCE_DIR@/qtgui/README.md \
 			 @PROJECT_SOURCE_DIR@/shortgui \
 		         @PROJECT_SOURCE_DIR@/src \
                          @PROJECT_SOURCE_DIR@/qtgui \
                          @PROJECT_SOURCE_DIR@/examples \
-                         @PROJECT_SOURCE_DIR@/TestCLI
+                         @PROJECT_SOURCE_DIR@/TestCLI \
+			 @PROJECT_SOURCE_DIR@/TODO.md			 
 
 # This tag can be used to specify the character encoding of the source files
 # that Doxygen parses. Internally Doxygen uses the UTF-8 encoding. Doxygen uses
