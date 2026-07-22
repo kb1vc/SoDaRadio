@@ -1,4 +1,4 @@
-\section TopLabel SoDa -- A Software Defined Radio for ADALM/Pluto, USRP, RTLSD, and ... {\sectionmainpage}
+\section TopLabel SoDa -- A Software Defined Radio for ADALM/Pluto, USRP, RTLSD, and ...
 
 SoDaRadio is a multi-mode HF/VHF/UHF/Microwave radio transciever
 that runs on Linux.   It has been tested on several 
@@ -120,7 +120,7 @@ bug was - why were you disappointed? That's more important than the
 diagnosis.
 
 
-\section Copyright: 
+\section copyright Copyright: 
 
 Copyright (c) 2026 Matthew H. Reilly (kb1vc)
 All rights reserved.

@@ -66,7 +66,7 @@ void VUMeter::updateLevel(float* buf, qint64 len) {
         sum_sq += s * s;
     }
     double rms = std::sqrt(sum_sq / (double)len);
-    float db = (rms > 1e-10) ? 20.0f * std::log10f((float)rms) : MIN_DB - 10.0f;
+    float db = (rms > 1e-10) ? 20.0f * std::log10((float)rms) : MIN_DB - 10.0f;
     target_db = db;  // timer applies ballistics, so just store the raw level
 }
 

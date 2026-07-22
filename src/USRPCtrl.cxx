@@ -228,10 +228,20 @@ namespace SoDa {
 
   double USRPCtrl::getLOFreq(SoDa::RXTX rxtx) {
     if(rxtx == SoDa::RX) {
+      std::cerr << SoDa::Format("getLOFreq(RX) actual_rf %0 actual dsp %1 target %2\n")
+	.addF(last_rx_tune_result.actual_rf_freq, 'e', 11, 9)
+	.addF(last_rx_tune_result.actual_dsp_freq, 'e', 11, 9)
+	.addF(last_rx_tune_result.target_rf_freq, 'e', 11, 9)	
+	;
       return last_rx_tune_result.actual_rf_freq + last_rx_tune_result.actual_dsp_freq;     
     }
     else if(rxtx == SoDa::TX) {
-      return last_tx_tune_result.actual_rf_freq + last_tx_tune_result.actual_dsp_freq; 
+      std::cerr << SoDa::Format("getLOFreq(TX) actual_rf %0 actual dsp %1 target %2\n")
+	.addF(last_tx_tune_result.actual_rf_freq, 'e', 11, 9)
+	.addF(last_tx_tune_result.actual_dsp_freq, 'e', 11, 9)
+	.addF(last_tx_tune_result.target_rf_freq, 'e', 11, 9)	
+	;
+      return last_tx_tune_result.actual_rf_freq - last_tx_tune_result.actual_dsp_freq; 
     }
 
     return 0.0; /// no idea how we'd get here. 
@@ -275,7 +285,7 @@ namespace SoDa {
 	       .addF(target_rx_freq, 'e', 10, 6)
 	       .addF(rx_trequest.rf_freq, 'e', 10, 6)
 	       .addF(rx_trequest.dsp_freq, 'e', 10, 6));
-      return last_rx_tune_result.actual_rf_freq - last_rx_tune_result.actual_dsp_freq;
+      return last_rx_tune_result.actual_rf_freq + last_rx_tune_result.actual_dsp_freq;
     }
     else {
       // On the transmit side, we're using a minimal IF rate and
@@ -739,9 +749,11 @@ namespace SoDa {
 
   bool USRPCtrl::setClockSource(Command::ClockSource src) {
     if(src == Command::ClockSource::EXTERNAL) {
+      std::cerr << "#### Setting clock source to EXTERNAL\n";
       usrp->set_clock_source("external");
     }
     else {
+      std::cerr << "#### Setting clock source to INTERNAL\n";      
       usrp->set_clock_source("internal");    
     }
     return true; 

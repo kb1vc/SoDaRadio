@@ -359,7 +359,7 @@ void RadioListener::setSquelchLevel(int lev)
 
 void RadioListener::setClockRef(int external)
 {
-  int clock_source = (external != Qt::Unchecked) ? 1 : 0;
+  int clock_source = (external != Qt::Unchecked) ? SoDa::Command::EXTERNAL : SoDa::Command::INTERNAL;
   put(SoDa::Command(SoDa::Command::SET, SoDa::Command::CLOCK_SOURCE, clock_source), __PRETTY_FUNCTION__);
 }
 

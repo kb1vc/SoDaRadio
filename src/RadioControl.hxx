@@ -479,10 +479,10 @@ g     * 144.325 MHz in the spectrogram display.  The LO would need to be changed
     // state of the box
     bool tx_on; ///< if true, we are transmitting.
 
-    double cur_rx_lo_freq; ///< The current receiver LO frequency 
-    double cur_rx_if_freq; ///< difference between rx
-    double cur_tx_lo_freq; ///< The current *requested* transmitter LO frequency 
-    double cur_tx_if_freq; ///< the TX LO frequency reported by the RadioTX front end.
+    double cur_rx_lo_hw; ///< The current hardware receiver LO frequency
+    double cur_rx_lo_sw; ///< The current internal (software) receiver LO frequency     
+    double cur_tx_freq; ///< The current *requested* transmitter LO frequency 
+    double cur_tx_lo_hw; ///< the TX LO frequency reported by the RadioTX front end.
 
     static const double tx_freq_rxmode_offset; ///< tx offset when in RX mode
 

@@ -43,8 +43,10 @@ namespace SoDa {
     rx_rf_gain = 0.0;
     tx_rf_gain = 0.0;
     tx_samp_rate = 625000;
-    cur_rx_lo_freq = 0.0;
-    cur_tx_lo_freq = 0.0;
+    cur_rx_lo_hw = 0.0;
+    cur_rx_lo_sw = 0.0;    
+    cur_tx_lo_hw = 0.0;
+    cur_tx_freq = 0.0;
 
     // set it to something.  we'll get real info soon. 
     tx_modulation = Command::CW_U;
@@ -193,7 +195,7 @@ namespace SoDa {
 
     case Command::LO_CHECK:
       if(cmd->dparms[0] == 0.0) {
-	setLOFreq(cur_rx_lo_freq, SoDa::RX);
+	setLOFreq(cur_rx_lo_hw, SoDa::RX);
       }
       else {
 	debugMsg(Format("setting lo check freq to %0\n") .addF(cmd->dparms[0], 'e', 10, 6));
@@ -277,20 +279,20 @@ namespace SoDa {
     switch (cmd->target) {
     case Command::RX_TUNE_FREQ:
       cmd_stream->put(Command::make(Command::REP, Command::RX_TUNE_FREQ, 
-				  cur_rx_lo_freq + cur_rx_if_freq));
+				  cur_rx_lo_hw + cur_rx_lo_sw));
       break; 
     case Command::TX_TUNE_FREQ:
       cmd_stream->put(Command::make(Command::REP, Command::TX_TUNE_FREQ, 
-				  cur_tx_lo_freq + cur_tx_if_freq));
+				    cur_tx_freq));
       break; 
 
     case Command::RX_LO_FREQ: 
       cmd_stream->put(Command::make(Command::REP, Command::RX_LO_FREQ, 
-				  cur_rx_lo_freq));
+				  cur_rx_lo_hw));
       break; 
     case Command::TX_LO_FREQ:
       cmd_stream->put(Command::make(Command::REP, Command::TX_LO_FREQ, 
-				  cur_tx_lo_freq));
+				  cur_tx_lo_hw));
       break; 
       
     case Command::RX_SAMP_RATE:
@@ -400,47 +402,75 @@ namespace SoDa {
 
       // ask the device controller to set the TX lo.  Normally this should
       // be equal to freq and actual_lo_freq would be freq
-      cur_tx_lo_freq = setLOFreq(freq, SoDa::TX);
+      cur_tx_lo_hw = setLOFreq(freq, SoDa::TX);
       
-      cur_tx_if_freq =  (freq - cur_tx_lo_freq);
+      cur_tx_freq =  (freq - cur_tx_lo_hw);
       // tell the TX IF to set its new IF frequency. 
-      cmd_stream->put(Command::make(Command::SET, Command::TX_IF_FREQ, cur_tx_if_freq));
+      cmd_stream->put(Command::make(Command::SET, Command::TX_IF_FREQ, cur_tx_freq));
       cmd_stream->put(Command::make(Command::REP, Command::TX_LO_FREQ,
-				  cur_tx_lo_freq));
+				  cur_tx_lo_hw));
       cmd_stream->put(Command::make(Command::REP, Command::TX_TUNE_FREQ,
-				  cur_tx_lo_freq + cur_tx_if_freq));
+				  cur_tx_lo_hw + cur_tx_freq));
     }
     else { // rxtx is RX
-      // if the requested frequency is between 100 kHz and 200 kHz above the LO
-      // we don't need to reset the LO, just the IF.
-      auto fe_freq = findGoodRXLO(freq, cur_rx_lo_freq); 
-      if(fe_freq > 0.0) {
-	// retune the front end.
-	cur_rx_lo_freq = setLOFreq(fe_freq, SoDa::RX);
+      // OK... We have several frequencies in play.
+      // 1. The requested (carrier) frequency  "freq"
+      // 2. The hardware IF frequency (f_if_hw)
+      // 3. The hardware LO frequency (cur_rx_lo_hw)
+      // 4. The software LO frequency (cur_rx_lo_sw)
+      //
+      // We want our desired cur_rx_lo_hw to fall in a range such that
+      // freq - cur_rx_lo_hw < 240 kHz and freq - cur_rx_lo_hw > 100 kHz.
+      // This keeps the DC spike at least 100 kHz away from the
+      // frequency of interest and below the 80% rolloff in the
+      // sampling range -312.5 kHz to 312.5 kHz.
+      //
+      // If the requested frequency falls in the range, then we
+      // don't need to change cur_rx_lo_hw. Otherwise, we pick
+      // cur_rx_lo_hw so that it is 170 kHz below freq.
+      //
+      // We trust the hardware interface to give us the LO we
+      // ask for, or at least something close. USRPs, for
+      // instance, will tune their first RF lo to an integer multiple
+      // of a reference clock, then use a CORDIC NCO on the fpga
+      // to make up the difference.
+      // first find the current cur_rx_lo_hw
+      auto cur_rx_lo_hw = getLOFreq(SoDa::RX);
+      // now test
+      auto f_diff = freq - cur_rx_lo_hw; 
+      if((f_diff < 240e3) && (f_diff > 100e3)) {
+	// we only need to change the software lo that beats us down to baseband
+	cur_rx_lo_sw = f_diff;
+      }
+      else {
+	// we need to pick a new LO... It should be about 170 kHz below the
+	// requested frequency
+	cur_rx_lo_hw = freq - 170e3;
+	// change the software lo
+	cur_rx_lo_sw = freq - cur_rx_lo_hw; 
+	// now set the hardware lo
+	setLOFreq(cur_rx_lo_hw, SoDa::RX); 
 	// we also need to tell everyone about the new center frequency for the IF stream
 	cmd_stream->put(Command::make(Command::REP, Command::RX_CENTER_FREQ, 
-				    cur_rx_lo_freq));
+				    cur_rx_lo_hw));
       }
-
-      // change the IF frequency    
-      cur_rx_if_freq = freq - cur_rx_lo_freq;
       // tell the RX IF to set its new IF frequency. Then wait for it
       // to respond with a report. 
-      cmd_stream->put(Command::make(Command::SET, Command::RX_IF_FREQ, cur_rx_if_freq));
+      cmd_stream->put(Command::make(Command::SET, Command::RX_IF_FREQ, cur_rx_lo_sw));
       cmd_stream->put(Command::make(Command::REP, Command::RX_TUNE_FREQ, 
-				  cur_rx_lo_freq + cur_rx_if_freq));
+				  cur_rx_lo_hw + cur_rx_lo_sw));
       cmd_stream->put(Command::make(Command::REP, Command::RX_LO_FREQ, 
-				  cur_rx_lo_freq));
+				  cur_rx_lo_hw));
       
     }
   }
   
   bool RadioControl::isLocked(SoDa::RXTX rxtx) {
     if(rxtx == SoDa::RX) {
-      return (cur_rx_lo_freq == getLOFreq(SoDa::RX)) && isLOLocked(SoDa::TX);
+      return (cur_rx_lo_hw == getLOFreq(SoDa::RX)) && isLOLocked(SoDa::RX);
     }
     else {
-      return (cur_rx_lo_freq == getLOFreq(SoDa::TX)) && isLOLocked(SoDa::TX);
+      return (cur_rx_lo_hw == getLOFreq(SoDa::TX)) && isLOLocked(SoDa::TX);
     }
   }
 
@@ -457,7 +487,7 @@ namespace SoDa {
       cmd_stream->put(Command::make(Command::REP, Command::TX_RF_GAIN, gain));
 
       //   4. X Set the tx local oscillator (in case it was in "tune remote mode"
-      setLOFreq(cur_tx_lo_freq, SoDa::TX);
+      setLOFreq(cur_tx_lo_hw, SoDa::TX);
 
       //   5.   Enable the rest of the tx hardware, including the antenna relay.
       setTXEna(true, full_duplex);
@@ -478,7 +508,7 @@ namespace SoDa {
       setTXEna(false, full_duplex);
 
       // 2.   Shift the TX LO at least 1 MHz away from the RX passband immediately.
-      setLOFreq(cur_tx_lo_freq + tx_freq_rxmode_offset, SoDa::TX);
+      setLOFreq(cur_tx_lo_hw + tx_freq_rxmode_offset, SoDa::TX);
 
       // 3. X Sets rx gain to current level
       setRFGain(rx_rf_gain, SoDa::RX);
