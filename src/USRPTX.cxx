@@ -97,6 +97,15 @@ namespace SoDa {
         tx_md.end_of_burst = false;
         tx_md.has_time_spec = false;
         tx_enabled = true;
+        // Prime UHD with ~150 ms of silence. The GUI's audio ring in AudioQt
+        // is empty at TX_ON (sleepIn cleared it), so the first real buffer
+        // won't reach us until BaseBandTX has accumulated one audio buffer
+        // from the socket (~48 ms) and pushed it through the interpolator.
+        // Without a cushion, the USB-connected USRP underruns immediately.
+        const int prime_bufs = 3;
+        for (int i = 0; i < prime_bufs; i++) {
+            put(zero_buf);
+        }
     } else {
         if (!tx_enabled) return false;
         if (needs_resample && !accu.empty()) {
