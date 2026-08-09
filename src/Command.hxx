@@ -518,7 +518,12 @@ namespace SoDa
 	 * Get a report of supported filters from the baseband rx module
 	 */
 	LIST_AF_FILTERS,
-	
+
+	/**
+	 * Average TX envelope power
+	 */
+	TX_ENV_POW,
+
 	/**
 	 * No comment
 	 */

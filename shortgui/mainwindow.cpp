@@ -280,6 +280,11 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   connect(audio_listener->getRX(), &GUISoDa::AudioRXListener::pendAudioBuffer,
 	  vu_meter, &GUISoDa::VUMeter::updateLevel);
 
+  // TX power meter: floating window, toggled by Alt+M (shortcut registered in reorganizeForShortSoDa)
+  power_meter = new GUISoDa::PowerMeter(this);
+  connect(radio_listener, &GUISoDa::RadioListener::repTXEnvPower,
+	  power_meter, &GUISoDa::PowerMeter::updatePower);
+
 #if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
   connect(ui->Record_chk, &QCheckBox::checkStateChanged,
 	  [=](Qt::CheckState state) {
@@ -1222,6 +1227,7 @@ void MainWindow::reorganizeForShortSoDa()
   });
   mkAlt(Qt::Key_C, [this]() { showPanelChooser(); });
   mkAlt(Qt::Key_V, [this]() { vu_meter->setVisible(!vu_meter->isVisible()); });
+  mkAlt(Qt::Key_M, [this]() { power_meter->setVisible(!power_meter->isVisible()); });
   auto showShortcutHelp = [this]() {
     QMessageBox::information(this, tr("Keyboard Shortcuts & Such"),
       tr("<b>Alt+T</b> — Transmit panel<br>"
@@ -1231,6 +1237,7 @@ void MainWindow::reorganizeForShortSoDa()
          "<b>Alt+L</b> — Log panel<br>"
          "<b>Alt+C</b> — Panel chooser (also middle-click)<br>"
          "<b>Alt+V</b> — VU meter (toggle)<br>"
+         "<b>Alt+M</b> — TX power meter (toggle)<br>"
 	 "<b>MB2</b>   — Show panel choices<br>"
 	 "<b>MB1</b>   — Pick frequency on spectrum plot<br>"
          "<b>Alt+H</b> — This help<br>"

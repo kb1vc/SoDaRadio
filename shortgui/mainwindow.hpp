@@ -50,6 +50,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "HamlibServer.hpp"
 #include "AudioListener.hpp"
 #include "VUMeter.hpp"
+#include "PowerMeter.hpp"
 
 namespace Ui {
   class MainWindow;
@@ -226,6 +227,8 @@ private:
   GUISoDa::HamlibServer * hlib_server;
 
   GUISoDa::VUMeter * vu_meter;
+
+  GUISoDa::PowerMeter * power_meter;
 
   // UI wide state -- this doesn't really fit anywhere else.
   void setTXRXOffset(double v) { tx_rx_offset = v; }

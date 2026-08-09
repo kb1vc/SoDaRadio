@@ -28,6 +28,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "RadioListener.hpp"
 #include <QDebug>
+#include <cmath>
 
 namespace GUISoDa {
 
@@ -243,9 +244,11 @@ void RadioListener::setAFGain(int gain) {
 }
 
 void RadioListener::setTXAFGain(int gain) {
-  // Slider 0-100; server applies gain = 10^(0.1*(dparms[0]-50)).
-  // At 50: unity gain.  At 60: +20dB.  At 40: -20dB.
-  double dgain = (double)gain;
+  // Slider 0..100 with unity at 50.  Server applies gain = 10^(0.1*(dparms[0]-50)).
+  // Square-law taper: fine control near unity, endpoints still reach ±50 dB.
+  //   slider=50 → 0 dB, slider=60 → +2 dB, slider=75 → +12.5 dB, slider=100 → +50 dB.
+  double x = (double)gain - 50.0;
+  double dgain = 50.0 + (x * std::fabs(x)) / 50.0;
   put(SoDa::Command(SoDa::Command::SET, SoDa::Command::TX_AF_GAIN, dgain), __PRETTY_FUNCTION__);
 }
 
@@ -305,7 +308,10 @@ bool RadioListener::handleREP(const SoDa::Command & cmd)
     break;
   case SoDa::Command::TX_STATE:
     emit(repPTT(cmd.iparms[0] >= SoDa::Command::TX_ON_0));
-    break; 
+    break;
+  case SoDa::Command::TX_ENV_POW:
+    emit(repTXEnvPower(cmd.dparms[0]));
+    break;
   case SoDa::Command::TX_GAIN_RANGE:
     emit(repGainRange(cmd.dparms[0], cmd.dparms[1])); 
     tx_gain_min = cmd.dparms[0]; 

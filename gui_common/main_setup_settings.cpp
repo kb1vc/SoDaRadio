@@ -29,6 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mainwindow.hpp"
 #include "ui_mainwindow.h"
 #include <iostream>
+#include <cmath>
 #include "soda_comboboxes.hpp"
 #include "RadioListener.hpp"
 #include <QAudioDevice>
@@ -60,7 +61,11 @@ void MainWindow::setupSettings()
 	  radio_listener, SLOT(setTXAFGain(int)));
   connect(ui->TXAFGain_slide, &QSlider::valueChanged,
 	  [=](int s) {
-	    ui->TXAFGain_lbl->setText(QString("%1").arg(s, 3));
+	    // Match the square-law taper in RadioListener::setTXAFGain
+	    // so the label reads the actual dB the server will apply.
+	    double x = (double)s - 50.0;
+	    double db = (x * std::fabs(x)) / 50.0;
+	    ui->TXAFGain_lbl->setText(QString("%1").arg(db, 5, 'f', 1));
 	  });
   
   connect(ui->FromGrid_le, SIGNAL(textChanged(const QString &)),

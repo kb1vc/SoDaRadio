@@ -54,6 +54,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "RadioListener.hpp"
 #include "../common/GuiParams.hxx"
 #include "VUMeter.hpp"
+#include "PowerMeter.hpp"
 #include <QShortcut>
 
 #include "SoDaLogo_Big.xpm"
@@ -147,6 +148,13 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
 	  [this]() { vu_meter->setVisible(!vu_meter->isVisible()); });
   connect(audio_listener->getRX(), &GUISoDa::AudioRXListener::pendAudioBuffer,
 	  vu_meter, &GUISoDa::VUMeter::updateLevel);
+
+  // TX power meter: floating window, toggled by Alt+M
+  power_meter = new GUISoDa::PowerMeter(this);
+  connect(new QShortcut(QKeySequence(Qt::ALT | Qt::Key_M), this), &QShortcut::activated,
+	  [this]() { power_meter->setVisible(!power_meter->isVisible()); });
+  connect(radio_listener, &GUISoDa::RadioListener::repTXEnvPower,
+	  power_meter, &GUISoDa::PowerMeter::updatePower);
 
   // Keyboard shortcuts reference: Alt+H and Alt+?
   auto showShortcuts = [this]() { displayKeyboardShortcuts(); };
@@ -265,6 +273,7 @@ void MainWindow::displayKeyboardShortcuts()
 {
   QMessageBox::information(this, "SoDaRadio Keyboard Shortcuts",
     "Alt+V       Toggle VU meter\n"
+    "Alt+M       Toggle TX power meter\n"
     "Alt+H       This keyboard shortcuts reference\n"
     "Alt+?       This keyboard shortcuts reference");
 }

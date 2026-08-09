@@ -148,6 +148,10 @@ namespace SoDa {
     // first wake up the audio channel
     audio_ifc->wakeIn();
 
+    // We report TX average power every once in a while
+    tx_power_buf_count = 0;
+    tx_power_sum = 0.0;
+    
     while(!exitflag) {
       if(cmd_stream->get(cmd_subs, cmd)) {
 	// process the command.
@@ -193,6 +197,7 @@ namespace SoDa {
 	  }
 	  if(txbuf !=nullptr) {
 	    tx_stream->put(txbuf);
+	    accumulateTXPower(txbuf);
 	  }
 	}
 	// Only sleep when the circular buffer had nothing — when audio is
@@ -202,6 +207,19 @@ namespace SoDa {
     }
   }
 
+  void BaseBandTX::accumulateTXPower(SoDa::CBufPtr txbuf) {
+    tx_power_buf_count++;
+
+    for(auto v : txbuf->getBuf()) {
+      tx_power_sum += (v * std::conj(v)).real();
+    }
+    if(tx_power_buf_count >= 5) {
+      tx_power_buf_count = 0;
+      cmd_stream->put(Command::make(Command::REP, Command::TX_ENV_POW,
+				    tx_power_sum / (5 * txbuf->getBuf().size())));
+      tx_power_sum = 0.0; 
+    }
+  }
   CBufPtr BaseBandTX::modulateAM(std::vector<float> & audio_buf,
 				 bool is_usb,
 				 bool is_lsb)

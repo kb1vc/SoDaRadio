@@ -42,6 +42,7 @@ SET(SoDaRadio_Lib_SRCS
   ../gui_common/Band.cpp
   ../gui_common/BandMap.cpp
   ../gui_common/VUMeter.cpp
+  ../gui_common/PowerMeter.cpp
   )
 
 SET(SoDaRadio_HDRS
@@ -58,6 +59,7 @@ SET(SoDaRadio_HDRS
   ../gui_common/AudioRXListener.hpp
   ../gui_common/AudioRecorder.hpp
   ../gui_common/VUMeter.hpp
+  ../gui_common/PowerMeter.hpp
   )
 
 SET(SoDaRadio_NOMOC_HDRS

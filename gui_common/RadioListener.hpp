@@ -79,7 +79,9 @@ namespace GUISoDa {
     void repSDRVersion(const QString & version);
     void repHWMBVersion(const QString & version);
 
-    void repPTT(bool on); 
+    void repPTT(bool on);
+
+    void repTXEnvPower(double v);
 
     void initSetupComplete();
 

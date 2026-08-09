@@ -124,6 +124,15 @@ namespace SoDa {
      */
     SoDa::CBufPtr modulateFM(std::vector<float> & audio_buf, 
 			    double deviation);
+
+    /**
+     * @brief calculate the average envelope power being sent to the TX
+     * object. Report it to the GUI a few times each second.
+     *
+     * @param txbuf the most recent transmit buffer -- we'll calculate its
+     * average envelope power.
+     */
+    void accumulateTXPower(SoDa::CBufPtr txbuf);
     
     double fm_phase;
     double nbfm_deviation; ///< phase advance for 2.5kHz deviation.
@@ -192,6 +201,12 @@ namespace SoDa {
      * mic gain is adjustable, to make sure we aren't noxious.
      */
     float mic_gain;
+
+    /**
+     * We want to measure average tx envelope power
+     */
+    double tx_power_sum;
+    uint32_t tx_power_buf_count; 
 
     bool debug_mode; ///< if true, print extra debug info
     int debug_ctr; 
