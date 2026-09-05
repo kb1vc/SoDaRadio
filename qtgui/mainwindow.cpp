@@ -534,6 +534,13 @@ void MainWindow::restoreSettings()
   bandMapSaveRestore(band_map, false);
   widgetSaveRestore(this, "SoDaRadioQT.", false);
   settings_p->endGroup();
+  // widgetSaveRestore restores RXFreq_lab and bandSel_cb independently; the
+  // latter fires changeBand which retunes to band.lastRXFreq (a separate
+  // QSettings key that can drift from the widget-saved value).  Re-issue a
+  // final tune to the widget's restored value so it is the last SET
+  // RX_TUNE_FREQ the server sees, keeping label and radio in agreement.
+  setRXFreq(ui->RXFreq_lab->getFreq());
+  setTXFreq(ui->TXFreq_lab->getFreq());
   settings_loaded = true;
 }
 

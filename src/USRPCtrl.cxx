@@ -231,9 +231,13 @@ namespace SoDa {
       std::cerr << SoDa::Format("getLOFreq(RX) actual_rf %0 actual dsp %1 target %2\n")
 	.addF(last_rx_tune_result.actual_rf_freq, 'e', 11, 9)
 	.addF(last_rx_tune_result.actual_dsp_freq, 'e', 11, 9)
-	.addF(last_rx_tune_result.target_rf_freq, 'e', 11, 9)	
+	.addF(last_rx_tune_result.target_rf_freq, 'e', 11, 9)
 	;
-      return last_rx_tune_result.actual_rf_freq + last_rx_tune_result.actual_dsp_freq;     
+      // UHD RX tune convention: effective freq = actual_rf - actual_dsp
+      // (DDC subtracts to compensate for HW LO rounding).  Using + here made
+      // near-same-freq retunes take RadioControl's IF-only fast path with a
+      // wrong cur_rx_lo_sw, leaving the radio ~60 kHz off from the label.
+      return last_rx_tune_result.actual_rf_freq - last_rx_tune_result.actual_dsp_freq;
     }
     else if(rxtx == SoDa::TX) {
       std::cerr << SoDa::Format("getLOFreq(TX) actual_rf %0 actual dsp %1 target %2\n")
@@ -285,7 +289,8 @@ namespace SoDa {
 	       .addF(target_rx_freq, 'e', 10, 6)
 	       .addF(rx_trequest.rf_freq, 'e', 10, 6)
 	       .addF(rx_trequest.dsp_freq, 'e', 10, 6));
-      return last_rx_tune_result.actual_rf_freq + last_rx_tune_result.actual_dsp_freq;
+      // Same UHD RX convention as getLOFreq: effective = actual_rf - actual_dsp.
+      return last_rx_tune_result.actual_rf_freq - last_rx_tune_result.actual_dsp_freq;
     }
     else {
       // On the transmit side, we're using a minimal IF rate and

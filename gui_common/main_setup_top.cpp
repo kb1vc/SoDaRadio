@@ -130,6 +130,8 @@ void MainWindow::updateBandDisplay(double freq)
 
 void MainWindow::setRXFreq_nocross(double freq)
 {
+  qInfo().noquote() << QString("[TUNE] setRXFreq_nocross freq=%1 Hz  (%2 MHz)")
+                        .arg(freq, 0, 'f', 3).arg(freq * 1e-6, 0, 'f', 6);
   // tell the radio.
   radio_listener->setRXFreq(freq);
 

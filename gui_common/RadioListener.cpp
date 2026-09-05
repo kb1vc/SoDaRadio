@@ -209,10 +209,15 @@ void RadioListener::setRXFreq(double freq) {
   // this is where we send the LO corrected frequency (if necessary)
   // we get the LO freq and multiplier from the config band widget
   // Note that the LO is setup for "high side" injection so that
-  // tuning works in the right direction.  
-  put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_TUNE_FREQ, freq + transverter_lo_freq), __PRETTY_FUNCTION__);
+  // tuning works in the right direction.
+  double sent = freq + transverter_lo_freq;
+  qInfo().noquote() << QString("[TUNE] RadioListener::setRXFreq freq=%1 MHz + tvLO=%2 MHz  -> sent=%3 MHz")
+                        .arg(freq * 1e-6, 0, 'f', 6)
+                        .arg(transverter_lo_freq * 1e-6, 0, 'f', 6)
+                        .arg(sent * 1e-6, 0, 'f', 6);
+  put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RX_TUNE_FREQ, sent), __PRETTY_FUNCTION__);
 
-  current_rx_freq = freq;   
+  current_rx_freq = freq;
 }
 
 void RadioListener::setTXFreq(double freq) {
