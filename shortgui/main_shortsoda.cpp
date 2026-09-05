@@ -41,6 +41,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <signal.h>
 #include <sys/prctl.h>
 #include <QLoggingCategory>
+#include <QtGlobal>
+
+// Qt's PulseAudio backend probes device formats on its own thread and can
+// print "No sample format supported found for device ..." (e.g. for NoMachine's
+// nx_remapped_out remap-sink) asynchronously — long after MainWindow ctor
+// returns and any stderr redirect is gone. Filter it via a message handler.
+static QtMessageHandler g_prev_msg_handler = nullptr;
+static void sodaMessageFilter(QtMsgType type, const QMessageLogContext & ctx, const QString & msg) {
+  if (msg.contains(QLatin1String("No sample format supported"))) return;
+  if (g_prev_msg_handler) g_prev_msg_handler(type, ctx, msg);
+}
 /**
  * @brief simple conversion from std::string to QString... 
  *
@@ -180,6 +191,9 @@ int main(int argc, char *argv[])
 {
     // Must be set before QApplication so Qt's multimedia plugins see it on load.
     setenv("LIBVA_MESSAGING_LEVEL", "0", 0);
+
+    // Install before QApplication so plugin-load warnings are also filtered.
+    g_prev_msg_handler = qInstallMessageHandler(sodaMessageFilter);
 
     QApplication a(argc, argv);
     // Suppress Qt's own FFmpeg backend info line.

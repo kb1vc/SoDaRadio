@@ -215,6 +215,7 @@ namespace SoDa {
     }
     if(tx_power_buf_count >= 5) {
       tx_power_buf_count = 0;
+      if(tx_power_sum == 0.0) tx_power_sum = 1e-6; // just anything
       cmd_stream->put(Command::make(Command::REP, Command::TX_ENV_POW,
 				    tx_power_sum / (5 * txbuf->getBuf().size())));
       tx_power_sum = 0.0; 

@@ -448,8 +448,13 @@ namespace SoDa {
 	cur_rx_lo_hw = freq - 170e3;
 	// change the software lo
 	cur_rx_lo_sw = freq - cur_rx_lo_hw; 
+	debugMsg(Format("Set RX Freq %0 new hw_lo %1 new sw_lo %2\n")
+		 .addF(freq, 'e')
+		 .addF(cur_rx_lo_hw, 'e')
+		 .addF(cur_rx_lo_sw, 'e')
+		 );
 	// now set the hardware lo
-	setLOFreq(cur_rx_lo_hw, SoDa::RX); 
+	setLOFreq(cur_rx_lo_hw, SoDa::RX);
 	// we also need to tell everyone about the new center frequency for the IF stream
 	cmd_stream->put(Command::make(Command::REP, Command::RX_CENTER_FREQ, 
 				    cur_rx_lo_hw));

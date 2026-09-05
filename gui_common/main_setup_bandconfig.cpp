@@ -29,6 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mainwindow.hpp"
 #include "ui_mainwindow.h"
 #include <iostream>
+#include <QSignalBlocker>
 #include "soda_comboboxes.hpp"
 #include "RadioListener.hpp"
 
@@ -100,6 +101,13 @@ void MainWindow::bandMapSaveRestore(GUISoDa::BandMap & bmap, bool save)
       sorted_bands.append(qMakePair(bmi.value().index(), bmi.key()));
     }
     std::sort(sorted_bands.begin(), sorted_bands.end());
+    // Repopulate silently.  Without blockSignals, the first addItem to an
+    // empty combo flips currentIndex from -1 to 0 and fires currentTextChanged
+    // → changeBand(firstBand), which pushes an unrelated RX_TUNE_FREQ to the
+    // radio.  The saved band's changeBand fires later from widgetSaveRestore
+    // and is the only startup band-switch we want.
+    QSignalBlocker bc_block(ui->BCBandSel_cb);
+    QSignalBlocker bs_block(ui->bandSel_cb);
     ui->BCBandSel_cb->clear();
     ui->bandSel_cb->clear();
     for(const auto & p : sorted_bands) {
