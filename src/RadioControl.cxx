@@ -190,8 +190,6 @@ namespace SoDa {
       break; 
       
     case Command::RX_TUNE_FREQ:
-      std::cerr << "[TUNE] RadioControl exec SET RX_TUNE_FREQ = "
-                << (cmd->dparms[0] * 1e-6) << " MHz\n" << std::flush;
       setFreq(cmd->dparms[0], SoDa::RX);
       break;
 

@@ -118,7 +118,6 @@ void UI::run()
   net_cmd = NULL;
   ring_cmd = NULL;
   
-  std::cerr << "[TUNE] UI::run initial SET RX_TUNE_FREQ = 144.2 MHz (hardcoded)\n" << std::flush;
   cmd_stream->put(SoDa::Command::make(Command::SET, Command::RX_TUNE_FREQ, 144.2e6));
   cmd_stream->put(SoDa::Command::make(Command::SET, Command::TX_TUNE_FREQ, 144.2e6));
   cmd_stream->put(SoDa::Command::make(Command::SET, Command::RX_AF_FILTER, 1));

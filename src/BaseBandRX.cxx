@@ -299,16 +299,19 @@ namespace SoDa {
 
     unsigned int i;
     float maxval = 0.0;
-    float sumsq = 0.0; 
+    float sumsq = 0.0;
     for(i = 0; i < abuf->size(); i++) {
-      float v = 0.5 * abs(demod_buffer[i]);
-      if(v > maxval) maxval = v; 
-      sumsq += v * v; 
-      audio_buffer[i] = v; 
+      float v = abs(demod_buffer[i]);
+      if(v > maxval) maxval = v;
+      sumsq += v * v;
+      audio_buffer[i] = v;
     }
     sumsq = sqrt(sumsq / ((float) dbuf->size()));
-    // audio is biased above DC... it really really needs to get its DC component removed. 
-    am_audio_filter->apply(audio_buffer, audio_buffer); 
+    // audio is biased above DC... it really really needs to get its DC component removed.
+    // Also boost by ~15 dB (3x) to compensate for AM envelope detection producing audio
+    // proportional to modulation depth (typ. 30-50%), which otherwise leaves AM well below
+    // SSB in perceived loudness at the same AF-gain slider position.
+    am_audio_filter->apply(audio_buffer, audio_buffer, 3.0f);
 
     // then send it to the audio port.
     pendAudioBuffer(abuf);

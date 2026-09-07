@@ -243,9 +243,19 @@ namespace SoDa {
       std::cerr << SoDa::Format("getLOFreq(TX) actual_rf %0 actual dsp %1 target %2\n")
 	.addF(last_tx_tune_result.actual_rf_freq, 'e', 11, 9)
 	.addF(last_tx_tune_result.actual_dsp_freq, 'e', 11, 9)
-	.addF(last_tx_tune_result.target_rf_freq, 'e', 11, 9)	
+	.addF(last_tx_tune_result.target_rf_freq, 'e', 11, 9)
 	;
-      return last_tx_tune_result.actual_rf_freq - last_tx_tune_result.actual_dsp_freq; 
+      // NOTE: sign here (−) disagrees with setLOFreq(TX) below (+); which one
+      // is right is undetermined because nothing currently depends on it.
+      // RadioControl's TX setFreq always retunes the HW LO and derives the
+      // IF-stage compensation as (freq − setLOFreq_return), which self-cancels
+      // regardless of sign.  getLOFreq(TX) has exactly one caller
+      // (RadioControl::isLocked, and even there the returned value is
+      // compared to an RX variable — likely a typo — and never drives tuning).
+      // If a TX fast-path optimization is ever added that reads back state
+      // through getLOFreq(TX) the way RX does, reconcile the two signs first
+      // (see the RX bug fixed in this file for the failure mode).
+      return last_tx_tune_result.actual_rf_freq - last_tx_tune_result.actual_dsp_freq;
     }
 
     return 0.0; /// no idea how we'd get here. 
@@ -347,6 +357,14 @@ namespace SoDa {
 
       last_tx_tune_result = checkLock(tx_request, 't', last_tx_tune_result);
 
+      // NOTE: sign here (+) disagrees with getLOFreq(TX) above (−).  It
+      // doesn't matter today because RadioControl's TX setFreq consumes this
+      // return only as `cur_tx_lo_hw` and immediately derives the IF-stage
+      // compensation as `freq − cur_tx_lo_hw`, so the sign cancels out and
+      // the final tune always lands on `freq`.  If that math ever changes,
+      // reconcile with getLOFreq(TX) — the UHD convention for RX is
+      // `effective = actual_rf − actual_dsp` (as fixed above); TX likely
+      // follows the same rule but has not been verified with a bench test.
       return last_tx_tune_result.actual_rf_freq + last_tx_tune_result.actual_dsp_freq;
     
       double txfreqs[2];
