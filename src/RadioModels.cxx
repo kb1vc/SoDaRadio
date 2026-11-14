@@ -51,6 +51,9 @@ namespace SoDa {
   void RadioModels::init() {
     // Add your new radio model here.
     //
+    // This must be kept in sync with GuiParams.cxx.  See that
+    // file for an apology.
+    // 
     // Just follow the examples below:
 #if HAVE_UHD    
     model_map["USRP"] = USRPRadio::make;

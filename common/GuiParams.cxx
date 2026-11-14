@@ -34,15 +34,19 @@ SoDa::GuiParams::GuiParams(int argc, char ** argv)
 {
   cmd
     .add<std::string>(&server_name, "server", 's', "", 
-     "Name/path to SoDaServer program. Normally found in the directory containing SoDaRadio")
+     R"(Name/path to SoDaServer program. Normally
+     found in the directory containing SoDaRadio)")
     .add<std::string>(&server_args, "serverargs", 'a', "", 
      "Argument string to be passed to SoDaServer program")
     .add<std::string>(&uhd_args, "uhdargs", 'u', "", 
-     "multi uhd device address arguments -- 'type=b200' selects a B2xx unit in preference over an N2xx device")
+     R"(multi uhd device address arguments -- 'type=b200'
+     selects a B2xx unit in preference over an N2xx device)")
     .add<std::string>(&server_sock_basename, "uds_name", 'S', "",
      "unix domain socket name for server to UI client message channels")
     .add<std::string>(&config_filename, "config", 'c', "",
-     "Configuration file with initial settings. Otherwise SoDaRadio will look in ${HOME}/.config/kb1vc.org/SoDaRadioQT.conf"
+     R"(Configuration file with initial settings.
+     Otherwise SoDaRadio will look in
+     ${HOME}/.config/kb1vc.org/<RadioType>_SoDaRadioQT.conf)"
      )
     .add<std::string>(&log_filename, "log", 'l', "SoDa.soda_log",
      "Log filename")
@@ -51,8 +55,32 @@ SoDa::GuiParams::GuiParams(int argc, char ** argv)
     .add<std::string>(&audio_portname, "audio", 'A', "default",
      "Audio device name for ALSA audio.")
     .add<unsigned int>(&debug_level, "debug", 'D', 0,
-     "Enable debug messages for value > 0.  Higher values may produce more detail.")
-    ;
+     R"(Enable debug messages for value > 0.  Higher
+     values may produce more detail.)")
+    .addInfo(R"(
+   SoDaRadio [options] <RadioType>
+
+   Start the SoDaRadio all-mode/all-band transceiver. <RadioType> is
+   one of the supported types. If not supplied, defaults to the first
+   USRP radio it can find.
+
+   Radio types include:)");
+
+  /// This needs to be kept in sync with both
+  /// the CMakeLists.txt file and src/RadioModels.cxx.
+  /// There may be other ways to do this, but none are
+  /// clean.
+#if HAVE_UHD
+  cmd.addInfo("\tUSRP\n\tUSRPB200");
+#endif
+#if HAVE_PLUTO
+  cmd.addInfo("\tPLUTO");
+#endif
+#if HAVE_RTLSDR
+  cmd.addInfo("\tRTLSDR");
+#endif
+  cmd.addInfo("\n   Options:");
+  
 
   if(!cmd.parse(argc, argv)) {
     no_command_only_help = true;
@@ -60,9 +88,12 @@ SoDa::GuiParams::GuiParams(int argc, char ** argv)
   else {
     no_command_only_help = false;
     // Allow the radio type as a positional argument (e.g. "SoDaRadio PLUTO")
-    // so it mirrors the SoDaServer invocation style. --radio still works too.
+    // so it mirrors the SoDaServer invocation style. 
     if(cmd.numPosArgs() >= 1) {
       radio_name = cmd.getPosArg(0);
+    }
+    else {
+      radio_name = "USRP";
     }
   }
 }

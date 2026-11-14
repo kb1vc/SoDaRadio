@@ -138,7 +138,7 @@ void GUISoDa::LogTable::recordChange(int r, int c)
 void GUISoDa::LogTable::readLogReport(const QString & fname)
 {
   // load the table from the input stream. 
-  qDebug() << QString("Reading log file [%1]").arg(fname);
+  qDebug().noquote() << QString("Reading log file [%1]").arg(fname);
   QFile infile(fname);
 
   if(!infile.open(QFile::ReadOnly)) {

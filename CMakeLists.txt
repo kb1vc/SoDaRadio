@@ -22,7 +22,7 @@ OPTION(BUILD_LIBIIO
   "Fetch and build libiio from GitHub instead of using the installed copy" OFF)
 OPTION(BUILD_LIBRTLSDR
   "Fetch and build librtlsdr from GitHub instead of using the installed copy" OFF)
-set(SODALIBS_TAG "v_U5.3.0_S4.4.0" CACHE STRING
+set(SODALIBS_TAG "v_U5.3.2_S4.4.0" CACHE STRING
   "SoDaLibs git tag to fetch when BUILD_SODALIBS=ON or SoDaLibs is not installed")
 
 IF(CMAKE_VERSION VERSION_GREATER 3.0.0)
@@ -61,9 +61,14 @@ include(GNUInstallDirs)
 # documentation. Added hook to CMake that triggers version update with
 # each new commit.
 # 12.4.0 - Added more help documentation. Lots more.
+# 12.5.0 - Fixed Qt deprecation warnings. Added power and VU meters. Added help key.
+# Improved TX audio control. Improved restore settings operations. Fixed Qt complaint
+# about audio formats for oddball virtual terminal (NX) devices.
+# Big time improvement: Tuning offsets for LSB vs. USB were wrong. "Fixed" TX buffer
+# under-run. 
 SET(SoDaRadio_VERSION_MAJOR 12)
-SET(SoDaRadio_VERSION_MINOR 4)
-SET(SoDaRadio_VERSION_PATCH 0)
+SET(SoDaRadio_VERSION_MINOR 5)
+SET(SoDaRadio_VERSION_PATCH 1)
 SET(SoDaRadio_VERSION "${SoDaRadio_VERSION_MAJOR}.${SoDaRadio_VERSION_MINOR}.${SoDaRadio_VERSION_PATCH}")
 
 set(SoDaRadio_PACKAGE_DESCRIPTION 
@@ -389,7 +394,9 @@ ELSE()
   ENDIF()
 ENDIF()
 
-
+add_definitions(-DHAVE_UHD=${HAVE_UHD})
+add_definitions(-DHAVE_PLUTO=${HAVE_PLUTO})
+add_definitions(-DHAVE_RTLSDR=${HAVE_RTLSDR})
 
 set(RT_LIB "rt")  
 

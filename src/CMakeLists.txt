@@ -66,7 +66,6 @@ IF(${HAVE_UHD})
   LIST(APPEND Radio_LIBRARIES ${UHD_LIBRARIES})
 ENDIF()
 
-add_definitions(-DHAVE_UHD=${HAVE_UHD})
 
 IF(${HAVE_PLUTO})
   LIST(APPEND SoDaServer_SRCS PlutoCtrl.cxx PlutoRX.cxx PlutoTX.cxx PlutoRadio.cxx)
@@ -74,7 +73,6 @@ IF(${HAVE_PLUTO})
   LIST(APPEND Radio_LIBRARIES ${LIBIIO_LIBRARIES})
 ENDIF()
 
-add_definitions(-DHAVE_PLUTO=${HAVE_PLUTO})
 
 IF(ENABLE_PLUTO_TX)
   add_definitions(-DPLUTO_HAS_TX)
@@ -86,7 +84,6 @@ IF(${HAVE_RTLSDR})
   LIST(APPEND Radio_LIBRARIES ${LIBRTLSDR_LIBRARIES})
 ENDIF()
 
-add_definitions(-DHAVE_RTLSDR=${HAVE_RTLSDR})
 
 include_directories(SYSTEM
   ${Radio_INCLUDE_DIRS}

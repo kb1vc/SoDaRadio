@@ -79,9 +79,9 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   QMainWindow(parent),
   ui(new Ui::MainWindow)
 {
-  qDebug() << QString("MainWIndow about to start UI");
+  qDebug().noquote() << QString("MainWIndow about to start UI");
   ui->setupUi(this);
-  qDebug() << QString("MainWIndow started UI");
+  qDebug().noquote() << QString("MainWIndow started UI");
 
   // Re-arrange the inherited qtgui layout for the ShortSoDa tabbed touchscreen UI.
   reorganizeForShortSoDa();
@@ -90,15 +90,15 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   radio_listener = new GUISoDa::RadioListener(this, QString::fromStdString(params.getServerSocketBasename())); 
 
   // setup the audio listener
-  qDebug() << QString("About to start AudioListener");
+  qDebug().noquote() << QString("About to start AudioListener");
   audio_listener = new GUISoDa::AudioListener(this, QString::fromStdString(params.getServerSocketBasename()));
-  qDebug() << QString("Started AudioListener");
+  qDebug().noquote() << QString("Started AudioListener");
 
   // setup the TX audio server (captures mic/virtual-device audio and ships it
   // to the radio server's _txa unix socket)
-  qDebug() << QString("About to start AudioTXServer");
+  qDebug().noquote() << QString("About to start AudioTXServer");
   audio_tx_server = new GUISoDa::AudioTXServer(this, QString::fromStdString(params.getServerSocketBasename()));
-  qDebug() << QString("Started AudioTXServer");
+  qDebug().noquote() << QString("Started AudioTXServer");
 
   setupBandConfig();
   setupSpectrum();
@@ -113,7 +113,7 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   setupLogEditor();
   setupStatus();
 
-  qDebug() << QString("Setup all the settings and UI components.");
+  qDebug().noquote() << QString("Setup all the settings and UI components.");
 
   // ShortSoDa_Lib is a static library, so the global static initializer
   // that AUTORCC emits in qrc_shortsoda_resources.cpp can be stripped by
@@ -315,7 +315,7 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   connect(ui->help_btn, SIGNAL(clicked(bool)),
 	  this, SLOT(displayHelp(bool)));
 
-  qDebug() << QString("connected stuff");
+  qDebug().noquote() << QString("connected stuff");
   QString radio_name = QString::fromStdString(params.getRadioName());
   QString settings_app = radio_name.isEmpty()
     ? QString("SoDaRadioQT")
@@ -325,25 +325,25 @@ MainWindow::MainWindow(QWidget *parent, SoDa::GuiParams & params) :
   current_band_selector = ui->bandSel_cb->currentText(); 
   auto_bandswitch_target = QString("");
 
-  qDebug() << QString("About to init radio_listener");  
+  qDebug().noquote() << QString("About to init radio_listener");  
   radio_listener->init();
-  qDebug() << QString("About to start radio_listener");
+  qDebug().noquote() << QString("About to start radio_listener");
   radio_listener->start();
   
-  qDebug() << QString("About to init audo_listener");        
+  qDebug().noquote() << QString("About to init audo_listener");        
   audio_listener->init();
   if(ui->audioOut_cb->count() > 0) {
     audio_listener->getRX()->setRXDevice(
       ui->audioOut_cb->itemData(ui->audioOut_cb->currentIndex()).value<QAudioDevice>());
   }
-  qDebug() << QString("About to start audo_listener");
+  qDebug().noquote() << QString("About to start audo_listener");
   audio_listener->start();
 
-  qDebug() << QString("About to starting hamlib server");        
+  qDebug().noquote() << QString("About to starting hamlib server");        
   hlib_server = new HamlibServer(this, params.getHamlibPortNumber());
   hlib_server->start();
   setupHamlib();
-  qDebug() << QString("setup hamlib server");          
+  qDebug().noquote() << QString("setup hamlib server");          
 }
 
 MainWindow::~MainWindow()
@@ -637,7 +637,7 @@ void MainWindow::widgetSaveRestore(QObject * op, const QString & par, bool save)
 	    (my_class == "QwtScaleWidget") ||
 	    (my_class == "QwtTextLabel")) {
       // do nothing.
-      qDebug() << QString("my_class = [%1]\n").arg(my_class);
+      qDebug().noquote() << QString("my_class = [%1]\n").arg(my_class);
     }
     widgetSaveRestore((*cp), my_pathname, save);
   }

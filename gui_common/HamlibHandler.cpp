@@ -146,7 +146,7 @@ void HamlibHandler::processCommand(const QString & cmd, QTcpSocket * socket_p)
 	  (this->*get_command_map[cmdchar])(out, in, true);
 	}
 	else {
-	  qDebug() << QString("HAMLIB handler can't deal with this command [%1]\n").arg(cmdchar);
+	  qDebug().noquote() << QString("HAMLIB handler can't deal with this command [%1]\n").arg(cmdchar);
 	  out << "RPRT " << RIG_EINVAL << "\n";
 	}
       }
@@ -158,7 +158,7 @@ void HamlibHandler::processCommand(const QString & cmd, QTcpSocket * socket_p)
       (this->*get_command_map[cmdkey])(out, in, true);
     }
     else {
-      qDebug() << QString("HAMLIB handler can't deal with this command [%1]\n").arg(cmd);
+      qDebug().noquote() << QString("HAMLIB handler can't deal with this command [%1]\n").arg(cmd);
       out << "RPRT " << RIG_EINVAL << "\n";
     }
   }

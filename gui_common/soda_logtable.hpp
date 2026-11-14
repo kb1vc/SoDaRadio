@@ -86,7 +86,7 @@ namespace GUISoDa {
     void setField(int row, const QString & key_st, const QString & st) {
       int ncol = current_headers.indexOf(key_st);
       if(ncol < 0) {
-	qDebug() << QString("Could not find column key [%1] in log table column headers").arg(key_st);
+	qDebug().noquote() << QString("Could not find column key [%1] in log table column headers").arg(key_st);
 	return; 
       }
       setItem(row, ncol, new QTableWidgetItem(st));
@@ -95,7 +95,7 @@ namespace GUISoDa {
     void setField(int row, const QString & key_st, double val) {
       int ncol = current_headers.indexOf(key_st);
       if(ncol < 0) {
-	qDebug() << QString("Could not find column key [%1] in log table column headers").arg(key_st);
+	qDebug().noquote() << QString("Could not find column key [%1] in log table column headers").arg(key_st);
 	return; 
       }
       setItem(row, ncol, new QTableWidgetItem(QString("%1").arg(val, 15, 'f')));

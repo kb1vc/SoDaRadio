@@ -228,11 +228,11 @@ namespace SoDa {
 
   double USRPCtrl::getLOFreq(SoDa::RXTX rxtx) {
     if(rxtx == SoDa::RX) {
-      std::cerr << SoDa::Format("getLOFreq(RX) actual_rf %0 actual dsp %1 target %2\n")
+      debugMsg(SoDa::Format("getLOFreq(RX) actual_rf %0 actual dsp %1 target %2\n")
 	.addF(last_rx_tune_result.actual_rf_freq, 'e', 11, 9)
 	.addF(last_rx_tune_result.actual_dsp_freq, 'e', 11, 9)
 	.addF(last_rx_tune_result.target_rf_freq, 'e', 11, 9)
-	;
+	       );
       // UHD RX tune convention: effective freq = actual_rf - actual_dsp
       // (DDC subtracts to compensate for HW LO rounding).  Using + here made
       // near-same-freq retunes take RadioControl's IF-only fast path with a
@@ -240,11 +240,11 @@ namespace SoDa {
       return last_rx_tune_result.actual_rf_freq - last_rx_tune_result.actual_dsp_freq;
     }
     else if(rxtx == SoDa::TX) {
-      std::cerr << SoDa::Format("getLOFreq(TX) actual_rf %0 actual dsp %1 target %2\n")
-	.addF(last_tx_tune_result.actual_rf_freq, 'e', 11, 9)
-	.addF(last_tx_tune_result.actual_dsp_freq, 'e', 11, 9)
-	.addF(last_tx_tune_result.target_rf_freq, 'e', 11, 9)
-	;
+      debugMsg(SoDa::Format("getLOFreq(TX) actual_rf %0 actual dsp %1 target %2\n")
+	       .addF(last_tx_tune_result.actual_rf_freq, 'e', 11, 9)
+	       .addF(last_tx_tune_result.actual_dsp_freq, 'e', 11, 9)
+	       .addF(last_tx_tune_result.target_rf_freq, 'e', 11, 9)
+	       );
       // NOTE: sign here (−) disagrees with setLOFreq(TX) below (+); which one
       // is right is undetermined because nothing currently depends on it.
       // RadioControl's TX setFreq always retunes the HW LO and derives the
@@ -772,11 +772,9 @@ namespace SoDa {
 
   bool USRPCtrl::setClockSource(Command::ClockSource src) {
     if(src == Command::ClockSource::EXTERNAL) {
-      std::cerr << "#### Setting clock source to EXTERNAL\n";
       usrp->set_clock_source("external");
     }
     else {
-      std::cerr << "#### Setting clock source to INTERNAL\n";      
       usrp->set_clock_source("internal");    
     }
     return true; 

@@ -75,7 +75,7 @@ namespace GUISoDa {
       QThread::sleep(5);
       wcount++; 
       if(wcount > 30) {
-	qDebug() << QString("Waited %1 seconds for socket file [%2] to be created.  Is the radio process dead?").arg(wcount * 5).arg(rx_socket_name);
+	qDebug().noquote() << QString("Waited %1 seconds for socket file [%2] to be created.  Is the radio process dead?").arg(wcount * 5).arg(rx_socket_name);
 	emit(fatalError(QString("No socket file [%1] found after timeout of %2 seconds").arg(rx_socket_name).arg(wcount * 5)));
 	return false;       
       }
@@ -83,8 +83,8 @@ namespace GUISoDa {
 
     audio_rx_socket->connectToServer(rx_socket_name);
     while(!audio_rx_socket->waitForConnected(30000)) {
-      qDebug() << QString("AudioRXListener Waited for connection on local socket\n[%1]. Is something wrong?").arg(rx_socket_name);
-      qDebug() << audio_rx_socket->errorString();
+      qDebug().noquote() << QString("AudioRXListener Waited for connection on local socket\n[%1]. Is something wrong?").arg(rx_socket_name);
+      qDebug().noquote() << audio_rx_socket->errorString();
       QThread::sleep(5); // sleep for 5 seconds...
     }
     connect(audio_rx_socket, SIGNAL(readyRead()),
@@ -120,7 +120,7 @@ namespace GUISoDa {
 
 	if(delay > max_slack_time) {
 	  // we may be way too far ahead.  
-	  qInfo() << QString("Audio RX stream has fallen behind -- clearing outbound buffers of [%1] seconds").arg(delay);
+	  qInfo().noquote() << QString("Audio RX stream has fallen behind -- clearing outbound buffers of [%1] seconds").arg(delay);
 	  cleanBuffer();
 	}
       }
@@ -168,7 +168,7 @@ namespace GUISoDa {
 
     
     if(!dev_info.isFormatSupported(format)) {
-      qDebug() << QString("Sound system will not support [%1] floating point samples/sec").arg(sample_rate); 
+      qDebug().noquote() << QString("Sound system will not support [%1] floating point samples/sec").arg(sample_rate); 
     }
     audio_rx_output.reset(new QAudioSink(dev_info, format));
   
@@ -230,13 +230,12 @@ namespace GUISoDa {
 
   void AudioRXListener::audioOutError(QAudio::State new_state) {
     if(new_state == QtAudio::IdleState) {
-      qInfo() << QString("AudioRXListener under-run. Restarting sink.");
-      audio_rx_output->start(this);
+      qInfo().noquote() << QString("AudioRXListener under-run.");
     }
     else if(new_state == QAudio::StoppedState) {
       switch (audio_rx_output->error()) {
       case QAudio::IOError:
-	qInfo() << QString("AudioRXListener IO error. Restarting sink.");
+	qInfo().noquote() << QString("AudioRXListener IO error. Restarting sink.");
 	audio_rx_output->start(this);
 	break;
       case QAudio::OpenError:

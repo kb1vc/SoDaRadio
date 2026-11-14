@@ -207,7 +207,7 @@ int main(int argc, char *argv[])
 
       
     if(p.getDebugLevel() > 0) {
-      qInfo() << QString("parsed command line");
+      qInfo().noquote() << QString("parsed command line");
     }
     
     if(p.hadNoCommand()) {
@@ -229,13 +229,13 @@ int main(int argc, char *argv[])
     }
 
     if(p.getDebugLevel() > 0) {
-      qInfo() << QString("starting server");
+      qInfo().noquote() << QString("starting server");
     }
 
     QProcess * server_proc = startupServer(nullptr, p);
 
     if(p.getDebugLevel() > 0) {
-      qInfo() << QString("settingup UI");
+      qInfo().noquote() << QString("settingup UI");
     }
 
     setupLookNFeel();

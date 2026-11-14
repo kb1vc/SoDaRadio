@@ -49,7 +49,7 @@ bool RadioListener::init()
     QThread::sleep(5);
     wcount++; 
     if(wcount > 30) {
-      qDebug() << QString("Waited %1 seconds for socket file [%2] to be created.  Is the radio process dead?").arg(wcount * 5).arg(cmd_socket_name);
+      qDebug().noquote() << QString("Waited %1 seconds for socket file [%2] to be created.  Is the radio process dead?").arg(wcount * 5).arg(cmd_socket_name);
       emit(fatalError(QString("No socket file [%1] found after timeout of %2 seconds").arg(cmd_socket_name).arg(wcount * 5)));
       return false;       
     }
@@ -57,8 +57,8 @@ bool RadioListener::init()
 
   cmd_socket->connectToServer(cmd_socket_name); 
   while(!cmd_socket->waitForConnected(30000)) {
-    qDebug() << QString("Waited for connection on local socket [%1_cmd]. Is something wrong?").arg(socket_basename);
-    qDebug() << cmd_socket->errorString();
+    qDebug().noquote() << QString("Waited for connection on local socket [%1_cmd]. Is something wrong?").arg(socket_basename);
+    qDebug().noquote() << cmd_socket->errorString();
     QThread::sleep(5); // sleep for 5 seconds...    
   }
     
@@ -71,8 +71,8 @@ bool RadioListener::init()
   spect_socket = new QLocalSocket(this);
   spect_socket->connectToServer(socket_basename + "_wfall"); 
   while(!spect_socket->waitForConnected(30000)) {
-    qDebug() << QString("Waited 30 seconds for connection on local socket [%1_wfall]. Is something wrong?").arg(socket_basename);
-    qDebug() << cmd_socket->errorString();
+    qDebug().noquote() << QString("Waited 30 seconds for connection on local socket [%1_wfall]. Is something wrong?").arg(socket_basename);
+    qDebug().noquote() << cmd_socket->errorString();
     QThread::sleep(5); // sleep for 5 seconds...    
   }
     
