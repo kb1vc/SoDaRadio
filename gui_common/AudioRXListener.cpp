@@ -229,12 +229,12 @@ namespace GUISoDa {
   }
 
   void AudioRXListener::audioOutError(QAudio::State new_state) {
-    if(new_state == QAudio::StoppedState) {
+    if(new_state == QtAudio::IdleState) {
+      qInfo() << QString("AudioRXListener under-run. Restarting sink.");
+      audio_rx_output->start(this);
+    }
+    else if(new_state == QAudio::StoppedState) {
       switch (audio_rx_output->error()) {
-      case QAudio::UnderrunError:
-	qInfo() << QString("AudioRXListener under-run. Restarting sink.");
-	audio_rx_output->start(this);
-	break;
       case QAudio::IOError:
 	qInfo() << QString("AudioRXListener IO error. Restarting sink.");
 	audio_rx_output->start(this);
@@ -248,5 +248,4 @@ namespace GUISoDa {
       }
     }
   }
-
 }
