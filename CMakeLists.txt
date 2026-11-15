@@ -65,10 +65,13 @@ include(GNUInstallDirs)
 # Improved TX audio control. Improved restore settings operations. Fixed Qt complaint
 # about audio formats for oddball virtual terminal (NX) devices.
 # Big time improvement: Tuning offsets for LSB vs. USB were wrong. "Fixed" TX buffer
-# under-run. 
+# under-run.
+# 12.5.1 - It must have been something important. 
+# 12.5.2 - Added help button. Updated README.md. Added instructions
+# to create a new radio model
 SET(SoDaRadio_VERSION_MAJOR 12)
 SET(SoDaRadio_VERSION_MINOR 5)
-SET(SoDaRadio_VERSION_PATCH 1)
+SET(SoDaRadio_VERSION_PATCH 2)
 SET(SoDaRadio_VERSION "${SoDaRadio_VERSION_MAJOR}.${SoDaRadio_VERSION_MINOR}.${SoDaRadio_VERSION_PATCH}")
 
 set(SoDaRadio_PACKAGE_DESCRIPTION 
