@@ -92,11 +92,13 @@ void MainWindow::setupSettings()
   setupAudioDeviceList(); 
 }
 
-void MainWindow::setupAudioDeviceList() 
+void MainWindow::setupAudioDeviceList()
 {
-  const QAudioDevice & def_rx_dev_info = QMediaDevices::defaultAudioOutput();
-  ui->audioOut_cb->addItem(def_rx_dev_info.description(), QVariant::fromValue(def_rx_dev_info));
   QAudioFormat format = GUISoDa::AudioRXListener::createAudioFormat();
+  const QAudioDevice & def_rx_dev_info = QMediaDevices::defaultAudioOutput();
+  if(def_rx_dev_info.isFormatSupported(format)) {
+    ui->audioOut_cb->addItem(def_rx_dev_info.description(), QVariant::fromValue(def_rx_dev_info));
+  }
   for(auto &rx_dev_info: QMediaDevices::audioOutputs()) {
     if(rx_dev_info.isFormatSupported(format) && (rx_dev_info != def_rx_dev_info)) {
       ui->audioOut_cb->addItem(rx_dev_info.description(), QVariant::fromValue(rx_dev_info));
