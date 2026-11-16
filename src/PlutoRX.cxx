@@ -110,10 +110,20 @@ namespace SoDa {
     debugMsg(SoDa::Format("PlutoRX: connected to %0, hw_buf=%1 rs_out=%2 rf_buf=%3\n")
              .addS(uri).addI((int)hw_buf_size)
              .addI((int)rs_out_size).addI((int)rf_buf_size));
+
+    // Start the dedicated refill thread now that all IIO objects are ready.
+    refill_running = true;
+    refill_thread = std::thread(&PlutoRX::refillLoop, this);
   }
 
   PlutoRX::~PlutoRX()
   {
+    // Stop the refill thread before touching any IIO objects.
+    refill_running = false;
+    if (rxbuf) iio_buffer_cancel(rxbuf);   // unblocks any pending iio_buffer_refill()
+    refill_cv.notify_all();                // unblocks refillLoop if waiting on queue full
+    if (refill_thread.joinable()) refill_thread.join();
+
     if (rxbuf)    { iio_buffer_destroy(rxbuf);       rxbuf    = nullptr; }
     if (rx_i_chan){ iio_channel_disable(rx_i_chan);   rx_i_chan = nullptr; }
     if (rx_q_chan){ iio_channel_disable(rx_q_chan);   rx_q_chan = nullptr; }
@@ -152,31 +162,63 @@ namespace SoDa {
   }
 
   // ---------------------------------------------------------------
+  // Refill thread: runs iio_buffer_refill() + sc16→float concurrently
+  // with the downConvert() processing loop.
+  // ---------------------------------------------------------------
+
+  void PlutoRX::refillLoop()
+  {
+    while (refill_running) {
+      ssize_t nbytes = iio_buffer_refill(rxbuf);
+      if (nbytes < 0) {
+        if (refill_running)
+          debugMsg(SoDa::Format("PlutoRX: refill error %0\n").addI((int)nbytes));
+        break;
+      }
+
+      // Convert sc16 interleaved samples → complex<float> at 2.5 MSPS.
+      std::vector<std::complex<float>> buf(hw_buf_size);
+      char    * i_ptr = (char *)iio_buffer_first(rxbuf, rx_i_chan);
+      char    * q_ptr = (char *)iio_buffer_first(rxbuf, rx_q_chan);
+      ptrdiff_t step  = iio_buffer_step(rxbuf);
+      for (unsigned int idx = 0; idx < hw_buf_size; idx++) {
+        buf[idx] = std::complex<float>(
+          *(const int16_t *)(i_ptr + idx * step) / 32768.0f,
+          *(const int16_t *)(q_ptr + idx * step) / 32768.0f);
+      }
+
+      // Push onto queue; block if full so the DMA ring doesn't overflow.
+      std::unique_lock<std::mutex> lock(refill_mutex);
+      refill_cv.wait(lock, [this] {
+        return hw_buf_queue.size() < REFILL_QUEUE_DEPTH || !refill_running;
+      });
+      if (!refill_running) break;
+      hw_buf_queue.push(std::move(buf));
+      lock.unlock();
+      refill_cv.notify_one();
+    }
+  }
+
+  // ---------------------------------------------------------------
   // Main sample pump
   // ---------------------------------------------------------------
 
   bool PlutoRX::downConvert()
   {
-    // Always drain the IIO DMA even when not publishing, to prevent backlog.
-    ssize_t nbytes = iio_buffer_refill(rxbuf);
-    if (nbytes < 0) {
-      debugMsg(SoDa::Format("PlutoRX: iio_buffer_refill error %0\n").addI((int)nbytes));
-      return false;
+    // Pull the next converted hardware buffer from the refill thread.
+    // The refill thread runs iio_buffer_refill() concurrently, so this
+    // should almost never block for more than a few milliseconds.
+    {
+      std::unique_lock<std::mutex> lock(refill_mutex);
+      bool got = refill_cv.wait_for(lock, std::chrono::milliseconds(200),
+                                    [this] { return !hw_buf_queue.empty(); });
+      if (!got || hw_buf_queue.empty()) return false;
+      hw_cf = std::move(hw_buf_queue.front());
+      hw_buf_queue.pop();
     }
+    refill_cv.notify_one();   // tell refill thread there is queue space
 
     if (!streaming) return false;
-
-    // Convert sc16 interleaved samples → complex<float> at 2.5 MSPS.
-    char     * i_ptr = (char *)iio_buffer_first(rxbuf, rx_i_chan);
-    char     * q_ptr = (char *)iio_buffer_first(rxbuf, rx_q_chan);
-    ptrdiff_t  step  = iio_buffer_step(rxbuf);
-
-    for (unsigned int idx = 0; idx < hw_buf_size; idx++) {
-      char * p = i_ptr + idx * step;
-      hw_cf[idx] = std::complex<float>(
-        *(const int16_t *)p              / 32768.0f,
-        *(const int16_t *)(q_ptr + idx * step) / 32768.0f);
-    }
 
     // Decimate 4:1 to 625 kSPS.
     hw_resampler->apply(hw_cf, rs_out);

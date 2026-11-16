@@ -349,9 +349,13 @@ namespace SoDa {
     }
     else if(rx_modulation == Command::NBFM) {
       // first, bandpass the RF down to about 25 kHz wide...
+      // Filter into a scratch buffer -- rxbuf is published on rx_stream to
+      // every subscriber (IFRecorder, et al.), so mutating its storage in
+      // place is a data race that corrupts the .cf recording.
       auto & rfbuf = rxbuf->getBuf();
-      nbfm_pre_filter->apply(rfbuf, rfbuf, 1.0);
-      rf_resampler->apply(rfbuf, dbufo->getBuf());
+      std::vector<std::complex<float>> rf_filtered(rfbuf.size());
+      nbfm_pre_filter->apply(rfbuf, rf_filtered, 1.0);
+      rf_resampler->apply(rf_filtered, dbufo->getBuf());
     }
  
     switch(rx_modulation) {

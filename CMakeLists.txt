@@ -68,7 +68,9 @@ include(GNUInstallDirs)
 # under-run.
 # 12.5.1 - It must have been something important. 
 # 12.5.2 - Added help button. Updated README.md. Added instructions
-# to create a new radio model
+# to create a new radio model. Updated AF recorder and RF recorder. Fixed
+# a problem in the NBFM demod that modified its own input buffer (shared with
+# everyone else sharing the mailbox.) 
 SET(SoDaRadio_VERSION_MAJOR 12)
 SET(SoDaRadio_VERSION_MINOR 5)
 SET(SoDaRadio_VERSION_PATCH 2)
@@ -400,6 +402,35 @@ ENDIF()
 add_definitions(-DHAVE_UHD=${HAVE_UHD})
 add_definitions(-DHAVE_PLUTO=${HAVE_PLUTO})
 add_definitions(-DHAVE_RTLSDR=${HAVE_RTLSDR})
+
+# libFLAC -- required by the AudioRecorder in the GUI.  Try the system copy
+# first; if that fails (or BUILD_FLAC is explicitly ON), fetch and build a
+# static libFLAC from xiph/flac on GitHub.
+OPTION(BUILD_FLAC "Force a from-source build of libFLAC even if the system has one" OFF)
+IF(NOT BUILD_FLAC)
+  pkg_check_modules(FLAC QUIET flac)
+  IF(NOT FLAC_FOUND)
+    # pkg-config missing on this host or no flac.pc installed -- try plain find_library.
+    find_library(_flac_lib NAMES FLAC)
+    find_path   (_flac_inc NAMES FLAC/stream_encoder.h)
+    IF(_flac_lib AND _flac_inc)
+      SET(FLAC_FOUND        TRUE)
+      SET(FLAC_VERSION      "system")
+      SET(FLAC_LIBRARIES    "${_flac_lib}")
+      SET(FLAC_INCLUDE_DIRS "${_flac_inc}")
+    ENDIF()
+  ENDIF()
+ENDIF()
+IF(NOT FLAC_FOUND)
+  IF(BUILD_FLAC)
+    message(STATUS "BUILD_FLAC=ON -- fetching libFLAC from GitHub")
+  ELSE()
+    message(STATUS "System libFLAC not found -- fetching from GitHub")
+  ENDIF()
+  include(BuildFLAC)
+ELSE()
+  message(STATUS "Using libFLAC: ${FLAC_LIBRARIES} (${FLAC_VERSION})")
+ENDIF()
 
 set(RT_LIB "rt")  
 

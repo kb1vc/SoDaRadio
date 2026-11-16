@@ -93,6 +93,7 @@ INCLUDE_DIRECTORIES(SYSTEM
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}/../gui_common
   ${QWT_INCLUDE_DIRS}
+  ${FLAC_INCLUDE_DIRS}
   ${CMAKE_CURRENT_BINARY_DIR}
   ${PROJECT_SOURCE_DIR}/vendor)
 
@@ -116,7 +117,8 @@ TARGET_LINK_LIBRARIES(ShortSoDa_Lib m ${RT_LIB}
   $<$<BOOL:${Qt6WebEngineWidgets_FOUND}>:Qt6::WebEngineWidgets>
   Threads::Threads
   SoDaUtils::sodautils
-  ${QWT_LIBRARIES})
+  ${QWT_LIBRARIES}
+  ${FLAC_LIBRARIES})
 
 ADD_EXECUTABLE(SoDaRadio ${ShortSoDa_SRCS})
 

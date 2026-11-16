@@ -28,14 +28,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <QThread>
-#include <QFile>
 #include <QString>
 #include <QWidget>
+#include <FLAC/stream_encoder.h>
 #include "../common/CircularBuffer.hxx"
 
 namespace GUISoDa {
 
-  // Records received audio to a WAV file.  Runs in its own thread so a
+  // Records received audio to a FLAC file.  Runs in its own thread so a
   // slow filesystem write can't stall the GUI.
   class AudioRecorder : public QThread {
     Q_OBJECT
@@ -54,14 +54,13 @@ namespace GUISoDa {
     void record(bool on);
 
   protected:
-    void openWavFile(const QString & fname);
-    void finalizeWavFile();
+    void openFlacFile(const QString & fname);
+    void finalizeFlacFile();
     void writeSamples(const float * buf, int len);
 
     QString record_directory;
 
-    QFile   wav_file;
-    quint32 data_bytes_written;
+    FLAC__StreamEncoder * flac_encoder;
     int     sample_rate;
 
     SoDa::CircularBuffer<float> * rec_buffer;

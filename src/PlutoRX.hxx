@@ -58,6 +58,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <memory>
 #include <vector>
 #include <complex>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <queue>
+#include <atomic>
 
 namespace SoDa {
   class PlutoRX;
@@ -104,7 +109,7 @@ namespace SoDa {
   private:
     void doMixer(std::vector<std::complex<float>> & buf);
 
-    // IIO streaming objects — owned by this thread.
+    // IIO streaming objects — owned exclusively by the refill thread after start.
     iio_context * ctx;
     iio_device  * dev;         ///< cf-ad9361-lpc
     iio_channel * rx_i_chan;   ///< voltage0 (input) — I component
@@ -122,11 +127,23 @@ namespace SoDa {
 
     SoDa::ReSamplerPtr hw_resampler;            ///< 2.5 MSPS → 625 kSPS
 
-    std::vector<std::complex<float>> hw_cf;     ///< SC16→float conversion (hw_buf_size)
+    std::vector<std::complex<float>> hw_cf;     ///< current buffer from refill thread
     std::vector<std::complex<float>> rs_out;    ///< resampler output (rs_out_size)
     std::vector<std::complex<float>> accu;      ///< accumulator for 30000-sample publish
 
     QuadratureOscillator IF_osc;
+
+    // Dedicated refill thread: calls iio_buffer_refill() and sc16→float conversion
+    // concurrently with downConvert() processing.  Eliminates the inter-buffer
+    // dead time that would otherwise cause phase discontinuities in recordings.
+    void refillLoop();
+
+    std::thread                                            refill_thread;
+    std::mutex                                             refill_mutex;
+    std::condition_variable                                refill_cv;
+    std::queue<std::vector<std::complex<float>>>           hw_buf_queue;
+    std::atomic<bool>                                      refill_running { false };
+    static constexpr unsigned int REFILL_QUEUE_DEPTH = 4; ///< ~192 ms of headroom
 
     std::weak_ptr<PlutoRX> self;
   };

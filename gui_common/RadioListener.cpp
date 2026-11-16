@@ -378,7 +378,7 @@ void RadioListener::setPTT(bool on, bool full_duplex)
 void RadioListener::recordRF(int checkbox_state)
 {
   if(checkbox_state == Qt::Checked) {
-    QString fname = QString("%1.cf").arg(QDateTime::currentDateTime().toString("dd-MMM-yy_HHmmss"));
+    QString fname = QString("SoDaRF_%1.cf").arg(QDateTime::currentDateTime().toString("dd_MM_yy_HH_MM_ss"));
     put(SoDa::Command(SoDa::Command::SET, SoDa::Command::RF_RECORD_START, fname.toStdString()), __PRETTY_FUNCTION__);
   }
   else if(checkbox_state == Qt::Unchecked) {
