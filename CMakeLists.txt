@@ -70,10 +70,11 @@ include(GNUInstallDirs)
 # 12.5.2 - Added help button. Updated README.md. Added instructions
 # to create a new radio model. Updated AF recorder and RF recorder. Fixed
 # a problem in the NBFM demod that modified its own input buffer (shared with
-# everyone else sharing the mailbox.) 
+# everyone else sharing the mailbox.)
+# 12.5.3 - Forgot to add a build script for FLAC when I pushed 12.5.2... sigh
 SET(SoDaRadio_VERSION_MAJOR 12)
 SET(SoDaRadio_VERSION_MINOR 5)
-SET(SoDaRadio_VERSION_PATCH 2)
+SET(SoDaRadio_VERSION_PATCH 3)
 SET(SoDaRadio_VERSION "${SoDaRadio_VERSION_MAJOR}.${SoDaRadio_VERSION_MINOR}.${SoDaRadio_VERSION_PATCH}")
 
 set(SoDaRadio_PACKAGE_DESCRIPTION 
