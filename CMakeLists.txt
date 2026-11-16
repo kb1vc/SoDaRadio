@@ -72,9 +72,12 @@ include(GNUInstallDirs)
 # a problem in the NBFM demod that modified its own input buffer (shared with
 # everyone else sharing the mailbox.)
 # 12.5.3 - Forgot to add a build script for FLAC when I pushed 12.5.2... sigh
+# 12.5.4 - "Current" ubuntu build uses Qt 6.4 which had not yet introduced
+# the QtAudio namespace. This caused the build to fail
+# 12.5.5 - picked the wrong week to give up sniffing glue.
 SET(SoDaRadio_VERSION_MAJOR 12)
 SET(SoDaRadio_VERSION_MINOR 5)
-SET(SoDaRadio_VERSION_PATCH 3)
+SET(SoDaRadio_VERSION_PATCH 5)
 SET(SoDaRadio_VERSION "${SoDaRadio_VERSION_MAJOR}.${SoDaRadio_VERSION_MINOR}.${SoDaRadio_VERSION_PATCH}")
 
 set(SoDaRadio_PACKAGE_DESCRIPTION 

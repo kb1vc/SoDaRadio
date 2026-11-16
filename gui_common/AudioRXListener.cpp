@@ -229,7 +229,7 @@ namespace GUISoDa {
   }
 
   void AudioRXListener::audioOutError(QAudio::State new_state) {
-    if(new_state == QtAudio::IdleState) {
+    if(new_state == QAudio::IdleState) {
       qInfo().noquote() << QString("AudioRXListener under-run.");
     }
     else if(new_state == QAudio::StoppedState) {
