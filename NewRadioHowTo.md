@@ -360,9 +360,10 @@ Not-so-dirty little secret: I love writing code. But don't like
 wandering through the goat entrails that pass for API documentation of
 some radio libraries. I wrote the USRP models all by myself with
 nothing but the USRP library documentation, a couple of USRPs, and a
-love for C++. But I really didn't want to spend a lot of time learning
-the ins-and-outs of the ADALM/Pluto and its use of libiio. Life is too
-short. So I let Claude/Sonnet do it.
+love for C++ (and an Ettus Application Engineer on speed-dial). But I
+really didn't want to spend a lot of time learning the ins-and-outs of
+the ADALM/Pluto and its use of libiio. Life is too short. So I let
+Claude/Sonnet do it.
 
 I really really dislike creating new CMake magic. But we need CMake 
 magic to make all the library dependencies work. Without it we have to 
@@ -381,7 +382,7 @@ other AI widgets; Claude isn't that special.) Let's take "AirSpy" as an example.
 > src/RadioModels.[ch]xx and common/GuiParams.[ch]xx
 > 
 > This will depend on libairspy found in the git repository at
-> https:\\github.com\airspy\airspyone_host.git
+> https://github.com/airspy/airspyone_host.git
 > 
 > Create a cmake module BuildAirSpy.cmake to fetch and build the library code.
 > 
@@ -406,8 +407,8 @@ Claude cranked and cranked for about 6 minutes and produced a cut at
 all the required files. The build failed the first time, but I asked
 Claude to look at the log and fix the problems. It apparently was
 "guessing" at a few function names.  That happens. Treate any of these
-things like a slightly demented but very eager and bright intern. 
-Claude corrected the errors and the second build succeeded. 
+AI things like a  very eager and bright and demented intern.
+Claude corrected the errors and the second build succeeded.
 
 I specified a particular git hash for the build because the airspy folks
 don't tag their releases. In fact, it appears that they only publish
