@@ -56,15 +56,19 @@ namespace SoDa {
       rxbuf(nullptr),
       rx_sample_rate(params->getRXRate()),
       streaming(false),
-      if_streaming_enabled(true)
+      if_streaming_enabled(true),
+      IF_osc(params->getRFBufferSize())
   {
     std::string uri = buildPlutoURI(params->getRadioArgs());
 
-    // Build the 2.5 MSPS → 625 kSPS resampler.
+    // Build the 2.5 MSPS → 625 kSPS resampler.  This is an exact 4:1 ratio,
+    // so use the halfband-cascade implementation rather than the general
+    // FFT-based SoDa::ReSampler — it avoids the FFTs that dominated the
+    // Pluto path in profiling (apply_dit.lto_priv at ~14% of runtime).
     rf_buf_size  = params->getRFBufferSize();             // 30000
     uint32_t sample_bufsize = uint32_t(rf_buf_size * 2.5e6 / 0.625e6);
-    hw_resampler = SoDa::ReSampler::make(2500000.0f, 625000.0f, sample_bufsize);
-    
+    hw_resampler = SoDa::ReSampler4to1::make(sample_bufsize);
+
     hw_buf_size  = hw_resampler->getInputBufferSize();   // samples at 2.5 MSPS
     rs_out_size  = hw_resampler->getOutputBufferSize();  // samples at 625 kSPS
 
@@ -157,8 +161,7 @@ namespace SoDa {
 
   void PlutoRX::doMixer(std::vector<std::complex<float>> & buf)
   {
-    for (auto & samp : buf)
-      samp *= IF_osc.stepOscCF();
+    IF_osc.mulBuffer(buf);
   }
 
   // ---------------------------------------------------------------

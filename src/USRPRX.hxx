@@ -36,6 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "UI.hxx"
 #include "QuadratureOscillator.hxx"
 #include <SoDa/ReSampler.hxx>
+#include "ReSampler4to1.hxx"
 #include <vector>
 #include <complex>
 #include <uhd/usrp/multi_usrp.hpp>
@@ -169,7 +170,7 @@ namespace SoDa {
 
     // Optional 4:1 downsampling — active when hw wire rate is 2.5 MS/s
     bool             needs_resample;
-    SoDa::ReSamplerPtr hw_resampler;
+    SoDa::ReSampler4to1Ptr hw_resampler;       ///< 2.5 MS/s → 625 kS/s halfband cascade (N3xx)
     std::vector<std::complex<float>> hw_cf;    ///< raw samples at hw rate
     std::vector<std::complex<float>> rs_out;   ///< decimated output at 625 kS/s
     std::vector<std::complex<float>> accu;     ///< accumulator → rf_buf_size chunks

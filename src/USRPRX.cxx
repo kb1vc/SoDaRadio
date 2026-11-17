@@ -44,8 +44,9 @@
 #include <fstream>
 
 namespace SoDa {
-  USRPRX::USRPRX(ParamsPtr params, uhd::usrp::multi_usrp::sptr _usrp) : 
-    RadioRX(params)
+  USRPRX::USRPRX(ParamsPtr params, uhd::usrp::multi_usrp::sptr _usrp) :
+    RadioRX(params),
+    IF_osc(params->getRFBufferSize())
   {
 
     usrp = _usrp; 
@@ -72,8 +73,24 @@ namespace SoDa {
     needs_resample = (hw_rate != params->getRXRate());
 
     if (needs_resample) {
-        uint32_t sample_bufsize = uint32_t(rf_buf_size * hw_rate / params->getRXRate());
-        hw_resampler = SoDa::ReSampler::make((float)hw_rate, (float)params->getRXRate(), sample_bufsize);
+        // The resample path is exercised on USRPs whose minimum hardware rate
+        // exceeds the radio's 625 kS/s working rate — notably the N3xx series,
+        // which (like the PlutoSDR) is pinned at 2.5 MS/s.  That gives us an
+        // exact 4:1 integer ratio, so we use the halfband-cascade resampler
+        // instead of the general FFT-based SoDa::ReSampler and sidestep the
+        // FFTW cost that profiling flagged on the Pluto path.
+        double ratio = hw_rate / params->getRXRate();
+        if (std::fabs(ratio - 4.0) > 1e-6) {
+            throw SDR::Exception(
+              SoDa::Format("USRPRX: hw_rate/rx_rate ratio %0 is not 4:1; "
+                           "ReSampler4to1 only supports 2.5 MS/s → 625 kS/s. "
+                           "Add a general-ratio fallback if a new USRP needs it.")
+                .addF(ratio, 'f', 6, 3).str(),
+              self.lock());
+        }
+
+        uint32_t sample_bufsize = uint32_t(rf_buf_size * ratio);
+        hw_resampler = SoDa::ReSampler4to1::make(sample_bufsize);
         hw_buf_size  = hw_resampler->getInputBufferSize();
         rs_out_size  = hw_resampler->getOutputBufferSize();
         hw_cf.resize(hw_buf_size);
@@ -143,7 +160,7 @@ namespace SoDa {
         }
 
         // Apply IF NCO mixer
-        for (auto & s : rs_out) s *= IF_osc.stepOscCF();
+        IF_osc.mulBuffer(rs_out);
 
         // Accumulate and publish in rf_buf_size chunks
         accu.insert(accu.end(), rs_out.begin(), rs_out.end());
@@ -198,12 +215,7 @@ namespace SoDa {
 
   void USRPRX::doMixer(SoDa::CBufPtr inout)
   {
-    unsigned int i;
-    std::complex<float> o;
-    for(i = 0; i < inout->size(); i++) {
-      o = IF_osc.stepOscCF();
-      (*inout)[i] = (*inout)[i] * o; 
-    }
+    IF_osc.mulBuffer(inout->getBuf());
   }
 
   void USRPRX::setNCOFreq(double IF_tuning) 

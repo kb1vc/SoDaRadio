@@ -24,6 +24,7 @@ set(SoDaServer_SRCS
     Command.cxx
     HilbertTransformer.cxx
     QuadratureOscillator.cxx
+    ReSampler4to1.cxx
     Spectrogram.cxx
     CWGenerator.cxx
     UDSockets.cxx

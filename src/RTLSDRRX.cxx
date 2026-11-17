@@ -41,7 +41,8 @@ namespace SoDa {
       rx_sample_rate(_params->getRXRate()),
       if_streaming_enabled(true),
       diag_resamp_runs(0),
-      diag_published(0)
+      diag_published(0),
+      IF_osc(_params->getRFBufferSize())
   {
     rf_buf_size  = _params->getRFBufferSize();
 
@@ -137,7 +138,7 @@ namespace SoDa {
 
   void RTLSDRRX::doMixer(std::vector<std::complex<float>> & buf)
   {
-    for (auto & s : buf) s *= IF_osc.stepOscCF();
+    IF_osc.mulBuffer(buf);
   }
 
   // ---------------------------------------------------------------

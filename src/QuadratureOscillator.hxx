@@ -28,74 +28,173 @@
 #pragma once
 
 #include <complex>
+#include <vector>
 #include <math.h>
 
 
 namespace SoDa {
   /**
-   * @brief sin/cos oscillator to drive TX signal chain
+   * @class QuadratureOscillator
+   * @brief Complex phasor oscillator driven by recursive complex multiplication.
+   *
+   * Generates a quadrature (I/Q) tone by rotating a unit phasor one step per
+   * sample: @f$ \hat{p}_{n+1} = \hat{p}_n \cdot e^{-j\omega} @f$.  This costs
+   * one complex multiply per sample — far cheaper than calling sin/cos.
+   *
+   * ### Fast buffer path (preferred)
+   *
+   * When the oscillator is constructed with a buffer size, it pre-computes a
+   * table of phasors @f$ e^{-j\omega k},\ k = 0 \ldots N-1 @f$.  The table is
+   * built once at construction and rebuilt only on a frequency change (retune).
+   * With the table in hand, mulBuffer() computes
+   * @f$ \mathrm{buf}[i] \mathrel{*}= \hat{p}_0 \cdot e^{-j\omega i} @f$
+   * for all @f$i@f$ in one pass.  Every sample is independent of its
+   * neighbours, so the compiler can auto-vectorize the loop with SSE/AVX.
+   *
+   * ### Per-sample path (legacy / CW envelope use)
+   *
+   * stepOscCF() / stepOscCD() / stepOscD() remain available for callers that
+   * multiply by a per-sample envelope (e.g. RadioTX::doCW).
+   *
+   * ### Phase noise
+   *
+   * Each complex multiply introduces ~2–3 × @f$\varepsilon_\mathrm{mach}@f$
+   * radians of phase error (~2.2e-16 for double).  Errors accumulate as a
+   * random walk so after @f$N@f$ steps the RMS phase error is
+   * @f$\sqrt{N} \cdot 3\varepsilon@f$, which is negligible for all practical
+   * sample counts.  mulBuffer() renormalizes |last| once per buffer; the
+   * per-sample path renormalizes every 512 steps.  Neither resets phase error,
+   * but the magnitude stays within floating-point rounding of 1.0.
    */
   class QuadratureOscillator {
   public:
+
     /**
-     * Constructor
+     * @brief Construct and pre-build the phasor table for buffer-mode operation.
+     *
+     * Initialises the oscillator to a default frequency of
+     * @f$ f_s / 1000 @f$ and immediately builds a @p buf_size -entry phasor
+     * table so that mulBuffer() can be called without further setup.
+     *
+     * @param buf_size  Number of samples in one processing buffer
+     *                  (typically params->getRFBufferSize()).
+     */
+    QuadratureOscillator(unsigned int buf_size);
+
+    /**
+     * @brief Default constructor — per-sample use only (no phasor table).
+     *
+     * Provided for members that are default-constructed before a buffer size
+     * is known.  mulBuffer() will build the table on first call, but callers
+     * that know the buffer size at construction should prefer the
+     * single-argument form.
      */
     QuadratureOscillator();
 
+    // ---------------------------------------------------------------
+    // Per-sample interface (legacy; kept for envelope-modulated paths)
+    // ---------------------------------------------------------------
+
     /**
-     * @brief step the oscillator and produce a complex double result
-     * @result cos(ang), -sin(ang)
+     * @brief Advance the oscillator by one sample and return a complex<double>.
      *
-     * Note the use of sincos if we're building for linux.  This is
-     * a bit faster than separate sin and cos calls.
+     * Dispatches to either the sincos or complex-multiply implementation
+     * depending on the USE_SINCOS_NCO compile flag.  The complex-multiply
+     * path is the default and is significantly faster.
      *
-     * The original scheme also did some near-angle approximation
-     * stuff but it really didn't help that much with computation
-     * time, as the oscillators account for such a small part of the
-     * total run time. 
-     *
-     * (notes from March, 2018) 
-     * Well, no, the oscillators account for about 30% of the run time
-     * when the compiler optimizations are turned on.  Changing from 
-     * sincos to a complex multiply based scheme eliminates the 
-     * NCO from the list of "expensive" functions. 
-     * 
-     * The code still retains the choice, if it is necessary for some 
-     * reason to use the sincos scheme, but by default, the NCO will be
-     * based on a complex multiply.
+     * @return  @f$ e^{-j\omega n} @f$ as a complex<double>.
      */
-    
     std::complex<double> stepOscCD();
 
+    /// sincos-based implementation of stepOscCD (slower; kept for reference).
     std::complex<double> stepOscCD_sincos();
 
+    /// Complex-multiply implementation of stepOscCD (default fast path).
     std::complex<double> stepOscCD_complex();
-    
+
     /**
-     * @brief step the oscillator and produce a complex float result
-     * @result cos(ang), -sin(ang)
+     * @brief Advance one sample and return a complex<float>.
      *
-     * This is a wrapper for stepOscCD
+     * Thin wrapper around stepOscCD() that narrows to float.  Used by
+     * callers (e.g. the CW envelope loop) that multiply the oscillator
+     * output by a per-sample scalar before accumulating into a buffer.
+     *
+     * @return  @f$ e^{-j\omega n} @f$ as a complex<float>.
      */
     std::complex<float> stepOscCF();
 
     /**
-     * @brief step the oscillator and produce a real double result
-     * @result cos(ang)
-     *
-     * This is a wrapper for stepOscCD
+     * @brief Advance one sample and return only the real (cosine) part.
+     * @return  @f$ \cos(\omega n) @f$.
      */
     double stepOscD();
 
+    // ---------------------------------------------------------------
+    // Buffer interface (fast path — use this in the RX mixing loops)
+    // ---------------------------------------------------------------
+
     /**
-     * @brief set the phase increment per step for the oscillator (1/freq)
-     * @param _pi the phase increment
+     * @brief Multiply an IQ buffer by the oscillator in a single vectorisable pass.
+     *
+     * Implements @f$ \mathrm{buf}[i] \mathrel{*}= \hat{p} \cdot e^{-j\omega i} @f$
+     * for every sample @f$i@f$ in @p buf, where @f$\hat{p}@f$ is the current
+     * phasor at the start of the buffer.  Because every output sample depends
+     * only on the (loop-invariant) initial phasor and the pre-computed table
+     * entry, all iterations are independent and the compiler can emit SSE/AVX
+     * vector instructions.
+     *
+     * After the loop, @p last is advanced by @f$N@f$ steps and renormalised to
+     * unit magnitude, so successive calls produce a phase-continuous tone.
+     *
+     * If @p buf.size() differs from the table size (e.g. on the first call
+     * after a retune with a different-sized buffer), the table is silently
+     * rebuilt before proceeding.
+     *
+     * @param buf  IQ sample buffer to mix in-place; modified on return.
      */
-    void setPhaseIncr(double _pi);    
+    void mulBuffer(std::vector<std::complex<float>> & buf);
+
+    // ---------------------------------------------------------------
+    // Frequency control
+    // ---------------------------------------------------------------
+
+    /**
+     * @brief Set the oscillator frequency via its phase increment per sample.
+     *
+     * @param _pi  Phase advance per sample in radians:
+     *             @f$ \Delta\phi = 2\pi f / f_s @f$.
+     *
+     * Recomputes @f$e^{-j\Delta\phi}@f$ and, if a phasor table has already
+     * been built, rebuilds it for the new frequency.  The rebuild is O(N) but
+     * is called only on retune, not on every buffer.
+     */
+    void setPhaseIncr(double _pi);
+
   private:
-    double phase_incr;
-    double ang; 
-    std::complex<double> ejw, last; 
-    int idx; 
+
+    /**
+     * @brief Build (or rebuild) the phasor table for a given buffer length.
+     *
+     * Fills phasor_table[i] = @f$ e^{-j\omega i} @f$ for i = 0 … n-1
+     * (relative to the start of a buffer, i.e. table[0] = 1+0j always).
+     * Also stores ejw_n = @f$ e^{-j\omega n} @f$ so that mulBuffer() can
+     * advance @p last by exactly one buffer length in a single multiply.
+     *
+     * Called from the constructor and from setPhaseIncr() whenever the table
+     * exists and the frequency changes.
+     *
+     * @param n  Number of entries to generate (= buffer size).
+     */
+    void buildTable(unsigned int n);
+
+    double phase_incr;             ///< phase advance per sample (radians)
+    double ang;                    ///< current angle (sincos path only)
+    std::complex<double> ejw;      ///< unit step phasor: e^{-j*phase_incr}
+    std::complex<double> ejw_n;    ///< N-step advance phasor: e^{-j*phase_incr*N}
+    std::complex<double> last;     ///< current phasor state
+    int idx;                       ///< step counter for per-sample renormalisation
+
+    /// Pre-computed table: phasor_table[i] = e^{-j*phase_incr*i}, table[0] = 1+0j.
+    std::vector<std::complex<float>> phasor_table;
   };
 }

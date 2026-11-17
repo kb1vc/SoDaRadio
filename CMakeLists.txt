@@ -75,9 +75,16 @@ include(GNUInstallDirs)
 # 12.5.4 - "Current" ubuntu build uses Qt 6.4 which had not yet introduced
 # the QtAudio namespace. This caused the build to fail
 # 12.5.5 - picked the wrong week to give up sniffing glue.
+# 12.6.0 - Performance fiddles. Changed sleep length for RadioTX to 1ms when
+# transmit is off. Big deal: changed QuadratureOscillator to produce vectors
+# of NCO samples to allow downmixing to use vector instructions. Finally, PLUTO
+# (and USRP N3xx) requires downsampling from the hardware sample rate to the
+# SoDa preferred rate of 625 kS/s.  That was originally a normal SoDa::ReSampler
+# but this isn't nearly as efficient as a well designed half-band sampler. Opus
+# helped me add a cascaded half-band sampler to get the 4:1 reduction. 
 SET(SoDaRadio_VERSION_MAJOR 12)
-SET(SoDaRadio_VERSION_MINOR 5)
-SET(SoDaRadio_VERSION_PATCH 5)
+SET(SoDaRadio_VERSION_MINOR 6)
+SET(SoDaRadio_VERSION_PATCH 0)
 SET(SoDaRadio_VERSION "${SoDaRadio_VERSION_MAJOR}.${SoDaRadio_VERSION_MINOR}.${SoDaRadio_VERSION_PATCH}")
 
 set(SoDaRadio_PACKAGE_DESCRIPTION 
@@ -254,7 +261,7 @@ IF(NOT CMAKE_BUILD_TYPE)
   SET(CMAKE_BUILD_TYPE Debug)
 ENDIF()
 
-SET(CMAKE_CXX_FLAGS_DEBUG "-g")
+SET(CMAKE_CXX_FLAGS_DEBUG "-g -O3 -fno-omit-frame-pointer")
 SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -ffast-math")
 
 MESSAGE("SoDaRadio_VERSION=[${SoDaRadio_VERSION}]")

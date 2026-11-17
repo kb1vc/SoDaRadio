@@ -33,7 +33,9 @@
 #include <fcntl.h>
 #include <stdio.h>
 
-SoDa::RadioTX::RadioTX(ParamsPtr params, const std::string & name) : SoDa::Thread(name) 
+SoDa::RadioTX::RadioTX(ParamsPtr params, const std::string & name)
+  : SoDa::Thread(name),
+    CW_osc(params->getRFBufferSize())
 {
   cmd_stream = NULL;
   tx_stream = NULL;
@@ -145,7 +147,12 @@ void SoDa::RadioTX::run()
     }
 
     if(!didwork) {
-      sleep_us(100);
+      if(tx_enabled) {
+	sleep_us(100);
+      }
+      else {
+	sleep_us(1000);	
+      }
     }
   }
 

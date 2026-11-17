@@ -54,6 +54,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Params.hxx"
 #include "QuadratureOscillator.hxx"
 #include <SoDa/ReSampler.hxx>
+#include "ReSampler4to1.hxx"
 #include <iio.h>
 #include <memory>
 #include <vector>
@@ -125,7 +126,7 @@ namespace SoDa {
     bool streaming;             ///< true after startStream(); samples published
     bool if_streaming_enabled;  ///< true → push raw RF copies to if_stream
 
-    SoDa::ReSamplerPtr hw_resampler;            ///< 2.5 MSPS → 625 kSPS
+    SoDa::ReSampler4to1Ptr hw_resampler;        ///< 2.5 MSPS → 625 kSPS halfband cascade
 
     std::vector<std::complex<float>> hw_cf;     ///< current buffer from refill thread
     std::vector<std::complex<float>> rs_out;    ///< resampler output (rs_out_size)
