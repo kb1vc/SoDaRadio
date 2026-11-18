@@ -81,10 +81,12 @@ include(GNUInstallDirs)
 # (and USRP N3xx) requires downsampling from the hardware sample rate to the
 # SoDa preferred rate of 625 kS/s.  That was originally a normal SoDa::ReSampler
 # but this isn't nearly as efficient as a well designed half-band sampler. Opus
-# helped me add a cascaded half-band sampler to get the 4:1 reduction. 
+# helped me add a cascaded half-band sampler to get the 4:1 reduction.
+# 12.6.1 - AM demod was subject to really bad intermod.  Tweaking the AM
+# demod prefilter
 SET(SoDaRadio_VERSION_MAJOR 12)
 SET(SoDaRadio_VERSION_MINOR 6)
-SET(SoDaRadio_VERSION_PATCH 0)
+SET(SoDaRadio_VERSION_PATCH 1)
 SET(SoDaRadio_VERSION "${SoDaRadio_VERSION_MAJOR}.${SoDaRadio_VERSION_MINOR}.${SoDaRadio_VERSION_PATCH}")
 
 set(SoDaRadio_PACKAGE_DESCRIPTION 

@@ -339,13 +339,11 @@ namespace SoDa {
     auto dbufo = CBuf::make(audio_buffer_size); 
     // Note that audio_buffer_size must be (sample_length / decimation rate)
     
-    if((rx_modulation != Command::WBFM) && (rx_modulation != Command::NBFM)) {
+    if((rx_modulation != Command::WBFM) &&
+       (rx_modulation != Command::NBFM) &&
+       (rx_modulation != Command::AM)) {
       rf_resampler->apply(rxbuf->getBuf(), dbufi->getBuf());
 
-      // now do the low pass filter
-      if(rx_modulation == Command::AM) {
-	am_pre_filter->apply(dbufi->getBuf(), dbufo->getBuf(), *cur_af_gain);
-      }
     }
     else if(rx_modulation == Command::NBFM) {
       // first, bandpass the RF down to about 25 kHz wide...
@@ -356,6 +354,10 @@ namespace SoDa {
       std::vector<std::complex<float>> rf_filtered(rfbuf.size());
       nbfm_pre_filter->apply(rfbuf, rf_filtered, 1.0);
       rf_resampler->apply(rf_filtered, dbufo->getBuf());
+    }
+    else if(rx_modulation == Command::AM) {
+      rf_resampler->apply(rxbuf->getBuf(), dbufi->getBuf());      
+      am_pre_filter->apply(dbufi->getBuf(), dbufo->getBuf(), *cur_af_gain);
     }
  
     switch(rx_modulation) {
@@ -700,7 +702,7 @@ namespace SoDa {
     fm_audio_filter = OSFilter::make(100.0, 8000.0, 100, audio_sample_rate, audio_buffer_size);
     am_audio_filter = filter_map[Command::BW_6000]; 
 
-    am_pre_filter = OSFilter::make(10.0, 8000.0, 100, audio_sample_rate, audio_buffer_size);
+    am_pre_filter = OSFilter::make(-6000.0, 6000.0, 1000, audio_sample_rate, audio_buffer_size);
 
     nbfm_pre_filter = OSFilter::make(-12500.0,  12500.0, 1000, rf_sample_rate, rf_buffer_size);
 
