@@ -11,8 +11,10 @@
 # build of Qwt, and the upstream Qwt project uses qmake rather than CMake
 # so it doesn't fit the FetchContent pattern used for the other libs.
 #
-# The source tree is NOT baked in -- it is bind-mounted at build time by
-# build-ubuntu.sh so the same image can be reused across source changes.
+# The source tree is NOT baked in -- build-ubuntu.sh clones the chosen
+# branch from GitHub into a scratch directory inside the container at run
+# time, so the same image can be reused across source changes and across
+# different branches without a rebuild.
 #
 # Build this image from the SoDaRadio source root:
 #   ch-image build -t sodaradio-ubuntu-build \
@@ -64,4 +66,6 @@ RUN rm -rf /tmp/qwt && \
     rm -rf /tmp/qwt
 
 # Pre-create bind-mount points (charliecloud requires them to exist).
-RUN mkdir -p /src /build /output
+# /build receives the host scratch dir (and holds the clone + build tree);
+# /output receives the host output dir for the final .deb.
+RUN mkdir -p /build /output

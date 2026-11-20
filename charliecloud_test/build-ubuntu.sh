@@ -4,14 +4,22 @@
 # Usage: build-ubuntu.sh [OUTPUT_DIR]
 #   OUTPUT_DIR  where to deposit the resulting .deb  (default: ./packages)
 #
-# Run from anywhere; the script locates the SoDaRadio source automatically.
+# Environment variables (optional overrides):
+#   REPO_URL    git URL to clone     (default: https://github.com/kb1vc/SoDaRadio.git)
+#   BRANCH      branch/tag/sha       (default: dist-test)
+#
+# The source tree is NOT taken from the local working copy — the container
+# clones the named branch from GitHub at build time so this script reproduces
+# exactly what is on the remote.
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SRC_DIR="$(dirname "$SCRIPT_DIR")"
 OUTPUT_DIR="${1:-$SCRIPT_DIR/packages}"
 IMAGE="sodaradio-ubuntu-build"
+
+REPO_URL="${REPO_URL:-https://github.com/kb1vc/SoDaRadio.git}"
+BRANCH="${BRANCH:-dist-test}"
 
 IMG_STORAGE="${CH_IMAGE_STORAGE:-/var/tmp/$USER.ch}"
 
@@ -28,16 +36,27 @@ trap 'rm -rf "$BUILD_SCRATCH"' EXIT
 
 mkdir -p "$OUTPUT_DIR"
 
-echo "=== [2/3] Building SoDaRadio and generating DEB ==="
+echo "=== [2/3] Cloning $REPO_URL (branch $BRANCH) and building SoDaRadio ==="
+# $REPO_URL and $BRANCH are expanded on the host and passed into the shell
+# inside the container via env.  Keeping the inner shell single-quoted (and
+# reading from env) avoids any quoting surprises if the URL ever contains
+# characters the outer shell would reinterpret.
 ch-run -s "$IMG_STORAGE" \
-    -b "$SRC_DIR:/src" \
+    --set-env="REPO_URL=$REPO_URL" \
+    --set-env="BRANCH=$BRANCH" \
     -b "$BUILD_SCRATCH:/build" \
     -b "$OUTPUT_DIR:/output" \
     "$IMAGE" -- \
     sh -c '
         set -e
-        cd /build
-        cmake /src \
+        echo "Cloning $REPO_URL (branch $BRANCH)..."
+        git clone --depth 1 --branch "$BRANCH" "$REPO_URL" /build/source
+        cd /build/source
+        echo "HEAD is at: $(git log -1 --oneline)"
+
+        mkdir -p /build/work
+        cd /build/work
+        cmake /build/source \
             -DCMAKE_BUILD_TYPE=Release \
             -DBUILD_DEB=ON \
             -DBUILD_SODALIBS=ON \

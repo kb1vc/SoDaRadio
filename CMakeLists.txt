@@ -176,10 +176,19 @@ set(CPACK_RPM_PACKAGE_URL "${CPACK_PACKAGE_HOMEPAGE_URL}")
 set(CPACK_RPM_PACKAGE_SUMMARY "${CPACK_PACKAGE_DESCRIPTION_SUMMARY}")
 set(CPACK_RPM_PACKAGE_DESCRIPTION ${SoDaRadio_PACKAGE_DESCRIPTION})
 set(CPACK_RPM_PACKAGE_RELOCATABLE TRUE)
-# Runtime dependencies on Fedora.  We disable auto-requires because rpm
-# turns the absolute uhd version into an unsatisfiable expression
-# otherwise.
-set(CPACK_RPM_PACKAGE_AUTOREQPROV "no")
+# Runtime dependencies on Fedora.  Let rpm's built-in dependency scanner
+# derive the per-SONAME requirements directly from the installed binaries
+# (libuhd, libssl, libcrypto, libxml2, libqwt-qt6, Qt6, ...).  Maintaining
+# that list by hand is a losing battle — we ended up shipping a package
+# that installed cleanly but failed at runtime with "not found" on
+# openssl and libxml2 because the manual list omitted them.
+#
+# CPACK_RPM_PACKAGE_REQUIRES is additive when AUTOREQPROV is on, so the
+# human-readable package pins below are merged with the auto-detected
+# SONAME requires.  They serve as documentation of our minimum-supported
+# versions and as a second line of defence if a dependency is ever loaded
+# via dlopen() and thus invisible to the scanner.
+set(CPACK_RPM_PACKAGE_AUTOREQPROV "yes")
 set(CPACK_RPM_PACKAGE_REQUIRES
   "uhd >= 3.12.0, "
   "qt6-qtbase >= 6.2, "

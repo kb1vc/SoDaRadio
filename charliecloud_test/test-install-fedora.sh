@@ -40,7 +40,7 @@ FROM fedora:latest
 RUN dnf -y update && dnf clean all
 DOCKERFILE
 
-echo "=== [1/3] Building fresh Fedora base image ==="
+echo "=== [1/5] Building fresh Fedora base image ==="
 ch-image -s "$IMG_STORAGE" build -t "$BASE_IMAGE" -f "$TMPDF" /
 
 # Step 2: Build a second image that installs the RPM.
@@ -52,13 +52,13 @@ COPY ${RPM_BASENAME} /pkgs/
 RUN dnf -y install /pkgs/${RPM_BASENAME}
 DOCKERFILE
 
-echo "=== [2/3] Installing RPM into a new image layer ==="
+echo "=== [2/5] Installing RPM into a new image layer ==="
 ch-image -s "$IMG_STORAGE" build \
     -t "$INST_IMAGE" \
     -f "$TMPDF" \
     "$RPM_DIR"
 
-echo "=== [3/3] Verifying installation ==="
+echo "=== [3/5] Verifying binaries are installed ==="
 ch-run -s "$IMG_STORAGE" "$INST_IMAGE" -- sh -c '
     ok=true
     for bin in SoDaRadio SoDaServer SoDaCreateConfig; do
@@ -71,6 +71,49 @@ ch-run -s "$IMG_STORAGE" "$INST_IMAGE" -- sh -c '
         else
             echo "  MISSING: $bin" >&2
             ok=false
+        fi
+    done
+    $ok
+'
+
+# Catches the case where the RPM declared its dependencies incompletely and
+# the package installed successfully but the binary still cannot resolve one
+# of its shared libraries at load time.  ldd is the dynamic linker asking the
+# same question the kernel will ask when the binary is executed.
+echo "=== [4/5] Checking shared-library completeness (ldd) ==="
+ch-run -s "$IMG_STORAGE" "$INST_IMAGE" -- sh -c '
+    ok=true
+    for bin in SoDaRadio SoDaServer SoDaCreateConfig; do
+        path=$(command -v "$bin" || true)
+        [ -z "$path" ] && continue
+        missing=$(ldd "$path" 2>/dev/null | grep "not found" || true)
+        if [ -n "$missing" ]; then
+            echo "  FAIL: $bin missing libraries:" >&2
+            echo "$missing" | sed "s/^/    /" >&2
+            ok=false
+        else
+            echo "  OK: $bin -- all libraries resolve"
+        fi
+    done
+    $ok
+'
+
+# Catches runtime load failures that ldd misses: files the binary looks up
+# at startup (configs, data, dlopened plugins) that were not pulled in by
+# the package declaration.  SoDaRadio is skipped because it is a Qt GUI and
+# may require a display even for --help.  We only fail on the dynamic-linker
+# error signature; many CLIs exit non-zero on --help and that is fine.
+echo "=== [5/5] Smoke-exec (verify binaries load without library errors) ==="
+ch-run -s "$IMG_STORAGE" "$INST_IMAGE" -- sh -c '
+    ok=true
+    for bin in SoDaServer SoDaCreateConfig; do
+        out=$(timeout 5s "$bin" --help 2>&1 || true)
+        if echo "$out" | grep -q "error while loading shared libraries\|cannot open shared object"; then
+            echo "  FAIL: $bin reported a library-load error:" >&2
+            echo "$out" | grep "error while loading shared libraries\|cannot open shared object" | head -3 | sed "s/^/    /" >&2
+            ok=false
+        else
+            echo "  OK: $bin --help ran without library-load errors"
         fi
     done
     $ok
