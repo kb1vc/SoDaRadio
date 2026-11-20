@@ -84,9 +84,11 @@ include(GNUInstallDirs)
 # helped me add a cascaded half-band sampler to get the 4:1 reduction.
 # 12.6.1 - AM demod was subject to really bad intermod.  Tweaking the AM
 # demod prefilter
+# 12.6.2 - Forgot to commit the new 4:1 resampler.  Things could be going
+# better. 
 SET(SoDaRadio_VERSION_MAJOR 12)
 SET(SoDaRadio_VERSION_MINOR 6)
-SET(SoDaRadio_VERSION_PATCH 1)
+SET(SoDaRadio_VERSION_PATCH 2)
 SET(SoDaRadio_VERSION "${SoDaRadio_VERSION_MAJOR}.${SoDaRadio_VERSION_MINOR}.${SoDaRadio_VERSION_PATCH}")
 
 set(SoDaRadio_PACKAGE_DESCRIPTION 
