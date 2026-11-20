@@ -17,7 +17,7 @@
 #   ch-image build -t sodaradio-fedora-build \
 #             -f charliecloud_test/fedora-build/Dockerfile .
 
-FROM fedora:43
+FROM fedora:44
 
 RUN dnf -y update && \
     dnf -y install \

@@ -36,7 +36,7 @@ trap 'rm -f "$TMPDF"' EXIT
 
 # Step 1: Build minimal base image (cached after first run).
 cat >"$TMPDF" <<DOCKERFILE
-FROM fedora:latest
+FROM fedora:44
 RUN dnf -y update && dnf clean all
 DOCKERFILE
 
