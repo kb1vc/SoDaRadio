@@ -372,7 +372,11 @@ OPTION(NO_USRP "Disable Ettus USRP / libuhd support" OFF)
 IF(${NO_USRP})
   SET(HAVE_UHD 0)
 ELSE()
-  FIND_PACKAGE(UHD "4.8.0" QUIET)
+  # UHD 4.6 is the earliest release we have verified against (Ubuntu 24.04
+  # LTS "noble" ships 4.6; 24.04 users with USRP hardware get USRP support
+  # as a result).  Raise the floor only if a hard API dependency on 4.7+
+  # actually appears in the source.
+  FIND_PACKAGE(UHD "4.6.0" QUIET)
   IF(UHD_FOUND)
     SET(HAVE_UHD 1)
   ELSE()
