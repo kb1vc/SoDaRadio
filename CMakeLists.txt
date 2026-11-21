@@ -101,9 +101,16 @@ include(GNUInstallDirs)
 # 12.6.3 - Fixed CI rpm/deb build process - now creates latest and latest-1
 # kits for fedora and the current and previous LTS for ubuntu.  Created new
 # charliecloud tests for kit build that cover the same releases.
+# 12.7.0 - many updates/fixes/improvements
+#  - Improvements to kit build for Fedora and Ubuntu - especially test
+#    scripts in charliecloud_test
+#  - Removed extraneous (.hxx, and other) files from the packages
+#  - Reduced UHD version requirement to 4.6 to accommodate Ubuntu 24.04
+#  - Reduced debug stream-to-console noise that was particularly noxious
+#    with Unbuntu.
 SET(SoDaRadio_VERSION_MAJOR 12)
-SET(SoDaRadio_VERSION_MINOR 6)
-SET(SoDaRadio_VERSION_PATCH 2)
+SET(SoDaRadio_VERSION_MINOR 7)
+SET(SoDaRadio_VERSION_PATCH 0)
 SET(SoDaRadio_VERSION "${SoDaRadio_VERSION_MAJOR}.${SoDaRadio_VERSION_MINOR}.${SoDaRadio_VERSION_PATCH}")
 
 set(SoDaRadio_PACKAGE_DESCRIPTION 
