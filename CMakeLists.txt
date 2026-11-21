@@ -13,6 +13,18 @@ endif()
 OPTION(BUILD_RPM     "Build a binary RPM package (Fedora) via 'make package'." OFF)
 OPTION(BUILD_DEB     "Build a binary Debian package (Ubuntu) via 'make package'." OFF)
 OPTION(BUILD_SRC_DEB "Build an Ubuntu/Debian source package via 'make package_src_deb'." OFF)
+
+# When building a binary RPM or DEB we ship a *runtime* package only.  Headers,
+# the SoDaRadio CMake config files, libSoDaSockets.a, the SoDaCLI test tool,
+# and the examples/ directory are developer-oriented and have no place in an
+# end-user package, so their install() rules are gated on INSTALL_DEV_FILES.
+# A plain `cmake && make install` (no BUILD_RPM / BUILD_DEB) still installs
+# everything as before -- the gate is only closed by the packaging flags.
+if(BUILD_RPM OR BUILD_DEB)
+  set(INSTALL_DEV_FILES OFF)
+else()
+  set(INSTALL_DEV_FILES ON)
+endif()
 OPTION(BUILD_UNIT_TESTS "Build the unit tests -- not normally useful" OFF)
 OPTION(BUILD_SODALIBS
   "Fetch and build SoDaLibs from GitHub instead of using the installed copy" OFF)
@@ -337,7 +349,9 @@ CONFIGURE_FILE (
   )
 INCLUDE_DIRECTORIES("${PROJECT_BINARY_DIR}")
 
-INSTALL(FILES ${PROJECT_BINARY_DIR}/version.h DESTINATION "include/SoDaRadio")
+if(INSTALL_DEV_FILES)
+  INSTALL(FILES ${PROJECT_BINARY_DIR}/version.h DESTINATION "include/SoDaRadio")
+endif()
 
 CONFIGURE_FILE (
   "${PROJECT_SOURCE_DIR}/SoDaRadioConfigVersion.cmake.in"
@@ -345,8 +359,10 @@ CONFIGURE_FILE (
   @ONLY
   )  
 
-INSTALL(FILES ${PROJECT_BINARY_DIR}/SoDaRadioConfigVersion.cmake DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/SoDaRadio")
-INSTALL(FILES ${PROJECT_SOURCE_DIR}/SoDaRadioConfig.cmake DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/SoDaRadio")
+if(INSTALL_DEV_FILES)
+  INSTALL(FILES ${PROJECT_BINARY_DIR}/SoDaRadioConfigVersion.cmake DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/SoDaRadio")
+  INSTALL(FILES ${PROJECT_SOURCE_DIR}/SoDaRadioConfig.cmake DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/SoDaRadio")
+endif()
 
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
 

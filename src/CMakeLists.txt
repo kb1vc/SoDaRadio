@@ -148,7 +148,9 @@ set(Loadable_INCLS
   Debug.hxx
   )
 
-install(FILES ${Loadable_INCLS} DESTINATION "include/SoDaRadio")
+if(INSTALL_DEV_FILES)
+  install(FILES ${Loadable_INCLS} DESTINATION "include/SoDaRadio")
+endif()
 
 set(SoDaSockets_SRCS
   UDSockets.cxx
@@ -160,6 +162,8 @@ add_library(SoDaSockets STATIC ${SoDaSockets_SRCS})
 # themselves.
 target_include_directories(SoDaSockets PRIVATE
   $<TARGET_PROPERTY:SoDaUtils::sodautils,INTERFACE_INCLUDE_DIRECTORIES>)
-install(TARGETS SoDaSockets DESTINATION lib)
+if(INSTALL_DEV_FILES)
+  install(TARGETS SoDaSockets DESTINATION lib)
+endif()
 
 

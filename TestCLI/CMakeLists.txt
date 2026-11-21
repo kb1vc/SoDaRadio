@@ -22,4 +22,6 @@ target_link_libraries(SoDaCLI
   ${READLINE_LIB}
 )
 
-install(TARGETS SoDaCLI DESTINATION bin)
+if(INSTALL_DEV_FILES)
+  install(TARGETS SoDaCLI DESTINATION bin)
+endif()
