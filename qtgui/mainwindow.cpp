@@ -328,6 +328,15 @@ void MainWindow::widgetSaveRestore(QObject * op, const QString & par, bool save)
 {
   QObjectList wlist = op->children();
   for(QObjectList::iterator cp = wlist.begin(); cp != wlist.end(); ++cp) {
+    // This function only saves/restores *widget* state.  MainWindow owns
+    // non-widget QObject children too (notably settings_p, a QSettings
+    // attached as a child; also internal socket helpers created by Qt),
+    // and recursing into those drills into Qt's own guts -- which both
+    // wastes time and, on some Qt builds (observed on Ubuntu 26.04),
+    // surfaces internal helpers like QSocketNotifier and
+    // QNativeSocketEngine.  Skip anything that isn't a QWidget.
+    if (!(*cp)->isWidgetType()) continue;
+
     QString my_name = (*cp)->objectName();
     QString my_class = (*cp)->metaObject()->className();
 

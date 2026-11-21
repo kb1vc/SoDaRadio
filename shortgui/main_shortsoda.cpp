@@ -196,15 +196,33 @@ int main(int argc, char *argv[])
     g_prev_msg_handler = qInstallMessageHandler(sodaMessageFilter);
 
     QApplication a(argc, argv);
-    // Suppress Qt's own FFmpeg backend info line.
-    QLoggingCategory::setFilterRules(QStringLiteral(
-        "qt.multimedia.ffmpeg=false\n"
-        "qt.qpa.services=false\n"
-        "qt.qpa.wayland.textinput=false"));
 
     QCoreApplication::setApplicationName("SoDaRadio");
     QGuiApplication::setApplicationDisplayName("SoDaRadio");
     SoDa::GuiParams p(argc, argv);
+
+    // Qt logging rules.
+    //
+    //  - The named-category rules silence background noise from Qt's own
+    //    subsystems on every build (FFmpeg backend info line, QPA services,
+    //    Wayland text input probes).
+    //
+    //  - "*.debug=false" silences plain qDebug() in normal operation so
+    //    stray dev-trace prints don't reach the console on distros whose
+    //    Qt build (e.g. Ubuntu's) doesn't already do this.  We only apply
+    //    it when the user has NOT asked for debug output -- "--debug N"
+    //    for any N > 0 leaves qDebug enabled, giving an explicit runtime
+    //    switch.  Setting QT_LOGGING_RULES at runtime also overrides this
+    //    (Qt applies env-var rules after setFilterRules), so power users
+    //    can still turn individual categories on and off from the shell.
+    QString qt_rules = QStringLiteral(
+        "qt.multimedia.ffmpeg=false\n"
+        "qt.qpa.services=false\n"
+        "qt.qpa.wayland.textinput=false\n");
+    if (p.getDebugLevel() == 0) {
+        qt_rules += QStringLiteral("*.debug=false\n");
+    }
+    QLoggingCategory::setFilterRules(qt_rules);
 
       
     if(p.getDebugLevel() > 0) {
