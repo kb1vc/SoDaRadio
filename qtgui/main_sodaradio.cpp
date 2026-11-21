@@ -50,6 +50,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 static QtMessageHandler g_prev_msg_handler = nullptr;
 static void sodaMessageFilter(QtMsgType type, const QMessageLogContext & ctx, const QString & msg) {
   if (msg.contains(QLatin1String("No sample format supported"))) return;
+  // Qt's thread-pool teardown on Ubuntu 26.04's Qt 6 races the eventfd it
+  // was using for wakeups, so each worker's shutdown wake prints one of
+  // these.  Harmless (we're already exiting) but spammy on the terminal.
+  if (msg.contains(QLatin1String("QAutoResetEvent::set failed"))) return;
   if (g_prev_msg_handler) g_prev_msg_handler(type, ctx, msg);
 }
 /**
