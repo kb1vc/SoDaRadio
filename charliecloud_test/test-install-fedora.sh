@@ -13,6 +13,15 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PACKAGES_DIR="$SCRIPT_DIR/packages"
 
+# Single source of truth for supported distro versions.
+# shellcheck source=versions.conf
+source "$SCRIPT_DIR/versions.conf"
+
+# Default to the newest Fedora in the list; may be overridden via
+# FEDORA_VERSION=... on the command line.  Must match the version that
+# build-fedora.sh used to produce the RPM being tested.
+FEDORA_VERSION="${FEDORA_VERSION:-${FEDORA_VERSIONS##* }}"
+
 if [[ $# -ge 1 ]]; then
     RPM_FILE="$1"
 else
@@ -22,10 +31,11 @@ if [[ -z "$RPM_FILE" || ! -f "$RPM_FILE" ]]; then
     echo "Error: no RPM found. Run build-fedora.sh first, or pass the RPM path as an argument." >&2
     exit 1
 fi
-echo "Testing RPM: $RPM_FILE"
+echo "Testing RPM: $RPM_FILE (on Fedora ${FEDORA_VERSION})"
 
-BASE_IMAGE="sodaradio-fedora-test"
-INST_IMAGE="sodaradio-fedora-test-installed"
+# One cached pair of images per Fedora release so different versions coexist.
+BASE_IMAGE="sodaradio-fedora-test-${FEDORA_VERSION}"
+INST_IMAGE="sodaradio-fedora-test-installed-${FEDORA_VERSION}"
 IMG_STORAGE="${CH_IMAGE_STORAGE:-/var/tmp/$USER.ch}"
 
 RPM_BASENAME="$(basename "$RPM_FILE")"
@@ -36,7 +46,7 @@ trap 'rm -f "$TMPDF"' EXIT
 
 # Step 1: Build minimal base image (cached after first run).
 cat >"$TMPDF" <<DOCKERFILE
-FROM fedora:44
+FROM fedora:${FEDORA_VERSION}
 RUN dnf -y update && dnf clean all
 DOCKERFILE
 

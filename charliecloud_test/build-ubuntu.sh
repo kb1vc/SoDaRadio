@@ -1,12 +1,14 @@
 #!/bin/bash
-# Build SoDaRadio on Ubuntu 24.04 inside a charliecloud container and extract the DEB.
+# Build SoDaRadio on Ubuntu inside a charliecloud container and extract the DEB.
 #
 # Usage: build-ubuntu.sh [OUTPUT_DIR]
 #   OUTPUT_DIR  where to deposit the resulting .deb  (default: ./packages)
 #
 # Environment variables (optional overrides):
-#   REPO_URL    git URL to clone     (default: https://github.com/kb1vc/SoDaRadio.git)
-#   BRANCH      branch/tag/sha       (default: dist-test)
+#   UBUNTU_VERSION  Ubuntu release to build in.  Default: newest entry in
+#                   versions.conf.  Must appear in UBUNTU_VERSIONS there.
+#   REPO_URL        git URL to clone   (default: https://github.com/kb1vc/SoDaRadio.git)
+#   BRANCH          branch/tag/sha    (default: dist-test)
 #
 # The source tree is NOT taken from the local working copy — the container
 # clones the named branch from GitHub at build time so this script reproduces
@@ -16,17 +18,28 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OUTPUT_DIR="${1:-$SCRIPT_DIR/packages}"
-IMAGE="sodaradio-ubuntu-build"
+
+# Single source of truth for supported distro versions.
+# shellcheck source=versions.conf
+source "$SCRIPT_DIR/versions.conf"
+
+# Default to the newest Ubuntu in the list (last space-separated token).
+UBUNTU_VERSION="${UBUNTU_VERSION:-${UBUNTU_VERSIONS##* }}"
+
+# One cached image per Ubuntu release so different versions coexist.
+IMAGE="sodaradio-ubuntu-build-${UBUNTU_VERSION}"
 
 REPO_URL="${REPO_URL:-https://github.com/kb1vc/SoDaRadio.git}"
 BRANCH="${BRANCH:-dist-test}"
 
 IMG_STORAGE="${CH_IMAGE_STORAGE:-/var/tmp/$USER.ch}"
 
-echo "=== [1/3] Building Ubuntu build-environment image ==="
-# Use charliecloud_test/ as the build context -- the Dockerfile has no COPY
-# instructions, so the source tree does not need to be transferred.
+echo "=== [1/3] Building Ubuntu ${UBUNTU_VERSION} build-environment image ==="
+# The Dockerfile has no COPY instructions, so the source tree does not need
+# to be transferred — charliecloud_test/ is just the build context.  The
+# UBUNTU_VERSION build-arg selects the base image tag.
 ch-image -s "$IMG_STORAGE" build \
+    --build-arg UBUNTU_VERSION="$UBUNTU_VERSION" \
     -t "$IMAGE" \
     -f "$SCRIPT_DIR/ubuntu-build/Dockerfile" \
     "$SCRIPT_DIR"

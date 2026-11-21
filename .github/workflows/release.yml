@@ -6,10 +6,39 @@ on:
       - 'v*'
 
 jobs:
+  # Read charliecloud_test/versions.conf once and publish the two version
+  # lists as JSON arrays so every downstream matrix job uses the same
+  # single source of truth.  Bumping supported distros = edit versions.conf.
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      fedora_matrix: ${{ steps.load.outputs.fedora_matrix }}
+      ubuntu_matrix: ${{ steps.load.outputs.ubuntu_matrix }}
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - id: load
+        shell: bash
+        run: |
+          # shellcheck source=charliecloud_test/versions.conf
+          source charliecloud_test/versions.conf
+          # Convert a space-separated list into a compact JSON array.
+          # jq is pre-installed on GitHub-hosted ubuntu-latest runners.
+          to_json() { printf '%s\n' $1 | jq -R . | jq -sc .; }
+          echo "fedora_matrix=$(to_json "$FEDORA_VERSIONS")" >> "$GITHUB_OUTPUT"
+          echo "ubuntu_matrix=$(to_json "$UBUNTU_VERSIONS")" >> "$GITHUB_OUTPUT"
+          echo "Fedora matrix: $(to_json "$FEDORA_VERSIONS")"
+          echo "Ubuntu matrix: $(to_json "$UBUNTU_VERSIONS")"
+
   build-rpm:
+    needs: setup
+    strategy:
+      fail-fast: false
+      matrix:
+        fedora_version: ${{ fromJson(needs.setup.outputs.fedora_matrix) }}
     runs-on: ubuntu-latest
     container:
-      image: fedora:43
+      image: fedora:${{ matrix.fedora_version }}
     steps:
       - uses: actions/checkout@v4.2.2
 
@@ -39,18 +68,27 @@ jobs:
       - name: Upload RPM
         uses: actions/upload-artifact@v4.6.2
         with:
-          name: rpm-package
+          name: rpm-package-fc${{ matrix.fedora_version }}
           path: build/*.rpm
 
   build-deb:
-    runs-on: ubuntu-24.04
+    needs: setup
+    strategy:
+      fail-fast: false
+      matrix:
+        ubuntu_version: ${{ fromJson(needs.setup.outputs.ubuntu_matrix) }}
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:${{ matrix.ubuntu_version }}
     steps:
       - uses: actions/checkout@v4.2.2
 
       - name: Install build dependencies
+        env:
+          DEBIAN_FRONTEND: noninteractive
         run: |
-          sudo apt-get update
-          sudo apt-get install -y \
+          apt-get update
+          apt-get install -y \
             cmake make gcc g++ git pkg-config \
             libuhd-dev libboost-dev libfftw3-dev \
             qt6-base-dev qt6-multimedia-dev \
@@ -67,10 +105,10 @@ jobs:
           sed -i 's/^QWT_CONFIG\s*+=\s*QwtDll/#QWT_CONFIG += QwtDll/' qwtconfig.pri
           qmake6 QWT_INSTALL_PREFIX=/usr/local QMAKE_CXXFLAGS+=-fPIC qwt.pro
           make -j$(nproc)
-          sudo make install
+          make install
           QWT_INST=$(ls -d /usr/local/qwt-*)
-          sudo ln -sf "$QWT_INST/include" /usr/local/include/qwt
-          sudo ln -sf "$QWT_INST/lib/libqwt.a" /usr/local/lib/libqwt.a
+          ln -sf "$QWT_INST/include" /usr/local/include/qwt
+          ln -sf "$QWT_INST/lib/libqwt.a" /usr/local/lib/libqwt.a
 
       - name: Configure
         run: |
@@ -88,26 +126,169 @@ jobs:
       - name: Upload DEB
         uses: actions/upload-artifact@v4.6.2
         with:
-          name: deb-package
+          name: deb-package-ubuntu-${{ matrix.ubuntu_version }}
           path: build/*.deb
 
+  # Verify each built RPM actually installs on a clean Fedora system and that
+  # every installed binary can resolve its shared-library dependencies.  The
+  # container image must match the build matrix entry so SONAME pins line up
+  # (cross-version install is a known-broken case — see CPack dep docs).
+  test-install-rpm:
+    needs: [setup, build-rpm]
+    strategy:
+      fail-fast: false
+      matrix:
+        fedora_version: ${{ fromJson(needs.setup.outputs.fedora_matrix) }}
+    runs-on: ubuntu-latest
+    container:
+      image: fedora:${{ matrix.fedora_version }}
+    steps:
+      - name: Download RPM artifact
+        uses: actions/download-artifact@v4.3.0
+        with:
+          name: rpm-package-fc${{ matrix.fedora_version }}
+          path: packages/
+
+      - name: Install RPM into a fresh system
+        run: |
+          dnf -y update
+          dnf -y install packages/*.rpm
+
+      - name: Verify binaries are installed
+        run: |
+          ok=true
+          for b in SoDaRadio SoDaServer SoDaCreateConfig; do
+            path=$(command -v "$b" || true)
+            if [ -n "$path" ]; then
+              echo "  OK: $b -> $path"
+            else
+              echo "  MISSING: $b" >&2
+              ok=false
+            fi
+          done
+          $ok
+
+      - name: Check shared-library completeness (ldd)
+        run: |
+          ok=true
+          for b in SoDaRadio SoDaServer SoDaCreateConfig; do
+            missing=$(ldd "$(command -v "$b")" 2>/dev/null | grep "not found" || true)
+            if [ -n "$missing" ]; then
+              echo "  FAIL: $b missing libraries:" >&2
+              echo "$missing" | sed "s/^/    /" >&2
+              ok=false
+            else
+              echo "  OK: $b -- all libraries resolve"
+            fi
+          done
+          $ok
+
+      - name: Smoke-exec (--help without library-load errors)
+        run: |
+          ok=true
+          for b in SoDaServer SoDaCreateConfig; do
+            out=$(timeout 5s "$b" --help 2>&1 || true)
+            if echo "$out" | grep -q "error while loading shared libraries\|cannot open shared object"; then
+              echo "  FAIL: $b reported a library-load error:" >&2
+              echo "$out" | grep -E "error while loading shared libraries|cannot open shared object" | head -3 | sed "s/^/    /" >&2
+              ok=false
+            else
+              echo "  OK: $b --help ran without library-load errors"
+            fi
+          done
+          $ok
+
+  # Same test for the Debian packages.  Runs in a fresh ubuntu:${version}
+  # container so we are checking the as-shipped dependency list, not the
+  # (much richer) environment the build job had.
+  test-install-deb:
+    needs: [setup, build-deb]
+    strategy:
+      fail-fast: false
+      matrix:
+        ubuntu_version: ${{ fromJson(needs.setup.outputs.ubuntu_matrix) }}
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:${{ matrix.ubuntu_version }}
+    steps:
+      - name: Download DEB artifact
+        uses: actions/download-artifact@v4.3.0
+        with:
+          name: deb-package-ubuntu-${{ matrix.ubuntu_version }}
+          path: packages/
+
+      - name: Install DEB into a fresh system
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          apt-get update
+          apt-get install -y ./packages/*.deb
+
+      - name: Verify binaries are installed
+        run: |
+          ok=true
+          for b in SoDaRadio SoDaServer SoDaCreateConfig; do
+            path=$(command -v "$b" || true)
+            if [ -n "$path" ]; then
+              echo "  OK: $b -> $path"
+            else
+              echo "  MISSING: $b" >&2
+              ok=false
+            fi
+          done
+          $ok
+
+      - name: Check shared-library completeness (ldd)
+        run: |
+          ok=true
+          for b in SoDaRadio SoDaServer SoDaCreateConfig; do
+            missing=$(ldd "$(command -v "$b")" 2>/dev/null | grep "not found" || true)
+            if [ -n "$missing" ]; then
+              echo "  FAIL: $b missing libraries:" >&2
+              echo "$missing" | sed "s/^/    /" >&2
+              ok=false
+            else
+              echo "  OK: $b -- all libraries resolve"
+            fi
+          done
+          $ok
+
+      - name: Smoke-exec (--help without library-load errors)
+        run: |
+          ok=true
+          for b in SoDaServer SoDaCreateConfig; do
+            out=$(timeout 5s "$b" --help 2>&1 || true)
+            if echo "$out" | grep -q "error while loading shared libraries\|cannot open shared object"; then
+              echo "  FAIL: $b reported a library-load error:" >&2
+              echo "$out" | grep -E "error while loading shared libraries|cannot open shared object" | head -3 | sed "s/^/    /" >&2
+              ok=false
+            else
+              echo "  OK: $b --help ran without library-load errors"
+            fi
+          done
+          $ok
+
   release:
-    needs: [build-rpm, build-deb]
+    needs: [test-install-rpm, test-install-deb]
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - name: Download RPM
+      # merge-multiple: true flattens all matching artifact directories into
+      # one packages/ folder regardless of how many distro versions we build.
+      - name: Download all RPM artifacts
         uses: actions/download-artifact@v4.3.0
         with:
-          name: rpm-package
+          pattern: rpm-package-*
           path: packages/
+          merge-multiple: true
 
-      - name: Download DEB
+      - name: Download all DEB artifacts
         uses: actions/download-artifact@v4.3.0
         with:
-          name: deb-package
+          pattern: deb-package-*
           path: packages/
+          merge-multiple: true
 
       - name: Create GitHub Release
         env:

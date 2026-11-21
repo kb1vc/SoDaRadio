@@ -1,5 +1,6 @@
 #!/bin/bash
-# Test that a SoDaRadio DEB installs cleanly on a fresh Ubuntu 24.04 system.
+# Test that a SoDaRadio DEB installs cleanly on a fresh Ubuntu system
+# (version selected via UBUNTU_VERSION env; default comes from versions.conf).
 #
 # Usage: test-install-ubuntu.sh [DEB_FILE]
 #   DEB_FILE  path to the .deb to test (default: packages/*.deb, newest first)
@@ -13,6 +14,15 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PACKAGES_DIR="$SCRIPT_DIR/packages"
 
+# Single source of truth for supported distro versions.
+# shellcheck source=versions.conf
+source "$SCRIPT_DIR/versions.conf"
+
+# Default to the newest Ubuntu in the list; may be overridden via
+# UBUNTU_VERSION=... on the command line.  Must match the version that
+# build-ubuntu.sh used to produce the DEB being tested.
+UBUNTU_VERSION="${UBUNTU_VERSION:-${UBUNTU_VERSIONS##* }}"
+
 if [[ $# -ge 1 ]]; then
     DEB_FILE="$1"
 else
@@ -22,10 +32,11 @@ if [[ -z "$DEB_FILE" || ! -f "$DEB_FILE" ]]; then
     echo "Error: no DEB found. Run build-ubuntu.sh first, or pass the DEB path as an argument." >&2
     exit 1
 fi
-echo "Testing DEB: $DEB_FILE"
+echo "Testing DEB: $DEB_FILE (on Ubuntu ${UBUNTU_VERSION})"
 
-BASE_IMAGE="sodaradio-ubuntu-test"
-INST_IMAGE="sodaradio-ubuntu-test-installed"
+# One cached pair of images per Ubuntu release so different versions coexist.
+BASE_IMAGE="sodaradio-ubuntu-test-${UBUNTU_VERSION}"
+INST_IMAGE="sodaradio-ubuntu-test-installed-${UBUNTU_VERSION}"
 IMG_STORAGE="${CH_IMAGE_STORAGE:-/var/tmp/$USER.ch}"
 
 DEB_BASENAME="$(basename "$DEB_FILE")"
@@ -35,11 +46,12 @@ TMPDF="$(mktemp /tmp/Dockerfile-ubuntu-test.XXXXXX)"
 trap 'rm -f "$TMPDF"' EXIT
 
 # Step 1: Build minimal base image (cached after first run).
-cat >"$TMPDF" <<'DOCKERFILE'
-FROM ubuntu:24.04
+# Drop the heredoc quoting so UBUNTU_VERSION expands from the host shell.
+cat >"$TMPDF" <<DOCKERFILE
+FROM ubuntu:${UBUNTU_VERSION}
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        ca-certificates \
+RUN apt-get update && apt-get install -y --no-install-recommends \\
+        ca-certificates \\
         && rm -rf /var/lib/apt/lists/*
 DOCKERFILE
 

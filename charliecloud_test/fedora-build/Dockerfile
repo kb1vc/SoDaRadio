@@ -14,10 +14,13 @@
 # different branches without a rebuild.
 #
 # Build this image from the SoDaRadio source root:
-#   ch-image build -t sodaradio-fedora-build \
+#   ch-image build --build-arg FEDORA_VERSION=45 \
+#             -t sodaradio-fedora-build \
 #             -f charliecloud_test/fedora-build/Dockerfile .
+# The build-fedora.sh wrapper fills in FEDORA_VERSION from versions.conf.
 
-FROM fedora:44
+ARG FEDORA_VERSION=44
+FROM fedora:${FEDORA_VERSION}
 
 RUN dnf -y update && \
     dnf -y install \

@@ -85,7 +85,10 @@ include(GNUInstallDirs)
 # 12.6.1 - AM demod was subject to really bad intermod.  Tweaking the AM
 # demod prefilter
 # 12.6.2 - Forgot to commit the new 4:1 resampler.  Things could be going
-# better. 
+# better.
+# 12.6.3 - Fixed CI rpm/deb build process - now creates latest and latest-1
+# kits for fedora and the current and previous LTS for ubuntu.  Created new
+# charliecloud tests for kit build that cover the same releases.
 SET(SoDaRadio_VERSION_MAJOR 12)
 SET(SoDaRadio_VERSION_MINOR 6)
 SET(SoDaRadio_VERSION_PATCH 2)
@@ -195,8 +198,11 @@ set(CPACK_RPM_PACKAGE_REQUIRES
   "qt6-qtmultimedia >= 6.2, "
   "qwt-qt6 >= 6.1.2")
 string(REPLACE ";" "" CPACK_RPM_PACKAGE_REQUIRES "${CPACK_RPM_PACKAGE_REQUIRES}")
+# Embed the distro tag so multi-version builds (e.g. Fedora 44 and 45) can
+# coexist in the same output directory without colliding.  CI uploads each
+# version's RPM into the same GitHub Release, so the filenames MUST be unique.
 set(CPACK_RPM_FILE_NAME
-  "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_RPM_PACKAGE_RELEASE}.${CMAKE_SYSTEM_PROCESSOR}.rpm")
+  "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_RPM_PACKAGE_RELEASE}.${CMAKE_SYSTEM_PROCESSOR}.${OS_RELEASE_NAME}-${OS_RELEASE_VERSION}.rpm")
 
 # ---------------------------------------------------------------------------
 # DEB (Ubuntu / Debian) settings
@@ -216,7 +222,24 @@ set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 # Add packages that aren't picked up by shlibdeps (firmware/daemon
 # helpers).  These are merged with the shlibdeps results.
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "uhd-host (>= 3.12)")
-set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
+# Debian convention is <name>_<ver>-<rel>_<arch>.deb (lowercase, underscore-
+# separated); DEB-DEFAULT would use exactly that but would drop the distro
+# tag, so multiple Ubuntu builds collide.  Match the convention and then
+# append .<distro>-<ver> so the Ubuntu 24.04 and 26.04 DEBs coexist and the
+# user can tell at a glance which release each file targets.
+#
+# CMAKE_SYSTEM_PROCESSOR uses kernel names (x86_64, aarch64); Debian uses
+# its own set (amd64, arm64).  Map just the architectures we actually ship
+# for; anything else falls through to the kernel name.
+if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
+  set(_deb_arch "amd64")
+elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+  set(_deb_arch "arm64")
+else()
+  set(_deb_arch "${CMAKE_SYSTEM_PROCESSOR}")
+endif()
+set(CPACK_DEBIAN_FILE_NAME
+  "${CPACK_DEBIAN_PACKAGE_NAME}_${CPACK_PACKAGE_VERSION}-${CPACK_PACKAGE_RELEASE}_${_deb_arch}.${OS_RELEASE_NAME}-${OS_RELEASE_VERSION}.deb")
 
 INCLUDE(CPack)
 
