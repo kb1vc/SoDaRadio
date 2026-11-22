@@ -137,7 +137,8 @@ void HamlibHandler::processCommand(const QString & cmd, QTcpSocket * socket_p)
   while(!in.atEnd()) {
     QString cmdkey; 
 
-    if(!(in >> cmdkey)) {
+    in >> cmdkey; 
+    if(in.status() != QTextStream::Ok) {
       continue; 
     }
 
@@ -243,7 +244,8 @@ bool HamlibHandler::cmdDumpState(QTextStream & out, QTextStream & in, bool getva
 // protect from a broken command
 template<typename T> bool getIn(QTextStream & in, T & val) {
   T iv;
-  if(in >> iv) {
+  in >> iv; 
+  if(in.status() == QTextStream::Ok) {
     val = iv;
     return true; 
   }
