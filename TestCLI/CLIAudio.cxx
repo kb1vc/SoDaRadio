@@ -329,7 +329,13 @@ void AudioInThread::run()
       for(int i = 0; i < n; i++) fp[i] *= g;
     }
 
-    ::write(sockfd, data.constData(), static_cast<size_t>(data.size()));
+    // Best-effort write.  A partial write (kernel socket buffer near full)
+    // or an error here just drops the tail of this 5 ms audio packet,
+    // which is fine for a test CLI.  We acknowledge the ignored return
+    // value explicitly so GCC's -Wunused-result on Ubuntu stays quiet.
+    ssize_t _n = ::write(sockfd, data.constData(),
+                         static_cast<size_t>(data.size()));
+    (void)_n;
   });
   poll_timer.start(5);  // 5 ms — well under the 48 ms frame budget
 
