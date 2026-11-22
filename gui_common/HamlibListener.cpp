@@ -64,9 +64,14 @@ namespace GUISoDa {
     for(int i = 0; i < lim; i++) {
       if(as[i] == '\n') {
 	handler_p->processCommand(current_command, socket_p);
-	current_command = QString("");
+	current_command.clear();
       }
       else {
+	if(current_command.size() + 1 > MAX_CMD_LEN) {
+	  current_command.clear();
+	  handler_p->sendINVAL(socket_p);
+	  continue; 
+	}
 	current_command.append(as[i]);
       }
     }

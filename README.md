@@ -62,7 +62,7 @@ Then
 ```
 
 Note the version number may change -- whatever you get for the deb package, you
-should use that in the dnf install. 
+should use that in the apt install. 
 
 
 

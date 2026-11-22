@@ -56,6 +56,7 @@ namespace GUISoDa {
   protected:
     HamlibHandler * handler_p; 
     qintptr socket_desc;
+    static constexpr int MAX_CMD_LEN = 1024; // absurdly long. 
     QString current_command;
     QTcpSocket * socket_p;
   };

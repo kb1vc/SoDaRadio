@@ -62,7 +62,21 @@ namespace SoDa {
     // setup the server address
     bzero((char*) &server_address, sizeof(server_address));
     server_address.sun_family = AF_UNIX;
-    strncpy(server_address.sun_path, path.c_str(), path.size());
+    // sun_path is a fixed-size buffer (108 bytes on Linux glibc).  The
+    // previous strncpy used path.size() as the limit, which is the
+    // source length and therefore does not prevent overflow -- a
+    // --uds_name longer than sun_path would clobber the stack.  Bound
+    // against the destination capacity before copying.
+    if (path.size() >= sizeof(server_address.sun_path)) {
+      throw SoDa::Exception(SoDa::Format("socket path [%0] too long (%1 bytes) for the name of a unix domain socket. (%2 bytes)")
+			    .addS(path)
+			    .addI(path.size())
+			    .addI(sizeof(server_address.sun_path))
+			    .str()
+			    );
+    }
+    memcpy(server_address.sun_path, path.c_str(), path.size());
+    server_address.sun_path[path.size()] = '\0';
     unlink(path.c_str());
     int len = sizeof(server_address); // strlen(server_address.sun_path) + sizeof(server_address.sun_family); 
 
@@ -96,9 +110,22 @@ namespace SoDa {
     }
 
     mailbox_pathname = path;
-  
+
     server_address.sun_family = AF_UNIX;
-    strncpy(server_address.sun_path, path.c_str(), path.size());
+    // Same bounds concern as ServerSocket ctor: path.size() is the
+    // source length, not the destination capacity.  Bound against
+    // sizeof(sun_path) before copying.
+    if (path.size() >= sizeof(server_address.sun_path)) {
+      throw SoDa::Exception(SoDa::Format("socket path [%0] too long (%1 bytes) for the name of a unix domain socket. (%2 bytes)")
+			    .addS(path)
+			    .addI(path.size())
+			    .addI(sizeof(server_address.sun_path))
+			    .str()
+			    );
+
+    }
+    memcpy(server_address.sun_path, path.c_str(), path.size());
+    server_address.sun_path[path.size()] = '\0';
     int len = sizeof(server_address);
 
     int stat; 

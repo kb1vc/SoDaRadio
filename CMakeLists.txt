@@ -108,9 +108,10 @@ include(GNUInstallDirs)
 #  - Reduced UHD version requirement to 4.6 to accommodate Ubuntu 24.04
 #  - Reduced debug stream-to-console noise that was particularly noxious
 #    with Unbuntu.
+# 12.7.1 - Improved error handling and better checking of command line input
 SET(SoDaRadio_VERSION_MAJOR 12)
 SET(SoDaRadio_VERSION_MINOR 7)
-SET(SoDaRadio_VERSION_PATCH 0)
+SET(SoDaRadio_VERSION_PATCH 1)
 SET(SoDaRadio_VERSION "${SoDaRadio_VERSION_MAJOR}.${SoDaRadio_VERSION_MINOR}.${SoDaRadio_VERSION_PATCH}")
 
 set(SoDaRadio_PACKAGE_DESCRIPTION 

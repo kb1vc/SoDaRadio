@@ -1,6 +1,6 @@
 #pragma once
 /*
-Copyright (c) 2017,2025 Matthew H. Reilly (kb1vc)
+Copyright (c) 2017,2025,2026 Matthew H. Reilly (kb1vc)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -43,10 +43,12 @@ namespace GUISoDa {
 
   public:
     HamlibHandler(QObject * parent = 0);
-
+    
     ~HamlibHandler();
 
-    void processCommand(const QString & cmd, QTcpSocket * socket_p); 
+    void sendINVAL(QTcpSocket * socket_p);
+    
+    void processCommand(const QString & cmd, QTcpSocket * socket_p);
 		      
   public slots:
     void reportRXFreq(double f);
@@ -88,7 +90,7 @@ namespace GUISoDa {
     bool cmdPTT(QTextStream & out, QTextStream & in, bool getval);
     bool cmdSplitVFO(QTextStream & out, QTextStream & in, bool getval);  
     bool cmdQuit(QTextStream & out, QTextStream & in, bool getval);  
-
+    
     // state of the radio
     QString current_VFO, tx_VFO;
     bool split_enabled; 

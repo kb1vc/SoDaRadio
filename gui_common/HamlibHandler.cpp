@@ -115,6 +115,10 @@ void HamlibHandler::registerCommand(const char * shortname,
   }
 }
 
+void HamlibHandler::sendINVAL(QTcpSocket * socket_p) {
+  QTextStream out(socket_p);
+  out << "RPRT " << RIG_EINVAL << "\n";  
+}
 
 void HamlibHandler::processCommand(const QString & cmd, QTcpSocket * socket_p)
 {
@@ -133,7 +137,9 @@ void HamlibHandler::processCommand(const QString & cmd, QTcpSocket * socket_p)
   while(!in.atEnd()) {
     QString cmdkey; 
 
-    in >> cmdkey; 
+    if(!(in >> cmdkey)) {
+      continue; 
+    }
 
     if(cmdkey.size() == 0) continue; 
     if((cmdkey[0] != 'g') && (cmdkey[0] != 's') && (cmdkey[0] != '\\')) {
@@ -234,14 +240,31 @@ bool HamlibHandler::cmdDumpState(QTextStream & out, QTextStream & in, bool getva
   return true;
 }
 
+// protect from a broken command
+template<typename T> bool getIn(QTextStream & in, T & val) {
+  T iv;
+  if(in >> iv) {
+    val = iv;
+    return true; 
+  }
+  else {
+    return false; 
+  }
+}
+
+
 bool HamlibHandler::cmdVFO(QTextStream & out, QTextStream & in, bool getval)
 {
   if(getval) {
     out << current_VFO << "\n";
   }
   else {
-    in >> current_VFO;
-    out << "RPRT 0" << "\n"; 
+    if(getIn(in, current_VFO)) {
+      out << "RPRT 0" << "\n";       
+    }
+    else {
+      out << "RPRT " << RIG_EINVAL << "\n";
+    }
   }
   return true;
 }
@@ -254,17 +277,20 @@ bool HamlibHandler::cmdFreq(QTextStream & out, QTextStream & in, bool getval)
   }
   else {
     double setfreq; 
-    in >> setfreq;
-    if(!split_enabled || (current_VFO == "VFOA")) {
-      rx_freq = setfreq;
-      emit setRXFreq(setfreq);             
+    if(getIn(in, setfreq)) {
+	if(!split_enabled || (current_VFO == "VFOA")) {
+	  rx_freq = setfreq;
+	  emit setRXFreq(setfreq);             
+	}
+	else {
+	  tx_freq = setfreq;
+	  emit setTXFreq(setfreq);       
+	}
+	out << "RPRT 0" << "\n"; 
     }
     else {
-      tx_freq = setfreq;
-      emit setTXFreq(setfreq);       
+      out << "RPRT " << RIG_EINVAL << "\n";  
     }
-    out << "RPRT 0" << "\n"; 
-
   }
   return true;  
 }
@@ -277,10 +303,14 @@ bool HamlibHandler::cmdSplitFreq(QTextStream & out, QTextStream & in, bool getva
   }
   else {
     double setfreq; 
-    in >> setfreq; 
-    tx_freq = setfreq;
-    emit setTXFreq(setfreq);       
-    out << "RPRT 0" << "\n"; 
+    if(getIn(in, setfreq)) {
+        tx_freq = setfreq;
+	emit setTXFreq(setfreq);       
+	out << "RPRT 0" << "\n";
+    }
+    else {
+      out << "RPRT " << RIG_EINVAL << "\n";        
+    }
   }
   return true;  
 }
@@ -294,27 +324,35 @@ bool HamlibHandler::cmdMode(QTextStream & out, QTextStream & in, bool getval)
   else {
     QString req_mod; 
     int passband; 
-    in >> req_mod; 
-    if(req_mod == "?") {
-      // tell them what we've got...
-      QString delim = "";
-      for(auto & mp : hl2soda_modmap)
-      {
-        out << delim << mp.first;
-        delim = " ";
-      }
-      out << "\n";
-      out << "RPRT 0" << "\n";
-    }
-    else {
-      in >> passband;
-      if (hl2soda_modmap.count(req_mod) != 0) {
-	emit setModulation(hl2soda_modmap[req_mod]);
+    if(getIn(in, req_mod)) {
+      if(req_mod == "?") {
+	// tell them what we've got...
+	QString delim = "";
+	for(auto & mp : hl2soda_modmap)
+	  {
+	    out << delim << mp.first;
+	    delim = " ";
+	  }
+	out << "\n";
 	out << "RPRT 0" << "\n";
       }
       else {
-	out << "RPRT " << RIG_EINVAL << "\n"; 
+	if(getIn(in, passband)) {
+	  if (hl2soda_modmap.count(req_mod) != 0) {
+	    emit setModulation(hl2soda_modmap[req_mod]);
+	    out << "RPRT 0" << "\n";
+	  }
+	  else {
+	    out << "RPRT " << RIG_EINVAL << "\n"; 
+	  }
+	}
+	else {
+	  out << "RPRT " << RIG_EINVAL << "\n";       	  
+	}
       }
+    }
+    else {
+      out << "RPRT " << RIG_EINVAL << "\n";       
     }
   }
   return true;  
@@ -329,10 +367,14 @@ bool HamlibHandler::cmdPTT(QTextStream & out, QTextStream & in, bool getval)
   }
   else {
     int tx_sel; 
-    in >> tx_sel; 
-    tx_on = (tx_sel != 0); 
-    out << "RPRT 0" << "\n";  
-    emit setTXOn(tx_on); 
+    if(getIn(in, tx_sel)) {
+      tx_on = (tx_sel != 0); 
+      out << "RPRT 0" << "\n";  
+      emit setTXOn(tx_on);
+    }
+    else {
+      out << "RPRT " << RIG_EINVAL << "\n";
+    }
   }
   return true;  
 }
@@ -346,9 +388,15 @@ bool HamlibHandler::cmdSplitVFO(QTextStream & out, QTextStream & in, bool getval
   }
   else {
     QString split_ena; 
-    in >> split_ena >> tx_VFO; 
-    split_enabled = (split_ena == "1");
-    out << "RPRT 0" << "\n"; 
+    bool got_good = getIn(in, split_ena);
+    got_good = got_good && getIn(in, tx_VFO);
+    if(got_good) {
+      split_enabled = (split_ena == "1");
+      out << "RPRT 0" << "\n";
+    }
+    else {
+      out << "RPRT " << RIG_EINVAL << "\n";
+    }
   }
   return true; 
 }
